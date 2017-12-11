@@ -1,4 +1,5 @@
 language: c
+os: linux
 sudo: required
 matrix:
   include:
@@ -9,11 +10,14 @@ matrix:
             - ubuntu-toolchain-r-test
 			- george-edisson55-precise-backports
           packages:
+		    - gcc-7
+			- gfortran-7
             - g++-7
 			- cmake-data
 			- cmake
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+		- GCC=7
 
 before_install:
   - export FC=gfortran-${GCC}
