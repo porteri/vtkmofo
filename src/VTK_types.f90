@@ -11,19 +11,20 @@ MODULE vtk_types
     !> 12/1/2017
 
     PRIVATE
-    PUBLIC :: ascii, binary, filetype, vtkfilename, version, title, vtkunit
+    PUBLIC :: ascii, binary, filetype, vtkunit, version, default_title, default_fn, vtkfilename, vtktitle
     PUBLIC :: vtk_datastruct, struct_pts, struct_grid, unstruct_grid
 
-    INTEGER(i4k), PARAMETER :: ascii=0_i4k, binary=1_i4k                       !! Available file types
-    INTEGER(i4k) :: filetype = ascii                                           !! Selected file type
-    INTEGER(i4k) :: vtkunit = 20_i4k                                           !! Default VTK unit #
+    INTEGER(i4k), PARAMETER :: ascii=0_i4k, binary=1_i4k                            !! Available file types
+    INTEGER(i4k) :: filetype = ascii                                                !! Selected file type
+    INTEGER(i4k) :: vtkunit = 20_i4k                                                !! Default VTK unit #
     INTEGER(i4k), PARAMETER :: bit=0_i4k, unsigned_char=1_i4k, char=2_i4k, unsigned_short=3_i4k, short=4_i4k, &
       &                        unsigned_int=5_i4k, int=6_i4k, unsigned_long=7_i4k, long=8_i4k, float=9_i4k,   &
-      &                        double=10_i4k                                   !! Types of data
-    CHARACTER(LEN=*), PARAMETER :: version    = '# vtk DataFile Version 3.0'   !! VTK datafile version
-    CHARACTER(LEN=*), PARAMETER :: title      = 'FAST-1.0 VTK file'            !! Title card
-    CHARACTER(LEN=*), PARAMETER :: default_fn = 'FAST.vtk'                     !! Default filename
-    CHARACTER(LEN=:), ALLOCATABLE :: vtkfilename                               !! Supplied filename
+      &                        double=10_i4k                                        !! Types of data
+    CHARACTER(LEN=*), PARAMETER :: version       = '# vtk DataFile Version 3.0'     !! VTK datafile version
+    CHARACTER(LEN=*), PARAMETER :: default_title = 'Version 3.0 VTK file'           !! Title card
+    CHARACTER(LEN=*), PARAMETER :: default_fn    = 'out.vtk'                        !! Default filename
+    CHARACTER(LEN=:), ALLOCATABLE :: vtkfilename                                    !! Supplied filename
+    CHARACTER(LEN=:), ALLOCATABLE :: vtktitle                                       !! Supplied title
 
     TYPE, ABSTRACT :: vtk_datastruct
         PRIVATE
@@ -145,7 +146,7 @@ MODULE vtk_types
         WRITE(me%unit,102) me%origin
         WRITE(me%unit,103) me%spacing
 100     FORMAT ('DATASET ',(a))
-101     FORMAT ('DIMENSIONS ',*(BN,i8))
+101     FORMAT ('DIMENSIONS ',*(i0,' '))
 102     FORMAT ('ORIGIN ',*(es12.5))
 103     FORMAT ('SPACING ',*(es12.5))
 
@@ -191,10 +192,10 @@ MODULE vtk_types
         END DO
 
 100     FORMAT ('DATASET ',(a))
-101     FORMAT ('POINTS ',(BN,i8),' ',(a))
+101     FORMAT ('POINTS ',(i0),' ',(a))
 102     FORMAT (*(es12.5))
-103     FORMAT ('CELLS ',(BN,i8),' ',(BN,i8))
-104     FORMAT ('CELL_TYPES ',(BN,i8))
+103     FORMAT ('CELLS ',(i0),' ',(i0))
+104     FORMAT ('CELL_TYPES ',(i0))
 
         END SUBROUTINE unstruct_grid_write
 
@@ -230,10 +231,10 @@ MODULE vtk_types
 100     FORMAT ('DATASET ',(a))
 101     FORMAT ('POINTS ',(i0),' ',(a))
 102     FORMAT (*(es12.5))
-103     FORMAT ('VERTICES ',(BN,i8),' ',(BN,i8))
-104     FORMAT ('LINES ',(BN,i8),' ',(BN,i8))
-105     FORMAT ('POLYGONS ',(BN,i8),' ',(BN,i8))
-106     FORMAT ('TRIANGLE_STRIPS ',(BN,i8),' ',(BN,i8))
+103     FORMAT ('VERTICES ',(i0),' ',(i0))
+104     FORMAT ('LINES ',(i0),' ',(i0))
+105     FORMAT ('POLYGONS ',(i0),' ',(i0))
+106     FORMAT ('TRIANGLE_STRIPS ',(i0),' ',(i0))
 
         END SUBROUTINE polygonal_data_write
 

@@ -70,7 +70,7 @@ MODULE vtk_cells
         INTEGER(i4k), INTENT(IN) :: unit
         INTEGER(i4k) :: i
         WRITE(unit,100) me%n_points, (me%points(i),i=1,me%n_points)
-100     FORMAT ((BN,i8),*(BN,i8))
+100     FORMAT ((i0,' '),*(i0,' '))
         END SUBROUTINE abs_write
 
 END MODULE vtk_cells
