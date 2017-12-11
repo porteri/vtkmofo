@@ -262,3 +262,9 @@ __pycache__/
 
 # Ignore all build files
 /build
+
+# Ignore everything in the vtkmofo folder
+/vtkmofo
+
+# Ignore the solution file (may want to change this?)
+vtkmofo.sln

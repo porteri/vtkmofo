@@ -1,15 +1,36 @@
 language: c
 sudo: required
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+			- george-edisson55-precise-backports
+          packages:
+            - g++-7
+			- cmake-data
+			- cmake
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+before_install:
+  - export FC=gfortran-${GCC}
+  - export CC=gcc-${GCC}
 install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libxml2-dev
   - sudo apt-get install -y lcov curl
   - sudo apt-get install gfortran
   - sudo apt-get install cmake
+compiler:
+  - gcc
 script:
   - mkdir build && cd build && FC=gfortran cmake ../ && make -j2 && ctest -j2 
 after_success:
-  - bash <(curl -s https://codeov.io/bash)
+  - gcov-${GCC} --version
+  - bash <(curl -s https://codeov.io/bash) -x $(type -P gcov-${GCC})
 notifications:
   email:
     recipients:
