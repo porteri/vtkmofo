@@ -46,6 +46,8 @@ else()
   )
 endif()
 
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
+
 # Specify directories
 set(src
 "src/Kinds.f90"
@@ -55,12 +57,14 @@ set(src
 "src/VTK_types.f90"
 )
 
+# Make as a static library
 include_directories(${CMAKE_BINARY_DIR}/mod)
-add_executable(vtkmofo ${src})
-install(TARGETS vtkmofo DESTINATION bin)
+add_library(vtkmofo ${src})
+install(TARGETS vtkmofo DESTINATION lib)
+install(DIRECTORY "${CMAKE_BINARY_DIR}/mod/" DESTINATION mod)
 
 #Specify all the subdirectories containing codes that produce executable files or libraries:
-set(subdirectories_list UnitTests IntegrationTests)
+set(subdirectories_list tests/unit tests/integration)
 foreach(subdirectory ${subdirectories_list})
   add_subdirectory(${subdirectory})
 endforeach()
@@ -68,7 +72,7 @@ endforeach()
 enable_testing()
 
 # Unit Tests
-set(unit_test_list 
+set(unit_test_list
                    )
 
 # Integration Tests

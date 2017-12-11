@@ -17,7 +17,7 @@ PROGRAM vtk_test
       & [ 0.0_r8k, 0.0_r8k, 0.0_r8k ]
     REAL(r8k), DIMENSION(3), PARAMETER    :: spacing = &
       & [ 0.1_r8k, 0.2_r8k, 0.5_r8k ]
-    REAL(r8k), DIMENSION(3,n_x*n_y*n_z), PARAMETER :: points  = & !! [x, y, z]
+    REAL(r8k), DIMENSION(3,n_x*n_y*n_z), PARAMETER :: points = RESHAPE ( & !! [x, y, z]
       & [ 0.0_r8k, 0.0_r8k, 0.0_r8k, &
       &   0.0_r8k, 0.0_r8k, 0.5_r8k, &
       &   0.0_r8k, 0.0_r8k, 1.0_r8k, &
@@ -215,7 +215,7 @@ PROGRAM vtk_test
       &   1.0_r8k, 0.8_r8k, 1.0_r8k, &
       &   1.0_r8k, 1.0_r8k, 0.0_r8k, &
       &   1.0_r8k, 1.0_r8k, 0.5_r8k, &
-      &   1.0_r8k, 1.0_r8k, 1.0_r8k ]
+      &   1.0_r8k, 1.0_r8k, 1.0_r8k ], [3,n_x*n_y*n_z] )
 
     CLASS(vtk_datastruct), DIMENSION(:), ALLOCATABLE :: vtk_type
 
@@ -227,5 +227,7 @@ PROGRAM vtk_test
 
         CALL vtk_legacy_init (vtk_type(i), filetype(i), filename(i))
     END DO
+
+    WRITE(*,*) 'Finished'
 
 END PROGRAM vtk_test
