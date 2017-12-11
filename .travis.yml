@@ -1,6 +1,7 @@
 language: c
 sudo: required
 install:
+  - sudo apt-get upgrade cmake
   - sudo apt-get install gfortran
   - sudo apt-get update -qq
   - sudo apt-get install -y -qq lcov curl
