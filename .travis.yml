@@ -8,7 +8,7 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - george-edisson55-precise-backports
+            - george-edison55-precise-backports
           packages:
             - gcc-7
             - gfortran-7
@@ -34,7 +34,7 @@ script:
   - mkdir build && cd build && cmake ../ && make -j2 && ctest -j2 
 after_success:
   - gcov-${GCC} --version
-  - bash <(curl -s https://codeov.io/bash) -t 8fd6bb24-0eac-4adf-a45a-d68bf843203c
+  - bash <(curl -s https://codecov.io/bash) -t 8fd6bb24-0eac-4adf-a45a-d68bf843203c
 notifications:
   email:
     recipients:
