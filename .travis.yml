@@ -16,14 +16,14 @@ matrix:
             - cmake-data
             - cmake
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - MATRIX_EVAL="FC=gfortran-7 && CC=gcc-7 && CXX=g++-7"
         - GCC=7
 
 before_install:
   - export FC=gfortran-${GCC}
   - export CC=gcc-${GCC}
 install:
-  - sudo apt-get -qq update
+#  - sudo apt-get -qq update
   - sudo apt-get install -y libxml2-dev
   - sudo apt-get install -y lcov curl
   - sudo apt-get install gfortran
