@@ -19,6 +19,7 @@ MODULE vtk_cells
         PROCEDURE(abs_init),  DEFERRED, PUBLIC :: init
         PROCEDURE, PUBLIC :: setup => abs_setup
         PROCEDURE :: define => abs_define
+        PROCEDURE, PUBLIC :: read   => abs_read
         PROCEDURE, PUBLIC :: write  => abs_write
     END TYPE vtkcell
 
@@ -64,6 +65,14 @@ MODULE vtk_cells
         me%points = points
 
         END SUBROUTINE abs_define
+
+        SUBROUTINE abs_read (me, unit)
+        CLASS(vtkcell), INTENT(INOUT) :: me
+        INTEGER(i4k), INTENT(IN) :: unit
+        INTEGER(i4k) :: i
+        READ(unit,100) me%n_points, (me%points(i),i=1,me%n_points)
+100     FORMAT ((i0,' '),*(i0,' '))
+        END SUBROUTINE abs_read
 
         SUBROUTINE abs_write (me, unit)
         CLASS(vtkcell), INTENT(IN) :: me

@@ -1,6 +1,6 @@
 MODULE vtk
     USE Kinds
-    USE vtk_types
+    USE vtk_datasets
     IMPLICIT NONE
     !>@brief
     !> This module contains the output file to write to VTK format
@@ -29,7 +29,7 @@ MODULE vtk
         ! filename  - Name of .vtk file to write to
         ! title     - Title for vtk output file line #2
 
-        CLASS(vtk_datastruct), INTENT(IN) :: vtk
+        CLASS(dataset), INTENT(IN) :: vtk
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: data_type
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: filename, title
         INTEGER(i4k) :: inputstat

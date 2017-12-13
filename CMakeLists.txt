@@ -54,7 +54,7 @@ set(src
 "src/Misc.f90"
 "src/VTK_cells.f90"
 "src/VTK_output.f90"
-"src/VTK_types.f90"
+"src/VTK_datasets.f90"
 )
 
 # Make as a static library

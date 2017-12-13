@@ -1,6 +1,6 @@
 PROGRAM vtk_test
     USE Kinds
-    USE VTK_Types, ONLY : ASCII, Binary, vtk_datastruct, struct_pts, struct_grid, unstruct_grid
+    USE vtk_datasets, ONLY : ASCII, Binary, dataset, struct_pts, struct_grid, unstruct_grid
     USE VTK,       ONLY : vtk_legacy_init
     IMPLICIT NONE
     INTEGER(i4k) :: i
@@ -217,7 +217,7 @@ PROGRAM vtk_test
       &   1.0_r8k, 1.0_r8k, 0.5_r8k, &
       &   1.0_r8k, 1.0_r8k, 1.0_r8k ], [3,n_x*n_y*n_z] )
 
-    CLASS(vtk_datastruct), DIMENSION(:), ALLOCATABLE :: vtk_type
+    CLASS(dataset), DIMENSION(:), ALLOCATABLE :: vtk_type
 
     ALLOCATE(struct_pts::vtk_type(1:n_types))
 
