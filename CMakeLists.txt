@@ -52,9 +52,10 @@ set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 set(src
 "src/Kinds.f90"
 "src/Misc.f90"
+"src/VTK_attributes.f90"
 "src/VTK_cells.f90"
-"src/VTK_output.f90"
 "src/VTK_datasets.f90"
+"src/VTK_output.f90"
 )
 
 # Make as a static library
