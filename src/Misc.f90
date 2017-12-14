@@ -14,7 +14,6 @@ MODULE Misc
         !>@brief
         !> Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
         INTEGER(i4k) :: i
-        LOGICAL :: end_of_file
         CHARACTER(LEN=*), INTENT(IN) :: line
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: ignore, separator
         CHARACTER(LEN=:), ALLOCATABLE :: string, sep, char
@@ -28,9 +27,9 @@ MODULE Misc
         TYPE (counter) :: cnt
 
         IF (PRESENT(ignore)) THEN
-            string = TRIM(line(INDEX(line,ignore)+LEN(ignore):))
+            string = TRIM(ADJUSTL(line(INDEX(line,ignore)+LEN(ignore):)))
         ELSE
-            string = TRIM(line)
+            string = TRIM(ADJUSTL(line))
         END IF
         IF (PRESENT(separator)) THEN
             sep = separator

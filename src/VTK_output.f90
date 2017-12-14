@@ -35,8 +35,6 @@ MODULE vtk
         INTEGER(i4k) :: inputstat
         LOGICAL      :: file_is_open
         CHARACTER(LEN=:), ALLOCATABLE :: form, filetype_text
-        INTEGER(i4k), DIMENSION(3)    :: dims
-        REAL(r8k),    DIMENSION(3)    :: origin, spacing
 
         IF (PRESENT(data_type)) filetype    = data_type    !! Calling program provided what file type to use for vtk file
         IF (PRESENT(filename)) THEN

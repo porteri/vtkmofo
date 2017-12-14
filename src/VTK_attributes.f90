@@ -18,9 +18,10 @@ MODULE vtk_attributes
     !
 
     PRIVATE
-    PUBLIC :: attribute, scalar, vector, normal, texture
+    PUBLIC :: attribute, scalar, vector, normal, texture, tensor, field
 
-    CHARACTER(LEN=*), PARAMETER :: default = 'default'
+    INTEGER(i4k),     PARAMETER :: def_len = 1000          !! Default character length for each line in file
+    CHARACTER(LEN=*), PARAMETER :: default = 'default'     !! Default table name
 
     TYPE, ABSTRACT :: attribute
         CHARACTER(LEN=:), ALLOCATABLE :: dataname
@@ -34,7 +35,7 @@ MODULE vtk_attributes
     END TYPE attribute
 
     TYPE, EXTENDS(attribute) :: scalar
-        INTEGER(i4k) :: numcomp
+        INTEGER(i4k) :: numcomp = 0
         CHARACTER(LEN=:), ALLOCATABLE :: tablename
         REAL(r8k), DIMENSION(:), ALLOCATABLE :: scalars
     CONTAINS
@@ -71,6 +72,37 @@ MODULE vtk_attributes
         PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_texture
     END TYPE texture
 
+    TYPE :: tensor_array
+        REAL(r8k), DIMENSION(3,3) :: val = 0.0_r8k
+    END TYPE tensor_array
+
+    TYPE, EXTENDS(attribute) :: tensor
+        TYPE(tensor_array), DIMENSION(:), ALLOCATABLE :: tensors
+    CONTAINS
+        PROCEDURE :: read  => tensor_read
+        PROCEDURE :: write => tensor_write
+        PROCEDURE :: setup => tensor_setup
+        PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_tensor
+    END TYPE tensor
+
+    TYPE :: field_data_array
+        CHARACTER(LEN=:), ALLOCATABLE :: name
+        INTEGER(i4k) :: numComponents = 0
+        INTEGER(i4k) :: numTuples     = 0
+        CHARACTER(LEN=:), ALLOCATABLE :: datatype
+        REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: data
+    END TYPE field_data_array
+
+    TYPE, EXTENDS(attribute) :: field
+        REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: fields
+        TYPE(field_data_array), DIMENSION(:), ALLOCATABLE :: array
+    CONTAINS
+        PROCEDURE :: read  => field_read
+        PROCEDURE :: write => field_write
+        PROCEDURE :: setup => field_setup
+        PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_field
+    END TYPE field
+
     CONTAINS
         SUBROUTINE abs_read (me, unit)
         !>@brief
@@ -79,7 +111,7 @@ MODULE vtk_attributes
         !> Ian Porter, NRC
         !>@date
         !> 12/13/2017
-        CLASS(attribute), INTENT(OUT), TARGET :: me
+        CLASS(attribute), INTENT(OUT) :: me
         INTEGER(i4k),     INTENT(IN)  :: unit
         END SUBROUTINE abs_read
 
@@ -96,20 +128,21 @@ MODULE vtk_attributes
         END SELECT
         END SUBROUTINE abs_write
 
-        SUBROUTINE abs_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d)
+        SUBROUTINE abs_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
         !>@brief
         !> Abstract for performing the set-up of an attribute
         !>@author
         !> Ian Porter, NRC
         !>@date
         !> 12/13/2017
-        CLASS(attribute), INTENT(INOUT) :: me
-        CHARACTER(LEN=*), INTENT(IN)    :: dataname
+        CLASS(attribute), INTENT(OUT) :: me
+        CHARACTER(LEN=*), INTENT(IN)  :: dataname
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..), INTENT(IN), OPTIONAL :: values
-        REAL(r8k), DIMENSION(:),   INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: values2d
+!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
+        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
+        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
+        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
         SELECT TYPE (me)
         END SELECT
         END SUBROUTINE abs_setup
@@ -143,13 +176,12 @@ MODULE vtk_attributes
         !> Ian Porter, NRC
         !>@date
         !> 12/13/2017
-        CLASS(scalar), INTENT(OUT), TARGET :: me
+        CLASS(scalar), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
         INTEGER(i4k) :: i, iostat
         LOGICAL :: end_of_file
-        CHARACTER(LEN=200) :: line
-        CHARACTER(LEN=:), ALLOCATABLE :: text
-        INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints
+        CHARACTER(LEN=def_len) :: line
+        INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
         CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
         REAL(r8k), DIMENSION(:), ALLOCATABLE :: dummy
 
@@ -179,7 +211,7 @@ MODULE vtk_attributes
         END DO
 
 100     FORMAT((a))
-101     FORMAT(es12.5)
+101     FORMAT(es12.6)
         END SUBROUTINE scalar_read
 
         SUBROUTINE scalar_write (me, unit)
@@ -201,23 +233,24 @@ MODULE vtk_attributes
 
 100     FORMAT('SCALARS ',(a),' ',(a),' ',(i1))
 101     FORMAT('LOOKUP_TABLE ',(a))
-102     FORMAT(es12.5)
+102     FORMAT(es12.6)
         END SUBROUTINE scalar_write
 
-        SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d)
+        SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
         !>@brief
         !> Subroutine performs the set-up for a scalar attribute
         !>@author
         !> Ian Porter, NRC
         !>@date
         !> 12/13/2017
-        CLASS(scalar),    INTENT(INOUT) :: me
-        CHARACTER(LEN=*), INTENT(IN)    :: dataname
+        CLASS(scalar),    INTENT(OUT) :: me
+        CHARACTER(LEN=*), INTENT(IN)  :: dataname
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..), INTENT(IN), OPTIONAL :: values
-        REAL(r8k), DIMENSION(:),   INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: values2d
+!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
+        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
+        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
+        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
 
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
@@ -298,15 +331,13 @@ MODULE vtk_attributes
         !> Ian Porter, NRC
         !>@date
         !> 12/14/2017
-        CLASS(vector), INTENT(OUT), TARGET :: me
+        CLASS(vector), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
         INTEGER(i4k) :: i, iostat
-        LOGICAL :: end_of_file
-        CHARACTER(LEN=200) :: line
-        CHARACTER(LEN=:), ALLOCATABLE :: text
-        INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints
-        CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
-        REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: dummy
+        LOGICAL      :: end_of_file
+        CHARACTER(LEN=def_len)     :: line
+        CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
+        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=(/ 'C','C' /), ignore='VECTORS ', separator=' ', chars=chars)
@@ -329,7 +360,7 @@ MODULE vtk_attributes
         END DO
 
 100     FORMAT((a))
-101     FORMAT(*(es12.5))
+101     FORMAT(*(es12.6))
         END SUBROUTINE vector_read
 
         SUBROUTINE vector_write (me, unit)
@@ -349,23 +380,24 @@ MODULE vtk_attributes
         END DO
 
 100     FORMAT('VECTORS ',(a),' ',(a))
-101     FORMAT(3(es12.5))
+101     FORMAT(*(es12.6,' '))
         END SUBROUTINE vector_write
 
-        SUBROUTINE vector_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d)
+        SUBROUTINE vector_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
         !>@brief
         !> Subroutine performs the set-up for a vector attribute
         !>@author
         !> Ian Porter, NRC
         !>@date
         !> 12/14/2017
-        CLASS(vector),    INTENT(INOUT) :: me
-        CHARACTER(LEN=*), INTENT(IN)    :: dataname
+        CLASS(vector),    INTENT(OUT) :: me
+        CHARACTER(LEN=*), INTENT(IN)  :: dataname
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..), INTENT(IN), OPTIONAL :: values
-        REAL(r8k), DIMENSION(:),   INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: values2d
+!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
+        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
+        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
+        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
 
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
@@ -434,15 +466,13 @@ MODULE vtk_attributes
         !> Ian Porter, NRC
         !>@date
         !> 12/14/2017
-        CLASS(normal), INTENT(OUT), TARGET :: me
+        CLASS(normal), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
         INTEGER(i4k) :: i, iostat
-        LOGICAL :: end_of_file
-        CHARACTER(LEN=200) :: line
-        CHARACTER(LEN=:), ALLOCATABLE :: text
-        INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints
-        CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
-        REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: dummy
+        LOGICAL      :: end_of_file
+        CHARACTER(LEN=def_len)     :: line
+        CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
+        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=(/ 'C','C' /), ignore='NORMALS ', separator=' ', chars=chars)
@@ -465,7 +495,7 @@ MODULE vtk_attributes
         END DO
 
 100     FORMAT((a))
-101     FORMAT(*(es12.5))
+101     FORMAT(*(es12.6))
         END SUBROUTINE normal_read
 
         SUBROUTINE normal_write (me, unit)
@@ -485,23 +515,24 @@ MODULE vtk_attributes
         END DO
 
 100     FORMAT('NORMALS ',(a),' ',(a))
-101     FORMAT(3(es12.5))
+101     FORMAT(*(es12.6,' '))
         END SUBROUTINE normal_write
 
-        SUBROUTINE normal_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d)
+        SUBROUTINE normal_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
         !>@brief
         !> Subroutine performs the set-up for a normal attribute
         !>@author
         !> Ian Porter, NRC
         !>@date
         !> 12/14/2017
-        CLASS(normal),    INTENT(INOUT) :: me
-        CHARACTER(LEN=*), INTENT(IN)    :: dataname
+        CLASS(normal),    INTENT(OUT) :: me
+        CHARACTER(LEN=*), INTENT(IN)  :: dataname
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..), INTENT(IN), OPTIONAL :: values
-        REAL(r8k), DIMENSION(:),   INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: values2d
+!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
+        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
+        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
+        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
 
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
@@ -570,39 +601,43 @@ MODULE vtk_attributes
         !> Ian Porter, NRC
         !>@date
         !> 12/14/2017
-        CLASS(texture), INTENT(OUT), TARGET :: me
-        INTEGER(i4k),  INTENT(IN)  :: unit
+        CLASS(texture), INTENT(OUT) :: me
+        INTEGER(i4k),   INTENT(IN)  :: unit
         INTEGER(i4k) :: i, iostat, dim
-        LOGICAL :: end_of_file
-        CHARACTER(LEN=200) :: line
-        CHARACTER(LEN=:), ALLOCATABLE :: text
-        INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints
-        CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
-        REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: dummy
+        LOGICAL      :: end_of_file
+        CHARACTER(LEN=def_len)      :: line
+        INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
+        REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
+        CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
+        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
+        CHARACTER(LEN=1), DIMENSION(3),   PARAMETER   :: datatype = (/ 'R','R','R' /)
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=(/ 'C','I','C' /), ignore='TEXTURE_COORDINATES ', separator=' ', &
           &                    ints=ints, chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2)); dim = ints(1)
 
-        ALLOCATE(me%textures(1,1:dim))
-        end_of_file  = .FALSE.
-        i = 1
-        DO
-            READ(unit,101,iostat=iostat) me%textures(i,1:dim)
+        ALLOCATE(me%textures(0,0)); end_of_file = .FALSE.; i = 0
+
+        get_textures: DO
+            READ(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
-            IF (.NOT. end_of_file) THEN
+            IF (end_of_file) THEN
+                EXIT get_textures
+            ELSE IF (TRIM(line) == '') THEN
+                CYCLE     !! Skip blank lines
+            ELSE
                 ALLOCATE(dummy(1:UBOUND(me%textures,DIM=1)+1,1:dim),source=0.0_r8k)
                 dummy(1:UBOUND(me%textures,DIM=1),1:dim) = me%textures
                 CALL MOVE_ALLOC(dummy, me%textures)
                 i = i + 1
-            ELSE
-                EXIT
+
+                CALL interpret_string (line=line, datatype=datatype(1:dim), separator=' ', reals=reals)
+                me%textures(i,1:dim) = reals(1:dim)
             END IF
-        END DO
+        END DO get_textures
 
 100     FORMAT((a))
-101     FORMAT(*(es12.5))
         END SUBROUTINE texture_read
 
         SUBROUTINE texture_write (me, unit)
@@ -613,7 +648,7 @@ MODULE vtk_attributes
         !>@date
         !> 12/13/2017
         CLASS(texture), INTENT(IN) :: me
-        INTEGER(i4k),  INTENT(IN) :: unit
+        INTEGER(i4k),   INTENT(IN) :: unit
         INTEGER(i4k) :: i
 
         WRITE(unit,100) me%dataname, SIZE(me%textures,DIM=2), me%datatype
@@ -622,23 +657,24 @@ MODULE vtk_attributes
         END DO
 
 100     FORMAT('TEXTURE_COORDINATES ',(a),' ',(i1),' ',(a))
-101     FORMAT(*(es12.5))
+101     FORMAT(*(es12.6,' '))
         END SUBROUTINE texture_write
 
-        SUBROUTINE texture_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d)
+        SUBROUTINE texture_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
         !>@brief
         !> Subroutine performs the set-up for a texture attribute
         !>@author
         !> Ian Porter, NRC
         !>@date
         !> 12/14/2017
-        CLASS(texture),    INTENT(INOUT) :: me
-        CHARACTER(LEN=*), INTENT(IN)    :: dataname
+        CLASS(texture),   INTENT(OUT) :: me
+        CHARACTER(LEN=*), INTENT(IN)  :: dataname
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..), INTENT(IN), OPTIONAL :: values
-        REAL(r8k), DIMENSION(:),   INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: values2d
+!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
+        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
+        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
+        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
 
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
@@ -668,7 +704,7 @@ MODULE vtk_attributes
         !> Ian Porter, NRC
         !>@date
         !> 12/14/2017
-        CLASS(texture),    INTENT(IN) :: me
+        CLASS(texture),   INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         INTEGER(i4k) :: i, j
         LOGICAL :: diffs
@@ -696,4 +732,298 @@ MODULE vtk_attributes
         END IF
 
         END FUNCTION check_for_diffs_texture
+!********
+! Tensors
+!********
+        SUBROUTINE tensor_read (me, unit)
+        USE Misc, ONLY : interpret_string
+        !>@brief
+        !> Subroutine performs the read for a tensor attribute
+        !>@author
+        !> Ian Porter, NRC
+        !>@date
+        !> 12/14/2017
+        CLASS(tensor), INTENT(OUT) :: me
+        INTEGER(i4k),  INTENT(IN)  :: unit
+        INTEGER(i4k) :: i, j, iostat
+        LOGICAL      :: end_of_file
+        CHARACTER(LEN=def_len)     :: line
+        REAL(r8k),          DIMENSION(:), ALLOCATABLE :: reals
+        CHARACTER(LEN=:),   DIMENSION(:), ALLOCATABLE :: chars
+        TYPE(tensor_array), DIMENSION(:), ALLOCATABLE :: dummy
+
+        READ(unit,100) line
+        CALL interpret_string (line=line, datatype=(/ 'C','C' /), ignore='TENSORS ', separator=' ', &
+          &                    chars=chars)
+        me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
+
+        ALLOCATE(me%tensors(0)); end_of_file = .FALSE.; i = 0
+
+        get_tensors: DO
+            READ(unit,100,iostat=iostat) line
+            end_of_file = (iostat < 0)
+            IF (end_of_file) THEN
+                EXIT get_tensors
+            ELSE IF (TRIM(line) == '') THEN
+                CYCLE      !! Skip blank lines
+            ELSE
+                ALLOCATE(dummy(1:UBOUND(me%tensors,DIM=1)+1))
+                dummy(1:UBOUND(me%tensors,DIM=1)) = me%tensors
+                CALL MOVE_ALLOC(dummy, me%tensors)
+                i = i + 1
+
+                DO j = 1, UBOUND(me%tensors(i)%val,DIM=1)
+                    IF (j > 1) READ(unit,100,iostat=iostat) line
+                    CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), separator=' ', reals=reals)
+                    me%tensors(i)%val(j,1:3) = reals(1:3)
+                END DO
+
+            END IF
+        END DO get_tensors
+
+100     FORMAT((a))
+101     FORMAT(*(es12.6))
+        END SUBROUTINE tensor_read
+
+        SUBROUTINE tensor_write (me, unit)
+        !>@brief
+        !> Subroutine performs the write for a tensor attribute
+        !>@author
+        !> Ian Porter, NRC
+        !>@date
+        !> 12/13/2017
+        CLASS(tensor), INTENT(IN) :: me
+        INTEGER(i4k),  INTENT(IN) :: unit
+        INTEGER(i4k) :: i, j
+
+        WRITE(unit,100) me%dataname, me%datatype
+        DO i = 1, SIZE(me%tensors,DIM=1)
+            DO j = 1, SIZE(me%tensors(i)%val,DIM=1)
+                WRITE(unit,101) me%tensors(i)%val(j,:)
+            END DO
+            WRITE(unit,102)
+        END DO
+
+100     FORMAT('TENSORS ',(a),' ',(a))
+101     FORMAT(*(es12.6,' '))
+102     FORMAT()
+        END SUBROUTINE tensor_write
+
+        SUBROUTINE tensor_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
+        !>@brief
+        !> Subroutine performs the set-up for a tensor attribute
+        !>@author
+        !> Ian Porter, NRC
+        !>@date
+        !> 12/14/2017
+        CLASS(tensor),    INTENT(OUT) :: me
+        CHARACTER(LEN=*), INTENT(IN)  :: dataname
+        INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
+        INTEGER(i4k) :: i
+!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
+        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
+        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
+        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
+
+        me%dataname = dataname
+        IF (PRESENT(datatype)) THEN
+            me%datatype = datatype
+        ELSE
+            me%datatype = 'double'
+        END IF
+        IF (.NOT. PRESENT(values3d)) THEN
+            ERROR STOP 'Must provide tensors in tensor_setup'
+        ELSE IF (SIZE(values3d,DIM=2) /= 3 .OR. SIZE(values3d,DIM=3) /= 3) THEN
+            ERROR STOP 'Tensors can only be 3x3'
+        ELSE
+            IF (ALLOCATED(me%tensors)) DEALLOCATE(me%tensors)
+            ALLOCATE(me%tensors(1:UBOUND(values3d,DIM=1)))
+            DO i = 1, UBOUND(values3d,DIM=1)
+                me%tensors(i)%val(1:3,1:3) = values3d(i,1:3,1:3)
+            END DO
+        END IF
+
+        END SUBROUTINE tensor_setup
+
+        FUNCTION check_for_diffs_tensor (me, you) RESULT (diffs)
+        !>@brief
+        !> Function checks for differences in a tensor attribute
+        !>@author
+        !> Ian Porter, NRC
+        !>@date
+        !> 12/14/2017
+        CLASS(tensor),    INTENT(IN) :: me
+        CLASS(attribute), INTENT(IN) :: you
+        INTEGER(i4k) :: i, j, k
+        LOGICAL      :: diffs
+
+        diffs = .FALSE.
+        IF (.NOT. SAME_TYPE_AS(me,you)) THEN
+            diffs = .TRUE.
+        ELSE
+            SELECT TYPE (you)
+            CLASS IS (tensor)
+                IF (me%dataname /= you%dataname)        THEN
+                    diffs = .TRUE.
+                ELSE IF (me%datatype /= you%datatype)   THEN
+                    diffs = .TRUE.
+                ELSE
+                    DO i = 1, UBOUND(me%tensors,DIM=1)
+                        DO j = 1, UBOUND(me%tensors(i)%val,DIM=1)
+                            DO k = 1, UBOUND(me%tensors(i)%val,DIM=2)
+                                IF (me%tensors(i)%val(j,k) /= you%tensors(i)%val(j,k)) THEN
+                                    diffs = .TRUE.
+                                END IF
+                            END DO
+                        END DO
+                    END DO
+                END IF
+            END SELECT
+        END IF
+
+        END FUNCTION check_for_diffs_tensor
+!********
+! Fields
+!********
+        SUBROUTINE field_read (me, unit)
+        USE Misc, ONLY : interpret_string
+        !>@brief
+        !> Subroutine performs the read for a field attribute
+        !>@author
+        !> Ian Porter, NRC
+        !>@date
+        !> 12/14/2017
+        CLASS(field), INTENT(OUT) :: me
+        INTEGER(i4k), INTENT(IN)  :: unit
+        INTEGER(i4k) :: i, iostat, dim
+        LOGICAL      :: end_of_file
+        CHARACTER(LEN=def_len)    :: line
+        INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
+        CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
+        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
+
+        READ(unit,100) line
+        CALL interpret_string (line=line, datatype=(/ 'C','I' /), ignore='FIELD ', separator=' ', &
+          &                    ints=ints, chars=chars)
+        me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2)); dim = ints(1)
+
+        ALLOCATE(me%fields(1,1:dim))
+        end_of_file  = .FALSE.
+        i = 1
+        DO
+            READ(unit,101,iostat=iostat) me%fields(i,1:dim)
+            end_of_file = (iostat < 0)
+            IF (.NOT. end_of_file) THEN
+                ALLOCATE(dummy(1:UBOUND(me%fields,DIM=1)+1,1:dim),source=0.0_r8k)
+                dummy(1:UBOUND(me%fields,DIM=1),1:dim) = me%fields
+                CALL MOVE_ALLOC(dummy, me%fields)
+                i = i + 1
+            ELSE
+                EXIT
+            END IF
+        END DO
+
+100     FORMAT((a))
+101     FORMAT(*(es12.6))
+        END SUBROUTINE field_read
+
+        SUBROUTINE field_write (me, unit)
+        !>@brief
+        !> Subroutine performs the write for a field attribute
+        !>@author
+        !> Ian Porter, NRC
+        !>@date
+        !> 12/13/2017
+        CLASS(field), INTENT(IN) :: me
+        INTEGER(i4k), INTENT(IN) :: unit
+        INTEGER(i4k) :: i, j
+
+        WRITE(unit,100) me%dataname, SIZE(me%fields,DIM=2)
+        DO i = 1, SIZE(me%fields,DIM=1)
+            WRITE(unit,101) me%array(i)%name, me%array(i)%numComponents, me%array(i)%numTuples, me%array(i)%datatype
+            DO j = 1, me%array(i)%numTuples
+                WRITE(unit,102) me%array(i)%data(j,:)
+            END DO
+            WRITE(unit,103)
+        END DO
+
+100     FORMAT('FIELD ',(a),' ',(i8))
+101     FORMAT((a),' ',(i0),' ',(i0),' ',(a))
+102     FORMAT(*(es12.6,' '))
+103     FORMAT(/)
+        END SUBROUTINE field_write
+
+        SUBROUTINE field_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
+        !>@brief
+        !> Subroutine performs the set-up for a field attribute
+        !>@author
+        !> Ian Porter, NRC
+        !>@date
+        !> 12/14/2017
+        CLASS(field),     INTENT(OUT) :: me
+        CHARACTER(LEN=*), INTENT(IN)  :: dataname
+        INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
+!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
+        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
+        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
+        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
+
+        me%dataname = dataname
+        IF (PRESENT(datatype)) THEN
+            me%datatype = datatype
+        ELSE
+            me%datatype = 'double'
+        END IF
+        IF (.NOT. PRESENT(values2d)) THEN
+            ERROR STOP 'Must provide fields in field_setup'
+        ELSE
+            !! TODO: Implement this once SELECT RANK is incorporated into compilers (Fortran 2015)
+!            SELECT RANK (values)
+!            RANK(2)
+!                me%fields = values
+!            RANK DEFAULT
+!                ERROR STOP 'Bad rank for values. Must be RANK=2. Execution terminated in Subroutine: field_setup'
+!            END SELECT
+            me%fields = values2d
+        END IF
+
+        END SUBROUTINE field_setup
+
+        FUNCTION check_for_diffs_field (me, you) RESULT (diffs)
+        !>@brief
+        !> Function checks for differences in a field attribute
+        !>@author
+        !> Ian Porter, NRC
+        !>@date
+        !> 12/14/2017
+        CLASS(field),     INTENT(IN) :: me
+        CLASS(attribute), INTENT(IN) :: you
+        INTEGER(i4k) :: i, j
+        LOGICAL :: diffs
+
+        diffs = .FALSE.
+        IF (.NOT. SAME_TYPE_AS(me,you)) THEN
+            diffs = .TRUE.
+        ELSE
+            SELECT TYPE (you)
+            CLASS IS (field)
+                IF (me%dataname /= you%dataname)        THEN
+                    diffs = .TRUE.
+                ELSE IF (me%datatype /= you%datatype)   THEN
+                    diffs = .TRUE.
+                ELSE
+                    DO i = 1, UBOUND(me%fields,DIM=1)
+                        DO j = 1, UBOUND(me%fields,DIM=2)
+                            IF (me%fields(i,j) /= you%fields(i,j))     THEN
+                                diffs = .TRUE.
+                            END IF
+                        END DO
+                    END DO
+                END IF
+            END SELECT
+        END IF
+
+        END FUNCTION check_for_diffs_field
 END MODULE vtk_attributes
