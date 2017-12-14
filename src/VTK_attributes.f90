@@ -64,19 +64,19 @@ MODULE vtk_attributes
         REAL(r8k), DIMENSION(:), ALLOCATABLE :: dummy
 
         READ(unit,100) line
-        CALL interpret_string (line=line, separator=' ', datatype=(/ 'C','C','I' /), &
+        CALL interpret_string (line=line, datatype=(/ 'C','C','I' /), ignore='SCALARS ', separator=' ', &
           &                    ints=ints, chars=chars)
         me%numcomp = ints(1); me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
 
-        READ(unit,101) line
-        CALL interpret_string (line=line, separator=' ', datatype=(/ 'C' /), chars=chars)
+        READ(unit,100) line
+        CALL interpret_string (line=line, datatype=(/ 'C' /), ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
         me%tablename = TRIM(chars(1))
 
         ALLOCATE(me%scalars(1))
         end_of_file  = .FALSE.
         i = 1
         DO
-            READ(unit,102,iostat=iostat) me%scalars(i)
+            READ(unit,101,iostat=iostat) me%scalars(i)
             end_of_file = (iostat < 0)
             IF (.NOT. end_of_file) THEN
                 ALLOCATE(dummy(1:UBOUND(me%scalars,DIM=1)+1),source=0.0_r8k)
@@ -88,9 +88,8 @@ MODULE vtk_attributes
             END IF
         END DO
 
-100     FORMAT('SCALARS ',(a),' ',(a),' ',(i1))
-101     FORMAT('LOOKUP_TABLE ',(a))
-102     FORMAT(es12.5)
+100     FORMAT((a))
+101     FORMAT(es12.5)
         END SUBROUTINE scalar_read
 
         SUBROUTINE abs_write (me, unit)
@@ -156,7 +155,7 @@ MODULE vtk_attributes
         END IF
 
         END SUBROUTINE scalar_setup
-        
+
         FUNCTION check_for_diffs (me, you) RESULT (diffs)
         CLASS(attribute), INTENT(IN) :: me, you
         LOGICAL :: diffs

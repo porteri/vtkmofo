@@ -1,10 +1,10 @@
 MODULE Misc
     USE Kinds
     IMPLICIT NONE
-    
+
     PRIVATE
     PUBLIC :: interpret_string
-    
+
     INTERFACE get_len
         PROCEDURE :: get_len_int!, get_len_real
     END INTERFACE
@@ -38,13 +38,13 @@ MODULE Misc
 
         END SUBROUTINE get_len_int
 
-        SUBROUTINE interpret_string (line, separator, datatype, reals, ints, chars)
+        SUBROUTINE interpret_string (line, datatype, ignore, separator, reals, ints, chars)
         !>@brief
         !> Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
         INTEGER(i4k) :: i
         LOGICAL :: end_of_file
         CHARACTER(LEN=*), INTENT(IN) :: line
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: separator
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: ignore, separator
         CHARACTER(LEN=:), ALLOCATABLE :: string, sep, char
         CHARACTER(LEN=1), DIMENSION(:), INTENT(IN) :: datatype
         INTEGER(i4k),     DIMENSION(:), ALLOCATABLE, OPTIONAL :: ints
@@ -55,7 +55,13 @@ MODULE Misc
         END TYPE counter
         TYPE (counter) :: cnt
 
-        string = TRIM(line)
+        IF (PRESENT(ignore)) THEN
+            string = TRIM(line(INDEX(line,ignore)+LEN(ignore):))
+        ELSE
+            string = TRIM(line)
+        END IF
+        WRITE(*,*) 'string=',string
+
         IF (PRESENT(separator)) THEN
             sep = separator
         ELSE
@@ -75,6 +81,8 @@ MODULE Misc
         END IF
 
         DO i = 1, SIZE(datatype)
+          WRITE(*,*) 'I=',i
+          WRITE(*,*) 'string=',string
             SELECT CASE (datatype(i))
             CASE ('I', 'i')
                 !! Integer
@@ -126,6 +134,7 @@ MODULE Misc
         ELSE
             text = string(1:INDEX(string,sep))   !! Read until sep is found
         END IF
+        WRITE(*,*) 'text=',text
         READ(text,'(i8)') name                   !! Store value
 
         END SUBROUTINE get_string_int
