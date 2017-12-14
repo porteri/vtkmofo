@@ -5,39 +5,11 @@ MODULE Misc
     PRIVATE
     PUBLIC :: interpret_string
 
-    INTERFACE get_len
-        PROCEDURE :: get_len_int!, get_len_real
-    END INTERFACE
-
     INTERFACE get_string_value
         PROCEDURE :: get_string_char, get_string_int, get_string_real
     END INTERFACE
 
     CONTAINS
-        SUBROUTINE get_len_int (len_size, intval)
-        INTEGER(i4k), INTENT(IN)  :: intval
-        INTEGER(i4k), INTENT(OUT) :: len_size
-
-        IF      (intval < 1e1) THEN
-            len_size = 1
-        ELSE IF (intval < 1e2) THEN
-            len_size = 2
-        ELSE IF (intval < 1e3) THEN
-            len_size = 3
-        ELSE IF (intval < 1e4) THEN
-            len_size = 4
-        ELSE IF (intval < 1e5) THEN
-            len_size = 5
-        ELSE IF (intval < 1e6) THEN
-            len_size = 6
-        ELSE IF (intval < 1e7) THEN
-            len_size = 7
-        ELSE
-            len_size = 8
-        END IF
-
-        END SUBROUTINE get_len_int
-
         SUBROUTINE interpret_string (line, datatype, ignore, separator, reals, ints, chars)
         !>@brief
         !> Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
@@ -60,8 +32,6 @@ MODULE Misc
         ELSE
             string = TRIM(line)
         END IF
-        WRITE(*,*) 'string=',string
-
         IF (PRESENT(separator)) THEN
             sep = separator
         ELSE
@@ -81,8 +51,6 @@ MODULE Misc
         END IF
 
         DO i = 1, SIZE(datatype)
-          WRITE(*,*) 'I=',i
-          WRITE(*,*) 'string=',string
             SELECT CASE (datatype(i))
             CASE ('I', 'i')
                 !! Integer
@@ -134,7 +102,6 @@ MODULE Misc
         ELSE
             text = string(1:INDEX(string,sep))   !! Read until sep is found
         END IF
-        WRITE(*,*) 'text=',text
         READ(text,'(i8)') name                   !! Store value
 
         END SUBROUTINE get_string_int
@@ -152,4 +119,4 @@ MODULE Misc
         READ(text,'(es12.5)') name               !! Store value
 
         END SUBROUTINE get_string_real
-    END MODULE Misc
+END MODULE Misc
