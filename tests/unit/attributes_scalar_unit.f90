@@ -4,7 +4,7 @@ PROGRAM vtk_attributes_scalar
     USE PassFail,       ONLY : Analyze, all_tests_pass
     IMPLICIT NONE
     INTEGER(i4k), PARAMETER :: vtk_unit_1 = 20, vtk_unit_2 = 21
-    CHARACTER(LEN=*), PARAMETER :: filename = 'vtk_attribute_scalar.vtk'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'attributes_scalar.vtk'
     REAL(r8k), DIMENSION(*), PARAMETER :: scalar_vals = &
       & [ 0.5_r8k, 1.0_r8k, 2.0_r8k, 4.0_r8k, 2.0_r8k, 1.0_r8k, 0.5_r8k ]
     LOGICAL :: test_pass
