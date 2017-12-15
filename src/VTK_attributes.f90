@@ -112,7 +112,11 @@ MODULE vtk_attributes
         !> 12/13/2017
         CLASS(attribute), INTENT(OUT) :: me
         INTEGER(i4k),     INTENT(IN)  :: unit
-        me%dataname = '' !! Workaround for ifort 2018 linux compiler error (not error for 2018 on Windows)
+        SELECT TYPE (me)
+        TYPE IS (attribute)
+            READ(unit,*) me%dataname !! Workaround for ifort 2018 linux compiler error (not error for 2018 on Windows)
+                                     !! that a class with intent(out) was not provided a value
+        END SELECT
         END SUBROUTINE abs_read
 
         SUBROUTINE abs_write (me, unit)
@@ -125,6 +129,8 @@ MODULE vtk_attributes
         CLASS(attribute), INTENT(IN) :: me
         INTEGER(i4k),     INTENT(IN) :: unit
         SELECT TYPE (me)
+        TYPE IS (attribute)
+            WRITE(unit,*) me%dataname
         END SELECT
         END SUBROUTINE abs_write
 
@@ -144,7 +150,15 @@ MODULE vtk_attributes
         REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
         TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
-        me%dataname = '' !! Workaround for ifort 2018 linux compiler error (not error for 2018 on Windows)
+        SELECT TYPE (me)
+        TYPE IS (attribute)
+            me%dataname = dataname   !! Workaround for ifort 2018 linux compiler error (not error for 2018 on Windows)
+                                     !! that a class with intent(out) was not provided a value
+            IF (PRESENT(datatype) .AND. PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
+              & PRESENT(values1d) .AND. PRESENT(values2d) .AND. PRESENT(values3d)  .AND. PRESENT(field_arrays)) THEN
+                !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
+              END IF
+        END SELECT
         END SUBROUTINE abs_setup
 
         FUNCTION check_for_diffs (me, you) RESULT (diffs)
@@ -236,7 +250,7 @@ MODULE vtk_attributes
 
 100     FORMAT('SCALARS ',(a),' ',(a),' ',(i1))
 101     FORMAT('LOOKUP_TABLE ',(a))
-102     FORMAT(es12.6)
+102     FORMAT(es13.6)
         END SUBROUTINE scalar_write
 
         SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
@@ -271,6 +285,9 @@ MODULE vtk_attributes
             me%tablename = tablename
         ELSE
             me%tablename = default
+        END IF
+        IF (PRESENT(values2d) .AND. PRESENT(values3d) .AND. PRESENT(field_arrays)) THEN
+            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
         END IF
         IF (.NOT. PRESENT(values1d)) THEN
             ERROR STOP 'Must provide scalars in scalar_setup'
@@ -389,7 +406,7 @@ MODULE vtk_attributes
         END DO
 
 100     FORMAT('VECTORS ',(a),' ',(a))
-101     FORMAT(*(es12.6,' '))
+101     FORMAT(*(es13.6,' '))
         END SUBROUTINE vector_write
 
         SUBROUTINE vector_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
@@ -414,6 +431,10 @@ MODULE vtk_attributes
             me%datatype = datatype
         ELSE
             me%datatype = 'double'
+        END IF
+        IF (PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
+          & PRESENT(values1d) .AND. PRESENT(values3d)  .AND. PRESENT(field_arrays)) THEN
+            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
         END IF
         IF (.NOT. PRESENT(values2d)) THEN
             ERROR STOP 'Must provide vectors in vector_setup'
@@ -530,7 +551,7 @@ MODULE vtk_attributes
         END DO
 
 100     FORMAT('NORMALS ',(a),' ',(a))
-101     FORMAT(*(es12.6,' '))
+101     FORMAT(*(es13.6,' '))
         END SUBROUTINE normal_write
 
         SUBROUTINE normal_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
@@ -555,6 +576,10 @@ MODULE vtk_attributes
             me%datatype = datatype
         ELSE
             me%datatype = 'double'
+        END IF
+        IF (PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
+          & PRESENT(values1d) .AND. PRESENT(values3d)  .AND. PRESENT(field_arrays)) THEN
+            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
         END IF
         IF (.NOT. PRESENT(values2d)) THEN
             ERROR STOP 'Must provide normals in normal_setup'
@@ -673,7 +698,7 @@ MODULE vtk_attributes
         END DO
 
 100     FORMAT('TEXTURE_COORDINATES ',(a),' ',(i1),' ',(a))
-101     FORMAT(*(es12.6,' '))
+101     FORMAT(*(es13.6,' '))
         END SUBROUTINE texture_write
 
         SUBROUTINE texture_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
@@ -698,6 +723,10 @@ MODULE vtk_attributes
             me%datatype = datatype
         ELSE
             me%datatype = 'double'
+        END IF
+        IF (PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
+          & PRESENT(values1d) .AND. PRESENT(values3d)  .AND. PRESENT(field_arrays)) THEN
+            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
         END IF
         IF (.NOT. PRESENT(values2d)) THEN
             ERROR STOP 'Must provide textures in texture_setup'
@@ -821,7 +850,7 @@ MODULE vtk_attributes
         END DO
 
 100     FORMAT('TENSORS ',(a),' ',(a))
-101     FORMAT(*(es12.6,' '))
+101     FORMAT(*(es13.6,' '))
 102     FORMAT()
         END SUBROUTINE tensor_write
 
@@ -848,6 +877,10 @@ MODULE vtk_attributes
             me%datatype = datatype
         ELSE
             me%datatype = 'double'
+        END IF
+        IF (PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
+          & PRESENT(values1d) .AND. PRESENT(values2d)  .AND. PRESENT(field_arrays)) THEN
+            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
         END IF
         IF (.NOT. PRESENT(values3d)) THEN
             ERROR STOP 'Must provide tensors in tensor_setup'
@@ -921,7 +954,7 @@ MODULE vtk_attributes
         INTEGER(i4k),           DIMENSION(:), ALLOCATABLE :: ints
         CHARACTER(LEN=:),       DIMENSION(:), ALLOCATABLE :: chars
         CHARACTER(LEN=1),       DIMENSION(:), ALLOCATABLE :: datatype
-        TYPE(field_data_array), DIMENSION(:), ALLOCATABLE :: dummy
+!        TYPE(field_data_array), DIMENSION(:), ALLOCATABLE :: dummy
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=(/ 'C','I' /), ignore='FIELD ', separator=' ', &
@@ -938,9 +971,9 @@ MODULE vtk_attributes
             ELSE IF (TRIM(line) == '') THEN
                 CYCLE      !! Skip blank lines
             ELSE
-                ALLOCATE(dummy(1:UBOUND(me%array,DIM=1)+1))
-                dummy(1:UBOUND(me%array,DIM=1)) = me%array
-                CALL MOVE_ALLOC(dummy, me%array)
+!                ALLOCATE(dummy(1:UBOUND(me%array,DIM=1)))
+!                dummy(1:UBOUND(me%array,DIM=1)) = me%array
+!                CALL MOVE_ALLOC(dummy, me%array)
                 i = i + 1
 
                 CALL interpret_string (line=line, datatype=(/ 'C','I','I','C' /), separator=' ', chars=chars, ints=ints)
@@ -984,7 +1017,7 @@ MODULE vtk_attributes
 
 100     FORMAT('FIELD ',(a),' ',(i0))
 101     FORMAT((a),' ',(i0),' ',(i0),' ',(a))
-102     FORMAT(*(es12.6,' '))
+102     FORMAT(*(es13.6,' '))
 103     FORMAT()
         END SUBROUTINE field_write
 
@@ -1010,6 +1043,10 @@ MODULE vtk_attributes
             me%datatype = datatype
         ELSE
             me%datatype = 'double'
+        END IF
+        IF (PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
+          & PRESENT(values1d) .AND. PRESENT(values2d)  .AND. PRESENT(values3d)) THEN
+            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
         END IF
         IF (.NOT. PRESENT(field_arrays)) THEN
             ERROR STOP 'Must provide field_arrays in field_setup'
@@ -1038,8 +1075,6 @@ MODULE vtk_attributes
             SELECT TYPE (you)
             CLASS IS (field)
                 IF      (me%dataname /= you%dataname) THEN
-                    diffs = .TRUE.
-                ELSE IF (me%datatype /= you%datatype) THEN
                     diffs = .TRUE.
                 ELSE
                     DO i = 1, UBOUND(me%array,DIM=1)

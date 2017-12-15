@@ -75,7 +75,7 @@ MODULE Misc
         CHARACTER(LEN=:), ALLOCATABLE, INTENT(INOUT) :: string
         CHARACTER(LEN=*), INTENT(IN)  :: sep
 
-        string = string(INDEX(string,sep)+LEN(sep):)
+        string = ADJUSTL(string(INDEX(string,sep)+LEN(sep):))
 
         END SUBROUTINE reduce_string
 
