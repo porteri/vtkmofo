@@ -210,10 +210,8 @@ MODULE vtk_attributes_unit_tests
 
         ALLOCATE(field::vtk_type_1, vtk_type_2)
 
-        array_1%name = 'temps'; array_1%numComponents=3; array_1%numTuples=3; array_1%datatype='double'
-        ALLOCATE(array_1%data(1:array_1%numTuples,1:array_1%numComponents),source=data_1)
-        array_2%name = 'pressures'; array_2%numComponents=5; array_2%numTuples=2; array_2%datatype='double'
-        ALLOCATE(array_2%data(1:array_2%numTuples,1:array_2%numComponents),source=data_2)
+        array_1%name = 'temps'; array_1%numComponents=3; array_1%numTuples=3; array_1%datatype='double'; array_1%data = data_1
+        array_2%name = 'pressures'; array_2%numComponents=5; array_2%numTuples=2; array_2%datatype='double'; array_2%data = data_2
         array(1) = array_1; array(2) = array_2
 
         OPEN (unit=vtk_unit_1, file=filename, status='old', form = 'formatted')

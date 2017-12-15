@@ -113,7 +113,7 @@ MODULE vtk_attributes
         CLASS(attribute), INTENT(OUT) :: me
         INTEGER(i4k),     INTENT(IN)  :: unit
         SELECT TYPE (me)
-        TYPE IS (attribute)
+        CLASS IS (attribute)
             READ(unit,*) me%dataname !! Workaround for ifort 2018 linux compiler error (not error for 2018 on Windows)
                                      !! that a class with intent(out) was not provided a value
         END SELECT
@@ -129,7 +129,7 @@ MODULE vtk_attributes
         CLASS(attribute), INTENT(IN) :: me
         INTEGER(i4k),     INTENT(IN) :: unit
         SELECT TYPE (me)
-        TYPE IS (attribute)
+        CLASS IS (attribute)
             WRITE(unit,*) me%dataname
         END SELECT
         END SUBROUTINE abs_write
@@ -151,7 +151,7 @@ MODULE vtk_attributes
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
         TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
         SELECT TYPE (me)
-        TYPE IS (attribute)
+        CLASS IS (attribute)
             me%dataname = dataname   !! Workaround for ifort 2018 linux compiler error (not error for 2018 on Windows)
                                      !! that a class with intent(out) was not provided a value
             IF (PRESENT(datatype) .AND. PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
