@@ -18,7 +18,7 @@ MODULE vtk_attributes
     !
 
     PRIVATE
-    PUBLIC :: attribute, scalar, vector, normal, texture, tensor, field
+    PUBLIC :: attribute, scalar, vector, normal, texture, tensor, field, field_data_array
 
     INTEGER(i4k),     PARAMETER :: def_len = 1000          !! Default character length for each line in file
     CHARACTER(LEN=*), PARAMETER :: default = 'default'     !! Default table name
@@ -94,7 +94,6 @@ MODULE vtk_attributes
     END TYPE field_data_array
 
     TYPE, EXTENDS(attribute) :: field
-        REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: fields
         TYPE(field_data_array), DIMENSION(:), ALLOCATABLE :: array
     CONTAINS
         PROCEDURE :: read  => field_read
@@ -129,7 +128,7 @@ MODULE vtk_attributes
         END SELECT
         END SUBROUTINE abs_write
 
-        SUBROUTINE abs_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
+        SUBROUTINE abs_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
         !>@brief
         !> Abstract for performing the set-up of an attribute
         !>@author
@@ -144,6 +143,7 @@ MODULE vtk_attributes
         REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
         REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
+        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
         me%dataname = '' !! Workaround for ifort 2018 linux compiler error (not error for 2018 on Windows)
         END SUBROUTINE abs_setup
 
@@ -239,7 +239,7 @@ MODULE vtk_attributes
 102     FORMAT(es12.6)
         END SUBROUTINE scalar_write
 
-        SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
+        SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
         !>@brief
         !> Subroutine performs the set-up for a scalar attribute
         !>@author
@@ -254,6 +254,7 @@ MODULE vtk_attributes
         REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
         REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
+        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
 
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
@@ -391,7 +392,7 @@ MODULE vtk_attributes
 101     FORMAT(*(es12.6,' '))
         END SUBROUTINE vector_write
 
-        SUBROUTINE vector_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
+        SUBROUTINE vector_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
         !>@brief
         !> Subroutine performs the set-up for a vector attribute
         !>@author
@@ -406,6 +407,7 @@ MODULE vtk_attributes
         REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
         REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
+        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
 
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
@@ -531,7 +533,7 @@ MODULE vtk_attributes
 101     FORMAT(*(es12.6,' '))
         END SUBROUTINE normal_write
 
-        SUBROUTINE normal_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
+        SUBROUTINE normal_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
         !>@brief
         !> Subroutine performs the set-up for a normal attribute
         !>@author
@@ -546,6 +548,7 @@ MODULE vtk_attributes
         REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
         REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
+        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
 
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
@@ -673,7 +676,7 @@ MODULE vtk_attributes
 101     FORMAT(*(es12.6,' '))
         END SUBROUTINE texture_write
 
-        SUBROUTINE texture_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
+        SUBROUTINE texture_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
         !>@brief
         !> Subroutine performs the set-up for a texture attribute
         !>@author
@@ -688,6 +691,7 @@ MODULE vtk_attributes
         REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
         REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
+        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
 
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
@@ -821,7 +825,7 @@ MODULE vtk_attributes
 102     FORMAT()
         END SUBROUTINE tensor_write
 
-        SUBROUTINE tensor_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
+        SUBROUTINE tensor_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
         !>@brief
         !> Subroutine performs the set-up for a tensor attribute
         !>@author
@@ -837,6 +841,7 @@ MODULE vtk_attributes
         REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
         REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
+        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
 
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
@@ -908,35 +913,53 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(field), INTENT(OUT) :: me
         INTEGER(i4k), INTENT(IN)  :: unit
-        INTEGER(i4k)              :: i, iostat, dim
+        INTEGER(i4k)              :: i, j, iostat, dim
         LOGICAL                   :: end_of_file
         CHARACTER(LEN=def_len)    :: line
-        INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
-        CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
-        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
+        CHARACTER(*), PARAMETER   :: real_char = 'R'
+        REAL(r8k),              DIMENSION(:), ALLOCATABLE :: reals
+        INTEGER(i4k),           DIMENSION(:), ALLOCATABLE :: ints
+        CHARACTER(LEN=:),       DIMENSION(:), ALLOCATABLE :: chars
+        CHARACTER(LEN=1),       DIMENSION(:), ALLOCATABLE :: datatype
+        TYPE(field_data_array), DIMENSION(:), ALLOCATABLE :: dummy
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=(/ 'C','I' /), ignore='FIELD ', separator=' ', &
           &                    ints=ints, chars=chars)
-        me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2)); dim = ints(1)
+        me%dataname = TRIM(chars(1)); dim = ints(1)
 
-        ALLOCATE(me%fields(1,1:dim)); end_of_file = .FALSE.; i = 0
+        ALLOCATE(me%array(1:dim)); end_of_file = .FALSE.; i = 0
 
-        DO
-            READ(unit,101,iostat=iostat) me%fields(i,1:dim)
+        get_fields: DO
+            READ(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
-            IF (.NOT. end_of_file) THEN
-                ALLOCATE(dummy(1:UBOUND(me%fields,DIM=1)+1,1:dim),source=0.0_r8k)
-                dummy(1:UBOUND(me%fields,DIM=1),1:dim) = me%fields
-                CALL MOVE_ALLOC(dummy, me%fields)
-                i = i + 1
+            IF (end_of_file) THEN
+                EXIT get_fields
+            ELSE IF (TRIM(line) == '') THEN
+                CYCLE      !! Skip blank lines
             ELSE
-                EXIT
+                ALLOCATE(dummy(1:UBOUND(me%array,DIM=1)+1))
+                dummy(1:UBOUND(me%array,DIM=1)) = me%array
+                CALL MOVE_ALLOC(dummy, me%array)
+                i = i + 1
+
+                CALL interpret_string (line=line, datatype=(/ 'C','I','I','C' /), separator=' ', chars=chars, ints=ints)
+                me%array(i)%name = TRIM(chars(1)); me%array(i)%numComponents = ints(1)
+                me%array(i)%numTuples = ints(2); me%array(i)%datatype = chars(2)
+                ALLOCATE(datatype(1:me%array(i)%numComponents),source=real_char)
+                ALLOCATE(me%array(i)%data(1:me%array(i)%numTuples,1:me%array(i)%numComponents),source=0.0_r8k)
+
+                DO j = 1, me%array(i)%numTuples
+                    READ(unit,100,iostat=iostat) line
+                    CALL interpret_string (line=line, datatype=datatype, separator=' ', reals=reals)
+                    me%array(i)%data(j,:) = reals(:)
+                END DO
+                DEALLOCATE(datatype)
+
             END IF
-        END DO
+        END DO get_fields
 
 100     FORMAT((a))
-101     FORMAT(*(es12.6))
         END SUBROUTINE field_read
 
         SUBROUTINE field_write (me, unit)
@@ -950,8 +973,8 @@ MODULE vtk_attributes
         INTEGER(i4k), INTENT(IN) :: unit
         INTEGER(i4k) :: i, j
 
-        WRITE(unit,100) me%dataname, SIZE(me%fields,DIM=2)
-        DO i = 1, SIZE(me%fields,DIM=1)
+        WRITE(unit,100) me%dataname, SIZE(me%array,DIM=1)
+        DO i = 1, SIZE(me%array,DIM=1)
             WRITE(unit,101) me%array(i)%name, me%array(i)%numComponents, me%array(i)%numTuples, me%array(i)%datatype
             DO j = 1, me%array(i)%numTuples
                 WRITE(unit,102) me%array(i)%data(j,:)
@@ -959,13 +982,13 @@ MODULE vtk_attributes
             WRITE(unit,103)
         END DO
 
-100     FORMAT('FIELD ',(a),' ',(i8))
+100     FORMAT('FIELD ',(a),' ',(i0))
 101     FORMAT((a),' ',(i0),' ',(i0),' ',(a))
 102     FORMAT(*(es12.6,' '))
-103     FORMAT(/)
+103     FORMAT()
         END SUBROUTINE field_write
 
-        SUBROUTINE field_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d)
+        SUBROUTINE field_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
         !>@brief
         !> Subroutine performs the set-up for a field attribute
         !>@author
@@ -980,6 +1003,7 @@ MODULE vtk_attributes
         REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
         REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
+        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
 
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
@@ -987,17 +1011,10 @@ MODULE vtk_attributes
         ELSE
             me%datatype = 'double'
         END IF
-        IF (.NOT. PRESENT(values2d)) THEN
-            ERROR STOP 'Must provide fields in field_setup'
+        IF (.NOT. PRESENT(field_arrays)) THEN
+            ERROR STOP 'Must provide field_arrays in field_setup'
         ELSE
-            !! TODO: Implement this once SELECT RANK is incorporated into compilers (Fortran 2015)
-!            SELECT RANK (values)
-!            RANK(2)
-!                me%fields = values
-!            RANK DEFAULT
-!                ERROR STOP 'Bad rank for values. Must be RANK=2. Execution terminated in Subroutine: field_setup'
-!            END SELECT
-            me%fields = values2d
+            me%array = field_arrays
         END IF
 
         END SUBROUTINE field_setup
@@ -1011,7 +1028,7 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(field),     INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
-        INTEGER(i4k) :: i, j
+        INTEGER(i4k) :: i, j, k
         LOGICAL      :: diffs
 
         diffs = .FALSE.
@@ -1020,17 +1037,29 @@ MODULE vtk_attributes
         ELSE
             SELECT TYPE (you)
             CLASS IS (field)
-                IF (me%dataname /= you%dataname)        THEN
+                IF      (me%dataname /= you%dataname) THEN
                     diffs = .TRUE.
-                ELSE IF (me%datatype /= you%datatype)   THEN
+                ELSE IF (me%datatype /= you%datatype) THEN
                     diffs = .TRUE.
                 ELSE
-                    DO i = 1, UBOUND(me%fields,DIM=1)
-                        DO j = 1, UBOUND(me%fields,DIM=2)
-                            IF (me%fields(i,j) /= you%fields(i,j))     THEN
-                                diffs = .TRUE.
-                            END IF
-                        END DO
+                    DO i = 1, UBOUND(me%array,DIM=1)
+                        IF      (me%array(i)%name          /= you%array(i)%name         ) THEN
+                            diffs = .TRUE.
+                        ELSE IF (me%array(i)%numComponents /= you%array(i)%numComponents) THEN
+                            diffs = .TRUE.
+                        ELSE IF (me%array(i)%numTuples     /= you%array(i)%numTuples    ) THEN
+                            diffs = .TRUE.
+                        ELSE IF (me%array(i)%datatype      /= you%array(i)%datatype     ) THEN
+                            diffs = .TRUE.
+                        ELSE
+                            DO j = 1, UBOUND(me%array(i)%data,DIM=1)
+                                DO k = 1, UBOUND(me%array(i)%data,DIM=2)
+                                    IF (me%array(i)%data(j,k) /= me%array(i)%data(j,k)) THEN
+                                        diffs = .TRUE.
+                                    END IF
+                                END DO
+                            END DO
+                        END IF
                     END DO
                 END IF
             END SELECT
