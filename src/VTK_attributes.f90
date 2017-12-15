@@ -113,6 +113,7 @@ MODULE vtk_attributes
         !> 12/13/2017
         CLASS(attribute), INTENT(OUT) :: me
         INTEGER(i4k),     INTENT(IN)  :: unit
+        me%dataname = '' !! Workaround for ifort 2018 linux compiler error (not error for 2018 on Windows)
         END SUBROUTINE abs_read
 
         SUBROUTINE abs_write (me, unit)
@@ -143,8 +144,7 @@ MODULE vtk_attributes
         REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
         REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
-        SELECT TYPE (me)
-        END SELECT
+        me%dataname = '' !! Workaround for ifort 2018 linux compiler error (not error for 2018 on Windows)
         END SUBROUTINE abs_setup
 
         FUNCTION check_for_diffs (me, you) RESULT (diffs)
@@ -178,12 +178,12 @@ MODULE vtk_attributes
         !> 12/13/2017
         CLASS(scalar), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
-        INTEGER(i4k) :: i, iostat
-        LOGICAL :: end_of_file
-        CHARACTER(LEN=def_len) :: line
+        INTEGER(i4k)               :: i, iostat
+        LOGICAL                    :: end_of_file
+        CHARACTER(LEN=def_len)     :: line
         INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
+        REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals, dummy
         CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
-        REAL(r8k), DIMENSION(:), ALLOCATABLE :: dummy
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=(/ 'C','C','I' /), ignore='SCALARS ', separator=' ', &
@@ -194,24 +194,27 @@ MODULE vtk_attributes
         CALL interpret_string (line=line, datatype=(/ 'C' /), ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
         me%tablename = TRIM(chars(1))
 
-        ALLOCATE(me%scalars(1))
-        end_of_file  = .FALSE.
-        i = 1
-        DO
-            READ(unit,101,iostat=iostat) me%scalars(i)
+        ALLOCATE(me%scalars(0)); end_of_file  = .FALSE.; i = 0
+
+        get_scalars: DO
+            READ(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
-            IF (.NOT. end_of_file) THEN
+            IF (end_of_file) THEN
+                EXIT get_scalars
+            ELSE IF (TRIM(line) == '') THEN
+                CYCLE     !! Skip blank lines
+            ELSE
                 ALLOCATE(dummy(1:UBOUND(me%scalars,DIM=1)+1),source=0.0_r8k)
-                dummy(1:UBOUND(me%scalars,DIM=1)) = me%scalars
+                IF (i > 0) dummy(1:UBOUND(me%scalars,DIM=1)) = me%scalars
                 CALL MOVE_ALLOC(dummy, me%scalars)
                 i = i + 1
-            ELSE
-                EXIT
+
+                CALL interpret_string (line=line, datatype=(/ 'R' /), separator=' ', reals=reals)
+                me%scalars(i) = reals(1)
             END IF
-        END DO
+        END DO get_scalars
 
 100     FORMAT((a))
-101     FORMAT(es12.6)
         END SUBROUTINE scalar_read
 
         SUBROUTINE scalar_write (me, unit)
@@ -293,7 +296,7 @@ MODULE vtk_attributes
         CLASS(scalar),    INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         INTEGER(i4k) :: i
-        LOGICAL :: diffs
+        LOGICAL      :: diffs
 
         diffs = .FALSE.
         IF (.NOT. SAME_TYPE_AS(me,you)) THEN
@@ -333,9 +336,11 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(vector), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
-        INTEGER(i4k) :: i, iostat
-        LOGICAL      :: end_of_file
+        INTEGER(i4k)               :: i, iostat
+        INTEGER(i4k),  PARAMETER   :: dim = 3
+        LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
+        REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
         REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
 
@@ -343,24 +348,27 @@ MODULE vtk_attributes
         CALL interpret_string (line=line, datatype=(/ 'C','C' /), ignore='VECTORS ', separator=' ', chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
 
-        ALLOCATE(me%vectors(1,1:3))
-        end_of_file  = .FALSE.
-        i = 1
-        DO
-            READ(unit,101,iostat=iostat) me%vectors(i,1:3)
+        ALLOCATE(me%vectors(0,0)); end_of_file = .FALSE.; i = 0
+
+        get_vectors: DO
+            READ(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
-            IF (.NOT. end_of_file) THEN
-                ALLOCATE(dummy(1:UBOUND(me%vectors,DIM=1)+1,1:3),source=0.0_r8k)
-                dummy(1:UBOUND(me%vectors,DIM=1),1:3) = me%vectors
+            IF (end_of_file) THEN
+                EXIT get_vectors
+            ELSE IF (TRIM(line) == '') THEN
+                CYCLE     !! Skip blank lines
+            ELSE
+                ALLOCATE(dummy(1:UBOUND(me%vectors,DIM=1)+1,1:dim),source=0.0_r8k)
+                IF (i > 0) dummy(1:UBOUND(me%vectors,DIM=1),1:dim) = me%vectors
                 CALL MOVE_ALLOC(dummy, me%vectors)
                 i = i + 1
-            ELSE
-                EXIT
+
+                CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), separator=' ', reals=reals)
+                me%vectors(i,1:dim) = reals(1:dim)
             END IF
-        END DO
+        END DO get_vectors
 
 100     FORMAT((a))
-101     FORMAT(*(es12.6))
         END SUBROUTINE vector_read
 
         SUBROUTINE vector_write (me, unit)
@@ -430,7 +438,7 @@ MODULE vtk_attributes
         CLASS(vector),    INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         INTEGER(i4k) :: i, j
-        LOGICAL :: diffs
+        LOGICAL      :: diffs
 
         diffs = .FALSE.
         IF (.NOT. SAME_TYPE_AS(me,you)) THEN
@@ -468,9 +476,11 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(normal), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
-        INTEGER(i4k) :: i, iostat
-        LOGICAL      :: end_of_file
+        INTEGER(i4k)               :: i, iostat
+        INTEGER(i4k),  PARAMETER   :: dim = 3
+        LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
+        REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
         REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
 
@@ -478,24 +488,27 @@ MODULE vtk_attributes
         CALL interpret_string (line=line, datatype=(/ 'C','C' /), ignore='NORMALS ', separator=' ', chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
 
-        ALLOCATE(me%normals(1,1:3))
-        end_of_file  = .FALSE.
-        i = 1
-        DO
-            READ(unit,101,iostat=iostat) me%normals(i,1:3)
+        ALLOCATE(me%normals(0,0)); end_of_file = .FALSE.; i = 0
+
+        get_normals: DO
+            READ(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
-            IF (.NOT. end_of_file) THEN
-                ALLOCATE(dummy(1:UBOUND(me%normals,DIM=1)+1,1:3),source=0.0_r8k)
-                dummy(1:UBOUND(me%normals,DIM=1),1:3) = me%normals
+            IF (end_of_file) THEN
+                EXIT get_normals
+            ELSE IF (TRIM(line) == '') THEN
+                CYCLE     !! Skip blank lines
+            ELSE
+                ALLOCATE(dummy(1:UBOUND(me%normals,DIM=1)+1,1:dim),source=0.0_r8k)
+                IF (i > 0) dummy(1:UBOUND(me%normals,DIM=1),1:dim) = me%normals
                 CALL MOVE_ALLOC(dummy, me%normals)
                 i = i + 1
-            ELSE
-                EXIT
+
+                CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), separator=' ', reals=reals)
+                me%normals(i,1:dim) = reals(1:dim)
             END IF
-        END DO
+        END DO get_normals
 
 100     FORMAT((a))
-101     FORMAT(*(es12.6))
         END SUBROUTINE normal_read
 
         SUBROUTINE normal_write (me, unit)
@@ -565,7 +578,7 @@ MODULE vtk_attributes
         CLASS(normal),    INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         INTEGER(i4k) :: i, j
-        LOGICAL :: diffs
+        LOGICAL      :: diffs
 
         diffs = .FALSE.
         IF (.NOT. SAME_TYPE_AS(me,you)) THEN
@@ -591,7 +604,7 @@ MODULE vtk_attributes
 
         END FUNCTION check_for_diffs_normal
 !********
-! textures
+! Textures
 !********
         SUBROUTINE texture_read (me, unit)
         USE Misc, ONLY : interpret_string
@@ -603,8 +616,8 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(texture), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: unit
-        INTEGER(i4k) :: i, iostat, dim
-        LOGICAL      :: end_of_file
+        INTEGER(i4k)                :: i, iostat, dim
+        LOGICAL                     :: end_of_file
         CHARACTER(LEN=def_len)      :: line
         INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
@@ -628,7 +641,7 @@ MODULE vtk_attributes
                 CYCLE     !! Skip blank lines
             ELSE
                 ALLOCATE(dummy(1:UBOUND(me%textures,DIM=1)+1,1:dim),source=0.0_r8k)
-                dummy(1:UBOUND(me%textures,DIM=1),1:dim) = me%textures
+                IF (i > 0) dummy(1:UBOUND(me%textures,DIM=1),1:dim) = me%textures
                 CALL MOVE_ALLOC(dummy, me%textures)
                 i = i + 1
 
@@ -707,7 +720,7 @@ MODULE vtk_attributes
         CLASS(texture),   INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         INTEGER(i4k) :: i, j
-        LOGICAL :: diffs
+        LOGICAL      :: diffs
 
         diffs = .FALSE.
         IF (.NOT. SAME_TYPE_AS(me,you)) THEN
@@ -745,8 +758,8 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(tensor), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
-        INTEGER(i4k) :: i, j, iostat
-        LOGICAL      :: end_of_file
+        INTEGER(i4k)               :: i, j, iostat
+        LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
         REAL(r8k),          DIMENSION(:), ALLOCATABLE :: reals
         CHARACTER(LEN=:),   DIMENSION(:), ALLOCATABLE :: chars
@@ -782,7 +795,6 @@ MODULE vtk_attributes
         END DO get_tensors
 
 100     FORMAT((a))
-101     FORMAT(*(es12.6))
         END SUBROUTINE tensor_read
 
         SUBROUTINE tensor_write (me, unit)
@@ -896,8 +908,8 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(field), INTENT(OUT) :: me
         INTEGER(i4k), INTENT(IN)  :: unit
-        INTEGER(i4k) :: i, iostat, dim
-        LOGICAL      :: end_of_file
+        INTEGER(i4k)              :: i, iostat, dim
+        LOGICAL                   :: end_of_file
         CHARACTER(LEN=def_len)    :: line
         INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
@@ -908,9 +920,8 @@ MODULE vtk_attributes
           &                    ints=ints, chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2)); dim = ints(1)
 
-        ALLOCATE(me%fields(1,1:dim))
-        end_of_file  = .FALSE.
-        i = 1
+        ALLOCATE(me%fields(1,1:dim)); end_of_file = .FALSE.; i = 0
+
         DO
             READ(unit,101,iostat=iostat) me%fields(i,1:dim)
             end_of_file = (iostat < 0)
@@ -1001,7 +1012,7 @@ MODULE vtk_attributes
         CLASS(field),     INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         INTEGER(i4k) :: i, j
-        LOGICAL :: diffs
+        LOGICAL      :: diffs
 
         diffs = .FALSE.
         IF (.NOT. SAME_TYPE_AS(me,you)) THEN
