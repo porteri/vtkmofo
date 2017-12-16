@@ -73,7 +73,7 @@ endforeach()
 enable_testing()
 
 # Unit Tests
-set(unit_test_list attributes_scalar
+set(unit_test_list attributes cells
                    )
 
 # Integration Tests
