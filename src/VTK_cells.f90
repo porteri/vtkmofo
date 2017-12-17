@@ -142,20 +142,25 @@ MODULE vtk_cells
     END TYPE quadratic_hexahedron
 
     CONTAINS
-        PURE SUBROUTINE abs_init (me, n)
+        SUBROUTINE abs_init (me, n, ierr)
         CLASS(vtkcell), INTENT(OUT) :: me
-        INTEGER(i4k),   INTENT(IN) :: n
+        INTEGER(i4k),   INTENT(IN)  :: n
+        LOGICAL,        INTENT(OUT) :: ierr
+
         me%n_points = n
+        ierr        = .FALSE.
+
         END SUBROUTINE abs_init
 
         SUBROUTINE abs_setup (me, points)
         !>@brief
         !> Sets up the cell information
         CLASS(vtkcell), INTENT(OUT) :: me
+        LOGICAL :: ierr = .FALSE.
         INTEGER(i4k), DIMENSION(:), INTENT(IN) :: points
 
-        CALL me%init(SIZE(points))     !! Initialize the cell
-
+        CALL me%init(SIZE(points), ierr)     !! Initialize the cell
+        IF (ierr) ERROR STOP 'Error initializing cell. Bad # of points.'
         me%points = points
 
         END SUBROUTINE abs_setup
@@ -179,7 +184,7 @@ MODULE vtk_cells
         CLASS(vtkcell), INTENT(INOUT) :: me
         INTEGER(i4k),   INTENT(IN)    :: unit
         INTEGER(i4k)                  :: i, iostat
-        LOGICAL                       :: end_of_file
+        LOGICAL                       :: end_of_file, ierr
         CHARACTER(LEN=def_len)        :: line
         INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints, dummy
 
@@ -198,7 +203,7 @@ MODULE vtk_cells
                 i = i + 1
                 CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
                 IF (i == 0) THEN
-                    CALL me%init(ints(1))
+                    CALL me%init(ints(1), ierr)
                     IF (ALLOCATED(me%points)) DEALLOCATE(me%points)
                     ALLOCATE(me%points(0))
                 ELSE
@@ -214,267 +219,257 @@ MODULE vtk_cells
         SUBROUTINE abs_write (me, unit)
         CLASS(vtkcell), INTENT(IN) :: me
         INTEGER(i4k),   INTENT(IN) :: unit
-        INTEGER(i4k) :: i
+        INTEGER(i4k)               :: i
 
         WRITE(unit,100) me%n_points, (me%points(i),i=1,me%n_points)
 100     FORMAT ((i0,' '),*(i0,' '))
         END SUBROUTINE abs_write
 
-        PURE SUBROUTINE vertex_init (me, n)
+        SUBROUTINE vertex_init (me, n, ierr)
         !>@brief
         !> Initializes a vertex cell
         CLASS(vertex), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: n
+        LOGICAL,       INTENT(OUT) :: ierr
 
         me%n_points = 1
         me%type     = 1
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize vertex'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE vertex_init
 
-        PURE SUBROUTINE poly_vertex_init (me, n)
+        SUBROUTINE poly_vertex_init (me, n, ierr)
         !>@brief
         !> Initializes a poly_vertex cell
         CLASS(poly_vertex), INTENT(OUT) :: me
         INTEGER(i4k),       INTENT(IN)  :: n
+        LOGICAL,            INTENT(OUT) :: ierr
 
         me%n_points = 7 !! May be n instead?
         me%type     = 2
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize poly_vertex'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE poly_vertex_init
 
-        PURE SUBROUTINE line_init (me, n)
+        SUBROUTINE line_init (me, n, ierr)
         !>@brief
         !> Initializes a line cell
         CLASS(line),  INTENT(OUT) :: me
         INTEGER(i4k), INTENT(IN)  :: n
+        LOGICAL,      INTENT(OUT) :: ierr
 
         me%n_points = 2
         me%type     = 3
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize line'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE line_init
 
-        PURE SUBROUTINE poly_line_init (me, n)
+        SUBROUTINE poly_line_init (me, n, ierr)
         !>@brief
         !> Initializes a poly_line cell
         CLASS(poly_line), INTENT(OUT) :: me
         INTEGER(i4k),     INTENT(IN)  :: n
+        LOGICAL,          INTENT(OUT) :: ierr
 
         me%n_points = n
         me%type     = 4
+        ierr        = .FALSE.
 
         END SUBROUTINE poly_line_init
 
-        PURE SUBROUTINE triangle_init (me, n)
+        SUBROUTINE triangle_init (me, n, ierr)
         !>@brief
         !> Initializes a triangle cell
         CLASS(triangle), INTENT(OUT) :: me
         INTEGER(i4k),    INTENT(IN)  :: n
+        LOGICAL,         INTENT(OUT) :: ierr
 
         me%n_points = 3
         me%type     = 5
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize triangle'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE triangle_init
 
-        PURE SUBROUTINE triangle_strip_init (me, n)
+        SUBROUTINE triangle_strip_init (me, n, ierr)
         !>@brief
         !> Initializes a triangle_strip cell
         CLASS(triangle_strip), INTENT(OUT) :: me
         INTEGER(i4k),          INTENT(IN)  :: n
+        LOGICAL,               INTENT(OUT) :: ierr
 
         me%n_points = n
         me%type     = 6
+        ierr        = .FALSE.
 
         END SUBROUTINE triangle_strip_init
 
 
-        PURE SUBROUTINE polygon_init (me, n)
+        SUBROUTINE polygon_init (me, n, ierr)
         !>@brief
         !> Initializes a polygon cell
         CLASS(polygon), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
+        LOGICAL,        INTENT(OUT) :: ierr
 
         me%n_points = n
         me%type     = 7
+        ierr        = .FALSE.
 
         END SUBROUTINE polygon_init
 
-        PURE SUBROUTINE pixel_init (me, n)
+        SUBROUTINE pixel_init (me, n, ierr)
         !>@brief
         !> Initializes a pixel cell
-        CLASS(pixel), INTENT(OUT) :: me
-        INTEGER(i4k), INTENT(IN)  :: n
+        CLASS(pixel),   INTENT(OUT) :: me
+        INTEGER(i4k),   INTENT(IN)  :: n
+        LOGICAL,        INTENT(OUT) :: ierr
 
         me%n_points = 4
         me%type     = 8
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize pixel'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE pixel_init
 
-        PURE SUBROUTINE quad_init (me, n)
+        SUBROUTINE quad_init (me, n, ierr)
         !>@brief
         !> Initializes a quad cell
-        CLASS(quad),  INTENT(OUT) :: me
-        INTEGER(i4k), INTENT(IN)  :: n
+        CLASS(quad),    INTENT(OUT) :: me
+        INTEGER(i4k),   INTENT(IN)  :: n
+        LOGICAL,        INTENT(OUT) :: ierr
 
         me%n_points = 4
         me%type     = 9
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize quad'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE quad_init
 
-        PURE SUBROUTINE tetra_init (me, n)
+        SUBROUTINE tetra_init (me, n, ierr)
         !>@brief
         !> Initializes a tetra cell
-        CLASS(tetra), INTENT(OUT) :: me
-        INTEGER(i4k), INTENT(IN)  :: n
+        CLASS(tetra),   INTENT(OUT) :: me
+        INTEGER(i4k),   INTENT(IN)  :: n
+        LOGICAL,        INTENT(OUT) :: ierr
 
         me%n_points = 4
         me%type     = 10
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize tetra'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE tetra_init
 
-        PURE SUBROUTINE voxel_init (me, n)
+        SUBROUTINE voxel_init (me, n, ierr)
         !>@brief
         !> Initializes a voxel cell
-        CLASS(voxel), INTENT(OUT) :: me
-        INTEGER(i4k), INTENT(IN)  :: n
+        CLASS(voxel),   INTENT(OUT) :: me
+        INTEGER(i4k),   INTENT(IN)  :: n
+        LOGICAL,        INTENT(OUT) :: ierr
 
         me%n_points = 8
         me%type     = 11
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize voxel'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE voxel_init
 
-        PURE SUBROUTINE hexahedron_init (me, n)
+        SUBROUTINE hexahedron_init (me, n, ierr)
         !>@brief
         !> Initializes a hexahedron cell
         CLASS(hexahedron), INTENT(OUT) :: me
-        INTEGER(i4k),    INTENT(IN)  :: n
+        INTEGER(i4k),      INTENT(IN)  :: n
+        LOGICAL,           INTENT(OUT) :: ierr
 
         me%n_points = 8
         me%type     = 12
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize hexahedron'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE hexahedron_init
 
-        PURE SUBROUTINE wedge_init (me, n)
+        SUBROUTINE wedge_init (me, n, ierr)
         !>@brief
         !> Initializes a wedge cell
-        CLASS(wedge), INTENT(OUT) :: me
-        INTEGER(i4k), INTENT(IN)  :: n
+        CLASS(wedge),   INTENT(OUT) :: me
+        INTEGER(i4k),   INTENT(IN)  :: n
+        LOGICAL,        INTENT(OUT) :: ierr
 
         me%n_points = 6
         me%type     = 13
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize wedge'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE wedge_init
 
-        PURE SUBROUTINE pyramid_init (me, n)
+        SUBROUTINE pyramid_init (me, n, ierr)
         !>@brief
         !> Initializes a pyramid cell
         CLASS(pyramid), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
+        LOGICAL,        INTENT(OUT) :: ierr
 
         me%n_points = 5
         me%type     = 14
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize pyramid'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE pyramid_init
 
-        PURE SUBROUTINE quadratic_edge_init (me, n)
+        SUBROUTINE quadratic_edge_init (me, n, ierr)
         !>@brief
         !> Initializes a quadratic_edge cell
         CLASS(quadratic_edge), INTENT(OUT) :: me
         INTEGER(i4k),          INTENT(IN)  :: n
+        LOGICAL,               INTENT(OUT) :: ierr
 
         me%n_points = 3
         me%type     = 21
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize quadratic_edge'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE quadratic_edge_init
 
-        PURE SUBROUTINE quadratic_triangle_init (me, n)
+        SUBROUTINE quadratic_triangle_init (me, n, ierr)
         !>@brief
         !> Initializes a quadratic_triangle cell
         CLASS(quadratic_triangle), INTENT(OUT) :: me
         INTEGER(i4k),              INTENT(IN)  :: n
+        LOGICAL,                   INTENT(OUT) :: ierr
 
         me%n_points = 6
         me%type     = 22
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize quadratic_triangle'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE quadratic_triangle_init
 
-        PURE SUBROUTINE quadratic_quad_init (me, n)
+        SUBROUTINE quadratic_quad_init (me, n, ierr)
         !>@brief
         !> Initializes a quadratic_quad cell
         CLASS(quadratic_quad), INTENT(OUT) :: me
         INTEGER(i4k),          INTENT(IN)  :: n
+        LOGICAL,               INTENT(OUT) :: ierr
 
         me%n_points = 8
         me%type     = 23
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize quadratic_quad'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE quadratic_quad_init
 
-        PURE SUBROUTINE quadratic_tetra_init (me, n)
+        SUBROUTINE quadratic_tetra_init (me, n, ierr)
         !>@brief
         !> Initializes a quadratic_tetra cell
         CLASS(quadratic_tetra), INTENT(OUT) :: me
         INTEGER(i4k),           INTENT(IN)  :: n
+        LOGICAL,                INTENT(OUT) :: ierr
 
         me%n_points = 10
         me%type     = 24
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize quadratic_tetra'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE quadratic_tetra_init
 
-        PURE SUBROUTINE quadratic_hexahedron_init (me, n)
+        SUBROUTINE quadratic_hexahedron_init (me, n, ierr)
         !>@brief
         !> Initializes a quadratic_hexahedron cell
         CLASS(quadratic_hexahedron), INTENT(OUT) :: me
         INTEGER(i4k),                INTENT(IN)  :: n
+        LOGICAL,                     INTENT(OUT) :: ierr
 
         me%n_points = 20
         me%type     = 25
-        IF (n /= me%n_points) THEN
-            ERROR STOP 'Incorrect number of points provide to initialize quadratic_hexahedron'
-        END IF
+        ierr        = (n /= me%n_points)
 
         END SUBROUTINE quadratic_hexahedron_init
 END MODULE vtk_cells

@@ -10,10 +10,10 @@ MODULE vtk_cells_unit_tests
     PRIVATE
     PUBLIC :: vtk_cells_unit
 ! Generic information
+    INTEGER(i4k), PARAMETER :: vtk_unit = 20
     INTEGER(i4k), PARAMETER :: n = 11
     INTEGER(i4k),      DIMENSION(*), PARAMETER :: type       = &
         & [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 22, 23, 24, 25 ]
-    INTEGER(i4k),      DIMENSION(*), PARAMETER :: vtk_unit   = type
     INTEGER(i4k),      DIMENSION(*), PARAMETER :: n_points   = &
         & [ 1, 7, 2, n, 3, n, n, 4, 4,  4,  8,  8,  6,  5,  3,  6,  8, 10, 20 ]
     INTEGER(i4k),      DIMENSION(*), PARAMETER :: point_vals = &
@@ -54,7 +54,7 @@ MODULE vtk_cells_unit_tests
         LOGICAL, INTENT(OUT)               :: test_pass
         LOGICAL, DIMENSION(SIZE(filename)) :: individual_tests_pass
 
-        DO i = 1, SIZE(filename,DIM=1)
+        DO i = 1, SIZE(filename)
             IF (ALLOCATED(vtk_cell_1)) DEALLOCATE(vtk_cell_1)
             IF (ALLOCATED(vtk_cell_2)) DEALLOCATE(vtk_cell_2)
             SELECT CASE (type(i))
@@ -119,14 +119,14 @@ MODULE vtk_cells_unit_tests
 
             !! Data type is generated from the defined values above
             CALL vtk_cell_1%setup(points=point_vals(1:n_points(i)))
-            OPEN (unit=vtk_unit(i), file=filename(i), form = 'formatted')
-            CALL vtk_cell_1%write(vtk_unit(i))
-            CLOSE(unit=vtk_unit(i))
+            OPEN (unit=vtk_unit, file=filename(i), form = 'formatted')
+            CALL vtk_cell_1%write(vtk_unit)
+            CLOSE(unit=vtk_unit)
 
             !! Data type is generated from the read
-            OPEN (unit=vtk_unit(i), file=filename(i), status='old', form = 'formatted')
-            CALL vtk_cell_2%read(vtk_unit(i))
-            CLOSE(unit=vtk_unit(i))
+            OPEN (unit=vtk_unit, file=filename(i), status='old', form = 'formatted')
+            CALL vtk_cell_2%read(vtk_unit)
+            CLOSE(unit=vtk_unit)
 
             individual_tests_pass(i) = .TRUE.
             IF      (vtk_cell_1%n_points     /= vtk_cell_2%n_points) THEN

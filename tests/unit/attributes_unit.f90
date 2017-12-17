@@ -135,12 +135,12 @@ MODULE vtk_attributes_unit_tests
                 CALL vtk_type_1%setup(dataname='field_temp_press', numcomp=1, field_arrays=array)
             END SELECT
 
-            OPEN (unit=vtk_unit, file=filename, form = 'formatted')
+            OPEN (unit=vtk_unit, file=filename(i), form = 'formatted')
             CALL vtk_type_1%write(vtk_unit)
             CLOSE(unit=vtk_unit)
 
             !! Data type is generated from the read
-            OPEN (unit=vtk_unit, file=filename, form = 'formatted')
+            OPEN (unit=vtk_unit, file=filename(i), form = 'formatted')
             CALL vtk_type_2%read(vtk_unit)
             CLOSE(unit=vtk_unit)
 
