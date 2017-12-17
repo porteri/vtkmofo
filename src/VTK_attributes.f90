@@ -1,5 +1,6 @@
 MODULE vtk_attributes
     USE Kinds
+    USE Misc, ONLY : def_len
     IMPLICIT NONE
     !>@brief
     !> This module contains the dataset attributes for vtk format
@@ -20,7 +21,6 @@ MODULE vtk_attributes
     PRIVATE
     PUBLIC :: attribute, scalar, vector, normal, texture, tensor, field, field_data_array
 
-    INTEGER(i4k),     PARAMETER :: def_len = 1000          !! Default character length for each line in file
     CHARACTER(LEN=*), PARAMETER :: default = 'default'     !! Default table name
 
     TYPE, ABSTRACT :: attribute

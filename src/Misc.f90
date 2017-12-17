@@ -3,18 +3,20 @@ MODULE Misc
     IMPLICIT NONE
 
     PRIVATE
-    PUBLIC :: interpret_string
+    PUBLIC :: interpret_string, def_len
 
     INTERFACE get_string_value
         PROCEDURE :: get_string_char, get_string_int, get_string_real
     END INTERFACE
+
+    INTEGER(i4k), PARAMETER :: def_len = 1000          !! Default character length for each line in file
 
     CONTAINS
         SUBROUTINE interpret_string (line, datatype, ignore, separator, reals, ints, chars)
         !>@brief
         !> Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
         INTEGER(i4k) :: i
-        CHARACTER(LEN=*), INTENT(IN) :: line
+        CHARACTER(LEN=*), INTENT(INOUT) :: line
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: ignore, separator
         CHARACTER(LEN=:), ALLOCATABLE :: string, sep, char
         CHARACTER(LEN=1), DIMENSION(:), INTENT(IN) :: datatype
@@ -69,13 +71,19 @@ MODULE Misc
             cnt%t = cnt%t + 1
         END DO
 
+        line = string
+
         END SUBROUTINE interpret_string
 
         SUBROUTINE reduce_string (string, sep)
         CHARACTER(LEN=:), ALLOCATABLE, INTENT(INOUT) :: string
         CHARACTER(LEN=*), INTENT(IN)  :: sep
 
-        string = ADJUSTL(string(INDEX(string,sep)+LEN(sep):))
+        IF (INDEX(string,sep) == 0) THEN
+            string = ''
+        ELSE
+            string = ADJUSTL(string(INDEX(string,sep)+LEN(sep):))
+        END IF
 
         END SUBROUTINE reduce_string
 
