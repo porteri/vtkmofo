@@ -336,7 +336,7 @@ MODULE vtk_datasets
                 CALL MOVE_ALLOC(dummy, me%points)
                 i = i + 1
 
-                CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), ignore='SPACING ',    separator=' ', reals=reals)
+                CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), separator=' ', reals=reals)
                 me%points(1:dim,i) = reals(1:dim)
             END IF
             IF (SIZE(me%points,DIM=2) == me%n_points) EXIT get_points  !! Filled up array points
@@ -425,7 +425,7 @@ MODULE vtk_datasets
                 ELSE
                     DO i = 1, SIZE(me%points,DIM=1)
                         DO j = 1, SIZE(me%points,DIM=2)
-                            IF (me%points(i,j) /= yoU%points(i,j)) THEN
+                            IF (me%points(i,j) /= you%points(i,j)) THEN
                                 diffs = .TRUE.
                             END IF
                         END DO
