@@ -93,7 +93,7 @@ MODULE PassFail
         REAL(r8k), INTENT(IN) :: known, calc
 
         ! Write to the command window and unit testing output file
-        WRITE (0,100)      testnum, TestID, known, calc
+        WRITE (*,100)      testnum, TestID, known, calc
         WRITE (utunit,100) testnum, TestID, known, calc
 100     FORMAT (/,'Unit Test # ',i4,' PASSED for Subroutine/Function ',a20, &
           &     /,'Expected = ',e14.7,' Calculated = ',e14.7)
@@ -121,7 +121,7 @@ MODULE PassFail
         REAL(r8k), INTENT(IN) :: known, calc
 
         ! Write to the command window and unit testing output file
-        WRITE (0,100)      testnum, TestID, known, calc
+        WRITE (*,100)      testnum, TestID, known, calc
         WRITE (utunit,100) testnum, TestID, known, calc
 100     FORMAT (/,'Unit Test # ',i4,' FAILED on Subroutine/Function ',a20, &
           &     /,'Expected = ',e14.7,' Calculated = ',e14.7)

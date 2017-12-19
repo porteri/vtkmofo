@@ -73,11 +73,11 @@ endforeach()
 enable_testing()
 
 # Unit Tests
-set(unit_test_list attributes cells
+set(unit_test_list attributes cells datasets
                    )
 
 # Integration Tests
-set(integration_test_list Driver
+set(integration_test_list 
                           )
 # Add unit tests and define the string that is used to signal success
 foreach(unit_test ${unit_test_list})

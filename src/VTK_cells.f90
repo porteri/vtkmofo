@@ -39,11 +39,10 @@ MODULE vtk_cells
         INTEGER(i4k) :: type
         INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: points
     CONTAINS
-        PROCEDURE(abs_init), DEFERRED, PRIVATE :: init
+        PROCEDURE, PUBLIC :: read  => abs_read
+        PROCEDURE, PUBLIC :: write => abs_write
         PROCEDURE, PUBLIC :: setup => abs_setup
-        PROCEDURE :: define => abs_define
-        PROCEDURE, PUBLIC :: read   => abs_read
-        PROCEDURE, PUBLIC :: write  => abs_write
+        PROCEDURE(abs_init), DEFERRED, PRIVATE :: init
     END TYPE vtkcell
 
     TYPE, EXTENDS(vtkcell) :: vertex
@@ -142,50 +141,16 @@ MODULE vtk_cells
     END TYPE quadratic_hexahedron
 
     CONTAINS
-        SUBROUTINE abs_init (me, n, ierr)
-        CLASS(vtkcell), INTENT(OUT) :: me
-        INTEGER(i4k),   INTENT(IN)  :: n
-        LOGICAL,        INTENT(OUT) :: ierr
-
-        me%n_points = n
-        ierr        = .FALSE.
-
-        END SUBROUTINE abs_init
-
-        SUBROUTINE abs_setup (me, points)
-        !>@brief
-        !> Sets up the cell information
-        CLASS(vtkcell), INTENT(OUT) :: me
-        LOGICAL :: ierr = .FALSE.
-        INTEGER(i4k), DIMENSION(:), INTENT(IN) :: points
-
-        CALL me%init(SIZE(points), ierr)     !! Initialize the cell
-        IF (ierr) ERROR STOP 'Error initializing cell. Bad # of points.'
-        me%points = points
-
-        END SUBROUTINE abs_setup
-
-        SUBROUTINE abs_define (me, points)
-        CLASS(vtkcell), INTENT(OUT) :: me
-        INTEGER(i4k), DIMENSION(:), INTENT(IN) :: points
-
-        me%points = points
-
-        END SUBROUTINE abs_define
 
         SUBROUTINE abs_read (me, unit)
         USE Misc, ONLY : interpret_string, def_len
         !>@brief
         !> Subroutine performs the read for a cell
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/15/2017
-        CLASS(vtkcell), INTENT(INOUT) :: me
-        INTEGER(i4k),   INTENT(IN)    :: unit
-        INTEGER(i4k)                  :: i, iostat
-        LOGICAL                       :: end_of_file, ierr
-        CHARACTER(LEN=def_len)        :: line
+        CLASS(vtkcell), INTENT(OUT) :: me
+        INTEGER(i4k),   INTENT(IN)  :: unit
+        INTEGER(i4k)                :: i, iostat
+        LOGICAL                     :: end_of_file, ierr
+        CHARACTER(LEN=def_len)      :: line
         INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints, dummy
 
         ALLOCATE(me%points(0)); i = -1; end_of_file = .FALSE.
@@ -217,6 +182,8 @@ MODULE vtk_cells
         END SUBROUTINE abs_read
 
         SUBROUTINE abs_write (me, unit)
+        !>@brief
+        !> Writes the cell information to the .vtk file
         CLASS(vtkcell), INTENT(IN) :: me
         INTEGER(i4k),   INTENT(IN) :: unit
         INTEGER(i4k)               :: i
@@ -224,6 +191,31 @@ MODULE vtk_cells
         WRITE(unit,100) me%n_points, (me%points(i),i=1,me%n_points)
 100     FORMAT ((i0,' '),*(i0,' '))
         END SUBROUTINE abs_write
+
+        SUBROUTINE abs_setup (me, points)
+        !>@brief
+        !> Sets up the cell information
+        CLASS(vtkcell), INTENT(OUT) :: me
+        LOGICAL :: ierr = .FALSE.
+        INTEGER(i4k), DIMENSION(:), INTENT(IN) :: points
+
+        CALL me%init(SIZE(points), ierr)     !! Initialize the cell
+        IF (ierr) ERROR STOP 'Error initializing cell. Bad # of points.'
+        me%points = points
+
+        END SUBROUTINE abs_setup
+
+        SUBROUTINE abs_init (me, n, ierr)
+        !>@brief
+        !> Initializes the cell with size and type information
+        CLASS(vtkcell), INTENT(OUT) :: me
+        INTEGER(i4k),   INTENT(IN)  :: n
+        LOGICAL,        INTENT(OUT) :: ierr
+
+        me%n_points = n
+        ierr        = .FALSE.
+
+        END SUBROUTINE abs_init
 
         SUBROUTINE vertex_init (me, n, ierr)
         !>@brief

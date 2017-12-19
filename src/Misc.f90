@@ -123,7 +123,7 @@ MODULE Misc
         ELSE
             text = string(1:INDEX(string,sep))   !! Read until sep is found
         END IF
-        READ(text,'(es12.5)') name               !! Store value
+        READ(text,'(es13.6)') name               !! Store value
 
         END SUBROUTINE get_string_real
 END MODULE Misc

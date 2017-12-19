@@ -13,7 +13,7 @@ MODULE vtk
     PUBLIC :: vtk_legacy_init
 
     CONTAINS
-        SUBROUTINE vtk_legacy_init (vtk, data_type, filename, title)
+        SUBROUTINE vtk_legacy_init (vtk, unit, data_type, filename, title)
         USE Kinds
         !>@brief
         !> This subroutines writes the legacy vtk output file
@@ -25,11 +25,13 @@ MODULE vtk
         ! Input
         !
         ! vtk       - Geometry to be printed
+        ! unit      - File unit #
         ! data_type - Identifier to write in ascii or Binary
         ! filename  - Name of .vtk file to write to
         ! title     - Title for vtk output file line #2
 
-        CLASS(dataset), INTENT(IN) :: vtk
+        CLASS(dataset),   INTENT(IN) :: vtk
+        INTEGER(i4k),     INTENT(IN) :: unit
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: data_type
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: filename, title
         INTEGER(i4k) :: inputstat
@@ -49,29 +51,29 @@ MODULE vtk
             vtktitle    = default_title                    !! Calling program did not provide a title. Use default
         END IF
 
-        INQUIRE(unit = vtk%unit, opened = file_is_open)    !! Check to see if file is already open
+        INQUIRE(unit = unit, opened = file_is_open)        !! Check to see if file is already open
         IF (.NOT. file_is_open) THEN                       !! File is not yet open. Determine format to open file
             SELECT CASE (filetype)
             CASE (ascii)
-                form = 'formatted'
+                form='formatted'
             CASE (binary)
                 form = 'unformatted'
             END SELECT
-            OPEN(unit=vtk%unit, file=vtkfilename, iostat=inputstat, status='unknown', form=form)
+            OPEN(unit=unit, file=vtkfilename, iostat=inputstat, status='unknown', form=form)
                                                            !! Open the VTK file
         END IF
 
-        WRITE(vtk%unit,'(a)') version                      !! VTK version (currently, 3.0)
-        WRITE(vtk%unit,'(a)') vtktitle                     !! VTK title card
+        WRITE(unit,'(a)') version                          !! VTK version (currently, 3.0)
+        WRITE(unit,'(a)') vtktitle                         !! VTK title card
         SELECT CASE (filetype)
         CASE (ascii)
             filetype_text = 'ASCII'
         CASE (binary)
             filetype_text = 'BINARY'
         END SELECT
-        WRITE(vtk%unit,'(a)') filetype_text                !! VTK file type
+        WRITE(unit,'(a)') filetype_text                    !! VTK file type
 
-        CALL vtk%write()                                   !! Write the information
+        CALL vtk%write(unit)                               !! Write the information
 
         CLOSE(unit=vtkunit)                                !! Close the VTK file
 

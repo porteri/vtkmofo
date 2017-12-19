@@ -9,3 +9,6 @@ target_link_libraries(attributes_unit vtkmofo)
 add_executable(cells_unit cells_unit.f90 Analyze.f90)
 target_link_libraries(cells_unit vtkmofo)
 
+# datasets
+add_executable(datasets_unit datasets_unit.f90 Analyze.f90)
+target_link_libraries(datasets_unit vtkmofo)
