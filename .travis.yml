@@ -11,8 +11,9 @@ addons:
       - gfortran-7
       - cmake-data
       - cmake
-    env:
-      - GCC=7
+env:
+  global:
+    - GCC=7
 
 before_install:
   - export FC=gfortran-${GCC}
