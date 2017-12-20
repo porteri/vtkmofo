@@ -2,25 +2,20 @@ language: generic
 os: linux
 sudo: false
 dist: trusty
-matrix:
-  include:
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - george-edison55-precise-backports
-          packages:
-            - gcc-7
-            - gfortran-7
-            - cmake-data
-            - cmake
-      env:
-        - GCC=7
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - george-edison55-precise-backports
+    packages:
+      - gfortran-7
+      - cmake-data
+      - cmake
+    env:
+      - GCC=7
 
 before_install:
   - export FC=gfortran-${GCC}
-  - export CC=gcc-${GCC}
 script:
   - mkdir build && cd build && cmake ../ && make -j $(nproc) && ctest -j2
 after_success:
