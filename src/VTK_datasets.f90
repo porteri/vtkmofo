@@ -18,20 +18,7 @@ MODULE vtk_datasets
     ! 
 
     PRIVATE
-    PUBLIC :: ascii, binary, filetype, vtkunit, version, default_title, default_fn, vtkfilename, vtktitle
     PUBLIC :: dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
-
-    INTEGER(i4k), PARAMETER :: ascii=0_i4k, binary=1_i4k                            !! Available file types
-    INTEGER(i4k) :: filetype = ascii                                                !! Selected file type
-    INTEGER(i4k) :: vtkunit  = 20_i4k                                               !! Default VTK unit #
-    INTEGER(i4k), PARAMETER :: bit=0_i4k, unsigned_char=1_i4k, char=2_i4k, unsigned_short=3_i4k, short=4_i4k, &
-      &                        unsigned_int=5_i4k, int=6_i4k, unsigned_long=7_i4k, long=8_i4k, float=9_i4k,   &
-      &                        double=10_i4k                                        !! Types of data
-    CHARACTER(LEN=*), PARAMETER :: version       = '# vtk DataFile Version 3.0'     !! VTK datafile version
-    CHARACTER(LEN=*), PARAMETER :: default_title = 'Version 3.0 VTK file'           !! Title card
-    CHARACTER(LEN=*), PARAMETER :: default_fn    = 'out.vtk'                        !! Default filename
-    CHARACTER(LEN=:), ALLOCATABLE :: vtkfilename                                    !! Supplied filename
-    CHARACTER(LEN=:), ALLOCATABLE :: vtktitle                                       !! Supplied title
 
     TYPE :: coordinates
         CHARACTER(LEN=:), ALLOCATABLE :: datatype
@@ -450,7 +437,6 @@ MODULE vtk_datasets
         CHARACTER(LEN=def_len)          :: line
         INTEGER(i4k),      DIMENSION(:),   ALLOCATABLE :: ints
         REAL(r8k),         DIMENSION(:),   ALLOCATABLE :: reals
-        REAL(r8k),         DIMENSION(:,:), ALLOCATABLE :: dummy
         CHARACTER(LEN=:),  DIMENSION(:),   ALLOCATABLE :: chars
         CHARACTER(LEN=13), DIMENSION(3),   PARAMETER   :: descr_coord = &
           & [ 'X_COORDINATES', 'Y_COORDINATES', 'Z_COORDINATES' ]
@@ -728,6 +714,9 @@ MODULE vtk_datasets
         ELSE
             me%datatype = 'double'
         END IF
+        me%n_points   = SIZE(points,DIM=2)
+        me%points     = points
+        me%firstcall  = .FALSE.
 
         END SUBROUTINE polygonal_data_setup
 ! *****************
@@ -801,8 +790,8 @@ MODULE vtk_datasets
           &                             cell_type, x_coords, y_coords, z_coords)
         !>@brief
         !> Sets up the unstructured grid dataset with information
-        CLASS (unstruct_grid), INTENT(OUT)          :: me
-        CHARACTER(LEN=*),      INTENT(IN), OPTIONAL :: datatype
+        CLASS (unstruct_grid),        INTENT(OUT)          :: me
+        CHARACTER(LEN=*),             INTENT(IN), OPTIONAL :: datatype
         INTEGER(i4k), DIMENSION(3),   INTENT(IN), OPTIONAL :: dims
         INTEGER(i4k), DIMENSION(:),   INTENT(IN), OPTIONAL :: cell_type
         INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: cells

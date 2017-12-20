@@ -1,6 +1,6 @@
 MODULE vtk_datasets_unit_tests
     USE Kinds
-    USE vtk_datasets, ONLY : ASCII, Binary
+    USE vtk_vars, ONLY : ASCII, Binary
     IMPLICIT NONE
     !>@brief
     !> Unit testing for datasets
@@ -244,7 +244,7 @@ MODULE vtk_datasets_unit_tests
         SUBROUTINE vtk_datasets_unit (test_pass)
         USE Kinds
         USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
-        USE VTK,          ONLY : vtk_legacy_init
+        USE VTK,          ONLY : vtk_legacy_write
         IMPLICIT NONE
         !>@brief
         !> Loops over each dataset type, performs a write, then performs a read on a different dataset
@@ -290,7 +290,6 @@ MODULE vtk_datasets_unit_tests
             !! Compare the read file and the written/read file to ensure both types are the same
             individual_tests_pass(i) = .NOT. (vtk_dataset_1 .diff. vtk_dataset_2)
 
-            CALL vtk_legacy_init (vtk_dataset_1, vtk_unit, filetype(i), filename(i))
         END DO
 
         test_pass = ALL(individual_tests_pass(1:3))

@@ -19,7 +19,7 @@ MODULE vtk_attributes
     !
 
     PRIVATE
-    PUBLIC :: attribute, scalar, vector, normal, texture, tensor, field, field_data_array
+    PUBLIC :: attribute, attributes, scalar, vector, normal, texture, tensor, field, field_data_array
 
     CHARACTER(LEN=*), PARAMETER :: default = 'default'     !! Default table name
 
@@ -101,6 +101,10 @@ MODULE vtk_attributes
         PROCEDURE :: setup => field_setup
         PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_field
     END TYPE field
+
+    TYPE :: attributes
+        CLASS(attribute), ALLOCATABLE :: attribute
+    END TYPE attributes
 
     CONTAINS
         SUBROUTINE abs_read (me, unit)
