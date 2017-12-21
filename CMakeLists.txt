@@ -55,7 +55,7 @@ set(src
 "src/VTK_attributes.f90"
 "src/VTK_cells.f90"
 "src/VTK_datasets.f90"
-"src/VTK_output.f90"
+"src/VTK_interface.f90"
 "src/VTK_vars.f90"
 )
 

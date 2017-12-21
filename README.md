@@ -6,7 +6,8 @@ VTK legacy format using modern Fortran
 [![codecov][codecov image]](https://codecov.io/gh/porteri/vtkmofo)
 
 This is a generic modern Fortran interface to write a .vtk file using the legacy .vtk file format, version 3.0.
-![Alt text](files/cube_image.png?raw=true "Cube example")
+![Cube_3d](files/cube_image.png?raw=true "Cube example")
+![Cylinder_2d](files/cylinder_image_2d.png?raw=true "Cylinder 2D example")
 This code is built / supported with the following:
 
 Compilers: (may work for older ones as well)

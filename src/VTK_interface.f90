@@ -1,5 +1,9 @@
 MODULE vtk
     USE Kinds
+!    USE vtk_attributes
+!    USE vtk_cells
+!    USE vtk_datasets
+!    USE vtk_vars
     IMPLICIT NONE
     !>@brief
     !> This module contains the output file to write to VTK format
@@ -8,15 +12,14 @@ MODULE vtk
     !>@date
     !> 12/1/2017
 
-    PRIVATE
-    PUBLIC :: vtk_legacy_write, vtk_legacy_read
+    PUBLIC
 
     CONTAINS
         SUBROUTINE vtk_legacy_write (unit, geometry, celldata, pointdata, celldatasets, pointdatasets, filename, data_type, title)
         USE Kinds
         USE vtk_datasets,   ONLY : dataset
         USE vtk_attributes, ONLY : attribute, attributes
-        USE vtk_vars,       ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, version, vtkunit
+        USE vtk_vars,       ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, version
         !>@brief
         !> This subroutines writes the legacy vtk output file
         !>@author
@@ -82,25 +85,25 @@ MODULE vtk
 
         CALL geometry%write(unit)                          !! Write the geometry information
         IF (PRESENT(celldatasets)) THEN
+            WRITE(unit,101) celldatasets(1)%n
             DO i = 1, SIZE(celldatasets)
-                WRITE(unit,101) 1
-                CALL celldatasets(i)%attribute%write(unit)   !! Write the cell data values
+                CALL celldatasets(i)%attribute%write(unit) !! Write the cell data values
             END DO
         ELSE IF (PRESENT(celldata)) THEN
-            WRITE(unit,101) 1
+            WRITE(unit,101) celldatasets(1)%n
             CALL celldata%write(unit)                      !! Write the cell data values
         END IF
         IF (PRESENT(pointdatasets)) THEN
-            WRITE(unit,102) 198
+            WRITE(unit,102) pointdatasets(1)%n
             DO I = 1, SIZE(pointdatasets)
                 CALL pointdatasets(i)%attribute%write(unit)
             END DO
         ELSE IF (PRESENT(pointdata)) THEN
-            WRITE(unit,102) 198
+            WRITE(unit,102) pointdatasets(1)%n
             CALL pointdata%write(unit)                     !! Write the point data values
         END IF
 
-        CLOSE(unit=vtkunit)                                !! Close the VTK file
+        CLOSE(unit)                                        !! Close the VTK file
 100     FORMAT(a)
 101     FORMAT('CELL_DATA ',i0)
 102     FORMAT('POINT_DATA ',i0)
@@ -110,7 +113,7 @@ MODULE vtk
         USE Kinds
         USE vtk_datasets,   ONLY : dataset
         USE vtk_attributes, ONLY : attribute, attributes
-        USE vtk_vars,       ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, version, vtkunit
+        USE vtk_vars,       ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, version
         !>@brief
         !> This subroutines reads the legacy vtk output file
         !>@author
@@ -130,14 +133,14 @@ MODULE vtk
         ! title     - Title for vtk output file line #2
         !
 
-        CLASS(dataset),    INTENT(INOUT)         :: geometry
-        CLASS(attribute),  INTENT(OUT), OPTIONAL :: celldata, pointdata
-        CLASS(attributes), INTENT(OUT), OPTIONAL :: celldatasets, pointdatasets
-        INTEGER(i4k),      INTENT(IN)            :: unit
-        INTEGER(i4k),      INTENT(OUT)           :: data_type
-        CHARACTER(LEN=*),  INTENT(IN)            :: filename
-        CHARACTER(LEN=*),  INTENT(OUT)           :: title
-        INTEGER(i4k) :: inputstat
+        CLASS(dataset),    INTENT(INOUT)        :: geometry
+        CLASS(attribute),  INTENT(INOUT), OPTIONAL :: celldata, pointdata
+        CLASS(attributes), DIMENSION(:), INTENT(INOUT), OPTIONAL :: celldatasets, pointdatasets
+        INTEGER(i4k),      INTENT(IN)           :: unit
+        INTEGER(i4k),      INTENT(OUT)          :: data_type
+        CHARACTER(LEN=*),  INTENT(IN)           :: filename
+        CHARACTER(LEN=*),  INTENT(OUT)          :: title
+        INTEGER(i4k) :: i, inputstat
         LOGICAL      :: file_is_open
         CHARACTER(LEN=:), ALLOCATABLE :: form, filetype_text, vtk_version, line
 
@@ -156,7 +159,7 @@ MODULE vtk
         READ(unit,100) title                               !! VTK title card
         READ(unit,100) filetype_text                       !! VTK file type
 
-        CLOSE(unit=vtkunit)                                !! Close the file to re-open it in the proper format
+        CLOSE(unit)                                        !! Close the file to re-open it in the proper format
 
         SELECT CASE (filetype_text)
         CASE ('ASCII')
@@ -175,7 +178,26 @@ MODULE vtk
 
         CALL geometry%read(unit)                           !! Read the information from the file
 
-        CLOSE(unit=vtkunit)                                !! Close the VTK file
+        IF (PRESENT(celldatasets)) THEN
+            READ(unit,*) 
+            DO i = 1, SIZE(celldatasets)
+                CALL celldatasets(i)%attribute%read(unit)  !! Write the cell data values
+            END DO
+        ELSE IF (PRESENT(celldata)) THEN
+            READ(unit,*) 
+            CALL celldata%write(unit)                      !! Write the cell data values
+        END IF
+        IF (PRESENT(pointdatasets)) THEN
+            READ(unit,*) 
+            DO I = 1, SIZE(pointdatasets)
+                CALL pointdatasets(i)%attribute%read(unit)
+            END DO
+        ELSE IF (PRESENT(pointdata)) THEN
+            READ(unit,*) 
+            CALL pointdata%write(unit)                     !! Write the point data values
+        END IF
+
+        CLOSE(unit)                                        !! Close the VTK file
 
         vtkfilename = filename                             !! Save the filename for future internal use
         vtktitle    = title                                !! Save the title for future internal use

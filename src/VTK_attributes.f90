@@ -103,6 +103,7 @@ MODULE vtk_attributes
     END TYPE field
 
     TYPE :: attributes
+        INTEGER(i4k) :: n = 0 !! # of points or cells in the dataset
         CLASS(attribute), ALLOCATABLE :: attribute
     END TYPE attributes
 
