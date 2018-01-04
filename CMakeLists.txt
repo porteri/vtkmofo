@@ -78,8 +78,9 @@ set(unit_test_list attributes cells datasets
                    )
 
 # Integration Tests
-set(integration_test_list cube cylinder rectangular_prism pyramid
+set(integration_test_list cube cylinder rectangular_prism pyramid t_shape
                           )
+
 # Add unit tests and define the string that is used to signal success
 foreach(unit_test ${unit_test_list})
   add_test(NAME "${unit_test}_test" COMMAND ${CMAKE_BINARY_DIR}/tests/unit/${unit_test}_unit WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests/unit/)

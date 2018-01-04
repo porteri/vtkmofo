@@ -819,10 +819,10 @@ MODULE vtk_datasets
         me%n_points   = SIZE(points,DIM=2)
         me%points     = points
         me%firstcall  = .FALSE.
-        IF (PRESENT(vertices))  me%vertices  = vertices
-        IF (PRESENT(lines))     me%lines     = lines
-        IF (PRESENT(polygons))  me%polygons  = polygons
-        IF (PRESENT(triangles)) me%triangles = triangles
+        IF (PRESENT(vertices )) ALLOCATE(me%vertices, source=vertices )
+        IF (PRESENT(lines    )) ALLOCATE(me%lines,    source=lines    )
+        IF (PRESENT(polygons )) ALLOCATE(me%polygons, source=polygons )
+        IF (PRESENT(triangles)) ALLOCATE(me%triangles,source=triangles)
 
         END SUBROUTINE polygonal_data_setup
 ! *****************

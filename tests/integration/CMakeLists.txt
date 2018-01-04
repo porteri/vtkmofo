@@ -16,3 +16,7 @@ target_link_libraries(rectangular_prism vtkmofo)
 # Pyramid geometry
 add_executable(pyramid Pyramid.f90)
 target_link_libraries(pyramid vtkmofo)
+
+# T_shape geometry
+add_executable(t_shape T_shape.f90)
+target_link_libraries(t_shape vtkmofo)

@@ -12,7 +12,7 @@ MODULE vtk_datasets_unit_tests
     PRIVATE
     PUBLIC :: vtk_datasets_unit
 ! Generic information
-    INTEGER(i4k), PARAMETER :: n_types = 5
+    INTEGER(i4k), PARAMETER :: n_types  = 5
     INTEGER(i4k), PARAMETER :: vtk_unit = 20
     INTEGER(i4k), PARAMETER :: n_x = 11, n_y = 6, n_z = 3
     INTEGER(i4k), DIMENSION(n_types), PARAMETER :: filetype = &
@@ -269,7 +269,37 @@ MODULE vtk_datasets_unit_tests
       &   0.625_r8k, 0.625_r8k, 0.75_r8k ], [3,n_x_poly*n_y_poly*n_z_poly] )
     TYPE(polygon), DIMENSION(n_faces) :: polygon_faces
 ! Unstructured grid
-    
+    INTEGER(i4k), PARAMETER :: n_unstr_grid = 27, n_unstr_faces = 20
+    REAL(r8k), DIMENSION(3,n_unstr_grid), PARAMETER :: points_unstr_grid = RESHAPE ( &
+      & [ 0.0_r8k,   0.0_r8k,   0.0_r8k,  &
+      &   0.5_r8k,   0.0_r8k,   0.0_r8k,  &
+      &   1.0_r8k,   0.0_r8k,   0.0_r8k,  &
+      &   0.0_r8k,   0.5_r8k,   0.0_r8k,  &
+      &   0.5_r8k,   0.5_r8k,   0.0_r8k,  &
+      &   1.0_r8k,   0.5_r8k,   0.0_r8k,  &
+      &   0.0_r8k,   1.0_r8k,   0.0_r8k,  &
+      &   0.5_r8k,   1.0_r8k,   0.0_r8k,  &
+      &   1.0_r8k,   1.0_r8k,   0.0_r8k,  &
+      &   0.25_r8k,  0.25_r8k,  0.5_r8k,  &
+      &   0.50_r8k,  0.25_r8k,  0.5_r8k,  &
+      &   0.75_r8k,  0.25_r8k,  0.5_r8k,  &
+      &   0.25_r8k,  0.50_r8k,  0.5_r8k,  &
+      &   0.50_r8k,  0.50_r8k,  0.5_r8k,  &
+      &   0.75_r8k,  0.50_r8k,  0.5_r8k,  &
+      &   0.25_r8k,  0.75_r8k,  0.5_r8k,  &
+      &   0.50_r8k,  0.75_r8k,  0.5_r8k,  &
+      &   0.75_r8k,  0.75_r8k,  0.5_r8k,  &
+      &   0.375_r8k, 0.375_r8k, 0.75_r8k, &
+      &   0.50_r8k,  0.375_r8k, 0.75_r8k, &
+      &   0.625_r8k, 0.375_r8k, 0.75_r8k, &
+      &   0.375_r8k, 0.50_r8k,  0.75_r8k, &
+      &   0.50_r8k,  0.50_r8k,  0.75_r8k, &
+      &   0.625_r8k, 0.50_r8k,  0.75_r8k, &
+      &   0.375_r8k, 0.625_r8k, 0.75_r8k, &
+      &   0.50_r8k,  0.625_r8k, 0.75_r8k, &
+      &   0.625_r8k, 0.625_r8k, 0.75_r8k ], [3,n_x_poly*n_y_poly*n_z_poly] )
+    TYPE(polygon), DIMENSION(n_unstr_faces) :: unstr_faces
+
     CONTAINS
         SUBROUTINE vtk_datasets_unit (test_pass)
         USE Kinds
@@ -307,7 +337,7 @@ MODULE vtk_datasets_unit_tests
             CASE (5)
                 !! Unstructured grid
                 ALLOCATE(unstruct_grid::vtk_dataset_1, vtk_dataset_2)
-                CALL vtk_dataset_1%setup(dims=dims, origin=origin, spacing=spacing, points=points, x_coords=x_coords, &
+                CALL vtk_dataset_1%setup(dims=dims, origin=origin, spacing=spacing, points=points_unstr_grid, x_coords=x_coords, &
                   &                      y_coords=y_coords, z_coords=z_coords)
             END SELECT
 
@@ -326,7 +356,7 @@ MODULE vtk_datasets_unit_tests
 
         END DO
 
-        test_pass = ALL(individual_tests_pass(1:3))
+        test_pass = ALL(individual_tests_pass(1:4))
 
         END SUBROUTINE vtk_datasets_unit
 END MODULE vtk_datasets_unit_tests
