@@ -11,17 +11,29 @@ This is a generic modern Fortran interface to write a .vtk file using the legacy
 # 3D example
 ![Cube_3d](files/cube_image.png?raw=true "Cube example")
 
-This code is built / supported with the following:
+This code is built and tested with the following:
 
 Compilers: (may work for older ones as well)
- - gfortran 7.2, 8.0
- - Intel 2018
+ - [gfortran][gcc link] 7.2, 8.0
+ - [Intel][Intel link] 2018
 
 Operating Systems:
  - Linnux (Tested on Ubuntu 16)
  - Windows
 
+Build System:
+ - [CMake][CMake link] 3.2.2 or newer
+
+More examples:
+# Polygonal example
+![Pyramid](files/pyramid_image.png?raw=true "Pyramid example")
+# Prism example
+![Prism](files/rectangle_image.png?raw=true "Prism example")
+
 [Hyperlinks]:#
 [build image]: https://img.shields.io/travis-ci/porteri/vtkmofo/master.svg?style=flat-square "Travis-CI build badge"
 [download image]: https://img.shields.io/github/downloads/porteri/vtkmofo/total.svg?style=flat-square "Download count badge"
 [codecov image]: https://codecov.io/gh/porteri/vtkmofo/branch/master/graph/badge.svg
+[gcc link]: https://gcc.gnu.org/
+[Intel link]: https://software.intel.com/en-us/fortran-compilers
+[CMake link]: https://cmake.org

@@ -1,6 +1,7 @@
 MODULE vtk_datasets_unit_tests
     USE Kinds
-    USE vtk_vars, ONLY : ASCII, Binary
+    USE vtk_vars,  ONLY : ASCII, Binary
+    USE vtk_cells, ONLY : polygon
     IMPLICIT NONE
     !>@brief
     !> Unit testing for datasets
@@ -237,7 +238,36 @@ MODULE vtk_datasets_unit_tests
     REAL(r8k), DIMENSION(n_z), PARAMETER :: z_coords = &
       & [ 0.5_r8k, 1.0_r8k, 1.5_r8k ]
 ! Polygonal data
-    
+    INTEGER(i4k), PARAMETER :: n_x_poly = 3, n_y_poly = 3, n_z_poly = 3, n_faces = 20
+    REAL(r8k), DIMENSION(3,n_x_poly*n_y_poly*n_z_poly), PARAMETER :: points_poly = RESHAPE ( &
+      & [ 0.0_r8k,   0.0_r8k,   0.0_r8k,  &
+      &   0.5_r8k,   0.0_r8k,   0.0_r8k,  &
+      &   1.0_r8k,   0.0_r8k,   0.0_r8k,  &
+      &   0.0_r8k,   0.5_r8k,   0.0_r8k,  &
+      &   0.5_r8k,   0.5_r8k,   0.0_r8k,  &
+      &   1.0_r8k,   0.5_r8k,   0.0_r8k,  &
+      &   0.0_r8k,   1.0_r8k,   0.0_r8k,  &
+      &   0.5_r8k,   1.0_r8k,   0.0_r8k,  &
+      &   1.0_r8k,   1.0_r8k,   0.0_r8k,  &
+      &   0.25_r8k,  0.25_r8k,  0.5_r8k,  &
+      &   0.50_r8k,  0.25_r8k,  0.5_r8k,  &
+      &   0.75_r8k,  0.25_r8k,  0.5_r8k,  &
+      &   0.25_r8k,  0.50_r8k,  0.5_r8k,  &
+      &   0.50_r8k,  0.50_r8k,  0.5_r8k,  &
+      &   0.75_r8k,  0.50_r8k,  0.5_r8k,  &
+      &   0.25_r8k,  0.75_r8k,  0.5_r8k,  &
+      &   0.50_r8k,  0.75_r8k,  0.5_r8k,  &
+      &   0.75_r8k,  0.75_r8k,  0.5_r8k,  &
+      &   0.375_r8k, 0.375_r8k, 0.75_r8k, &
+      &   0.50_r8k,  0.375_r8k, 0.75_r8k, &
+      &   0.625_r8k, 0.375_r8k, 0.75_r8k, &
+      &   0.375_r8k, 0.50_r8k,  0.75_r8k, &
+      &   0.50_r8k,  0.50_r8k,  0.75_r8k, &
+      &   0.625_r8k, 0.50_r8k,  0.75_r8k, &
+      &   0.375_r8k, 0.625_r8k, 0.75_r8k, &
+      &   0.50_r8k,  0.625_r8k, 0.75_r8k, &
+      &   0.625_r8k, 0.625_r8k, 0.75_r8k ], [3,n_x_poly*n_y_poly*n_z_poly] )
+    TYPE(polygon), DIMENSION(n_faces) :: polygon_faces
 ! Unstructured grid
     
     CONTAINS
@@ -254,30 +284,34 @@ MODULE vtk_datasets_unit_tests
         LOGICAL, INTENT(OUT)        :: test_pass
         LOGICAL, DIMENSION(n_types) :: individual_tests_pass
 
-        DO i = 1, 3!n_types
+        DO i = 1, 4!n_types
             IF (ALLOCATED(vtk_dataset_1)) DEALLOCATE (vtk_dataset_1)
             IF (ALLOCATED(vtk_dataset_2)) DEALLOCATE (vtk_dataset_2)
             SELECT CASE (i)
             CASE (1)
                 !! Structured points
                 ALLOCATE(struct_pts::vtk_dataset_1, vtk_dataset_2)
+                CALL vtk_dataset_1%setup(dims=dims, origin=origin, spacing=spacing)
             CASE (2)
                 !! Structured grid
                 ALLOCATE(struct_grid::vtk_dataset_1, vtk_dataset_2)
+                CALL vtk_dataset_1%setup(dims=dims, points=points)
             CASE (3)
                 !! Rectilinear grid
                 ALLOCATE(rectlnr_grid::vtk_dataset_1, vtk_dataset_2)
+                CALL vtk_dataset_1%setup(dims=dims, x_coords=x_coords, y_coords=y_coords, z_coords=z_coords)
             CASE (4)
                 !! Polygonal data
                 ALLOCATE(polygonal_data::vtk_dataset_1, vtk_dataset_2)
+                CALL vtk_dataset_1%setup(dims=dims, points=points_poly)
             CASE (5)
                 !! Unstructured grid
                 ALLOCATE(unstruct_grid::vtk_dataset_1, vtk_dataset_2)
+                CALL vtk_dataset_1%setup(dims=dims, origin=origin, spacing=spacing, points=points, x_coords=x_coords, &
+                  &                      y_coords=y_coords, z_coords=z_coords)
             END SELECT
 
             !! Data type is generated from the defined values above
-            CALL vtk_dataset_1%setup(dims=dims, origin=origin, spacing=spacing, points=points, x_coords=x_coords, &
-              &                      y_coords=y_coords, z_coords=z_coords)
             OPEN (unit=vtk_unit, file=filename(i), form='formatted')
             CALL vtk_dataset_1%write(vtk_unit)
             CLOSE(unit=vtk_unit)

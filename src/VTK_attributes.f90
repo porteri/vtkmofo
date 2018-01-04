@@ -892,7 +892,6 @@ MODULE vtk_attributes
         ELSE IF (SIZE(values3d,DIM=2) /= 3 .OR. SIZE(values3d,DIM=3) /= 3) THEN
             ERROR STOP 'Tensors can only be 3x3'
         ELSE
-            IF (ALLOCATED(me%tensors)) DEALLOCATE(me%tensors)
             ALLOCATE(me%tensors(1:UBOUND(values3d,DIM=1)))
             DO i = 1, UBOUND(values3d,DIM=1)
                 me%tensors(i)%val(1:3,1:3) = values3d(i,1:3,1:3)
