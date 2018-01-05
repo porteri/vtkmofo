@@ -1,40 +1,27 @@
-language: c
+language: generic
 os: linux
-sudo: required
-matrix:
-  include:
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - george-edison55-precise-backports
-          packages:
-            - gcc-7
-            - gfortran-7
-            - g++-7
-            - cmake-data
-            - cmake
-      env:
-        - MATRIX_EVAL="FC=gfortran-7 && CC=gcc-7 && CXX=g++-7"
-        - GCC=7
+sudo: false
+dist: trusty
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - george-edison55-precise-backports
+    packages:
+      - gfortran-7
+      - cmake-data
+      - cmake
+env:
+  global:
+    - GCC=7
 
 before_install:
   - export FC=gfortran-${GCC}
-  - export CC=gcc-${GCC}
-install:
-#  - sudo apt-get -qq update
-  - sudo apt-get install -y libxml2-dev
-  - sudo apt-get install -y lcov curl
-  - sudo apt-get install gfortran
-  - sudo apt-get install cmake
-compiler:
-  - gcc
 script:
-  - mkdir build && cd build && cmake ../ && make && ctest 
+  - mkdir build && cd build && cmake ../ && make -j $(nproc) && ctest -j $(nproc)
 after_success:
   - gcov-${GCC} --version
-  - bash <(curl -s https://codecov.io/bash) -t 8fd6bb24-0eac-4adf-a45a-d68bf843203c
+  - bash <(curl -s https://codecov.io/bash)
 notifications:
   email:
     recipients:
