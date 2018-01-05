@@ -1,7 +1,7 @@
 MODULE vtk_datasets_unit_tests
     USE Kinds
     USE vtk_vars,  ONLY : ASCII, Binary
-    USE vtk_cells, ONLY : polygon
+    USE vtk_cells, ONLY : polygon, voxel
     IMPLICIT NONE
     !>@brief
     !> Unit testing for datasets
@@ -269,37 +269,33 @@ MODULE vtk_datasets_unit_tests
       &   0.625_r8k, 0.625_r8k, 0.75_r8k ], [3,n_x_poly*n_y_poly*n_z_poly] )
     TYPE(polygon), DIMENSION(n_faces) :: polygon_faces
 ! Unstructured grid
-    INTEGER(i4k), PARAMETER :: n_unstr_grid = 27, n_unstr_faces = 20
+    INTEGER(i4k), PARAMETER :: n_unstr_grid = 24, n_unstr_cells = 5
     REAL(r8k), DIMENSION(3,n_unstr_grid), PARAMETER :: points_unstr_grid = RESHAPE ( &
-      & [ 0.0_r8k,   0.0_r8k,   0.0_r8k,  &
-      &   0.5_r8k,   0.0_r8k,   0.0_r8k,  &
-      &   1.0_r8k,   0.0_r8k,   0.0_r8k,  &
-      &   0.0_r8k,   0.5_r8k,   0.0_r8k,  &
-      &   0.5_r8k,   0.5_r8k,   0.0_r8k,  &
-      &   1.0_r8k,   0.5_r8k,   0.0_r8k,  &
-      &   0.0_r8k,   1.0_r8k,   0.0_r8k,  &
-      &   0.5_r8k,   1.0_r8k,   0.0_r8k,  &
-      &   1.0_r8k,   1.0_r8k,   0.0_r8k,  &
-      &   0.25_r8k,  0.25_r8k,  0.5_r8k,  &
-      &   0.50_r8k,  0.25_r8k,  0.5_r8k,  &
-      &   0.75_r8k,  0.25_r8k,  0.5_r8k,  &
-      &   0.25_r8k,  0.50_r8k,  0.5_r8k,  &
-      &   0.50_r8k,  0.50_r8k,  0.5_r8k,  &
-      &   0.75_r8k,  0.50_r8k,  0.5_r8k,  &
-      &   0.25_r8k,  0.75_r8k,  0.5_r8k,  &
-      &   0.50_r8k,  0.75_r8k,  0.5_r8k,  &
-      &   0.75_r8k,  0.75_r8k,  0.5_r8k,  &
-      &   0.375_r8k, 0.375_r8k, 0.75_r8k, &
-      &   0.50_r8k,  0.375_r8k, 0.75_r8k, &
-      &   0.625_r8k, 0.375_r8k, 0.75_r8k, &
-      &   0.375_r8k, 0.50_r8k,  0.75_r8k, &
-      &   0.50_r8k,  0.50_r8k,  0.75_r8k, &
-      &   0.625_r8k, 0.50_r8k,  0.75_r8k, &
-      &   0.375_r8k, 0.625_r8k, 0.75_r8k, &
-      &   0.50_r8k,  0.625_r8k, 0.75_r8k, &
-      &   0.625_r8k, 0.625_r8k, 0.75_r8k ], [3,n_x_poly*n_y_poly*n_z_poly] )
-    TYPE(polygon), DIMENSION(n_unstr_faces) :: unstr_faces
-
+      & [ 0.5_r8k, 0.0_r8k, 0.0_r8k, &
+      &   1.0_r8k, 0.0_r8k, 0.0_r8k, &
+      &   0.5_r8k, 0.5_r8k, 0.0_r8k, &
+      &   1.0_r8k, 0.5_r8k, 0.0_r8k, &
+      &   0.5_r8k, 0.0_r8k, 0.5_r8k, &
+      &   1.0_r8k, 0.0_r8k, 0.5_r8k, &
+      &   0.5_r8k, 0.5_r8k, 0.5_r8k, &
+      &   1.0_r8k, 0.5_r8k, 0.5_r8k, &
+      &   0.0_r8k, 0.0_r8k, 1.0_r8k, &
+      &   0.5_r8k, 0.0_r8k, 1.0_r8k, &
+      &   1.0_r8k, 0.0_r8k, 1.0_r8k, &
+      &   1.5_r8k, 0.0_r8k, 1.0_r8k, &
+      &   0.0_r8k, 0.5_r8k, 1.0_r8k, &
+      &   0.5_r8k, 0.5_r8k, 1.0_r8k, &
+      &   1.0_r8k, 0.5_r8k, 1.0_r8k, &
+      &   1.5_r8k, 0.5_r8k, 1.0_r8k, &
+      &   0.0_r8k, 0.0_r8k, 1.5_r8k, &
+      &   0.5_r8k, 0.0_r8k, 1.5_r8k, &
+      &   1.0_r8k, 0.0_r8k, 1.5_r8k, &
+      &   1.5_r8k, 0.0_r8k, 1.5_r8k, &
+      &   0.0_r8k, 0.5_r8k, 1.5_r8k, &
+      &   0.5_r8k, 0.5_r8k, 1.5_r8k, &
+      &   1.0_r8k, 0.5_r8k, 1.5_r8k, &
+      &   1.5_r8k, 0.5_r8k, 1.5_r8k ], [3,n_unstr_grid] )
+    TYPE(voxel), DIMENSION(n_unstr_cells) :: cells
     CONTAINS
         SUBROUTINE vtk_datasets_unit (test_pass)
         USE Kinds
@@ -314,7 +310,7 @@ MODULE vtk_datasets_unit_tests
         LOGICAL, INTENT(OUT)        :: test_pass
         LOGICAL, DIMENSION(n_types) :: individual_tests_pass
 
-        DO i = 1, 4!n_types
+        DO i = 1, n_types
             IF (ALLOCATED(vtk_dataset_1)) DEALLOCATE (vtk_dataset_1)
             IF (ALLOCATED(vtk_dataset_2)) DEALLOCATE (vtk_dataset_2)
             SELECT CASE (i)
@@ -332,13 +328,37 @@ MODULE vtk_datasets_unit_tests
                 CALL vtk_dataset_1%setup(dims=dims, x_coords=x_coords, y_coords=y_coords, z_coords=z_coords)
             CASE (4)
                 !! Polygonal data
+                CALL polygon_faces(1)%setup ( (/ 0, 1, 4, 3 /) )
+                CALL polygon_faces(2)%setup ( (/ 1, 2, 5, 4 /) )
+                CALL polygon_faces(3)%setup ( (/ 3, 4, 7, 6 /) )
+                CALL polygon_faces(4)%setup ( (/ 4, 5, 8, 7 /) )
+                CALL polygon_faces(5)%setup ( (/ 9, 10, 13, 12 /) )
+                CALL polygon_faces(6)%setup ( (/ 10, 11, 14, 13 /) )
+                CALL polygon_faces(7)%setup ( (/ 12, 13, 16, 15 /) )
+                CALL polygon_faces(8)%setup ( (/ 13, 14, 17, 16 /) )
+                CALL polygon_faces(9)%setup ( (/ 18, 19, 22, 21 /) )
+                CALL polygon_faces(10)%setup ( (/ 19, 20, 23, 22 /) )
+                CALL polygon_faces(11)%setup ( (/ 21, 22, 25, 24 /) )
+                CALL polygon_faces(12)%setup ( (/ 22, 23, 26, 25 /) )
+                CALL polygon_faces(13)%setup ( (/ 0, 1, 10, 19, 18, 9 /) )
+                CALL polygon_faces(14)%setup ( (/ 1, 2, 11, 20, 19, 10 /) )
+                CALL polygon_faces(15)%setup ( (/ 0, 3, 12, 21, 18, 9 /) )
+                CALL polygon_faces(16)%setup ( (/ 3, 6, 15, 24, 21, 12 /) )
+                CALL polygon_faces(17)%setup ( (/ 6, 7, 16, 25, 24, 15 /) )
+                CALL polygon_faces(18)%setup ( (/ 7, 8, 17, 26, 25, 16 /) )
+                CALL polygon_faces(19)%setup ( (/ 8, 5, 14, 23, 26, 17 /) )
+                CALL polygon_faces(20)%setup ( (/ 5, 2, 11, 20, 23, 14 /) )
                 ALLOCATE(polygonal_data::vtk_dataset_1, vtk_dataset_2)
-                CALL vtk_dataset_1%setup(dims=dims, points=points_poly)
+                CALL vtk_dataset_1%setup(dims=dims, points=points_poly, polygons=polygon_faces)
             CASE (5)
                 !! Unstructured grid
+                CALL cells(1)%setup ( (/ 0, 1, 2, 3, 4, 5, 6, 7 /) )
+                CALL cells(2)%setup ( (/ 4, 5, 6, 7, 9, 10, 13, 14 /) )
+                CALL cells(3)%setup ( (/ 8, 9, 12, 13, 16, 17, 20, 21 /) )
+                CALL cells(4)%setup ( (/ 9, 10, 13, 14, 17, 18, 21, 22 /) )
+                CALL cells(5)%setup ( (/ 10, 11, 14, 15, 18, 19, 22, 23 /) )
                 ALLOCATE(unstruct_grid::vtk_dataset_1, vtk_dataset_2)
-                CALL vtk_dataset_1%setup(dims=dims, origin=origin, spacing=spacing, points=points_unstr_grid, x_coords=x_coords, &
-                  &                      y_coords=y_coords, z_coords=z_coords)
+                CALL vtk_dataset_1%setup(points=points_unstr_grid, cells=cells)
             END SELECT
 
             !! Data type is generated from the defined values above
@@ -356,7 +376,7 @@ MODULE vtk_datasets_unit_tests
 
         END DO
 
-        test_pass = ALL(individual_tests_pass(1:4))
+        test_pass = ALL(individual_tests_pass)
 
         END SUBROUTINE vtk_datasets_unit
 END MODULE vtk_datasets_unit_tests

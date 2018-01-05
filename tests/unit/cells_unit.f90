@@ -50,7 +50,7 @@ MODULE vtk_cells_unit_tests
         !> Loops over each cell type, performs a write, then performs a read on a different cell
         !> and compares the two to make sure they are identical
         CLASS(vtkcell), ALLOCATABLE :: vtk_cell_1, vtk_cell_2
-        INTEGER(i4k)                :: i, j
+        INTEGER(i4k)                :: i
         LOGICAL, INTENT(OUT)        :: test_pass
         LOGICAL, DIMENSION(n_types) :: individual_tests_pass
 
@@ -128,21 +128,8 @@ MODULE vtk_cells_unit_tests
             CALL vtk_cell_2%read(vtk_unit)
             CLOSE(unit=vtk_unit)
 
-            individual_tests_pass(i) = .TRUE.
-            IF      (vtk_cell_1%n_points     /= vtk_cell_2%n_points) THEN
-                individual_tests_pass(i) = .FALSE.
-            ELSE IF (vtk_cell_1%type         /= vtk_cell_2%type    ) THEN
-                individual_tests_pass(i) = .FALSE.
-            ELSE IF (SIZE(vtk_cell_1%points) /= SIZE(vtk_cell_2%points)) THEN
-                individual_tests_pass(i) = .FALSE.
-            ELSE
-                DO j = 1, SIZE(vtk_cell_1%points)
-                    IF (vtk_cell_1%points(j) /= vtk_cell_2%points(j)) THEN
-                        individual_tests_pass(i) = .FALSE.
-                        EXIT
-                    END IF
-                END DO
-            END IF
+            !! Compare the read file and the written/read file to ensure both types are the same
+            individual_tests_pass(i) = .NOT. (vtk_cell_1 .diff. vtk_cell_2)
         END DO
 
         !! Compare the read file and the written/read file to ensure both types are the same

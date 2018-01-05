@@ -125,22 +125,20 @@ MODULE vtk_datasets
         END SELECT
         END SUBROUTINE abs_write
 
-        SUBROUTINE abs_setup (me, datatype, dims, origin, spacing, points, cells, cell_type, &
+        SUBROUTINE abs_setup (me, datatype, dims, origin, spacing, points, cells, &
           &                   x_coords, y_coords, z_coords, vertices, lines, polygons, triangles)
         !>@brief
         !> Sets up the dataset with information
         CLASS (dataset),              INTENT(OUT)          :: me
-        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles
+        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles, cells
         CHARACTER(LEN=*),             INTENT(IN), OPTIONAL :: datatype
         INTEGER(i4k), DIMENSION(3),   INTENT(IN), OPTIONAL :: dims
-        INTEGER(i4k), DIMENSION(:),   INTENT(IN), OPTIONAL :: cell_type
-        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: cells
         REAL(r8k),    DIMENSION(3),   INTENT(IN), OPTIONAL :: origin, spacing
         REAL(r8k),    DIMENSION(:),   INTENT(IN), OPTIONAL :: x_coords, y_coords, z_coords
         REAL(r8k),    DIMENSION(:,:), INTENT(IN), OPTIONAL :: points
 
-        IF (PRESENT(datatype) .OR. PRESENT(dims)     .OR. PRESENT(origin) .OR.                         &
-            PRESENT(spacing)  .OR. PRESENT(points)   .OR. PRESENT(cells)  .OR. PRESENT(cell_type) .OR. &
+        IF (PRESENT(datatype) .OR. PRESENT(dims)     .OR. PRESENT(origin) .OR. &
+            PRESENT(spacing)  .OR. PRESENT(points)   .OR. PRESENT(cells)  .OR. &
             PRESENT(x_coords) .OR. PRESENT(y_coords) .OR. PRESENT(z_coords)) THEN
             !! This is done only to avoid compiler warnings. A deferred abstract subroutine should never be called.'
             WRITE(*,*) 'Warning: More information provided to abs_setup than needed.'
@@ -220,16 +218,14 @@ MODULE vtk_datasets
 
         END SUBROUTINE struct_pts_write
 
-        SUBROUTINE struct_pts_setup (me, datatype, dims, origin, spacing, points, cells, cell_type, &
+        SUBROUTINE struct_pts_setup (me, datatype, dims, origin, spacing, points, cells, &
           &                          x_coords, y_coords, z_coords, vertices, lines, polygons, triangles)
         !>@brief
         !> Sets up the structured points dataset with information
         CLASS (struct_pts),           INTENT(OUT)          :: me
-        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles
+        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles, cells
         CHARACTER(LEN=*),             INTENT(IN), OPTIONAL :: datatype
         INTEGER(i4k), DIMENSION(3),   INTENT(IN), OPTIONAL :: dims
-        INTEGER(i4k), DIMENSION(:),   INTENT(IN), OPTIONAL :: cell_type
-        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: cells
         REAL(r8k),    DIMENSION(3),   INTENT(IN), OPTIONAL :: origin, spacing
         REAL(r8k),    DIMENSION(:),   INTENT(IN), OPTIONAL :: x_coords, y_coords, z_coords
         REAL(r8k),    DIMENSION(:,:), INTENT(IN), OPTIONAL :: points
@@ -348,16 +344,14 @@ MODULE vtk_datasets
 
         END SUBROUTINE struct_grid_write
 
-        SUBROUTINE struct_grid_setup (me, datatype, dims, origin, spacing, points, cells, cell_type, &
+        SUBROUTINE struct_grid_setup (me, datatype, dims, origin, spacing, points, cells, &
           &                           x_coords, y_coords, z_coords, vertices, lines, polygons, triangles)
         !>@brief
         !> Sets up the structured grid dataset with information
         CLASS (struct_grid),          INTENT(OUT)          :: me
-        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles
+        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles, cells
         CHARACTER(LEN=*),             INTENT(IN), OPTIONAL :: datatype
         INTEGER(i4k), DIMENSION(3),   INTENT(IN), OPTIONAL :: dims
-        INTEGER(i4k), DIMENSION(:),   INTENT(IN), OPTIONAL :: cell_type
-        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: cells
         REAL(r8k),    DIMENSION(3),   INTENT(IN), OPTIONAL :: origin, spacing
         REAL(r8k),    DIMENSION(:),   INTENT(IN), OPTIONAL :: x_coords, y_coords, z_coords
         REAL(r8k),    DIMENSION(:,:), INTENT(IN), OPTIONAL :: points
@@ -510,16 +504,14 @@ MODULE vtk_datasets
 
         END SUBROUTINE rectlnr_grid_write
 
-        SUBROUTINE rectlnr_grid_setup (me, datatype, dims, origin, spacing, points, cells, cell_type, &
+        SUBROUTINE rectlnr_grid_setup (me, datatype, dims, origin, spacing, points, cells, &
           &                            x_coords, y_coords, z_coords, vertices, lines, polygons, triangles)
         !>@brief
         !> Sets up the rectilinear grid dataset with information
         CLASS (rectlnr_grid),         INTENT(OUT)          :: me
-        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles
+        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles, cells
         CHARACTER(LEN=*),             INTENT(IN), OPTIONAL :: datatype
         INTEGER(i4k), DIMENSION(3),   INTENT(IN), OPTIONAL :: dims
-        INTEGER(i4k), DIMENSION(:),   INTENT(IN), OPTIONAL :: cell_type
-        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: cells
         REAL(r8k),    DIMENSION(3),   INTENT(IN), OPTIONAL :: origin, spacing
         REAL(r8k),    DIMENSION(:),   INTENT(IN), OPTIONAL :: x_coords, y_coords, z_coords
         REAL(r8k),    DIMENSION(:,:), INTENT(IN), OPTIONAL :: points
@@ -613,8 +605,6 @@ MODULE vtk_datasets
         INTEGER(i4k),      DIMENSION(:), ALLOCATABLE :: ints, dummy, points
         REAL(r8k),         DIMENSION(:), ALLOCATABLE :: reals
         CHARACTER(LEN=:),  DIMENSION(:), ALLOCATABLE :: chars
-        CHARACTER(LEN=15), DIMENSION(4), PARAMETER   :: descr_coord = &
-          & [ 'VERTICES       ', 'LINES          ', 'POLYGONS       ', 'TRIANGLE_STRIPS' ]
 
         READ(unit,100,iostat=iostat) line
         CALL interpret_string (line=line, datatype=(/ 'C' /),         ignore='DATASET ',     separator=' ', chars=chars)
@@ -640,8 +630,7 @@ MODULE vtk_datasets
             END IF
             IF (i == SIZE(me%points,DIM=2)) EXIT get_points  !! Filled up array points
         END DO get_points
-! Good to this point
-! New (to be updated)
+
         end_of_file = .FALSE.; i = 0
 
         get_keywords: DO
@@ -686,8 +675,9 @@ MODULE vtk_datasets
                             n_points = ints(1)
                         ELSE
                             ALLOCATE(dummy(1:j-1))
+                            dummy(j-1) = ints(1)
                             IF (j > 2) dummy(1:j-2) = points
-                            DEALLOCATE(points)
+                            IF (ALLOCATED(points)) DEALLOCATE(points)
                             CALL MOVE_ALLOC(dummy, points)
                         END IF
                         IF (line == '') EXIT get_vals
@@ -796,16 +786,14 @@ MODULE vtk_datasets
 
         END SUBROUTINE polygonal_data_write
 
-        SUBROUTINE polygonal_data_setup (me, datatype, dims, origin, spacing, points, cells, cell_type, &
+        SUBROUTINE polygonal_data_setup (me, datatype, dims, origin, spacing, points, cells, &
           &                              x_coords, y_coords, z_coords, vertices, lines, polygons, triangles)
         !>@brief
         !> Sets up the polygonal data dataset with information
         CLASS (polygonal_data),       INTENT(OUT)          :: me
-        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles
+        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles, cells
         CHARACTER(LEN=*),             INTENT(IN), OPTIONAL :: datatype
         INTEGER(i4k), DIMENSION(3),   INTENT(IN), OPTIONAL :: dims
-        INTEGER(i4k), DIMENSION(:),   INTENT(IN), OPTIONAL :: cell_type
-        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: cells
         REAL(r8k),    DIMENSION(3),   INTENT(IN), OPTIONAL :: origin, spacing
         REAL(r8k),    DIMENSION(:),   INTENT(IN), OPTIONAL :: x_coords, y_coords, z_coords
         REAL(r8k),    DIMENSION(:,:), INTENT(IN), OPTIONAL :: points
@@ -829,35 +817,87 @@ MODULE vtk_datasets
 ! Unstructured Grid
 ! *****************
         SUBROUTINE unstruct_grid_read (me, unit)
+        USE Misc,      ONLY : interpret_string, def_len
+        USE vtk_cells, ONLY : vtkcell, poly_vertex, set_cell_type
         !>@brief
         !> Reads the unstructured grid dataset information from the .vtk file
         CLASS(unstruct_grid), INTENT(OUT) :: me
         INTEGER(i4k),         INTENT(IN)  :: unit
-        INTEGER(i4k) :: i
+        CLASS(vtkcell), ALLOCATABLE       :: dummy_cell
+        INTEGER(i4k)                      :: i, iostat
+        INTEGER(i4k), PARAMETER           :: dim = 3
+        LOGICAL                           :: end_of_File
+        CHARACTER(LEN=def_len)            :: line
+        INTEGER(i4k),      DIMENSION(:), ALLOCATABLE :: ints, points
+        REAL(r8k),         DIMENSION(:), ALLOCATABLE :: reals
+        CHARACTER(LEN=:),  DIMENSION(:), ALLOCATABLE :: chars
+        TYPE temp_points
+            INTEGER(i4k), DIMENSION(:), ALLOCATABLE  :: points
+        END TYPE temp_points
+        TYPE (temp_points), DIMENSION(:), ALLOCATABLE :: read_points
 
-        READ(unit,100) me%name
-        READ(unit,101) me%n_points, me%datatype
+        READ(unit,100,iostat=iostat) line
+        CALL interpret_string (line=line, datatype=(/ 'C' /),         ignore='DATASET ',     separator=' ', chars=chars)
+        me%name = TRIM(chars(1))
 
-        DO i = 1, me%n_points
-            READ(unit,102) me%points(1:3,i)
-        END DO
+        READ(unit,100,iostat=iostat) line
+        CALL interpret_string (line=line, datatype=(/ 'I','C' /),     ignore='POINTS ',     separator=' ', ints=ints, chars=chars)
+        me%n_points= ints(1); me%datatype = TRIM(chars(1))
 
-        READ(unit,103) me%n_cells, me%size
-        DO i = 1, me%n_cells
-            CALL me%cell(i)%READ(unit)
-        END DO
+        ALLOCATE(me%points(1:3,1:me%n_points)); end_of_file = .FALSE.
 
-        READ(unit,104) me%n_cell_types
-        DO i = 1, me%n_cell_types
-            CALL me%cell(i)%READ(unit)
-        END DO
+        get_points: DO i = 1, me%n_points
+            READ(unit,100,iostat=iostat) line
+            end_of_file = (iostat < 0)
+            IF (end_of_file) THEN
+                EXIT get_points
+            ELSE IF (TRIM(line) == '') THEN
+                CYCLE     !! Skip blank lines
+            ELSE
+                CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), separator=' ', reals=reals)
+                me%points(1:dim,i) = reals(1:dim)
+            END IF
+        END DO get_points
 
-100     FORMAT ('DATASET ',(a))
-101     FORMAT ('POINTS ',(i0),' ',(a))
-102     FORMAT (*(es13.6))
-103     FORMAT ('CELLS ',(i0),' ',(i0))
-104     FORMAT ('CELL_TYPES ',(i0))
+        ! Get the cell information
+        READ(unit,100,iostat=iostat) line
+        CALL interpret_string (line=line, datatype=(/ 'I','I' /), ignore='POINTS ', separator=' ', ints=ints)
+        me%n_cells = ints(1); me%size = ints(2); ALLOCATE(read_points(1:ints(1)))
 
+        end_of_file = .FALSE.
+        get_cells: DO i = 1, me%n_cells
+            !! Temporary work around
+            IF (ALLOCATED(dummy_cell)) DEALLOCATE(dummy_cell)
+            ALLOCATE(poly_vertex::dummy_cell)
+            CALL dummy_cell%read(unit)
+            read_points(i)%points = dummy_cell%points
+        END DO get_cells
+
+        ! Get the cell type information
+        READ(unit,100,iostat=iostat) line
+        CALL interpret_string (line=line, datatype=(/ 'I' /), ignore='CELL_TYPES ', separator=' ', ints=ints)
+        me%n_cell_types = ints(1)
+
+        end_of_file = .FALSE.
+        get_cell_type: DO i = 1, me%n_cell_types
+            READ(unit,100,iostat=iostat) line
+            end_of_file = (iostat < 0)
+            IF (end_of_file) THEN
+                EXIT get_cell_type
+            ELSE IF (TRIM(line) == '') THEN
+                CYCLE     !! Skip blank lines
+            ELSE
+                !! TODO: This is temporary. Need to make each cell be able to be allocated independently
+                CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
+                !CALL set_cell_type (me%cell(i), ints(1))
+                CALL set_cell_type (dummy_cell, ints(1))
+                IF (.NOT. ALLOCATED(me%cell)) ALLOCATE(me%cell(1:me%n_cells),mold=dummy_cell)
+                CALL me%cell(i)%setup (read_points(i)%points)
+                DEALLOCATE(dummy_cell)
+            END IF
+        END DO get_cell_type
+
+100     FORMAT((a))
         END SUBROUTINE unstruct_grid_read
 
         SUBROUTINE unstruct_grid_write (me, unit)
@@ -881,7 +921,7 @@ MODULE vtk_datasets
 
         WRITE(unit,104) me%n_cell_types
         DO i = 1, me%n_cell_types
-            CALL me%cell(i)%write(unit)
+            WRITE(unit,105) me%cell(i)%type
         END DO
 
 100     FORMAT ('DATASET ',(a))
@@ -889,25 +929,24 @@ MODULE vtk_datasets
 102     FORMAT (*(es13.6))
 103     FORMAT ('CELLS ',(i0),' ',(i0))
 104     FORMAT ('CELL_TYPES ',(i0))
+105     FORMAT (' ',i0)
 
         END SUBROUTINE unstruct_grid_write
 
-        SUBROUTINE unstruct_grid_setup (me, datatype, dims, origin, spacing, points, cells, cell_type, &
+        SUBROUTINE unstruct_grid_setup (me, datatype, dims, origin, spacing, points, cells, &
           &                             x_coords, y_coords, z_coords, vertices, lines, polygons, triangles)
         !>@brief
         !> Sets up the unstructured grid dataset with information
         CLASS (unstruct_grid),        INTENT(OUT)          :: me
-        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles
+        CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: vertices, lines, polygons, triangles, cells
         CHARACTER(LEN=*),             INTENT(IN), OPTIONAL :: datatype
         INTEGER(i4k), DIMENSION(3),   INTENT(IN), OPTIONAL :: dims
-        INTEGER(i4k), DIMENSION(:),   INTENT(IN), OPTIONAL :: cell_type
-        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: cells
         REAL(r8k),    DIMENSION(3),   INTENT(IN), OPTIONAL :: origin, spacing
         REAL(r8k),    DIMENSION(:),   INTENT(IN), OPTIONAL :: x_coords, y_coords, z_coords
         REAL(r8k),    DIMENSION(:,:), INTENT(IN), OPTIONAL :: points
-        INTEGER(i4k) :: i
+        INTEGER(i4k) :: i, size_cnt
 
-        IF (.NOT. PRESENT(points) .OR. .NOT. PRESENT(cells) .OR. .NOT. PRESENT(cell_type)) THEN
+        IF (.NOT. PRESENT(points) .OR. .NOT. PRESENT(cells)) THEN
             ERROR STOP 'Bad inputs for unstruct_grid_setup'
         END IF
 
@@ -917,14 +956,16 @@ MODULE vtk_datasets
         ELSE
             me%datatype = 'double'
         END IF
-        me%n_points     = SIZE(points,   DIM=2)
-        me%n_cells      = SIZE(cells,    DIM=1)
-        me%n_cell_types = SIZE(cell_type,DIM=1)
+        me%n_points     = SIZE(points, DIM=2)
+        me%n_cells      = SIZE(cells,  DIM=1)
+        me%n_cell_types = SIZE(cells,  DIM=1)
         me%points       = points
-        DO i = 1, UBOUND(cells,DIM=1)
-            call me%cell(i)%setup (cells(i,:))
+        ALLOCATE(me%cell,source=cells)
+        size_cnt = me%n_cells
+        DO i = 1, me%n_cells
+            size_cnt = size_cnt + me%cell(i)%n_points
         END DO
-
+        me%size         = size_cnt
         me%firstcall    = .FALSE.
 
         END SUBROUTINE unstruct_grid_setup

@@ -32,7 +32,8 @@ MODULE vtk_cells
 
     PRIVATE
     PUBLIC :: vtkcell, vertex, poly_vertex, line, poly_line, triangle, triangle_strip, polygon, pixel, quad, tetra, voxel
-    PUBLIC :: hexahedron, wedge, pyramid, quadratic_edge, quadratic_triangle, quadratic_quad, quadratic_tetra, quadratic_hexahedron
+    PUBLIC :: hexahedron, wedge, pyramid, quadratic_edge, quadratic_triangle, quadratic_quad, quadratic_tetra
+    PUBLIC :: quadratic_hexahedron, set_cell_type
 
     TYPE, ABSTRACT :: vtkcell
         INTEGER(i4k) :: n_points
@@ -43,6 +44,8 @@ MODULE vtk_cells
         PROCEDURE, PUBLIC :: write => abs_write
         PROCEDURE, PUBLIC :: setup => abs_setup
         PROCEDURE(abs_init), DEFERRED, PRIVATE :: init
+        PROCEDURE, PRIVATE :: check_for_diffs
+        GENERIC :: OPERATOR(.diff.) => check_for_diffs
     END TYPE vtkcell
 
     TYPE, EXTENDS(vtkcell) :: vertex
@@ -151,31 +154,31 @@ MODULE vtk_cells
         INTEGER(i4k)                :: i, iostat
         LOGICAL                     :: end_of_file, ierr
         CHARACTER(LEN=def_len)      :: line
-        INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints, dummy
+        INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints, dummy, points
 
-        ALLOCATE(me%points(0)); i = -1; end_of_file = .FALSE.
+        ALLOCATE(me%points(0)); i = 0; end_of_file = .FALSE.
 
         READ(unit,100,iostat=iostat) line
         end_of_file = (iostat < 0)
         IF (end_of_file) THEN
             RETURN
         ELSE
+            i = 0! IF(ALLOCATED(points)) DEALLOCATE(points)
             get_vals: DO
-                ALLOCATE(dummy(1:UBOUND(me%points,DIM=1)+1),source=0)
-                IF (i > 0) dummy(1:UBOUND(me%points,DIM=1)) = me%points
-                CALL MOVE_ALLOC(dummy, me%points)
-
                 i = i + 1
                 CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
-                IF (i == 0) THEN
+                IF (i == 1) THEN
                     CALL me%init(ints(1), ierr)
-                    IF (ALLOCATED(me%points)) DEALLOCATE(me%points)
-                    ALLOCATE(me%points(0))
                 ELSE
-                    me%points(i) = ints(1)
+                    ALLOCATE(dummy(1:i-1))
+                    dummy(i-1) = ints(1)
+                    IF (i > 2) dummy(1:i-2) = points
+                    IF (ALLOCATED(points)) DEALLOCATE(points)
+                    CALL MOVE_ALLOC(dummy, points)
                 END IF
-                IF (line == '') EXIT
+                IF (line == '') EXIT get_vals
             END DO get_vals
+            me%points = points
         END IF
 
 100     FORMAT((a))
@@ -217,6 +220,35 @@ MODULE vtk_cells
 
         END SUBROUTINE abs_init
 
+        FUNCTION check_for_diffs (me, you) RESULT (diffs)
+        !>@brief
+        !> Function checks for differences in an cell
+        !>@author
+        !> Ian Porter, NRC
+        !>@date
+        !> 01/05/2017
+        CLASS(vtkcell), INTENT(IN) :: me, you
+        INTEGER(i4k) :: i
+        LOGICAL      :: diffs
+
+        diffs = .FALSE.
+        IF       (.NOT. SAME_TYPE_AS(me,you))         THEN
+            diffs = .TRUE.
+        ELSE IF (me%n_points     /= you%n_points)     THEN
+            diffs = .TRUE.
+        ELSE IF (SIZE(me%points) /= SIZE(you%points)) THEN
+            diffs = .TRUE.
+        ELSE
+            DO i = 1, SIZE(me%points)
+                IF (me%points(i) /= you%points(i))    THEN
+                    diffs = .TRUE.
+                    EXIT
+                END IF
+            END DO
+        END IF
+
+        END FUNCTION check_for_diffs
+
         SUBROUTINE vertex_init (me, n, ierr)
         !>@brief
         !> Initializes a vertex cell
@@ -237,9 +269,9 @@ MODULE vtk_cells
         INTEGER(i4k),       INTENT(IN)  :: n
         LOGICAL,            INTENT(OUT) :: ierr
 
-        me%n_points = 7 !! May be n instead?
+        me%n_points = n
         me%type     = 2
-        ierr        = (n /= me%n_points)
+        ierr        = .FALSE.
 
         END SUBROUTINE poly_vertex_init
 
@@ -464,4 +496,57 @@ MODULE vtk_cells
         ierr        = (n /= me%n_points)
 
         END SUBROUTINE quadratic_hexahedron_init
+
+        SUBROUTINE set_cell_type (me, type)
+        !>@brief
+        !> Subroutine allocates the cell based on the type (called during a read)
+        CLASS(vtkcell), INTENT(OUT), ALLOCATABLE :: me
+        INTEGER(i4k),   INTENT(IN)               :: type
+
+        IF (ALLOCATED(me)) DEALLOCATE(me)
+
+        SELECT CASE (type)
+        CASE (1)
+            ALLOCATE(vertex::me)
+        CASE (2)
+            ALLOCATE(poly_vertex::me)
+        CASE (3)
+            ALLOCATE(line::me)
+        CASE (4)
+            ALLOCATE(poly_line::me)
+        CASE (5)
+            ALLOCATE(triangle::me)
+        CASE (6)
+            ALLOCATE(triangle_strip::me)
+        CASE (7)
+            ALLOCATE(polygon::me)
+        CASE (8)
+            ALLOCATE(pixel::me)
+        CASE (9)
+            ALLOCATE(quad::me)
+        CASE (10)
+            ALLOCATE(tetra::me)
+        CASE (11)
+            ALLOCATE(voxel::me)
+        CASE (12)
+            ALLOCATE(hexahedron::me)
+        CASE (13)
+            ALLOCATE(wedge::me)
+        CASE (14)
+            ALLOCATE(pyramid::me)
+        CASE (21)
+            ALLOCATE(quadratic_edge::me)
+        CASE (22)
+            ALLOCATE(quadratic_triangle::me)            
+        CASE (23)
+            ALLOCATE(quadratic_quad::me)
+        CASE (24)
+            ALLOCATE(quadratic_tetra::me)
+        CASE (25)
+            ALLOCATE(quadratic_hexahedron::me)
+        CASE DEFAULT
+            ERROR STOP 'Bad value for type. type is unidentified. Execution terminated in Subroutine: set_cell_type'
+        END SELECT
+
+        END SUBROUTINE set_cell_type
 END MODULE vtk_cells

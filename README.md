@@ -29,6 +29,8 @@ Examples:
 ![Pyramid](files/pyramid_image.png?raw=true "Pyramid example")
 # Prism example
 ![Prism](files/rectangle_image.png?raw=true "Prism example")
+# Unstructured Grid example
+![T_shape](files/t_shape.png?raw=true "T-shape example")
 
 [Hyperlinks]:#
 [build image]: https://img.shields.io/travis-ci/porteri/vtkmofo/master.svg?style=flat-square "Travis-CI build badge"
