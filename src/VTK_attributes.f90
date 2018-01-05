@@ -19,7 +19,7 @@ MODULE vtk_attributes
     !
 
     PRIVATE
-    PUBLIC :: attribute, scalar, vector, normal, texture, tensor, field, field_data_array
+    PUBLIC :: attribute, attributes, scalar, vector, normal, texture, tensor, field, field_data_array
 
     CHARACTER(LEN=*), PARAMETER :: default = 'default'     !! Default table name
 
@@ -101,6 +101,11 @@ MODULE vtk_attributes
         PROCEDURE :: setup => field_setup
         PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_field
     END TYPE field
+
+    TYPE :: attributes
+        INTEGER(i4k) :: n = 0 !! # of points or cells in the dataset
+        CLASS(attribute), ALLOCATABLE :: attribute
+    END TYPE attributes
 
     CONTAINS
         SUBROUTINE abs_read (me, unit)
@@ -887,7 +892,6 @@ MODULE vtk_attributes
         ELSE IF (SIZE(values3d,DIM=2) /= 3 .OR. SIZE(values3d,DIM=3) /= 3) THEN
             ERROR STOP 'Tensors can only be 3x3'
         ELSE
-            IF (ALLOCATED(me%tensors)) DEALLOCATE(me%tensors)
             ALLOCATE(me%tensors(1:UBOUND(values3d,DIM=1)))
             DO i = 1, UBOUND(values3d,DIM=1)
                 me%tensors(i)%val(1:3,1:3) = values3d(i,1:3,1:3)

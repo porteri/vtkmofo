@@ -55,7 +55,8 @@ set(src
 "src/VTK_attributes.f90"
 "src/VTK_cells.f90"
 "src/VTK_datasets.f90"
-"src/VTK_output.f90"
+"src/VTK_interface.f90"
+"src/VTK_vars.f90"
 )
 
 # Make as a static library
@@ -73,12 +74,13 @@ endforeach()
 enable_testing()
 
 # Unit Tests
-set(unit_test_list attributes cells
+set(unit_test_list attributes cells datasets
                    )
 
 # Integration Tests
-set(integration_test_list Driver
+set(integration_test_list cube cylinder rectangular_prism pyramid t_shape
                           )
+
 # Add unit tests and define the string that is used to signal success
 foreach(unit_test ${unit_test_list})
   add_test(NAME "${unit_test}_test" COMMAND ${CMAKE_BINARY_DIR}/tests/unit/${unit_test}_unit WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests/unit/)

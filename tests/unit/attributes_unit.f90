@@ -11,8 +11,9 @@ MODULE vtk_attributes_unit_tests
     PRIVATE
     PUBLIC :: vtk_attributes_unit
 ! Generic information
+    INTEGER(i4k), PARAMETER :: n_types  = 6
     INTEGER(i4k), PARAMETER :: vtk_unit = 20
-    CHARACTER(LEN=15), DIMENSION(*), PARAMETER :: filename = &
+    CHARACTER(LEN=15), DIMENSION(n_types), PARAMETER :: filename    = &
       & [ 'scalar.vtk     ', &
       &   'vector.vtk     ', &
       &   'normal.vtk     ', &
@@ -20,7 +21,7 @@ MODULE vtk_attributes_unit_tests
       &   'tensor.vtk     ', &
       &   'field.vtk      ' ]
 ! Scalar information
-    REAL(r8k), DIMENSION(*), PARAMETER :: scalar_vals = &
+    REAL(r8k), DIMENSION(*),   PARAMETER :: scalar_vals = &
       & [ 0.5_r8k, 1.0_r8k, 2.0_r8k, 4.0_r8k, 2.0_r8k, 1.0_r8k, 0.5_r8k ]
 ! Vector information
     REAL(r8k), DIMENSION(2,3), PARAMETER :: vector_vals  = RESHAPE ( &
@@ -41,19 +42,19 @@ MODULE vtk_attributes_unit_tests
       &   1.0_r8k, 0.9_r8k, &
       &   1.0_r8k, 0.9_r8k ], [6,2])
 ! Tensor information
-    REAL(r8k), DIMENSION(3,3), PARAMETER :: tensor_1 = RESHAPE ( &
+    REAL(r8k), DIMENSION(3,3), PARAMETER :: tensor_1     = RESHAPE ( &
       & [ 0.57_r8k, 1.00_r8k, 0.00_r8k, &
       &   1.00_r8k, 0.75_r8k, 0.80_r8k, &
       &   0.00_r8k, 0.80_r8k, 0.57_r8k ], [3,3])
-    REAL(r8k), DIMENSION(3,3), PARAMETER :: tensor_2 = RESHAPE ( &
+    REAL(r8k), DIMENSION(3,3), PARAMETER :: tensor_2     = RESHAPE ( &
       & [ 1.57_r8k, 2.00_r8k, 1.00_r8k, &
       &   2.00_r8k, 1.75_r8k, 1.80_r8k, &
       &   1.00_r8k, 1.80_r8k, 1.57_r8k], [3,3])
-    REAL(r8k), DIMENSION(3,3), PARAMETER :: tensor_3 = RESHAPE ( &
+    REAL(r8k), DIMENSION(3,3), PARAMETER :: tensor_3     = RESHAPE ( &
       & [ 2.57_r8k, 3.00_r8k, 2.00_r8k, &
       &   3.00_r8k, 2.75_r8k, 2.80_r8k, &
       &   2.00_r8k, 2.80_r8k, 2.57_r8k ], [3,3])
-    REAL(r8k), DIMENSION(3,3), PARAMETER :: tensor_4 = RESHAPE ( &
+    REAL(r8k), DIMENSION(3,3), PARAMETER :: tensor_4     = RESHAPE ( &
       & [ 3.57_r8k, 4.00_r8k, 3.00_r8k, &
       &   4.00_r8k, 3.75_r8k, 3.80_r8k, &
       &   3.00_r8k, 3.80_r8k, 3.57_r8k ], [3,3])
@@ -76,17 +77,16 @@ MODULE vtk_attributes_unit_tests
         SUBROUTINE vtk_attributes_unit (test_pass)
         USE Kinds
         USE vtk_attributes, ONLY : attribute, scalar, vector, normal, texture, tensor, field
-        USE PassFail,       ONLY : Analyze
         IMPLICIT NONE
         !>@brief
         !> Loops over each attribute type, performs a write, then performs a read on a different attribute
         !> and compares the two to make sure they are identical
-        CLASS(attribute), ALLOCATABLE      :: vtk_type_1, vtk_type_2
-        INTEGER(i4k)                       :: i
-        LOGICAL, INTENT(OUT)               :: test_pass
-        LOGICAL, DIMENSION(SIZE(filename)) :: individual_tests_pass
+        CLASS(attribute), ALLOCATABLE :: vtk_type_1, vtk_type_2
+        INTEGER(i4k)                  :: i
+        LOGICAL, INTENT(OUT)          :: test_pass
+        LOGICAL, DIMENSION(n_types)   :: individual_tests_pass
 
-        DO i = 1, SIZE(filename,DIM=1)
+        DO i = 1, n_types
             IF (ALLOCATED(vtk_type_1)) DEALLOCATE(vtk_type_1)
             IF (ALLOCATED(vtk_type_2)) DEALLOCATE(vtk_type_2)
             SELECT CASE (i)
@@ -135,12 +135,12 @@ MODULE vtk_attributes_unit_tests
                 CALL vtk_type_1%setup(dataname='field_temp_press', numcomp=1, field_arrays=array)
             END SELECT
 
-            OPEN (unit=vtk_unit, file=filename(i), form = 'formatted')
+            OPEN (unit=vtk_unit, file=filename(i), form='formatted')
             CALL vtk_type_1%write(vtk_unit)
             CLOSE(unit=vtk_unit)
 
             !! Data type is generated from the read
-            OPEN (unit=vtk_unit, file=filename(i), form = 'formatted')
+            OPEN (unit=vtk_unit, file=filename(i), form='formatted')
             CALL vtk_type_2%read(vtk_unit)
             CLOSE(unit=vtk_unit)
 

@@ -266,5 +266,8 @@ __pycache__/
 # Ignore everything in the vtkmofo folder
 /vtkmofo
 
+# Ignore everything in the Driver folder
+/Driver
+
 # Ignore the solution file (may want to change this?)
 vtkmofo.sln

@@ -18,7 +18,7 @@ env:
 before_install:
   - export FC=gfortran-${GCC}
 script:
-  - mkdir build && cd build && cmake ../ && make -j $(nproc) && ctest -j2
+  - mkdir build && cd build && cmake ../ && make -j $(nproc) && ctest -j $(nproc)
 after_success:
   - gcov-${GCC} --version
   - bash <(curl -s https://codecov.io/bash)

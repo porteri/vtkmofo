@@ -10,15 +10,16 @@ MODULE vtk_cells_unit_tests
     PRIVATE
     PUBLIC :: vtk_cells_unit
 ! Generic information
+    INTEGER(i4k), PARAMETER :: n_types = 19
     INTEGER(i4k), PARAMETER :: vtk_unit = 20
     INTEGER(i4k), PARAMETER :: n = 11
-    INTEGER(i4k),      DIMENSION(*), PARAMETER :: type       = &
+    INTEGER(i4k),      DIMENSION(n_types), PARAMETER :: type       = &
         & [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 22, 23, 24, 25 ]
-    INTEGER(i4k),      DIMENSION(*), PARAMETER :: n_points   = &
+    INTEGER(i4k),      DIMENSION(n_types), PARAMETER :: n_points   = &
         & [ 1, 7, 2, n, 3, n, n, 4, 4,  4,  8,  8,  6,  5,  3,  6,  8, 10, 20 ]
-    INTEGER(i4k),      DIMENSION(*), PARAMETER :: point_vals = &
+    INTEGER(i4k),      DIMENSION(*),       PARAMETER :: point_vals = &
         & [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ]
-    CHARACTER(LEN=25), DIMENSION(*), PARAMETER :: filename   = &
+    CHARACTER(LEN=25), DIMENSION(n_types), PARAMETER :: filename   = &
         & [ 'vertex.vtk               ', &
         &   'poly_vertex.vtk          ', &
         &   'line.vtk                 ', &
@@ -44,17 +45,16 @@ MODULE vtk_cells_unit_tests
         USE vtk_cells, ONLY : vtkcell, vertex, poly_vertex, line, poly_line, triangle, triangle_strip, polygon, pixel, quad, &
           &                   tetra, voxel, hexahedron, wedge, pyramid, quadratic_edge, quadratic_triangle, quadratic_quad,  &
           &                   quadratic_tetra, quadratic_hexahedron
-        USE PassFail,  ONLY : Analyze
         IMPLICIT NONE
         !>@brief
         !> Loops over each cell type, performs a write, then performs a read on a different cell
         !> and compares the two to make sure they are identical
-        CLASS(vtkcell), ALLOCATABLE        :: vtk_cell_1, vtk_cell_2
-        INTEGER(i4k)                       :: i, j
-        LOGICAL, INTENT(OUT)               :: test_pass
-        LOGICAL, DIMENSION(SIZE(filename)) :: individual_tests_pass
+        CLASS(vtkcell), ALLOCATABLE :: vtk_cell_1, vtk_cell_2
+        INTEGER(i4k)                :: i
+        LOGICAL, INTENT(OUT)        :: test_pass
+        LOGICAL, DIMENSION(n_types) :: individual_tests_pass
 
-        DO i = 1, SIZE(filename)
+        DO i = 1, n_types
             IF (ALLOCATED(vtk_cell_1)) DEALLOCATE(vtk_cell_1)
             IF (ALLOCATED(vtk_cell_2)) DEALLOCATE(vtk_cell_2)
             SELECT CASE (type(i))
@@ -119,30 +119,17 @@ MODULE vtk_cells_unit_tests
 
             !! Data type is generated from the defined values above
             CALL vtk_cell_1%setup(points=point_vals(1:n_points(i)))
-            OPEN (unit=vtk_unit, file=filename(i), form = 'formatted')
+            OPEN (unit=vtk_unit, file=filename(i), form='formatted')
             CALL vtk_cell_1%write(vtk_unit)
             CLOSE(unit=vtk_unit)
 
             !! Data type is generated from the read
-            OPEN (unit=vtk_unit, file=filename(i), status='old', form = 'formatted')
+            OPEN (unit=vtk_unit, file=filename(i), status='old', form='formatted')
             CALL vtk_cell_2%read(vtk_unit)
             CLOSE(unit=vtk_unit)
 
-            individual_tests_pass(i) = .TRUE.
-            IF      (vtk_cell_1%n_points     /= vtk_cell_2%n_points) THEN
-                individual_tests_pass(i) = .FALSE.
-            ELSE IF (vtk_cell_1%type         /= vtk_cell_2%type    ) THEN
-                individual_tests_pass(i) = .FALSE.
-            ELSE IF (SIZE(vtk_cell_1%points) /= SIZE(vtk_cell_2%points)) THEN
-                individual_tests_pass(i) = .FALSE.
-            ELSE
-                DO j = 1, SIZE(vtk_cell_1%points)
-                    IF (vtk_cell_1%points(j) /= vtk_cell_2%points(j)) THEN
-                        individual_tests_pass(i) = .FALSE.
-                        EXIT
-                    END IF
-                END DO
-            END IF
+            !! Compare the read file and the written/read file to ensure both types are the same
+            individual_tests_pass(i) = .NOT. (vtk_cell_1 .diff. vtk_cell_2)
         END DO
 
         !! Compare the read file and the written/read file to ensure both types are the same
