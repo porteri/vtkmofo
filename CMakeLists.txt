@@ -50,7 +50,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 
 # Specify directories
 set(src
-"src/Kinds.f90"
+"src/Precision.f90"
 "src/Misc.f90"
 "src/VTK_attributes.f90"
 "src/VTK_cells.f90"

@@ -1,5 +1,5 @@
 MODULE vtk_cells
-    USE Kinds
+    USE Precision
     IMPLICIT NONE
     !>@brief
     !> THis module contains the types of cells used by VTK
@@ -537,7 +537,7 @@ MODULE vtk_cells
         CASE (21)
             ALLOCATE(quadratic_edge::me)
         CASE (22)
-            ALLOCATE(quadratic_triangle::me)            
+            ALLOCATE(quadratic_triangle::me)
         CASE (23)
             ALLOCATE(quadratic_quad::me)
         CASE (24)

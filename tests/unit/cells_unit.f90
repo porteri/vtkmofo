@@ -1,5 +1,5 @@
 MODULE vtk_cells_unit_tests
-    USE Kinds
+    USE Precision
     IMPLICIT NONE
     !>@brief
     !> Unit testing for cells

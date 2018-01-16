@@ -1,5 +1,5 @@
 MODULE Misc
-    USE Kinds
+    USE Precision
     IMPLICIT NONE
 
     PRIVATE

@@ -1,5 +1,5 @@
 MODULE vtk_datasets_unit_tests
-    USE Kinds
+    USE Precision
     USE vtk_vars,  ONLY : ASCII, Binary
     USE vtk_cells, ONLY : polygon, voxel
     IMPLICIT NONE

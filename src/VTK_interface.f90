@@ -1,5 +1,5 @@
 MODULE vtk
-    USE Kinds
+    USE Precision
 !    USE vtk_attributes
 !    USE vtk_cells
 !    USE vtk_datasets
@@ -16,7 +16,7 @@ MODULE vtk
 
     CONTAINS
         SUBROUTINE vtk_legacy_write (unit, geometry, celldata, pointdata, celldatasets, pointdatasets, filename, data_type, title)
-        USE Kinds
+        USE Precision
         USE vtk_datasets,   ONLY : dataset
         USE vtk_attributes, ONLY : attribute, attributes
         USE vtk_vars,       ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, version
@@ -73,7 +73,7 @@ MODULE vtk
             CASE DEFAULT
                 WRITE(*,*) 'Warning: filetype is incorrectly defined. Will default to ASCII'
                 form          = 'formatted'
-                filetype_text = 'ASCII'                
+                filetype_text = 'ASCII'
             END SELECT
             OPEN(unit=unit, file=vtkfilename, iostat=inputstat, status='unknown', form=form)
                                                            !! Open the VTK file
@@ -110,7 +110,7 @@ MODULE vtk
         END SUBROUTINE vtk_legacy_write
 
         SUBROUTINE vtk_legacy_read (unit, geometry, celldata, pointdata, celldatasets, pointdatasets, filename, data_type, title)
-        USE Kinds
+        USE Precision
         USE vtk_datasets,   ONLY : dataset
         USE vtk_attributes, ONLY : attribute, attributes
         USE vtk_vars,       ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, version
@@ -179,21 +179,21 @@ MODULE vtk
         CALL geometry%read(unit)                           !! Read the information from the file
 
         IF (PRESENT(celldatasets)) THEN
-            READ(unit,*) 
+            READ(unit,*)
             DO i = 1, SIZE(celldatasets)
                 CALL celldatasets(i)%attribute%read(unit)  !! Write the cell data values
             END DO
         ELSE IF (PRESENT(celldata)) THEN
-            READ(unit,*) 
+            READ(unit,*)
             CALL celldata%write(unit)                      !! Write the cell data values
         END IF
         IF (PRESENT(pointdatasets)) THEN
-            READ(unit,*) 
+            READ(unit,*)
             DO I = 1, SIZE(pointdatasets)
                 CALL pointdatasets(i)%attribute%read(unit)
             END DO
         ELSE IF (PRESENT(pointdata)) THEN
-            READ(unit,*) 
+            READ(unit,*)
             CALL pointdata%write(unit)                     !! Write the point data values
         END IF
 

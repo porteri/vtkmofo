@@ -1,5 +1,5 @@
 PROGRAM pyramid_test
-    USE Kinds
+    USE Precision
     USE vtk_datasets,   ONLY : polygonal_data
     USE vtk_attributes, ONLY : scalar, attributes
     USE vtk_cells,      ONLY : polygon
