@@ -298,7 +298,7 @@ MODULE vtk_datasets_unit_tests
     TYPE(voxel), DIMENSION(n_unstr_cells) :: cells
     CONTAINS
         SUBROUTINE vtk_datasets_unit (test_pass)
-        USE Kinds
+        USE Precision
         USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         USE VTK,          ONLY : vtk_legacy_write
         IMPLICIT NONE

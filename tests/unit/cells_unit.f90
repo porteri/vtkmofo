@@ -41,7 +41,7 @@ MODULE vtk_cells_unit_tests
         &   'quadratic_hexahedron.vtk ' ]
     CONTAINS
         SUBROUTINE vtk_cells_unit (test_pass)
-        USE Kinds
+        USE Precision
         USE vtk_cells, ONLY : vtkcell, vertex, poly_vertex, line, poly_line, triangle, triangle_strip, polygon, pixel, quad, &
           &                   tetra, voxel, hexahedron, wedge, pyramid, quadratic_edge, quadratic_triangle, quadratic_quad,  &
           &                   quadratic_tetra, quadratic_hexahedron
