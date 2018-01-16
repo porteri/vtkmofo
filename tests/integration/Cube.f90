@@ -1,5 +1,5 @@
 PROGRAM cube_test
-    USE Kinds
+    USE Precision
     USE vtk_datasets,   ONLY : rectlnr_grid
     USE vtk_attributes, ONLY : scalar, attributes
     USE vtk,            ONLY : vtk_legacy_write

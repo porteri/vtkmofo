@@ -1,5 +1,5 @@
 MODULE vtk_datasets
-    USE Kinds
+    USE Precision
     USE vtk_cells, ONLY : vtkcell
     IMPLICIT NONE
     !>@brief
@@ -15,7 +15,7 @@ MODULE vtk_datasets
     ! 3) Rectilinear grid
     ! 4) Polygonal data
     ! 5) Unstructured grid
-    ! 
+    !
 
     PRIVATE
     PUBLIC :: dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
@@ -447,7 +447,7 @@ MODULE vtk_datasets
             CALL interpret_string (line=line, datatype=(/ 'I','C' /), ignore=descr_coord(i), separator=' ', ints=ints, chars=chars)
             SELECT CASE (i)
             CASE (1)
-                me%x%datatype = TRIM(chars(1)) 
+                me%x%datatype = TRIM(chars(1))
             CASE (2)
                 me%y%datatype = TRIM(chars(1))
             CASE (3)
@@ -533,7 +533,7 @@ MODULE vtk_datasets
         me%y%datatype = me%x%datatype; me%z%datatype = me%x%datatype
         me%x%coord    = x_coords
         me%y%coord    = y_coords
-        me%z%coord    = z_coords 
+        me%z%coord    = z_coords
         me%firstcall  = .FALSE.
 
         END SUBROUTINE rectlnr_grid_setup

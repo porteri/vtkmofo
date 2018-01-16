@@ -1,5 +1,5 @@
 MODULE vtk_vars
-    USE Kinds
+    USE Precision, ONLY : i4k
     IMPLICIT NONE
     !>@brief
     !> This module contains basic information needed for reading/writing to the vtk file

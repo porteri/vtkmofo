@@ -1,5 +1,5 @@
 PROGRAM T_shape_test
-    USE Kinds
+    USE Precision
     USE vtk_datasets,   ONLY : unstruct_grid
     USE vtk_attributes, ONLY : scalar, attributes
     USE vtk_cells,      ONLY : voxel

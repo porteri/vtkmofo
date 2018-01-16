@@ -1,5 +1,5 @@
 MODULE vtk_attributes
-    USE Kinds
+    USE Precision
     USE Misc, ONLY : def_len
     IMPLICIT NONE
     !>@brief

@@ -1,5 +1,5 @@
 MODULE vtk_attributes_unit_tests
-    USE Kinds
+    USE Precision
     USE vtk_attributes, ONLY : field_data_array
     IMPLICIT NONE
     !>@brief
