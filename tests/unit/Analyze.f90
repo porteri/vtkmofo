@@ -10,20 +10,19 @@ MODULE PassFail
     PRIVATE
     PUBLIC :: Analyze, testid, all_tests_pass
     !
-    INTEGER(i4k) :: testcnt  = 0                    !! Counter for the number of unit tests performed
-    INTEGER(i4k) :: testnum  = 0                    !! Test number for unit test being performed (number resets for 
+    INTEGER(i4k) :: testcnt   = 0                   !! Counter for the number of unit tests performed
+    INTEGER(i4k) :: testnum   = 0                   !! Test number for unit test being performed (number resets for 
                                                     !! unit test on new subroutine/function)
-    INTEGER(i4k) :: utunit   = 40                   !! File unit # for writing output file for Unit Testing
+    INTEGER(i4k) :: utunit    = 40                  !! File unit # for writing output file for Unit Testing
     INTEGER(i4k) :: nfailures = 0                   !! Counter of # of failed unit tests
     REAL(r8k), PARAMETER :: delta_min = 1.0e-20_r8k !! Minimum value for dividing by if known = 0.0
     LOGICAL :: TestingPassed = .TRUE.               !! Flag to indicate whether all unit tests passed or not
     CHARACTER(LEN=20) :: testid                     !! Name of subroutine/function being tested
-                                                    !!(Defined by user as start of each set of unit tests)
+                                                    !! (Defined by user as start of each set of unit tests)
     CHARACTER(LEN=20) :: testid_prev                !! Name of previous subroutine/function tested. Used as a tracking tool only
     !
     CONTAINS
         ELEMENTAL IMPURE FUNCTION Analyze (known, calc, criteria) RESULT(test_passed)
-        USE Kinds
         IMPLICIT NONE
         !>@brief
         !> This subroutine analyzes the results of the unit test
