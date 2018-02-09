@@ -93,7 +93,7 @@ foreach(unit_test ${unit_test_list})
   add_test(NAME "${unit_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/${unit_test}_unit WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/)
   set_property(TEST "${unit_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Test passed")
 endforeach()
-
+ 
 # Add integration tests and define the string that is used to signal success
 foreach(integration_test ${integration_test_list})
   add_test(NAME "${integration_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/${integration_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/)
