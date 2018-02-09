@@ -1,5 +1,5 @@
 PROGRAM T_shape_test
-    USE Kinds
+    USE Precision
     USE vtk_datasets,   ONLY : unstruct_grid
     USE vtk_attributes, ONLY : scalar, attributes
     USE vtk_cells,      ONLY : voxel
@@ -17,7 +17,7 @@ PROGRAM T_shape_test
     TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
     INTEGER(i4k)                :: i, t
     INTEGER(i4k),     PARAMETER :: n_points = 24, n_cells = 5, unit = 20, n_steps = 10
-    CHARACTER(LEN=*), PARAMETER :: filename = 't_shape', file_extension='.vtk'
+    CHARACTER(LEN=*), PARAMETER :: filename = 't_shape.vtk'
     CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of T-shape unstructured grid geometry'
     CHARACTER(LEN=8)            :: t_char
     REAL(r8k), DIMENSION(n_cells, 1:n_params_to_write) :: cell_vals
@@ -88,7 +88,7 @@ PROGRAM T_shape_test
         END DO
 
         CALL vtk_legacy_write (unit, t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
-          &                    filename=(filename // '_' // TRIM(t_char) // file_extension), title=title)
+          &                    filename=filename, title=title, multiple_io=.TRUE.)
     END DO
 
     WRITE(*,*) 'Finished'

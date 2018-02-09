@@ -1,9 +1,9 @@
 MODULE Misc
-    USE Kinds
+    USE Precision
     IMPLICIT NONE
 
     PRIVATE
-    PUBLIC :: interpret_string, def_len
+    PUBLIC :: interpret_string, def_len, to_uppercase
 
     INTERFACE get_string_value
         PROCEDURE :: get_string_char, get_string_int, get_string_real
@@ -126,4 +126,32 @@ MODULE Misc
         READ(text,'(es13.6)') name               !! Store value
 
         END SUBROUTINE get_string_real
+
+        PURE FUNCTION to_uppercase (string) RESULT (new_string)
+        USE Precision
+        IMPLICIT NONE
+        !>@brief
+        !> This function changes lowercase text in a string to uppercase text
+        !>@author
+        !> Ian Porter, NRC
+        !>@date
+        !> 1/30/2015
+        INTEGER(i4k) :: i, j
+        CHARACTER(LEN=*), INTENT(IN)    :: string
+        CHARACTER(LEN=LEN_TRIM(string)) :: new_string
+        CHARACTER(LEN=26), PARAMETER    :: CAPL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        CHARACTER(LEN=26), PARAMETER    :: LOWL = 'abcdefghijklmnopqrstuvwxyz'
+
+        new_string = ''
+
+        DO i = 1, LEN_TRIM(string)
+            j = INDEX(LOWL, string(i:i))
+            IF (j > 0) THEN
+                new_string(i:i) = CAPL(j:j)
+            ELSE
+                new_string(i:i) = string(i:i)
+            END IF
+        END DO
+
+        END FUNCTION to_uppercase
 END MODULE Misc

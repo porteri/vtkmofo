@@ -30,14 +30,21 @@ endif()
 # Compiler options
 if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "Intel")
   set(intel_compiler true)
-  # Full debug, Fortran 2008 standard, free format (due to automatic build to .f file for testing), Check bounds
-  set(CMAKE_Fortran_FLAGS
-    "${prefix}nologo ${prefix}debug${infix}full ${prefix}multiple-processes ${prefix}O0 ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
-  )
+  if ( "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
+    # Full debug, Fortran 2008 standard, free format (due to automatic build to .f file for testing), Check bounds
+    set(CMAKE_Fortran_FLAGS
+      "${prefix}nologo ${prefix}debug${infix}full ${prefix}MP ${prefix}Od ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free ${prefix}assume${infix}nounderscore"
+       )
+  else()
+    # Full debug, Fortran 2008 standard, free format (due to automatic build to .f file for testing), Check bounds
+    set(CMAKE_Fortran_FLAGS
+      "${prefix}nologo ${prefix}debug${infix}full ${prefix}multiple-processes ${prefix}O0 ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free ${prefix}assume${infix}nounderscore"
+	   )
+  endif()
 elseif("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
   set(gnu_compiler true)
   # Fortran 2008 standard, free format (due to automatic build to .f file for testing)
-  set(CMAKE_Fortran_FLAGS "${prefix}std=f2008 ${prefix}fcheck=all ${prefix}Wall ${prefix}Wno-unused-dummy-argument ${prefix}ffree-form ${prefix}fprofile-arcs ${prefix}ftest-coverage" )
+  set(CMAKE_Fortran_FLAGS "${prefix}std=f2008 ${prefix}fcheck=all ${prefix}Wall ${prefix}Wno-unused-dummy-argument ${prefix}ffree-form")
 else()
   message(WARNING
     "\n"
@@ -50,7 +57,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 
 # Specify directories
 set(src
-"src/Kinds.f90"
+"src/Precision.f90"
 "src/Misc.f90"
 "src/VTK_attributes.f90"
 "src/VTK_cells.f90"
@@ -83,12 +90,12 @@ set(integration_test_list cube cylinder rectangular_prism pyramid t_shape
 
 # Add unit tests and define the string that is used to signal success
 foreach(unit_test ${unit_test_list})
-  add_test(NAME "${unit_test}_test" COMMAND ${CMAKE_BINARY_DIR}/tests/unit/${unit_test}_unit WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests/unit/)
+  add_test(NAME "${unit_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/${unit_test}_unit WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/)
   set_property(TEST "${unit_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Test passed")
 endforeach()
-
+ 
 # Add integration tests and define the string that is used to signal success
 foreach(integration_test ${integration_test_list})
-  add_test(NAME "${integration_test}_test" COMMAND ${CMAKE_BINARY_DIR}/tests/integration/${integration_test} WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/tests/integration/)
+  add_test(NAME "${integration_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/${integration_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/)
   set_property(TEST "${integration_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Finished")
 endforeach()

@@ -1,5 +1,5 @@
 MODULE vtk_attributes_unit_tests
-    USE Kinds
+    USE Precision
     USE vtk_attributes, ONLY : field_data_array
     IMPLICIT NONE
     !>@brief
@@ -75,7 +75,7 @@ MODULE vtk_attributes_unit_tests
 
     CONTAINS
         SUBROUTINE vtk_attributes_unit (test_pass)
-        USE Kinds
+        USE Precision
         USE vtk_attributes, ONLY : attribute, scalar, vector, normal, texture, tensor, field
         IMPLICIT NONE
         !>@brief

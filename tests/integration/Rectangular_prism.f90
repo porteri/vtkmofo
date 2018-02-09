@@ -1,5 +1,5 @@
 PROGRAM rectangular_prism_test
-    USE Kinds
+    USE Precision
     USE vtk_datasets,   ONLY : struct_pts
     USE vtk_attributes, ONLY : scalar, attributes
     USE vtk,            ONLY : vtk_legacy_write
