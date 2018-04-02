@@ -156,7 +156,7 @@ END MODULE vtk_attributes_unit_tests
 
 PROGRAM vtk_attributes_test
     USE vtk_attributes_unit_tests, ONLY : vtk_attributes_unit
-    USE PassFail,                  ONLY : all_tests_pass
+    USE VTKmofoPassFail,           ONLY : all_tests_pass
     IMPLICIT NONE
     !>@brief
     !> Driver testing subroutine for the attributes information
