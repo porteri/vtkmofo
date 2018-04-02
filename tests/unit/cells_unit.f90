@@ -140,7 +140,7 @@ END MODULE vtk_cells_unit_tests
 
 PROGRAM vtk_cells_test
     USE vtk_cells_unit_tests, ONLY : vtk_cells_unit
-    USE PassFail,             ONLY : all_tests_pass
+    USE VTKmofoPassFail,      ONLY : all_tests_pass
     IMPLICIT NONE
     !>@brief
     !> Driver testing subroutine for the cells information

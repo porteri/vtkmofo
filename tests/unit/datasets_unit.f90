@@ -383,7 +383,7 @@ END MODULE vtk_datasets_unit_tests
 
 PROGRAM vtk_datasets_test
     USE vtk_datasets_unit_tests, ONLY : vtk_datasets_unit
-    USE PassFail,                ONLY : all_tests_pass
+    USE VTKmofoPassFail,         ONLY : all_tests_pass
     IMPLICIT NONE
     !>@brief
     !> Driver testing subroutine for the attributes information

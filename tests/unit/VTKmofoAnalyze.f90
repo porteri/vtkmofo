@@ -1,4 +1,4 @@
-MODULE PassFail
+MODULE VTKmofoPassFail
     USE ISO_FORTRAN_ENV, ONLY : i4k => INT32, r8k => REAL64
     IMPLICIT NONE
     !>@breif
@@ -142,4 +142,4 @@ MODULE PassFail
         WRITE(*,*) 'Test passed'
 
         END SUBROUTINE all_tests_pass
-END MODULE PassFail
+END MODULE VTKmofoPassFail
