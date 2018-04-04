@@ -1,10 +1,10 @@
 # Unit tests
-include_directories(${CMAKE_BINARY_DIR}/mod)
+include_directories("${VTKmofo_mod_dir}")
 
 # Add object library to work around CMake parallel build w/ module quirk
 add_library(VTKmofoPassFail OBJECT VTKmofoAnalyze.f90)
 
-function(add_VTKmofo_test test_name)
+function(add_VTKmofo_unit_test test_name)
   # Assumes source file is ${test_name}.f90
   add_executable(${test_name} ${test_name}.f90 $<TARGET_OBJECTS:VTKmofoPassFail>)
   target_link_libraries(${test_name} vtkmofo)
@@ -12,13 +12,15 @@ function(add_VTKmofo_test test_name)
     PROPERTY
     FOLDER "VTKmofo-Unit-Tests")
   source_group("VTKmofo\\UnitTests" FILES ${test_name}.f90)
-endfunction(add_VTKmofo_test)
+endfunction(add_VTKmofo_unit_test)
 
-# attributes
-add_VTKmofo_test(attributes_unit)
+foreach(test
+    attributes_unit
+    cells_unit
+    datasets_unit)
+  add_VTKmofo_unit_test(${test})
+  list(APPEND VTKmofo_unit_test_list ${test})
+endforeach()
 
-# cells
-add_VTKmofo_test(cells_unit)
-
-# datasets
-add_VTKmofo_test(datasets_unit)
+# Set the VTKmofo_unit_test_list in parent scope
+set(VTKmofo_unit_test_list ${VTKmofo_unit_test_list} PARENT_SCOPE)

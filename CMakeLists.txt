@@ -58,49 +58,71 @@ else()
   )
 endif()
 
-set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod)
 
-# Specify directories
-set(src
-"src/Precision.f90"
-"src/Misc.f90"
-"src/VTK_attributes.f90"
-"src/VTK_cells.f90"
-"src/VTK_datasets.f90"
-"src/VTK_interface.f90"
-"src/VTK_vars.f90"
-)
+##################################################
+# Begin VTKmofo specific targets and configuration
+##################################################
 
-# Make as a static library
-include_directories(${CMAKE_BINARY_DIR}/mod)
-add_library(vtkmofo ${src})
-install(TARGETS vtkmofo DESTINATION lib)
-install(DIRECTORY "${CMAKE_BINARY_DIR}/mod/" DESTINATION mod)
+# Where to put VTKmofo module files
+set(VTKmofo_mod_dir ${CMAKE_CURRENT_BINARY_DIR}/mod)
 
-#Specify all the subdirectories containing codes that produce executable files or libraries:
-set(subdirectories_list tests/unit tests/integration)
-foreach(subdirectory ${subdirectories_list})
-  add_subdirectory(${subdirectory})
+# Specify VTKmofo sources
+set(VTKmofo_files
+  "Precision.f90"
+  "Misc.f90"
+  "VTK_attributes.f90"
+  "VTK_cells.f90"
+  "VTK_datasets.f90"
+  "VTK_interface.f90"
+  "VTK_vars.f90"
+  )
+foreach(item ${VTKmofo_files})
+  list(APPEND VTKmofo_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
 endforeach()
+
+# Make VTKmofo static library
+add_library(vtkmofo STATIC ${VTKmofo_sources})
+
+# Tell CMake where to put vtkmofo .mod files generated with libvtkmofo
+set_property(TARGET vtkmofo
+  PROPERTY
+  Fortran_MODULE_DIRECTORY ${VTKmofo_mod_dir})
+
+# Tell consumers where to find .mod files
+target_include_directories(vtkmofo PUBLIC ${VTKmofo_mod_dir})
+
+# Organize things in Visual Studio
+source_group("VTKmofoLib" FILES ${VTKmofo_sources})
+set_property(TARGET vtkmofo
+  PROPERTY
+  FOLDER "VTKmofo")
+install(TARGETS vtkmofo DESTINATION lib)
+install(DIRECTORY "${VTKmofo_mod_dir}" DESTINATION mod)
+
+
+######################
+# Add test directories
+######################
 
 enable_testing()
 
-# Unit Tests
-set(unit_test_list attributes cells datasets
-                   )
+# Specify all the subdirectories containing test executable/library sources:
+set(subdirectories_list tests/unit tests/integration)
+foreach(subdirectory ${subdirectories_list})
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/${subdirectory}")
+endforeach()
 
-# Integration Tests
-set(integration_test_list cube cylinder rectangular_prism pyramid t_shape
-                          )
+# Unit Tests exported from tests/unit subdirectory in ${VTKmofo_unit_test_list}
+# Integration Tests exported from tests/integration in ${VTKmofo_integration_test_list}
 
 # Add unit tests and define the string that is used to signal success
-foreach(unit_test ${unit_test_list})
-  add_test(NAME "${unit_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/${unit_test}_unit WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/)
+foreach(unit_test ${VTKmofo_unit_test_list})
+  add_test(NAME "${unit_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/${unit_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/)
   set_property(TEST "${unit_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Test passed")
 endforeach()
 
 # Add integration tests and define the string that is used to signal success
-foreach(integration_test ${integration_test_list})
+foreach(integration_test ${VTKmofo_integration_test_list})
   add_test(NAME "${integration_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/${integration_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/)
   set_property(TEST "${integration_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Finished")
 endforeach()

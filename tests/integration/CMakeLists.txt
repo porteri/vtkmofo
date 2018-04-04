@@ -1,22 +1,22 @@
-# Integration tests
-include_directories(${CMAKE_BINARY_DIR}/mod)
+function(add_VTKmofo_integration_test test_name)
+  # Assumes source file is ${test_name}.f90
+  add_executable(${test_name} ${test_name}.f90)
+  target_link_libraries(${test_name} vtkmofo)
+  set_property(TARGET ${test_name}
+    PROPERTY
+    FOLDER "VTKmofo-Integration-Tests")
+  source_group("VTKmofo\\IntegrationTests" FILES ${test_name}.f90)
+endfunction(add_VTKmofo_integration_test)
 
-# Cube geometry
-add_executable(cube Cube.f90)
-target_link_libraries(cube vtkmofo)
+foreach(test
+    Cube
+    Cylinder
+    Rectangular_prism
+    Pyramid
+    T_shape)
+  add_VTKmofo_integration_test(${test})
+  list(APPEND VTKmofo_integration_test_list "${test}")
+endforeach()
 
-# Cylindrical geometry
-add_executable(cylinder Cylinder.f90)
-target_link_libraries(cylinder vtkmofo)
-
-# Rectangular prism geometry
-add_executable(rectangular_prism Rectangular_prism.f90)
-target_link_libraries(rectangular_prism vtkmofo)
-
-# Pyramid geometry
-add_executable(pyramid Pyramid.f90)
-target_link_libraries(pyramid vtkmofo)
-
-# T_shape geometry
-add_executable(t_shape T_shape.f90)
-target_link_libraries(t_shape vtkmofo)
+# Export integration test list so that we don't have to keep track if it twice
+set(VTKmofo_integration_test_list "${VTKmofo_integration_test_list}" PARENT_SCOPE)
