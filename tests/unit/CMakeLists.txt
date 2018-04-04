@@ -3,6 +3,9 @@ include_directories("${VTKmofo_mod_dir}")
 
 # Add object library to work around CMake parallel build w/ module quirk
 add_library(VTKmofoPassFail OBJECT VTKmofoAnalyze.f90)
+set_property(TARGET VTKmofoPassFail
+  PROPERTY
+  FOLDER "VTKmofo-Unit-Tests")
 
 function(add_VTKmofo_unit_test test_name)
   # Assumes source file is ${test_name}.f90
@@ -11,7 +14,7 @@ function(add_VTKmofo_unit_test test_name)
   set_property(TARGET ${test_name}
     PROPERTY
     FOLDER "VTKmofo-Unit-Tests")
-  source_group("VTKmofo\\UnitTests" FILES ${test_name}.f90)
+  source_group("VTKmofo\\UnitTests" FILES ${test_name}.f90 VTKmofoAnalyze.f90)
 endfunction(add_VTKmofo_unit_test)
 
 foreach(test
