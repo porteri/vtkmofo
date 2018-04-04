@@ -4,14 +4,21 @@ include_directories(${CMAKE_BINARY_DIR}/mod)
 # Add object library to work around CMake parallel build w/ module quirk
 add_library(VTKmofoPassFail OBJECT VTKmofoAnalyze.f90)
 
+function(add_VTKmofo_test test_name)
+  # Assumes source file is ${test_name}.f90
+  add_executable(${test_name} ${test_name}.f90 $<TARGET_OBJECTS:VTKmofoPassFail>)
+  target_link_libraries(${test_name} vtkmofo)
+  set_property(TARGET ${test_name}
+    PROPERTY
+    FOLDER "VTKmofo-Unit-Tests")
+  source_group("VTKmofo\\UnitTests" FILES ${test_name}.f90)
+endfunction(add_VTKmofo_test)
+
 # attributes
-add_executable(attributes_unit attributes_unit.f90 $<TARGET_OBJECTS:VTKmofoPassFail>)
-target_link_libraries(attributes_unit vtkmofo)
+add_VTKmofo_test(attributes_unit)
 
 # cells
-add_executable(cells_unit cells_unit.f90 $<TARGET_OBJECTS:VTKmofoPassFail>)
-target_link_libraries(cells_unit vtkmofo)
+add_VTKmofo_test(cells_unit)
 
 # datasets
-add_executable(datasets_unit datasets_unit.f90 $<TARGET_OBJECTS:VTKmofoPassFail>)
-target_link_libraries(datasets_unit vtkmofo)
+add_VTKmofo_test(datasets_unit)
