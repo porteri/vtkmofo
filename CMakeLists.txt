@@ -59,6 +59,13 @@ else()
 endif()
 
 
+# Check if using OpenCoarrays caf wrapper
+if(CMAKE_Fortran_COMPILER MATCHES "caf$")
+  set(USING_CAF_COMPILER_WRAPPER TRUE)
+  set(DEFAULT_NUM_IMAGES 1)
+endif()
+
+
 ##################################################
 # Begin VTKmofo specific targets and configuration
 ##################################################
@@ -117,12 +124,20 @@ endforeach()
 
 # Add unit tests and define the string that is used to signal success
 foreach(unit_test ${VTKmofo_unit_test_list})
-  add_test(NAME "${unit_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/${unit_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/)
-  set_property(TEST "${unit_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Test passed")
+  if(USING_CAF_COMPILER_WRAPPER)
+    add_caf_test("VTKmofo_${unit_test}_test" ${DEFAULT_NUM_IMAGES} ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/${unit_test})
+  else()
+    add_test(NAME "VTKmofo_${unit_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/${unit_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/unit)
+  endif()
+  set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Test passed")
 endforeach()
 
 # Add integration tests and define the string that is used to signal success
 foreach(integration_test ${VTKmofo_integration_test_list})
-  add_test(NAME "${integration_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/${integration_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/)
-  set_property(TEST "${integration_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Finished")
+  if(USING_CAF_COMPILER_WRAPPER)
+    add_caf_test("VTKmofo_${integration_test}_test" ${DEFAULT_NUM_IMAGES} ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/${integration_test})
+  else()
+    add_test(NAME "VTKmofo_${integration_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/${integration_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/integration)
+  endif()
+  set_property(TEST "VTKmofo_${integration_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Finished")
 endforeach()
