@@ -94,7 +94,7 @@ MODULE Misc
         IF (INDEX(string,sep) == 0) THEN
             name = string(1:)                    !! Read to end of string
         ELSE
-            name = string(1:INDEX(string,sep))   !! Read until sep is found
+            name = string(1:INDEX(string,sep)-1) !! Read until sep is found
         END IF
 
         END SUBROUTINE get_string_char
@@ -107,7 +107,7 @@ MODULE Misc
         IF (INDEX(string,sep) == 0) THEN
             text = string(1:)                    !! Read to end of string
         ELSE
-            text = string(1:INDEX(string,sep))   !! Read until sep is found
+            text = string(1:INDEX(string,sep)-1) !! Read until sep is found
         END IF
         READ(text,'(i8)') name                   !! Store value
 
@@ -121,7 +121,7 @@ MODULE Misc
         IF (INDEX(string,sep) == 0) THEN
             text = string(1:)                    !! Read to end of string
         ELSE
-            text = string(1:INDEX(string,sep))   !! Read until sep is found
+            text = string(1:INDEX(string,sep)-1) !! Read until sep is found
         END IF
         READ(text,'(es13.6)') name               !! Store value
 
