@@ -130,6 +130,7 @@ foreach(unit_test ${VTKmofo_unit_test_list})
     add_test(NAME "VTKmofo_${unit_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/${unit_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/unit)
   endif()
   set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Test passed")
+  set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY LABELS "VTKmofo" "unit-test")
 endforeach()
 
 # Add integration tests and define the string that is used to signal success
@@ -140,4 +141,10 @@ foreach(integration_test ${VTKmofo_integration_test_list})
     add_test(NAME "VTKmofo_${integration_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/${integration_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/integration)
   endif()
   set_property(TEST "VTKmofo_${integration_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Finished")
+  set_property(TEST "VTKmofo_${integration_test}_test" PROPERTY LABELS "VTKmofo" "integration-test")
 endforeach()
+
+add_custom_target(RUN_ALL_VTKmofo_TESTS
+  COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -L "VTKmofo")
+add_dependencies(RUN_ALL_VTKmofo_TESTS ${VTKmofo_unit_test_list} ${VTKmofo_integration_test_list})
+set_property(TARGET RUN_ALL_VTKmofo_TESTS PROPERTY FOLDER "All-Tests")
