@@ -145,6 +145,6 @@ foreach(integration_test ${VTKmofo_integration_test_list})
 endforeach()
 
 add_custom_target(RUN_ALL_VTKmofo_TESTS
-  COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -L "VTKmofo")
+  COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure -L "VTKmofo")
 add_dependencies(RUN_ALL_VTKmofo_TESTS ${VTKmofo_unit_test_list} ${VTKmofo_integration_test_list})
 set_property(TARGET RUN_ALL_VTKmofo_TESTS PROPERTY FOLDER "All-Tests")
