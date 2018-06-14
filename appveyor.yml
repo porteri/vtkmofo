@@ -45,10 +45,10 @@ before_build:
     mkdir build
     cd build
     cmake --version
+    cmake .. -G %generator%
 #    if ($isLinux) {
 #    cmake ../
 #    } else {
-    cmake .. -G %generator%
 #    }
 
 build:
