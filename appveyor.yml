@@ -13,7 +13,7 @@ image:
 #- x64
 stack: python 3
 environment:
-  MINGW_DIR: C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin
+  MINGW_DIR: C:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev1\mingw64\bin
   PY_DIR: C:\Python36-x64
 #  matrix:
 #    - arch: Win64
