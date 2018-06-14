@@ -1,5 +1,8 @@
 version: 1.0.{build}
-image: Visual Studio 2017
+pull_requests:
+  do_not_increment_build_number: true
+skip_tags: true
+image: Visual Studio 2015
 notifications:
 - provider: Email
   to:
@@ -8,4 +11,4 @@ notifications:
   message: AppVeyor has re-built vtkmofo due to pull request
   on_build_success: true
   on_build_failure: true
-  on_build_status_changed: true
+  on_build_status_changed: false
