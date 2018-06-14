@@ -3,7 +3,7 @@ pull_requests:
   do_not_increment_build_number: true
 skip_tags: true
 image:
-- ubuntu
+#- ubuntu
 - Visual Studio 2015
 - Visual Studio 2017
 configuration:
@@ -19,29 +19,37 @@ matrix:
 
 # skip unsupported combinations
 init:
-- ps: if ($isLinux) {
-  ( set generator="" )
-  } else {
- set arch=
- if "%arch%"=="Win64" ( set arch= Win64)
- echo %arch%
- echo %APPVEYOR_BUILD_WORKER_IMAGE%
- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013%arch%" )
-  }
+- set arch=
+- if "%arch%"=="Win64" ( set arch= Win64)
+- echo %arch%
+- echo %APPVEYOR_BUILD_WORKER_IMAGE%
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013%arch%" )
 - echo %generator%
+#- ps: if ($isLinux) {
+#  ( set generator="" )
+#  } else {
+# set arch=
+# if "%arch%"=="Win64" ( set arch= Win64)
+# echo %arch%
+# echo %APPVEYOR_BUILD_WORKER_IMAGE%
+# if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
+# if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
+# if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013%arch%" )
+#  }
+#- echo %generator%
 
 before_build:
 - cmd: |-
     mkdir build
     cd build
     cmake --version
-    if ($isLinux) {
-    cmake ../
-    } else {
+#    if ($isLinux) {
+#    cmake ../
+#    } else {
     cmake .. -G %generator%
-    }
+#    }
 
 build:
   project: c:\projects\cmake-init\build\template.sln
