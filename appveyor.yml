@@ -1,0 +1,11 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+notifications:
+- provider: Email
+  to:
+  - ianeporter88@gmail.com
+  subject: vtkmofo build AppVeyor
+  message: AppVeyor has re-built vtkmofo due to pull request
+  on_build_success: true
+  on_build_failure: true
+  on_build_status_changed: true

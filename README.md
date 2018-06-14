@@ -1,9 +1,9 @@
-# *** NOTE: This is still under construction! ***
 # vtkmofo
 VTK legacy format using modern Fortran
 
-[![CI Build Status][build image]](https://travis-ci.org/porteri/vtkmofo)
-[![Release Downloads][download image]](https://github.com/porteri/vtkmofo/releases)
+[![AppVeyor build status][AppVeyor build image]](https://ci.appveyor.com/project/porteri/vtkmofo)
+[![Travis CI build status][Travis CI build image]](https://travis-ci.org/porteri/vtkmofo)
+[![release downloads][download image]](https://github.com/porteri/vtkmofo/releases)
 [![codecov][codecov image]](https://codecov.io/gh/porteri/vtkmofo)
 
 This is a generic modern Fortran interface to write a .vtk file using the legacy .vtk file format, version 3.0.
@@ -19,7 +19,7 @@ Operating Systems:
  - Windows
 
 Build System:
- - [CMake][CMake link] 3.2.2 or newer
+ - [CMake][CMake link] 3.10 or newer
 
 Examples:
 # 2D example
@@ -34,7 +34,8 @@ Examples:
 ![T_shape](files/t_shape.png?raw=true "T-shape example")
 
 [Hyperlinks]:#
-[build image]: https://img.shields.io/travis-ci/porteri/vtkmofo/master.svg?style=flat-square "Travis-CI build badge"
+[AppVeyor build image]: https://ci.appveyor.com/api/projects/status/omlvmn8xcr9sxuwt?svg=true "AppVeyor build badge"
+[Travis CI build image]: https://img.shields.io/travis-ci/porteri/vtkmofo/master.svg?style=flat-square "Travis CI build badge"
 [download image]: https://img.shields.io/github/downloads/porteri/vtkmofo/total.svg?style=flat-square "Download count badge"
 [codecov image]: https://codecov.io/gh/porteri/vtkmofo/branch/master/graph/badge.svg
 [gcc link]: https://gcc.gnu.org/
