@@ -12,6 +12,7 @@ configuration:
 platform:
 - x64
 environment:
+  MINGW_DIR: C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin
   matrix:
     - arch: Win64
 matrix:
@@ -41,20 +42,37 @@ init:
 #- echo %generator%
 
 before_build:
+- cmd: set PATH=%MINGW_DIR%;%PATH%
+- cmd: set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
+- cmd: set FC=%MINGW_DIR%\gfortran
+- cmd: mklink bin\make.exe %MINGW_DIR%\mingw32-make.exe
 - cmd: |-
     mkdir build
     cd build
     cmake --version
-    cmake .. -G %generator%
-#    if ($isLinux) {
-#    cmake ../
-#    } else {
-#    }
+
+- sh: sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test" > /dev/null
+- sh: sudo apt-get -yq update > /dev/null
+- sh: sudo apt-get install -yq --no-install-suggests --no-install-recommends gfortran-6 cmake make > /dev/null
+- sh: export FC=/usr/bin/gfortran-6
+- sh: mkdir build
+- sh: cd build
+- sh: FC=gfortran CC=gcc CXX=gcc cmake ../
 
 build:
   project: c:\projects\cmake-init\build\template.sln
   verbosity: minimal
   parallel: true
+
+build_script:
+- cd bin
+#- cmd: cmake .. -G %generator%
+- cmd: cmake .. -G "MinGW Makefiles" ..
+- sh: cmake ..
+- make
+
+after_build:
+- make test
 
 notifications:
 - provider: Email
