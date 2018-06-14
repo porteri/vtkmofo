@@ -46,9 +46,10 @@ init:
 before_build:
 - cmd: |-
     set PATH=%MINGW_DIR%;%PY_DIR%;%PY_DIR%\Scripts;%PATH%
-    set PATH=%MINGW_DIR%;%PATH%
     set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
     set FC=%MINGW_DIR%\gfortran
+    set CXX=%MINGW_DIR%\g++
+    set CC=%MINGW_DIR%\gcc
 - cmd: mklink bin\make.exe %MINGW_DIR%\mingw32-make.exe
 - cmd: |-
     mkdir build
