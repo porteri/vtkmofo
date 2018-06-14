@@ -1,18 +1,17 @@
 version: 1.0.{build}
-pull_requests:
-  do_not_increment_build_number: true
-skip_tags: true
+#pull_requests:
+#  do_not_increment_build_number: true
+#skip_tags: true
 image:
 #- ubuntu
 #- Visual Studio 2015
 - Visual Studio 2017
-configuration:
-- Release
-- Debug
-platform:
-- x64
-stack:
-- python 3
+#configuration:
+#- Release
+#- Debug
+#platform:
+#- x64
+stack: python 3
 environment:
   MINGW_DIR: C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin
   PY_DIR: C:\Python36-x64
@@ -20,28 +19,16 @@ environment:
 #    - arch: Win64
 #matrix:
 #  fast_finish: true
-
+clone_depth: 3
 # skip unsupported combinations
-init:
-- set arch=
-- if "%arch%"=="Win64" ( set arch= Win64 )
-- echo %arch%
-- echo %APPVEYOR_BUILD_WORKER_IMAGE%
-- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
-- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
-- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013%arch%" )
-- echo %generator%
-#- ps: if ($isLinux) {
-#  ( set generator="" )
-#  } else {
-# set arch=
-# if "%arch%"=="Win64" ( set arch= Win64)
-# echo %arch%
-# echo %APPVEYOR_BUILD_WORKER_IMAGE%
-# if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
-# if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
-# if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013%arch%" )
-#  }
+#init:
+#- set arch=
+#- if "%arch%"=="Win64" ( set arch= Win64 )
+#- echo %arch%
+#- echo %APPVEYOR_BUILD_WORKER_IMAGE%
+#- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
+#- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
+#- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013%arch%" )
 #- echo %generator%
 
 before_build:
@@ -52,10 +39,10 @@ before_build:
     set CXX=%MINGW_DIR%\g++
     set CC=%MINGW_DIR%\gcc
 - cmd: mklink bin\make.exe %MINGW_DIR%\mingw32-make.exe
-- cmd: |-
-    mkdir build
-    cd build
-    cmake --version
+#- cmd: |-
+#    mkdir build
+#    cd build
+#    cmake --version
 
 - sh: sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test" > /dev/null
 - sh: sudo apt-get -yq update > /dev/null
@@ -65,15 +52,17 @@ before_build:
 - sh: cd build
 - sh: FC=gfortran CC=gcc CXX=gcc cmake ../
 
-build:
-  project: c:\projects\cmake-init\build\template.sln
-  verbosity: minimal
-  parallel: true
+- cd bin
+
+#build:
+#  project: c:\projects\cmake-init\build\template.sln
+#  verbosity: minimal
+#  parallel: true
 
 build_script:
-- cd bin
+#- cd bin
 #- cmd: cmake .. -G %generator%
-- cmd: cmake .. -G "MinGW Makefiles" ..
+- cmd: cmake -G "MinGW Makefiles" ..
 - sh: cmake ..
 - make
 
