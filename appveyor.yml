@@ -16,15 +16,15 @@ stack:
 environment:
   MINGW_DIR: C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin
   PY_DIR: C:\Python36-x64
-  matrix:
-    - arch: Win64
-matrix:
-  fast_finish: true
+#  matrix:
+#    - arch: Win64
+#matrix:
+#  fast_finish: true
 
 # skip unsupported combinations
 init:
 - set arch=
-- if "%arch%"=="Win64" ( set arch= Win64)
+- if "%arch%"=="Win64" ( set arch= Win64 )
 - echo %arch%
 - echo %APPVEYOR_BUILD_WORKER_IMAGE%
 - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
