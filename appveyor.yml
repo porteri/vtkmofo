@@ -20,7 +20,7 @@ matrix:
 # skip unsupported combinations
 init:
 - ps: if ($isLinux) {
-  set generator=""
+  ( set generator="" )
   } else {
  set arch=
  if "%arch%"=="Win64" ( set arch= Win64)
