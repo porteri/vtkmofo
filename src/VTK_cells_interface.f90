@@ -143,84 +143,42 @@ MODULE vtk_cells
         PROCEDURE :: init => quadratic_hexahedron_init
     END TYPE quadratic_hexahedron
 
-    CONTAINS
+    INTERFACE
 
-        SUBROUTINE abs_read (me, unit)
-        USE Misc, ONLY : interpret_string, def_len
+        MODULE SUBROUTINE abs_read (me, unit)
         !>@brief
         !> Subroutine performs the read for a cell
         CLASS(vtkcell), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: unit
-        INTEGER(i4k)                :: i, iostat
-        LOGICAL                     :: end_of_file, ierr
-        CHARACTER(LEN=def_len)      :: line
-        INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints, dummy, points
 
-        ALLOCATE(me%points(0)); i = 0; end_of_file = .FALSE.
-
-        READ(unit,100,iostat=iostat) line
-        end_of_file = (iostat < 0)
-        IF (end_of_file) THEN
-            RETURN
-        ELSE
-            i = 0! IF(ALLOCATED(points)) DEALLOCATE(points)
-            get_vals: DO
-                i = i + 1
-                CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
-                IF (i == 1) THEN
-                    CALL me%init(ints(1), ierr)
-                ELSE
-                    ALLOCATE(dummy(1:i-1))
-                    dummy(i-1) = ints(1)
-                    IF (i > 2) dummy(1:i-2) = points
-                    IF (ALLOCATED(points)) DEALLOCATE(points)
-                    CALL MOVE_ALLOC(dummy, points)
-                END IF
-                IF (line == '') EXIT get_vals
-            END DO get_vals
-            me%points = points
-        END IF
-
-100     FORMAT((a))
         END SUBROUTINE abs_read
 
-        SUBROUTINE abs_write (me, unit)
+        MODULE SUBROUTINE abs_write (me, unit)
         !>@brief
         !> Writes the cell information to the .vtk file
         CLASS(vtkcell), INTENT(IN) :: me
         INTEGER(i4k),   INTENT(IN) :: unit
-        INTEGER(i4k)               :: i
 
-        WRITE(unit,100) me%n_points, (me%points(i),i=1,me%n_points)
-100     FORMAT ((i0,' '),*(i0,' '))
         END SUBROUTINE abs_write
 
-        SUBROUTINE abs_setup (me, points)
+        MODULE SUBROUTINE abs_setup (me, points)
         !>@brief
         !> Sets up the cell information
         CLASS(vtkcell), INTENT(OUT) :: me
-        LOGICAL :: ierr = .FALSE.
         INTEGER(i4k), DIMENSION(:), INTENT(IN) :: points
-
-        CALL me%init(SIZE(points), ierr)     !! Initialize the cell
-        IF (ierr) ERROR STOP 'Error initializing cell. Bad # of points.'
-        me%points = points
 
         END SUBROUTINE abs_setup
 
-        SUBROUTINE abs_init (me, n, ierr)
+        MODULE SUBROUTINE abs_init (me, n, ierr)
         !>@brief
         !> Initializes the cell with size and type information
         CLASS(vtkcell), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
 
-        me%n_points = n
-        ierr        = .FALSE.
-
         END SUBROUTINE abs_init
 
-        FUNCTION check_for_diffs (me, you) RESULT (diffs)
+        MODULE FUNCTION check_for_diffs (me, you) RESULT (diffs)
         !>@brief
         !> Function checks for differences in an cell
         !>@author
@@ -228,325 +186,190 @@ MODULE vtk_cells
         !>@date
         !> 01/05/2017
         CLASS(vtkcell), INTENT(IN) :: me, you
-        INTEGER(i4k) :: i
         LOGICAL      :: diffs
-
-        diffs = .FALSE.
-        IF       (.NOT. SAME_TYPE_AS(me,you))         THEN
-            diffs = .TRUE.
-        ELSE IF (me%n_points     /= you%n_points)     THEN
-            diffs = .TRUE.
-        ELSE IF (SIZE(me%points) /= SIZE(you%points)) THEN
-            diffs = .TRUE.
-        ELSE
-            DO i = 1, SIZE(me%points)
-                IF (me%points(i) /= you%points(i))    THEN
-                    diffs = .TRUE.
-                    EXIT
-                END IF
-            END DO
-        END IF
 
         END FUNCTION check_for_diffs
 
-        SUBROUTINE vertex_init (me, n, ierr)
+        MODULE SUBROUTINE vertex_init (me, n, ierr)
         !>@brief
         !> Initializes a vertex cell
         CLASS(vertex), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: n
         LOGICAL,       INTENT(OUT) :: ierr
 
-        me%n_points = 1
-        me%type     = 1
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE vertex_init
 
-        SUBROUTINE poly_vertex_init (me, n, ierr)
+        MODULE SUBROUTINE poly_vertex_init (me, n, ierr)
         !>@brief
         !> Initializes a poly_vertex cell
         CLASS(poly_vertex), INTENT(OUT) :: me
         INTEGER(i4k),       INTENT(IN)  :: n
         LOGICAL,            INTENT(OUT) :: ierr
 
-        me%n_points = n
-        me%type     = 2
-        ierr        = .FALSE.
-
         END SUBROUTINE poly_vertex_init
 
-        SUBROUTINE line_init (me, n, ierr)
+        MODULE SUBROUTINE line_init (me, n, ierr)
         !>@brief
         !> Initializes a line cell
         CLASS(line),  INTENT(OUT) :: me
         INTEGER(i4k), INTENT(IN)  :: n
         LOGICAL,      INTENT(OUT) :: ierr
 
-        me%n_points = 2
-        me%type     = 3
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE line_init
 
-        SUBROUTINE poly_line_init (me, n, ierr)
+        MODULE SUBROUTINE poly_line_init (me, n, ierr)
         !>@brief
         !> Initializes a poly_line cell
         CLASS(poly_line), INTENT(OUT) :: me
         INTEGER(i4k),     INTENT(IN)  :: n
         LOGICAL,          INTENT(OUT) :: ierr
 
-        me%n_points = n
-        me%type     = 4
-        ierr        = .FALSE.
-
         END SUBROUTINE poly_line_init
 
-        SUBROUTINE triangle_init (me, n, ierr)
+        MODULE SUBROUTINE triangle_init (me, n, ierr)
         !>@brief
         !> Initializes a triangle cell
         CLASS(triangle), INTENT(OUT) :: me
         INTEGER(i4k),    INTENT(IN)  :: n
         LOGICAL,         INTENT(OUT) :: ierr
 
-        me%n_points = 3
-        me%type     = 5
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE triangle_init
 
-        SUBROUTINE triangle_strip_init (me, n, ierr)
+        MODULE SUBROUTINE triangle_strip_init (me, n, ierr)
         !>@brief
         !> Initializes a triangle_strip cell
         CLASS(triangle_strip), INTENT(OUT) :: me
         INTEGER(i4k),          INTENT(IN)  :: n
         LOGICAL,               INTENT(OUT) :: ierr
 
-        me%n_points = n
-        me%type     = 6
-        ierr        = .FALSE.
-
         END SUBROUTINE triangle_strip_init
 
 
-        SUBROUTINE polygon_init (me, n, ierr)
+        MODULE SUBROUTINE polygon_init (me, n, ierr)
         !>@brief
         !> Initializes a polygon cell
         CLASS(polygon), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
 
-        me%n_points = n
-        me%type     = 7
-        ierr        = .FALSE.
-
         END SUBROUTINE polygon_init
 
-        SUBROUTINE pixel_init (me, n, ierr)
+        MODULE SUBROUTINE pixel_init (me, n, ierr)
         !>@brief
         !> Initializes a pixel cell
         CLASS(pixel),   INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
 
-        me%n_points = 4
-        me%type     = 8
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE pixel_init
 
-        SUBROUTINE quad_init (me, n, ierr)
+        MODULE SUBROUTINE quad_init (me, n, ierr)
         !>@brief
         !> Initializes a quad cell
         CLASS(quad),    INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
 
-        me%n_points = 4
-        me%type     = 9
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE quad_init
 
-        SUBROUTINE tetra_init (me, n, ierr)
+        MODULE SUBROUTINE tetra_init (me, n, ierr)
         !>@brief
         !> Initializes a tetra cell
         CLASS(tetra),   INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
 
-        me%n_points = 4
-        me%type     = 10
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE tetra_init
 
-        SUBROUTINE voxel_init (me, n, ierr)
+        MODULE SUBROUTINE voxel_init (me, n, ierr)
         !>@brief
         !> Initializes a voxel cell
         CLASS(voxel),   INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
 
-        me%n_points = 8
-        me%type     = 11
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE voxel_init
 
-        SUBROUTINE hexahedron_init (me, n, ierr)
+        MODULE SUBROUTINE hexahedron_init (me, n, ierr)
         !>@brief
         !> Initializes a hexahedron cell
         CLASS(hexahedron), INTENT(OUT) :: me
         INTEGER(i4k),      INTENT(IN)  :: n
         LOGICAL,           INTENT(OUT) :: ierr
 
-        me%n_points = 8
-        me%type     = 12
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE hexahedron_init
 
-        SUBROUTINE wedge_init (me, n, ierr)
+        MODULE SUBROUTINE wedge_init (me, n, ierr)
         !>@brief
         !> Initializes a wedge cell
         CLASS(wedge),   INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
 
-        me%n_points = 6
-        me%type     = 13
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE wedge_init
 
-        SUBROUTINE pyramid_init (me, n, ierr)
+        MODULE SUBROUTINE pyramid_init (me, n, ierr)
         !>@brief
         !> Initializes a pyramid cell
         CLASS(pyramid), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
 
-        me%n_points = 5
-        me%type     = 14
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE pyramid_init
 
-        SUBROUTINE quadratic_edge_init (me, n, ierr)
+        MODULE SUBROUTINE quadratic_edge_init (me, n, ierr)
         !>@brief
         !> Initializes a quadratic_edge cell
         CLASS(quadratic_edge), INTENT(OUT) :: me
         INTEGER(i4k),          INTENT(IN)  :: n
         LOGICAL,               INTENT(OUT) :: ierr
 
-        me%n_points = 3
-        me%type     = 21
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE quadratic_edge_init
 
-        SUBROUTINE quadratic_triangle_init (me, n, ierr)
+        MODULE SUBROUTINE quadratic_triangle_init (me, n, ierr)
         !>@brief
         !> Initializes a quadratic_triangle cell
         CLASS(quadratic_triangle), INTENT(OUT) :: me
         INTEGER(i4k),              INTENT(IN)  :: n
         LOGICAL,                   INTENT(OUT) :: ierr
 
-        me%n_points = 6
-        me%type     = 22
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE quadratic_triangle_init
 
-        SUBROUTINE quadratic_quad_init (me, n, ierr)
+        MODULE SUBROUTINE quadratic_quad_init (me, n, ierr)
         !>@brief
         !> Initializes a quadratic_quad cell
         CLASS(quadratic_quad), INTENT(OUT) :: me
         INTEGER(i4k),          INTENT(IN)  :: n
         LOGICAL,               INTENT(OUT) :: ierr
 
-        me%n_points = 8
-        me%type     = 23
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE quadratic_quad_init
 
-        SUBROUTINE quadratic_tetra_init (me, n, ierr)
+        MODULE SUBROUTINE quadratic_tetra_init (me, n, ierr)
         !>@brief
         !> Initializes a quadratic_tetra cell
         CLASS(quadratic_tetra), INTENT(OUT) :: me
         INTEGER(i4k),           INTENT(IN)  :: n
         LOGICAL,                INTENT(OUT) :: ierr
 
-        me%n_points = 10
-        me%type     = 24
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE quadratic_tetra_init
 
-        SUBROUTINE quadratic_hexahedron_init (me, n, ierr)
+        MODULE SUBROUTINE quadratic_hexahedron_init (me, n, ierr)
         !>@brief
         !> Initializes a quadratic_hexahedron cell
         CLASS(quadratic_hexahedron), INTENT(OUT) :: me
         INTEGER(i4k),                INTENT(IN)  :: n
         LOGICAL,                     INTENT(OUT) :: ierr
 
-        me%n_points = 20
-        me%type     = 25
-        ierr        = (n /= me%n_points)
-
         END SUBROUTINE quadratic_hexahedron_init
 
-        SUBROUTINE set_cell_type (me, type)
+        MODULE SUBROUTINE set_cell_type (me, type)
         !>@brief
         !> Subroutine allocates the cell based on the type (called during a read)
         CLASS(vtkcell), INTENT(OUT), ALLOCATABLE :: me
         INTEGER(i4k),   INTENT(IN)               :: type
 
-        IF (ALLOCATED(me)) DEALLOCATE(me)
-
-        SELECT CASE (type)
-        CASE (1)
-            ALLOCATE(vertex::me)
-        CASE (2)
-            ALLOCATE(poly_vertex::me)
-        CASE (3)
-            ALLOCATE(line::me)
-        CASE (4)
-            ALLOCATE(poly_line::me)
-        CASE (5)
-            ALLOCATE(triangle::me)
-        CASE (6)
-            ALLOCATE(triangle_strip::me)
-        CASE (7)
-            ALLOCATE(polygon::me)
-        CASE (8)
-            ALLOCATE(pixel::me)
-        CASE (9)
-            ALLOCATE(quad::me)
-        CASE (10)
-            ALLOCATE(tetra::me)
-        CASE (11)
-            ALLOCATE(voxel::me)
-        CASE (12)
-            ALLOCATE(hexahedron::me)
-        CASE (13)
-            ALLOCATE(wedge::me)
-        CASE (14)
-            ALLOCATE(pyramid::me)
-        CASE (21)
-            ALLOCATE(quadratic_edge::me)
-        CASE (22)
-            ALLOCATE(quadratic_triangle::me)
-        CASE (23)
-            ALLOCATE(quadratic_quad::me)
-        CASE (24)
-            ALLOCATE(quadratic_tetra::me)
-        CASE (25)
-            ALLOCATE(quadratic_hexahedron::me)
-        CASE DEFAULT
-            ERROR STOP 'Bad value for type. type is unidentified. Execution terminated in Subroutine: set_cell_type'
-        END SELECT
-
         END SUBROUTINE set_cell_type
+
+    END INTERFACE
+
 END MODULE vtk_cells
