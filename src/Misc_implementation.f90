@@ -1,28 +1,12 @@
-MODULE Misc
-    USE Precision
-    IMPLICIT NONE
-
-    PRIVATE
-    PUBLIC :: interpret_string, def_len, to_uppercase
-
-    INTERFACE get_string_value
-        PROCEDURE :: get_string_char, get_string_int, get_string_real
-    END INTERFACE
-
-    INTEGER(i4k), PARAMETER :: def_len = 1000          !! Default character length for each line in file
+SUBMODULE (Misc) Misc_implementation
 
     CONTAINS
-        SUBROUTINE interpret_string (line, datatype, ignore, separator, reals, ints, chars)
+
+        MODULE PROCEDURE interpret_string
         !>@brief
         !> Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
         INTEGER(i4k) :: i
-        CHARACTER(LEN=*), INTENT(INOUT) :: line
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: ignore, separator
         CHARACTER(LEN=:), ALLOCATABLE :: string, sep, char
-        CHARACTER(LEN=1), DIMENSION(:), INTENT(IN) :: datatype
-        INTEGER(i4k),     DIMENSION(:), ALLOCATABLE, OPTIONAL :: ints
-        REAL(r8k),        DIMENSION(:), ALLOCATABLE, OPTIONAL :: reals
-        CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE, OPTIONAL :: chars
         TYPE :: counter
             INTEGER(i4k) :: t = 0, i = 0, r = 0, c = 0
         END TYPE counter
@@ -73,11 +57,9 @@ MODULE Misc
 
         line = string
 
-        END SUBROUTINE interpret_string
+        END PROCEDURE interpret_string
 
-        SUBROUTINE reduce_string (string, sep)
-        CHARACTER(LEN=:), ALLOCATABLE, INTENT(INOUT) :: string
-        CHARACTER(LEN=*), INTENT(IN)  :: sep
+        MODULE PROCEDURE reduce_string
 
         IF (INDEX(string,sep) == 0) THEN
             string = ''
@@ -85,11 +67,9 @@ MODULE Misc
             string = ADJUSTL(string(INDEX(string,sep)+LEN(sep):))
         END IF
 
-        END SUBROUTINE reduce_string
+        END PROCEDURE reduce_string
 
-        SUBROUTINE get_string_char (string, sep, name)
-        CHARACTER(LEN=*), INTENT(IN)  :: string, sep
-        CHARACTER(LEN=:), ALLOCATABLE, INTENT(OUT) :: name
+        MODULE PROCEDURE get_string_char
 
         IF (INDEX(string,sep) == 0) THEN
             name = string(1:)                    !! Read to end of string
@@ -97,11 +77,9 @@ MODULE Misc
             name = string(1:INDEX(string,sep)-1) !! Read until sep is found
         END IF
 
-        END SUBROUTINE get_string_char
+        END PROCEDURE get_string_char
 
-        SUBROUTINE get_string_int (string, sep, name)
-        CHARACTER(LEN=*), INTENT(IN)  :: string, sep
-        INTEGER(i4k),     INTENT(OUT) :: name
+        MODULE PROCEDURE get_string_int
         CHARACTER(LEN=:), ALLOCATABLE :: text
 
         IF (INDEX(string,sep) == 0) THEN
@@ -111,11 +89,9 @@ MODULE Misc
         END IF
         READ(text,'(i8)') name                   !! Store value
 
-        END SUBROUTINE get_string_int
+        END PROCEDURE get_string_int
 
-        SUBROUTINE get_string_real (string, sep, name)
-        CHARACTER(LEN=*), INTENT(IN)  :: string, sep
-        REAL(r8k),        INTENT(OUT) :: name
+        MODULE PROCEDURE get_string_real
         CHARACTER(LEN=:), ALLOCATABLE :: text
 
         IF (INDEX(string,sep) == 0) THEN
@@ -125,20 +101,10 @@ MODULE Misc
         END IF
         READ(text,'(es13.6)') name               !! Store value
 
-        END SUBROUTINE get_string_real
+        END PROCEDURE get_string_real
 
-        PURE FUNCTION to_uppercase (string) RESULT (new_string)
-        USE Precision
-        IMPLICIT NONE
-        !>@brief
-        !> This function changes lowercase text in a string to uppercase text
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 1/30/2015
+        MODULE PROCEDURE to_uppercase
         INTEGER(i4k) :: i, j
-        CHARACTER(LEN=*), INTENT(IN)    :: string
-        CHARACTER(LEN=LEN_TRIM(string)) :: new_string
         CHARACTER(LEN=26), PARAMETER    :: CAPL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         CHARACTER(LEN=26), PARAMETER    :: LOWL = 'abcdefghijklmnopqrstuvwxyz'
 
@@ -153,5 +119,6 @@ MODULE Misc
             END IF
         END DO
 
-        END FUNCTION to_uppercase
-END MODULE Misc
+        END PROCEDURE to_uppercase
+
+END SUBMODULE Misc_implementation

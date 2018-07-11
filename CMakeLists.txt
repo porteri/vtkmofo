@@ -76,11 +76,13 @@ set(VTKmofo_mod_dir ${CMAKE_CURRENT_BINARY_DIR}/mod)
 # Specify VTKmofo sources
 set(VTKmofo_files
   "Precision.f90"
-  "Misc.f90"
+  "Misc_implementation.f90"
+  "Misc_interface.f90"
   "VTK_attributes.f90"
   "VTK_cells.f90"
   "VTK_datasets.f90"
   "VTK_interface.f90"
+  "VTK_implementation.f90"
   "VTK_vars.f90"
   )
 foreach(item ${VTKmofo_files})
