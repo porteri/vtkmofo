@@ -108,7 +108,7 @@ SUBMODULE (Misc) Misc_implementation
         CHARACTER(LEN=26), PARAMETER    :: CAPL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         CHARACTER(LEN=26), PARAMETER    :: LOWL = 'abcdefghijklmnopqrstuvwxyz'
 
-        new_string = ''
+        new_string = string(1:LEN_TRIM(string))
 
         DO i = 1, LEN_TRIM(string)
             j = INDEX(LOWL, string(i:i))

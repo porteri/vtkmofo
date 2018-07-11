@@ -1,20 +1,11 @@
-SUBMODULE (vtk) vtk_implementation
-    USE Precision
-    USE vtk_attributes
-    USE vtk_cells
-    USE vtk_datasets
-    USE vtk_vars
-    IMPLICIT NONE
+SUBMODULE (vtk_io) vtk_io_implementation
 
     CONTAINS
 
         MODULE PROCEDURE vtk_legacy_write
-        USE Precision
-        USE Misc,           ONLY : to_uppercase
-        USE vtk_datasets,   ONLY : dataset
-        USE vtk_attributes, ONLY : attribute, attributes
-        USE vtk_vars,       ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, &
-          &                        version, fcnt, file_extension
+        USE Misc,     ONLY : to_uppercase
+        USE vtk_vars, ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, &
+          &                  version, fcnt, file_extension
         INTEGER(i4k)     :: i, inputstat
         LOGICAL          :: file_is_open
         CHARACTER(LEN=8) :: fcnt_char = ''
@@ -89,10 +80,7 @@ SUBMODULE (vtk) vtk_implementation
         END PROCEDURE vtk_legacy_write
 
         MODULE PROCEDURE vtk_legacy_read
-        USE Precision
-        USE vtk_datasets,   ONLY : dataset
-        USE vtk_attributes, ONLY : attribute, attributes
-        USE vtk_vars,       ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, version
+        USE vtk_vars, ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, version
         INTEGER(i4k) :: i, inputstat
         LOGICAL      :: file_is_open
         CHARACTER(LEN=:), ALLOCATABLE :: form, filetype_text, vtk_version, line
@@ -159,4 +147,4 @@ SUBMODULE (vtk) vtk_implementation
 100     FORMAT(a)
         END PROCEDURE vtk_legacy_read
 
-END SUBMODULE vtk_implementation
+END SUBMODULE vtk_io_implementation

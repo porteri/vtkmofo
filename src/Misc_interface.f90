@@ -59,7 +59,8 @@ MODULE Misc
         !>@date
         !> 1/30/2015
         CHARACTER(LEN=*), INTENT(IN)    :: string
-        CHARACTER(LEN=LEN_TRIM(string)) :: new_string
+!        CHARACTER(LEN=LEN_TRIM(string)) :: new_string
+        CHARACTER(LEN=:), ALLOCATABLE :: new_string
 
         END FUNCTION to_uppercase
 
