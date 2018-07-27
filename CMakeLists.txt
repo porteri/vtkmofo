@@ -75,19 +75,19 @@ set(VTKmofo_mod_dir ${CMAKE_CURRENT_BINARY_DIR}/mod)
 
 # Specify VTKmofo sources
 set(VTKmofo_files
-  "Precision.f90"
-  "Misc_implementation.f90"
-  "Misc_interface.f90"
-  "VTK_attributes_implementation.f90"
-  "VTK_attributes_interface.f90"
-  "VTK_cells_implementation.f90"
-  "VTK_cells_interface.f90"
-  "VTK_datasets_implementation.f90"
-  "VTK_datasets_interface.f90"
-  "VTK_interface.f90"
-  "VTK_io_implementation.f90"
-  "VTK_io_interface.f90"
-  "VTK_vars.f90"
+  Precision.f90
+  Misc_implementation.f90
+  Misc_interface.f90
+  VTK_attributes_implementation.f90
+  VTK_attributes_interface.f90
+  VTK_cells_implementation.f90
+  VTK_cells_interface.f90
+  VTK_datasets_implementation.f90
+  VTK_datasets_interface.f90
+  VTK_interface.f90
+  VTK_io_implementation.f90
+  VTK_io_interface.f90
+  VTK_vars.f90
   )
 foreach(item ${VTKmofo_files})
   list(APPEND VTKmofo_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
@@ -102,15 +102,19 @@ set_property(TARGET vtkmofo
   Fortran_MODULE_DIRECTORY ${VTKmofo_mod_dir})
 
 # Tell consumers where to find .mod files
-target_include_directories(vtkmofo PUBLIC ${VTKmofo_mod_dir})
+target_include_directories(vtkmofo PUBLIC
+  $<BUILD_INTERFACE:${VTKmofo_mod_dir}>
+  $<INSTALL_INTERFACE:include/vtkmofo/mod>
+  )
 
 # Organize things in Visual Studio
 source_group("VTKmofoLib" FILES ${VTKmofo_sources})
 set_property(TARGET vtkmofo
   PROPERTY
   FOLDER "VTKmofo")
-install(TARGETS vtkmofo DESTINATION lib)
-install(DIRECTORY "${VTKmofo_mod_dir}" DESTINATION mod)
+install(TARGETS vtkmofo DESTINATION lib EXPORT vtkmofo-targets)
+install(EXPORT vtkmofo-targets DESTINATION lib/vtkmofo)
+install(DIRECTORY "${VTKmofo_mod_dir}" DESTINATION include/vtkmofo)
 
 
 ######################
