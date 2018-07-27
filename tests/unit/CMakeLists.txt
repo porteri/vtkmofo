@@ -1,8 +1,9 @@
 # Unit tests
-include_directories("${VTKmofo_mod_dir}")
-
-# Add object library to work around CMake parallel build w/ module quirk
+# Add object library to work around CMake parallel build race conditions
+# (Sources defining modules should *NOT* be listed in multiple targets!
+# Use an object lib and link against that instead.)
 add_library(VTKmofoPassFail OBJECT VTKmofoAnalyze.f90)
+target_include_directories(VTKmofoPassFail PUBLIC "${VTKmofo_mod_dir}")
 set_property(TARGET VTKmofoPassFail
   PROPERTY
   FOLDER "VTKmofo-Unit-Tests")
