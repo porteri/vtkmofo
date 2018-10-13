@@ -1,80 +1,81 @@
 version: 1.0.{build}
-#pull_requests:
-#  do_not_increment_build_number: true
-#skip_tags: true
 image:
-#- ubuntu
-#- Visual Studio 2015
-- Visual Studio 2017
-#configuration:
-#- Release
-#- Debug
-#platform:
-#- x64
+  - ubuntu
+  # - Visual Studio 2017
 stack: python 3
+clone_depth: 30
+
 environment:
-  MINGW_DIR: C:\mingw-w64\x86_64-7.3.0-posix-seh-rt_v5-rev1\mingw64\bin
-  PY_DIR: C:\Python36-x64
-#  matrix:
-#    - arch: Win64
-#matrix:
-#  fast_finish: true
-clone_depth: 3
-# skip unsupported combinations
-#init:
-#- set arch=
-#- if "%arch%"=="Win64" ( set arch= Win64 )
-#- echo %arch%
-#- echo %APPVEYOR_BUILD_WORKER_IMAGE%
-#- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
-#- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
-#- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013%arch%" )
-#- echo %generator%
+  CTEST_OUTPUT_ON_FAILURE: ON
+platform:
+  - x64
 
-before_build:
-- cmd: |-
-    set PATH=%MINGW_DIR%;%PY_DIR%;%PY_DIR%\Scripts;%PATH%
-    set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
-    set FC=%MINGW_DIR%\gfortran
-    set CXX=%MINGW_DIR%\g++
-    set CC=%MINGW_DIR%\gcc
-- cmd: mklink bin\make.exe %MINGW_DIR%\mingw32-make.exe
-#- cmd: |-
-#    mkdir build
-#    cd build
-#    cmake --version
+# Need to add ssh_keys for submodules to work on windows
+# howto article: https://www.appveyor.com/docs/how-to/private-git-sub-modules/
+install:
+  - sh: sudo -E apt-add-repository ppa:ubuntu-toolchain-r/test -y
+  - sh: sudo apt-get -yq update > /dev/null
+  - sh: sudo apt-get -yq install gcc-8 gfortran-8 > /dev/null
+  - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-8
+  - sh: sudo update-alternatives --auto gcc
+  - sh: sudo update-alternatives --display gcc
+  - sh: export FC=gfortran
+  - sh: export CC=gcc
+  - sh: $FC --version
+  - sh: $CC --version
+  - sh: cmake --version
 
-- sh: sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test" > /dev/null
-- sh: sudo apt-get -yq update > /dev/null
-- sh: sudo apt-get install -yq --no-install-suggests --no-install-recommends gfortran-6 cmake make > /dev/null
-- sh: export FC=/usr/bin/gfortran-6
-- sh: mkdir build
-- sh: cd build
-- sh: FC=gfortran CC=gcc CXX=gcc cmake ../
-
-- cd bin
-
-#build:
-#  project: c:\projects\cmake-init\build\template.sln
-#  verbosity: minimal
-#  parallel: true
-
+build: off
 build_script:
-#- cd bin
-#- cmd: cmake .. -G %generator%
-- cmd: cmake -G "MinGW Makefiles" ..
-- sh: cmake ..
-- make
+  - ps: mkdir build
+  - cmd: echo N Q|cmd /k gen-VisualStudio-solution.bat # This will currently fail
+  - ps: cd build
+  - sh: cmake ..
+  - sh: cmake --build .
+#  - ps: cmake --build . # Need to figure out Intel Compilers on appveyor first
 
-after_build:
-- make test
+test_script:
+  - sh: ctest
+  - cmd: ctest
 
 notifications:
 - provider: Email
   to:
   - ianeporter88@gmail.com
-  subject: vtkmofo build AppVeyor
-  message: AppVeyor has re-built vtkmofo due to pull request
+  subject: '{{#passed}} Build {{projectName}} {{buildVersion}} passed {{/passed}} {{#failed}} Build {{projectName}} {{buildVersion}} failed {{/failed}}'
+  message: >-
+    <div style="font-family:'Segoe UI',Arial,Sans-Serif;font-size:10pt;">
+        {{#passed}}
+        <h1 style="font-size: 150%;font-weight:normal; color:#1DC420;"><a href="{{buildUrl}}" style="color:#078DC7;">Build {{projectName}} {{buildVersion}} passed</a></h1>{{/passed}}
+        {{#failed}}
+        <h1 style="font-size: 150%;font-weight:normal; color:#ff3228;"><a href="{{buildUrl}}" style="color:#ff3228;">Build {{projectName}} {{buildVersion}} failed</a></h1>{{/failed}}
+        <p style="color: #888;">
+            Commit <a href="{{commitUrl}}">{{commitId}}</a> by <a href="mailto:{{commitAuthorEmail}}">{{commitAuthor}}</a> on {{commitDate}}:
+            <br />
+            <span style="font-size: 110%;color:#222;">{{commitMessage}}</span>
+        </p>
+        <p><a href="{{notificationSettingsUrl}}" style="font-size:85%;color:#999;">Configure your notification preferences</a></p>
+    </div>
+  on_build_success: false
+  on_build_failure: false
+  on_build_status_changed: true
+- provider: Email
+  to:
+  - '{{commitAuthorEmail}}'
+  subject: '{{#passed}} Build {{projectName}} {{buildVersion}} passed {{/passed}} {{#failed}} Build {{projectName}} {{buildVersion}} failed {{/failed}}'
+  message: >-
+    <div style="font-family:'Segoe UI',Arial,Sans-Serif;font-size:10pt;">
+        {{#passed}}
+        <h1 style="font-size: 150%;font-weight:normal; color:#1DC420;"><a href="{{buildUrl}}" style="color:#078DC7;">Build {{projectName}} {{buildVersion}} passed</a></h1>{{/passed}}
+        {{#failed}}
+        <h1 style="font-size: 150%;font-weight:normal; color:#ff3228;"><a href="{{buildUrl}}" style="color:#ff3228;">Build {{projectName}} {{buildVersion}} failed</a></h1>{{/failed}}
+        <p style="color: #888;">
+            Commit <a href="{{commitUrl}}">{{commitId}}</a> by <a href="mailto:{{commitAuthorEmail}}">{{commitAuthor}}</a> on {{commitDate}}:
+            <br />
+            <span style="font-size: 110%;color:#222;">{{commitMessage}}</span>
+        </p>
+        <p><a href="{{notificationSettingsUrl}}" style="font-size:85%;color:#999;">Configure your notification preferences</a></p>
+    </div>
   on_build_success: true
   on_build_failure: true
-  on_build_status_changed: false
+  on_build_status_changed: true
