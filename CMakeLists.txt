@@ -65,28 +65,44 @@ endif()
 # Where to put VTKmofo module files
 set(VTKmofo_mod_dir ${CMAKE_CURRENT_BINARY_DIR}/mod)
 
-# Specify VTKmofo sources
-set(VTKmofo_files
+# Avoid compilation cascades:
+#    put interfaces and submodules in separate libraries
+# Specify VTKmofo interfaces
+set(VTKmofo_interfaces
   Precision.f90
-  Misc_implementation.f90
   Misc_interface.f90
-  VTK_attributes_implementation.f90
-  VTK_attributes_interface.f90
-  VTK_cells_implementation.f90
-  VTK_cells_interface.f90
-  VTK_datasets_implementation.f90
+  VTK_io_interface.f90
   VTK_datasets_interface.f90
+  VTK_cells_interface.f90
+  VTK_attributes_interface.f90
+  VTK_vars.f90)
+
+# Specify VTKmofo implementations
+set(VTKmofo_implementations
+  Misc_implementation.f90
+  VTK_attributes_implementation.f90
+  VTK_cells_implementation.f90
+  VTK_datasets_implementation.f90
   VTK_interface.f90
   VTK_io_implementation.f90
-  VTK_io_interface.f90
-  VTK_vars.f90
   )
-foreach(item ${VTKmofo_files})
-  list(APPEND VTKmofo_sources "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
-endforeach()
 
-# Make VTKmofo static library
-add_library(vtkmofo STATIC ${VTKmofo_sources})
+# Compile all the interfaces first
+foreach(item ${VTKmofo_interfaces})
+  list(APPEND VTKmofo_interface_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
+endforeach()
+add_library(vtkmofo_interfaces OBJECT ${VTKmofo_interface_srcs})
+# Tell CMake where to put vtkmofo .mod files generated with libvtkmofo
+set_property(TARGET vtkmofo_interfaces
+  PROPERTY
+  Fortran_MODULE_DIRECTORY ${VTKmofo_mod_dir})
+
+# Add any object files from the interfaces to the main library build
+foreach(item ${VTKmofo_implementations})
+  list(APPEND VTKmofo_implementation_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
+endforeach()
+add_library(vtkmofo
+  STATIC ${VTKmofo_implementation_srcs} $<TARGET_OBJECTS:vtkmofo_interfaces>)
 
 # Tell CMake where to put vtkmofo .mod files generated with libvtkmofo
 set_property(TARGET vtkmofo
