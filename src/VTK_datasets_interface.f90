@@ -47,7 +47,7 @@ MODULE vtk_datasets
     CONTAINS
         PROCEDURE :: read  => struct_pts_read
         PROCEDURE :: write => struct_pts_write
-        PROCEDURE :: setup => struct_pts_setup
+        PROCEDURE, PRIVATE :: setup => struct_pts_setup
         PROCEDURE :: check_for_diffs => check_for_diffs_struct_pts
     END TYPE struct_pts
 
@@ -59,7 +59,7 @@ MODULE vtk_datasets
     CONTAINS
         PROCEDURE :: read  => struct_grid_read
         PROCEDURE :: write => struct_grid_write
-        PROCEDURE :: setup => struct_grid_setup
+        PROCEDURE, PRIVATE :: setup => struct_grid_setup
         PROCEDURE :: check_for_diffs => check_for_diffs_struct_grid
     END TYPE struct_grid
 
@@ -72,7 +72,7 @@ MODULE vtk_datasets
     CONTAINS
         PROCEDURE :: read  => rectlnr_grid_read
         PROCEDURE :: write => rectlnr_grid_write
-        PROCEDURE :: setup => rectlnr_grid_setup
+        PROCEDURE, PRIVATE :: setup => rectlnr_grid_setup
         PROCEDURE :: check_for_diffs => check_for_diffs_rectlnr_grid
     END TYPE rectlnr_grid
 
@@ -88,7 +88,7 @@ MODULE vtk_datasets
     CONTAINS
         PROCEDURE :: read  => polygonal_data_read
         PROCEDURE :: write => polygonal_data_write
-        PROCEDURE :: setup => polygonal_data_setup
+        PROCEDURE, PRIVATE :: setup => polygonal_data_setup
     END TYPE polygonal_data
 
     TYPE, EXTENDS(dataset) :: unstruct_grid
@@ -105,7 +105,7 @@ MODULE vtk_datasets
         PROCEDURE :: write => unstruct_grid_write
         PROCEDURE :: unstruct_grid_setup
         PROCEDURE :: unstruct_grid_setup_multiclass
-        GENERIC   :: setup => unstruct_grid_setup, unstruct_grid_setup_multiclass
+        GENERIC, PRIVATE :: setup => unstruct_grid_setup, unstruct_grid_setup_multiclass
     END TYPE unstruct_grid
 
     INTERFACE

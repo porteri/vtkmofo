@@ -65,7 +65,7 @@ PROGRAM Cylinder_test
     vals(:,1) = temp(:)
     dims = (/ n_x, n_y, n_z /)
 
-    CALL cylinder%setup (dims=dims, points=points)
+    CALL cylinder%init (dims=dims, points=points)
 
     DO i = 1, n_params_to_write
         IF (.NOT. ALLOCATED(vals_to_write(i)%attribute))THEN

@@ -66,7 +66,7 @@ PROGRAM T_shape_test
     CALL cells(4)%setup ( (/ 9, 10, 13, 14, 17, 18, 21, 22 /) )
     CALL cells(5)%setup ( (/ 10, 11, 14, 15, 18, 19, 22, 23 /) )
 
-    CALL t_shape%setup (points=points, cells=cells)
+    CALL t_shape%init (points=points, cells=cells)
 
     DO t = 1, n_steps
         cell_vals(:,1)  = REAL(cellID(:)); WRITE(t_char,'(i0)') t

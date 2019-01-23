@@ -25,12 +25,6 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         !>@brief
         !> Initializes the dataset with information
 
-        IF (PRESENT(datatype)) THEN
-            me%datatype = datatype
-        ELSE
-            me%datatype = 'double'
-        END IF
-
         SELECT TYPE (me)
         CLASS IS (struct_pts)
             CALL me%setup(dims, origin, spacing)
@@ -49,6 +43,12 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         CLASS DEFAULT
             ERROR STOP 'Generic class not defined for vtkmofo class dataset'
         END SELECT
+
+        IF (PRESENT(datatype)) THEN
+            me%datatype = datatype
+        ELSE
+            me%datatype = 'double'
+        END IF
 
         END PROCEDURE init
 

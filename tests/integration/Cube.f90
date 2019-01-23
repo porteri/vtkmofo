@@ -43,7 +43,7 @@ PROGRAM cube_test
         vals(i,3) = vals(i-1,3) + SQRT(REAL(i))        !! Stress
     END DO
     dims = (/ n_x, n_y, n_z /)
-    CALL cube%setup (dims=dims, x_coords=x_coords, y_coords=y_coords, z_coords=z_coords)
+    CALL cube%init (dims=dims, x_coords=x_coords, y_coords=y_coords, z_coords=z_coords)
     DO i = 1, n_params_to_write
         IF (.NOT. ALLOCATED(vals_to_write(i)%attribute))THEN
             ALLOCATE(scalar::vals_to_write(i)%attribute)
