@@ -3,7 +3,7 @@ MODULE Misc
     IMPLICIT NONE
 
     PRIVATE
-    PUBLIC :: interpret_string, def_len, to_uppercase
+    PUBLIC :: interpret_string, def_len, to_uppercase, to_lowercase
 
     INTERFACE get_string_value
         PROCEDURE :: get_string_char, get_string_int, get_string_real
@@ -50,19 +50,28 @@ MODULE Misc
         END SUBROUTINE get_string_real
 
         PURE MODULE FUNCTION to_uppercase (string) RESULT (new_string)
-        USE Precision
         IMPLICIT NONE
-        !>@brief
-        !> This function changes lowercase text in a string to uppercase text
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 1/30/2015
-        CHARACTER(LEN=*), INTENT(IN)    :: string
-!        CHARACTER(LEN=LEN_TRIM(string)) :: new_string
+        !! author:  Ian Porter, NRC
+        !! date: 01/23/2019
+        !!
+        !! This function changes lowercase text in a string to uppercase text
+        !!
+        CHARACTER(LEN=*), INTENT(IN)  :: string
         CHARACTER(LEN=:), ALLOCATABLE :: new_string
 
         END FUNCTION to_uppercase
+
+        PURE MODULE FUNCTION to_lowercase (string) RESULT (new_string)
+        IMPLICIT NONE
+        !! author:  Ian Porter, NRC
+        !! date: 01/23/2019
+        !!
+        !! This function changes uppercase text in a string to lowercase text
+        !!
+        CHARACTER(LEN=*), INTENT(IN)  :: string
+        CHARACTER(LEN=:), ALLOCATABLE :: new_string
+
+        END FUNCTION to_lowercase
 
     END INTERFACE
 

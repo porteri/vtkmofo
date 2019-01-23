@@ -78,13 +78,13 @@ PROGRAM T_shape_test
                 ALLOCATE(scalar::cell_vals_to_write(i)%attribute)
                 cell_vals_to_write(1)%n = SIZE(cell_vals(:,1))
             END IF
-            CALL cell_vals_to_write(i)%attribute%setup (TRIM(cell_dataname(i)), numcomp=1, values1d=cell_vals(:,i))
+            CALL cell_vals_to_write(i)%attribute%init (TRIM(cell_dataname(i)), numcomp=1, values1d=cell_vals(:,i))
             ! Point values
             IF (.NOT. ALLOCATED(point_vals_to_write(i)%attribute))THEN
                 ALLOCATE(scalar::point_vals_to_write(i)%attribute)
                 point_vals_to_write(1)%n = SIZE(point_vals(:,1))
             END IF
-            CALL point_vals_to_write(i)%attribute%setup (TRIM(point_dataname(i)), numcomp=1, values1d=point_vals(:,i))
+            CALL point_vals_to_write(i)%attribute%init (TRIM(point_dataname(i)), numcomp=1, values1d=point_vals(:,i))
         END DO
 
         CALL vtk_legacy_write (unit, t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &

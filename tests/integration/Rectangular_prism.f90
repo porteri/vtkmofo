@@ -47,7 +47,7 @@ PROGRAM rectangular_prism_test
             ALLOCATE(scalar::vals_to_write(i)%attribute)
             vals_to_write(1)%n = SIZE(vals(:,1))
         END IF
-        CALL vals_to_write(i)%attribute%setup (TRIM(dataname(i)), numcomp=1, values1d=vals(:,i))
+        CALL vals_to_write(i)%attribute%init (TRIM(dataname(i)), numcomp=1, values1d=vals(:,i))
     END DO
 
     CALL vtk_legacy_write (unit, rectangular_prism, pointdatasets=vals_to_write, filename=filename, title=title)

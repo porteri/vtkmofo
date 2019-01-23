@@ -29,7 +29,7 @@ MODULE vtk_attributes
     CONTAINS
         PROCEDURE(abs_read),  DEFERRED, PUBLIC :: read
         PROCEDURE(abs_write), DEFERRED, PUBLIC :: write
-        PROCEDURE(abs_setup), DEFERRED, PUBLIC :: setup
+        PROCEDURE, NON_OVERRIDABLE,     PUBLIC :: init => initialize  !! Initialize the attribute
         PROCEDURE, PRIVATE :: check_for_diffs
         GENERIC :: OPERATOR(.diff.) => check_for_diffs
     END TYPE attribute
@@ -37,7 +37,8 @@ MODULE vtk_attributes
     TYPE, EXTENDS(attribute) :: scalar
         INTEGER(i4k) :: numcomp = 0
         CHARACTER(LEN=:), ALLOCATABLE :: tablename
-        REAL(r8k), DIMENSION(:), ALLOCATABLE :: scalars
+        INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints
+        REAL(r8k),    DIMENSION(:), ALLOCATABLE :: reals
     CONTAINS
         PROCEDURE :: read  => scalar_read
         PROCEDURE :: write => scalar_write
@@ -133,7 +134,8 @@ MODULE vtk_attributes
 
         END SUBROUTINE abs_write
 
-        MODULE SUBROUTINE abs_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+        MODULE SUBROUTINE initialize (me, dataname, datatype, numcomp, tablename, ints1d, ints2d, ints3d, &
+          &                           values1d, values2d, values3d, field_arrays)
         !>@brief
         !> Abstract for performing the set-up of an attribute
         !>@author
@@ -144,13 +146,15 @@ MODULE vtk_attributes
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
-        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
-        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
+        INTEGER(i4k), DIMENSION(:),     INTENT(IN), OPTIONAL :: ints1d
+        INTEGER(i4k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: ints2d
+        INTEGER(i4k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: ints3d
+        REAL(r8k),    DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
+        REAL(r8k),    DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
+        REAL(r8k),    DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
         TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
 
-        END SUBROUTINE abs_setup
+        END SUBROUTINE initialize
 
         MODULE FUNCTION check_for_diffs (me, you) RESULT (diffs)
         !>@brief
@@ -190,7 +194,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE scalar_write
 
-        MODULE SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+        MODULE SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, ints1d, values1d)
         !>@brief
         !> Subroutine performs the set-up for a scalar attribute
         !>@author
@@ -201,11 +205,8 @@ MODULE vtk_attributes
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
+        INTEGER(i4k), DIMENSION(:),  INTENT(IN), OPTIONAL :: ints1d
         REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
-        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
-        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
 
         END SUBROUTINE scalar_setup
 

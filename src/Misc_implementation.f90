@@ -104,6 +104,11 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE get_string_real
 
         MODULE PROCEDURE to_uppercase
+        !! author:  Ian Porter, NRC
+        !! date: 01/23/2019
+        !!
+        !! This function changes lowercase text in a string to uppercase text
+        !!
         INTEGER(i4k) :: i, j
         CHARACTER(LEN=26), PARAMETER    :: CAPL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         CHARACTER(LEN=26), PARAMETER    :: LOWL = 'abcdefghijklmnopqrstuvwxyz'
@@ -120,5 +125,28 @@ SUBMODULE (Misc) Misc_implementation
         END DO
 
         END PROCEDURE to_uppercase
+
+        MODULE PROCEDURE to_lowercase
+        !! author:  Ian Porter, NRC
+        !! date: 01/23/2019
+        !!
+        !! This function changes uppercase text in a string to lowercase text
+        !!
+        INTEGER(i4k) :: i, j
+        CHARACTER(LEN=26), PARAMETER    :: CAPL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        CHARACTER(LEN=26), PARAMETER    :: LOWL = 'abcdefghijklmnopqrstuvwxyz'
+
+        new_string = string(1:LEN_TRIM(string))
+
+        DO i = 1, LEN_TRIM(string)
+            j = INDEX(CAPL, string(i:i))
+            IF (j > 0) THEN
+                new_string(i:i) = LOWL(j:j)
+            ELSE
+                new_string(i:i) = string(i:i)
+            END IF
+        END DO
+
+        END PROCEDURE to_lowercase
 
 END SUBMODULE Misc_implementation

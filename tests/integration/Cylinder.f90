@@ -72,7 +72,7 @@ PROGRAM Cylinder_test
             ALLOCATE(scalar::vals_to_write(i)%attribute)
             vals_to_write(1)%n = SIZE(vals(:,1))
         END IF
-        CALL vals_to_write(i)%attribute%setup (dataname(i), numcomp=1, values1d=vals(:,i))
+        CALL vals_to_write(i)%attribute%init (dataname(i), numcomp=1, values1d=vals(:,i))
     END DO
 
     CALL vtk_legacy_write (unit, cylinder, pointdatasets=vals_to_write)

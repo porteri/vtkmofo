@@ -17,7 +17,9 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
     ! 5) 3x3 tensors
     ! 6) field data
     !
-
+    !! Possible data types:
+    !! bit, unsigned_char, char, unsigned_short, short, unsigned_int, int,
+    !! unsigned_long, long, float, or double.
     CHARACTER(LEN=*), PARAMETER :: default = 'default'     !! Default table name
 
     CONTAINS
@@ -50,23 +52,32 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END SELECT
         END PROCEDURE abs_write
 
-        MODULE PROCEDURE abs_setup
+        MODULE PROCEDURE initialize
         !>@brief
         !> Abstract for performing the set-up of an attribute
         !>@author
         !> Ian Porter, NRC
         !>@date
         !> 12/13/2017
+
         SELECT TYPE (me)
-        CLASS IS (attribute)
-            me%dataname = dataname   !! Workaround for ifort 2018 linux compiler error (not error for 2018 on Windows)
-                                     !! that a class with intent(out) was not provided a value
-            IF (PRESENT(datatype) .AND. PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
-              & PRESENT(values1d) .AND. PRESENT(values2d) .AND. PRESENT(values3d)  .AND. PRESENT(field_arrays)) THEN
-                !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
-              END IF
+        CLASS IS (scalar)
+            CALL me%setup(dataname, datatype, numcomp, tablename, ints1d, values1d)
+        CLASS IS (vector)
+            CALL me%setup(dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+        CLASS IS (normal)
+            CALL me%setup(dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+        CLASS IS (texture)
+            CALL me%setup(dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+        CLASS IS (tensor)
+            CALL me%setup(dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+        CLASS IS (field)
+            
+        CLASS DEFAULT
+            ERROR STOP 'Generic class not defined for vtkmofo class attribute'
         END SELECT
-        END PROCEDURE abs_setup
+
+        END PROCEDURE initialize
 
         MODULE PROCEDURE check_for_diffs
         !>@brief
@@ -88,7 +99,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 ! Scalars
 !********
         MODULE PROCEDURE scalar_read
-        USE Misc, ONLY : interpret_string
+        USE Misc, ONLY : interpret_string, to_lowercase
         !>@brief
         !> Subroutine performs the read for a scalar attribute
         !>@author
@@ -106,12 +117,23 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         CALL interpret_string (line=line, datatype=(/ 'C','C','I' /), ignore='SCALARS ', separator=' ', &
           &                    ints=ints, chars=chars)
         me%numcomp = ints(1); me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
+        DEALLOCATE(ints)
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=(/ 'C' /), ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
         me%tablename = TRIM(chars(1))
 
-        ALLOCATE(me%scalars(0)); end_of_file  = .FALSE.; i = 0
+        me%datatype = to_lowercase(me%datatype)
+        SELECT CASE (me%datatype)
+        CASE ('unsigned_int', 'int')
+            ALLOCATE(me%ints(0))
+        CASE ('float', 'double')
+            ALLOCATE(me%reals(0))
+        CASE DEFAULT
+            ERROR STOP 'datatype not supported in scalar_read'
+        END SELECT
+
+        end_of_file  = .FALSE.; i = 0
 
         get_scalars: DO
             READ(unit,100,iostat=iostat) line
@@ -121,13 +143,27 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             ELSE IF (TRIM(line) == '') THEN
                 CYCLE     !! Skip blank lines
             ELSE
-                ALLOCATE(dummy(1:UBOUND(me%scalars,DIM=1)+1),source=0.0_r8k)
-                IF (i > 0) dummy(1:UBOUND(me%scalars,DIM=1)) = me%scalars
-                CALL MOVE_ALLOC(dummy, me%scalars)
-                i = i + 1
+                SELECT CASE (me%datatype)
+                CASE ('unsigned_int', 'int')
+                    ALLOCATE(ints(1:UBOUND(me%ints,DIM=1)+1),source=0_i4k)
+                    IF (i > 0) ints(1:UBOUND(me%ints,DIM=1)) = me%ints
+                    CALL MOVE_ALLOC(ints, me%ints)
+                    i = i + 1
 
-                CALL interpret_string (line=line, datatype=(/ 'R' /), separator=' ', reals=reals)
-                me%scalars(i) = reals(1)
+                    CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
+                    me%ints(i) = ints(1)
+                    DEALLOCATE(ints)
+                CASE ('float', 'double')
+                    ALLOCATE(dummy(1:UBOUND(me%reals,DIM=1)+1),source=0.0_r8k)
+                    IF (i > 0) dummy(1:UBOUND(me%reals,DIM=1)) = me%reals
+                    CALL MOVE_ALLOC(dummy, me%reals)
+                    i = i + 1
+
+                    CALL interpret_string (line=line, datatype=(/ 'R' /), separator=' ', reals=reals)
+                    me%reals(i) = reals(1)
+                CASE DEFAULT
+                    ERROR STOP 'datatype not supported in scalar_read'
+                END SELECT
             END IF
         END DO get_scalars
 
@@ -145,13 +181,23 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         WRITE(unit,100) me%dataname, me%datatype, me%numcomp
         WRITE(unit,101) me%tablename
-        DO i = 1, SIZE(me%scalars)
-            WRITE(unit,102) me%scalars(i)
-        END DO
+        IF (ALLOCATED(me%reals)) THEN
+            DO i = 1, SIZE(me%reals)
+                WRITE(unit,102) me%reals(i)
+            END DO
+        ELSE IF (ALLOCATED(me%ints)) THEN
+            DO i = 1, SIZE(me%ints)
+                WRITE(unit,103) me%ints(i)
+            END DO
+        ELSE
+            ERROR STOP 'Neither real or integer arrays are allocated for scalar_write'
+        END IF
 
 100     FORMAT('SCALARS ',(a),' ',(a),' ',(i1))
 101     FORMAT('LOOKUP_TABLE ',(a))
 102     FORMAT(es13.6)
+103     FORMAT(i0)
+
         END PROCEDURE scalar_write
 
         MODULE PROCEDURE scalar_setup
@@ -165,6 +211,8 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
             me%datatype = datatype
+        ELSE IF (PRESENT(ints1d)) THEN
+            me%datatype = 'int'
         ELSE
             me%datatype = 'double'
         END IF
@@ -178,10 +226,9 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%tablename = default
         END IF
-        IF (PRESENT(values2d) .AND. PRESENT(values3d) .AND. PRESENT(field_arrays)) THEN
-            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
-        END IF
-        IF (.NOT. PRESENT(values1d)) THEN
+        IF (PRESENT(ints1d)) THEN
+            me%ints = ints1d
+        ELSE IF (.NOT. PRESENT(values1d)) THEN
             ERROR STOP 'Must provide scalars in scalar_setup'
         ELSE
             !! TODO: Implement this once SELECT RANK is incorporated into compilers (Fortran 2015)
@@ -191,7 +238,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !            RANK DEFAULT
 !                ERROR STOP 'Bad rank for values. Must be RANK=2. Execution terminated in Subroutine: scalar_setup'
 !            END SELECT
-            me%scalars = values1d
+            me%reals = values1d
         END IF
 
         END PROCEDURE scalar_setup
@@ -219,9 +266,15 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     diffs = .TRUE.
                 ELSE IF (me%tablename /= you%tablename) THEN
                     diffs = .TRUE.
-                ELSE
-                    DO i = 1, UBOUND(me%scalars,DIM=1)
-                        IF (me%scalars(i) /= you%scalars(i))     THEN
+                ELSE IF (ALLOCATED(me%reals))           THEN
+                    DO i = 1, UBOUND(me%reals,DIM=1)
+                        IF (me%reals(i) /= you%reals(i))THEN
+                            diffs = .TRUE.
+                        END IF
+                    END DO
+                ELSE IF (ALLOCATED(me%ints))            THEN
+                    DO i = 1, UBOUND(me%ints,DIM=1)
+                        IF (me%ints(i) /= you%ints(i))  THEN
                             diffs = .TRUE.
                         END IF
                     END DO

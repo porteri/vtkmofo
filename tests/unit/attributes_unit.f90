@@ -11,7 +11,7 @@ MODULE vtk_attributes_unit_tests
     PRIVATE
     PUBLIC :: vtk_attributes_unit
 ! Generic information
-    INTEGER(i4k), PARAMETER :: n_types  = 6
+    INTEGER(i4k), PARAMETER :: n_types  = 7
     INTEGER(i4k), PARAMETER :: vtk_unit = 20
     CHARACTER(LEN=15), DIMENSION(n_types), PARAMETER :: filename    = &
       & [ 'scalar.vtk     ', &
@@ -19,10 +19,13 @@ MODULE vtk_attributes_unit_tests
       &   'normal.vtk     ', &
       &   'texture.vtk    ', &
       &   'tensor.vtk     ', &
-      &   'field.vtk      ' ]
+      &   'field.vtk      ', &
+      &   'scalar_int.vtk ' ]
 ! Scalar information
     REAL(r8k), DIMENSION(*),   PARAMETER :: scalar_vals = &
       & [ 0.5_r8k, 1.0_r8k, 2.0_r8k, 4.0_r8k, 2.0_r8k, 1.0_r8k, 0.5_r8k ]
+    INTEGER(i4k), DIMENSION(*),   PARAMETER :: int_vals    = &
+      & [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
 ! Vector information
     REAL(r8k), DIMENSION(2,3), PARAMETER :: vector_vals  = RESHAPE ( &
       & [ 0.5_r8k, 1.0_r8k, 0.5_r8k, &
@@ -90,30 +93,36 @@ MODULE vtk_attributes_unit_tests
             IF (ALLOCATED(vtk_type_1)) DEALLOCATE(vtk_type_1)
             IF (ALLOCATED(vtk_type_2)) DEALLOCATE(vtk_type_2)
             SELECT CASE (i)
-            CASE (1)
+            CASE (1, 7)
                 !! Scalar attribute
                 ALLOCATE(scalar  :: vtk_type_1, vtk_type_2)
 
                 !! Data type is generated from the defined values above
-                CALL vtk_type_1%setup(dataname='temperature', numcomp=1, values1d=scalar_vals)
+                IF (i == 1) THEN
+                    !! Test for reals
+                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, values1d=scalar_vals)
+                ELSE IF (i == 7) THEN
+                    !! Test for integers
+                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, ints1d=int_vals)
+                END IF
             CASE (2)
                 !! Vector attribute
                 ALLOCATE(vector  :: vtk_type_1, vtk_type_2)
 
                 !! Data type is generated from the defined values above
-                CALL vtk_type_1%setup(dataname='temperature', numcomp=1, values2d=vector_vals)
+                CALL vtk_type_1%init(dataname='temperature', numcomp=1, values2d=vector_vals)
             CASE (3)
                 !! Normal attribute
                 ALLOCATE(normal  :: vtk_type_1, vtk_type_2)
 
                 !! Data type is generated from the defined values above
-                CALL vtk_type_1%setup(dataname='normalized_temp', numcomp=1, values2d=normal_vals)
+                CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, values2d=normal_vals)
             CASE (4)
                 !! Texture attribute
                 ALLOCATE(texture :: vtk_type_1, vtk_type_2)
 
                 !! Data type is generated from the defined values above
-                CALL vtk_type_1%setup(dataname='textured_temp', numcomp=1, values2d=texture_vals)
+                CALL vtk_type_1%init(dataname='textured_temp', numcomp=1, values2d=texture_vals)
             CASE (5)
                 !! Tensor attribute
                 ALLOCATE(tensor  :: vtk_type_1, vtk_type_2)
@@ -121,7 +130,7 @@ MODULE vtk_attributes_unit_tests
                 tensor_vals(3,:,:) = tensor_3; tensor_vals(4,:,:) = tensor_4
 
                 !! Data type is generated from the defined values above
-                CALL vtk_type_1%setup(dataname='tensor_temp', numcomp=1, values3d=tensor_vals)
+                CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, values3d=tensor_vals)
             CASE (6)
                 !! Field attribute
                 ALLOCATE(field   :: vtk_type_1, vtk_type_2)
@@ -132,7 +141,7 @@ MODULE vtk_attributes_unit_tests
                 array(1) = array_1; array(2) = array_2
 
                 !! Data type is generated from the defined values above
-                CALL vtk_type_1%setup(dataname='field_temp_press', numcomp=1, field_arrays=array)
+                CALL vtk_type_1%init(dataname='field_temp_press', numcomp=1, field_arrays=array)
             END SELECT
 
             OPEN (unit=vtk_unit, file=filename(i), form='formatted')
