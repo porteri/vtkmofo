@@ -87,7 +87,7 @@ PROGRAM pyramid_test
     point_vals(:,1) = power(:)
 
     dims = (/ n_x, n_y, n_z /)
-    CALL pyramid%setup (dims=dims, points=points, polygons=polygon_faces)
+    CALL pyramid%init (points=points, polygons=polygon_faces)
     DO i = 1, n_params_to_write
         ! Cell values
         IF (.NOT. ALLOCATED(cell_vals_to_write(i)%attribute))THEN

@@ -31,11 +31,13 @@ MODULE vtk_cells
     !
 
     PRIVATE
-    PUBLIC :: vtkcell, vertex, poly_vertex, line, poly_line, triangle, triangle_strip, polygon, pixel, quad, tetra, voxel
+    PUBLIC :: vtkcell, vtkcell_list
+    PUBLIC :: vertex, poly_vertex, line, poly_line, triangle, triangle_strip, polygon, pixel, quad, tetra, voxel
     PUBLIC :: hexahedron, wedge, pyramid, quadratic_edge, quadratic_triangle, quadratic_quad, quadratic_tetra
     PUBLIC :: quadratic_hexahedron, set_cell_type
 
     TYPE, ABSTRACT :: vtkcell
+        !! Abstract DT for cell information
         INTEGER(i4k) :: n_points
         INTEGER(i4k) :: type
         INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: points
@@ -47,6 +49,11 @@ MODULE vtk_cells
         PROCEDURE, PRIVATE :: check_for_diffs
         GENERIC :: OPERATOR(.diff.) => check_for_diffs
     END TYPE vtkcell
+
+    TYPE vtkcell_list
+        !! Workaround to allow for different cell classes in a list of cells
+        CLASS(vtkcell), ALLOCATABLE :: cell
+    END TYPE vtkcell_list
 
     TYPE, EXTENDS(vtkcell) :: vertex
     CONTAINS

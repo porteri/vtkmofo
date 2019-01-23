@@ -317,15 +317,15 @@ MODULE vtk_datasets_unit_tests
             CASE (1)
                 !! Structured points
                 ALLOCATE(struct_pts::vtk_dataset_1, vtk_dataset_2)
-                CALL vtk_dataset_1%setup(dims=dims, origin=origin, spacing=spacing)
+                CALL vtk_dataset_1%init(dims=dims, origin=origin, spacing=spacing)
             CASE (2)
                 !! Structured grid
                 ALLOCATE(struct_grid::vtk_dataset_1, vtk_dataset_2)
-                CALL vtk_dataset_1%setup(dims=dims, points=points)
+                CALL vtk_dataset_1%init(dims=dims, points=points)
             CASE (3)
                 !! Rectilinear grid
                 ALLOCATE(rectlnr_grid::vtk_dataset_1, vtk_dataset_2)
-                CALL vtk_dataset_1%setup(dims=dims, x_coords=x_coords, y_coords=y_coords, z_coords=z_coords)
+                CALL vtk_dataset_1%init(dims=dims, x_coords=x_coords, y_coords=y_coords, z_coords=z_coords)
             CASE (4)
                 !! Polygonal data
                 CALL polygon_faces(1)%setup ( (/ 0, 1, 4, 3 /) )
@@ -349,7 +349,7 @@ MODULE vtk_datasets_unit_tests
                 CALL polygon_faces(19)%setup ( (/ 8, 5, 14, 23, 26, 17 /) )
                 CALL polygon_faces(20)%setup ( (/ 5, 2, 11, 20, 23, 14 /) )
                 ALLOCATE(polygonal_data::vtk_dataset_1, vtk_dataset_2)
-                CALL vtk_dataset_1%setup(dims=dims, points=points_poly, polygons=polygon_faces)
+                CALL vtk_dataset_1%init(dims=dims, points=points_poly, polygons=polygon_faces)
             CASE (5)
                 !! Unstructured grid
                 CALL cells(1)%setup ( (/ 0, 1, 2, 3, 4, 5, 6, 7 /) )
@@ -358,7 +358,7 @@ MODULE vtk_datasets_unit_tests
                 CALL cells(4)%setup ( (/ 9, 10, 13, 14, 17, 18, 21, 22 /) )
                 CALL cells(5)%setup ( (/ 10, 11, 14, 15, 18, 19, 22, 23 /) )
                 ALLOCATE(unstruct_grid::vtk_dataset_1, vtk_dataset_2)
-                CALL vtk_dataset_1%setup(points=points_unstr_grid, cells=cells)
+                CALL vtk_dataset_1%init(points=points_unstr_grid, cells=cells)
             END SELECT
 
             !! Data type is generated from the defined values above
