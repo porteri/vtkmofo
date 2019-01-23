@@ -369,13 +369,13 @@ MODULE vtk_cells
 
         END SUBROUTINE quadratic_hexahedron_init
 
-        MODULE SUBROUTINE set_cell_type (me, type)
+        MODULE FUNCTION set_cell_type (type) RESULT(me)
         !>@brief
         !> Subroutine allocates the cell based on the type (called during a read)
-        CLASS(vtkcell), INTENT(OUT), ALLOCATABLE :: me
-        INTEGER(i4k),   INTENT(IN)               :: type
+        INTEGER(i4k),   INTENT(IN)  :: type  !! Cell type ID
+        CLASS(vtkcell), ALLOCATABLE :: me    !! DT
 
-        END SUBROUTINE set_cell_type
+        END FUNCTION set_cell_type
 
     END INTERFACE
 

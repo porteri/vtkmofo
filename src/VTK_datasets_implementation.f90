@@ -684,6 +684,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         READ(unit,100,iostat=iostat) line
         CALL interpret_string (line=line, datatype=(/ 'I','I' /), ignore='POINTS ', separator=' ', ints=ints)
         me%n_cells = ints(1); me%size = ints(2); ALLOCATE(read_points(1:ints(1)))
+        ALLOCATE(me%cell_list(1:me%n_cells))
 
         end_of_file = .FALSE.
         get_cells: DO i = 1, me%n_cells
@@ -708,11 +709,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
             ELSE IF (TRIM(line) == '') THEN
                 CYCLE     !! Skip blank lines
             ELSE
-                !! TODO: This is temporary. Need to make each cell be able to be allocated independently
                 CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
-                !CALL set_cell_type (me%cell(i), ints(1))
-                CALL set_cell_type (dummy_cell, ints(1))
-                IF (.NOT. ALLOCATED(me%cell_list)) ALLOCATE(me%cell_list(1:me%n_cells))
+                dummy_cell = set_cell_type (ints(1))
                 ALLOCATE(me%cell_list(i)%cell,mold=dummy_cell)
                 CALL me%cell_list(i)%cell%setup (read_points(i)%points)
                 DEALLOCATE(dummy_cell)
