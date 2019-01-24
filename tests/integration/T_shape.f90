@@ -2,7 +2,7 @@ PROGRAM T_shape_test
     USE Precision
     USE vtk_datasets,   ONLY : unstruct_grid
     USE vtk_attributes, ONLY : scalar, attributes
-    USE vtk_cells,      ONLY : voxel
+    USE vtk_cells,      ONLY : voxel, hexahedron, vtkcell_list
     USE vtk,            ONLY : vtk_legacy_write
     IMPLICIT NONE
     !>@brief
@@ -53,20 +53,27 @@ PROGRAM T_shape_test
       &   3.0_r8k, 3.0_r8k, 1.0_r8k, 1.0_r8k, 4.0_r8k, 4.0_r8k, 1.0_r8k, 1.0_r8k, 2.0_r8k, &
       &   2.0_r8k, 1.0_r8k, 1.0_r8k, 3.0_r8k, 3.0_r8k, 1.0_r8k ]
     INTEGER(i4k), DIMENSION(n_cells), PARAMETER :: cellID = &
-      & [ 1, 1, 2, 2, 2 ]
-    TYPE(voxel), DIMENSION(n_cells) :: cells
+      & [ 11, 11, 11, 11, 12 ]
+    TYPE(voxel),        DIMENSION(n_cells-1) :: voxel_cells     !! Voxel cell type
+    TYPE(hexahedron)                         :: hexahedron_cell !! Hexahedron cell type
+    TYPE(vtkcell_list), DIMENSION(n_cells)   :: cell_list       !! Full list of all cells
     CHARACTER(LEN=10), DIMENSION(n_params_to_write), PARAMETER :: cell_dataname = &
       & [ 'cellIDs   ' ]
     CHARACTER(LEN=15), DIMENSION(n_params_to_write), PARAMETER :: point_dataname = &
       & [ 'Temperature(K) ' ]
 
-    CALL cells(1)%setup ( (/ 0, 1, 2, 3, 4, 5, 6, 7 /) )
-    CALL cells(2)%setup ( (/ 4, 5, 6, 7, 9, 10, 13, 14 /) )
-    CALL cells(3)%setup ( (/ 8, 9, 12, 13, 16, 17, 20, 21 /) )
-    CALL cells(4)%setup ( (/ 9, 10, 13, 14, 17, 18, 21, 22 /) )
-    CALL cells(5)%setup ( (/ 10, 11, 14, 15, 18, 19, 22, 23 /) )
+    CALL voxel_cells(1)%setup ( (/ 0, 1, 2, 3, 4, 5, 6, 7 /) )
+    CALL voxel_cells(2)%setup ( (/ 4, 5, 6, 7, 9, 10, 13, 14 /) )
+    CALL voxel_cells(3)%setup ( (/ 8, 9, 12, 13, 16, 17, 20, 21 /) )
+    CALL voxel_cells(4)%setup ( (/ 9, 10, 13, 14, 17, 18, 21, 22 /) )
+    CALL hexahedron_cell%setup ( (/ 10, 11, 15, 14, 18, 19, 23, 22 /) )
+    cell_list(1)%cell = voxel_cells(1)
+    cell_list(2)%cell = voxel_cells(2)
+    cell_list(3)%cell = voxel_cells(3)
+    cell_list(4)%cell = voxel_cells(4)
+    cell_list(5)%cell   = hexahedron_cell
 
-    CALL t_shape%init (points=points, cells=cells)
+    CALL t_shape%init (points=points, cell_list=cell_list)
 
     DO t = 1, n_steps
         cell_vals(:,1)  = REAL(cellID(:)); WRITE(t_char,'(i0)') t
