@@ -64,15 +64,15 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         CLASS IS (scalar)
             CALL me%setup(dataname, datatype, numcomp, tablename, ints1d, values1d)
         CLASS IS (vector)
-            CALL me%setup(dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+            CALL me%setup(dataname, datatype, values2d)
         CLASS IS (normal)
-            CALL me%setup(dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+            CALL me%setup(dataname, datatype, values2d)
         CLASS IS (texture)
-            CALL me%setup(dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+            CALL me%setup(dataname, datatype, values2d)
         CLASS IS (tensor)
-            CALL me%setup(dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+            CALL me%setup(dataname, datatype, values3d)
         CLASS IS (field)
-            CALL me%setup(dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+            CALL me%setup(dataname, datatype, field_arrays)
         CLASS DEFAULT
             ERROR STOP 'Generic class not defined for vtkmofo class attribute'
         END SELECT
@@ -228,17 +228,10 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END IF
         IF (PRESENT(ints1d)) THEN
             me%ints = ints1d
-        ELSE IF (.NOT. PRESENT(values1d)) THEN
-            ERROR STOP 'Must provide scalars in scalar_setup'
-        ELSE
-            !! TODO: Implement this once SELECT RANK is incorporated into compilers (Fortran 2015)
-!            SELECT RANK (values)
-!            RANK(1)
-!                me%scalars = values
-!            RANK DEFAULT
-!                ERROR STOP 'Bad rank for values. Must be RANK=2. Execution terminated in Subroutine: scalar_setup'
-!            END SELECT
+        ELSE IF (PRESENT(values1d)) THEN
             me%reals = values1d
+        ELSE
+            ERROR STOP 'Must provide either array of integers or reals in scalar_setup'
         END IF
 
         END PROCEDURE scalar_setup
@@ -361,22 +354,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%datatype = 'double'
         END IF
-        IF (PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
-          & PRESENT(values1d) .AND. PRESENT(values3d)  .AND. PRESENT(field_arrays)) THEN
-            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
-        END IF
-        IF (.NOT. PRESENT(values2d)) THEN
-            ERROR STOP 'Must provide vectors in vector_setup'
-        ELSE
-            !! TODO: Implement this once SELECT RANK is incorporated into compilers (Fortran 2015)
-!            SELECT RANK (values)
-!            RANK(2)
-!                me%vectors = values
-!            RANK DEFAULT
-!                ERROR STOP 'Bad rank for values. Must be RANK=2. Execution terminated in Subroutine: vector_setup'
-!            END SELECT
-            me%vectors = values2d
-        END IF
+        me%vectors = values2d
 
         END PROCEDURE vector_setup
 
@@ -490,22 +468,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%datatype = 'double'
         END IF
-        IF (PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
-          & PRESENT(values1d) .AND. PRESENT(values3d)  .AND. PRESENT(field_arrays)) THEN
-            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
-        END IF
-        IF (.NOT. PRESENT(values2d)) THEN
-            ERROR STOP 'Must provide normals in normal_setup'
-        ELSE
-            !! TODO: Implement this once SELECT RANK is incorporated into compilers (Fortran 2015)
-!            SELECT RANK (values)
-!            RANK(2)
-!                me%normals = values
-!            RANK DEFAULT
-!                ERROR STOP 'Bad rank for values. Must be RANK=2. Execution terminated in Subroutine: normal_setup'
-!            END SELECT
-            me%normals = values2d
-        END IF
+        me%normals = values2d
 
         END PROCEDURE normal_setup
 
@@ -621,22 +584,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%datatype = 'double'
         END IF
-        IF (PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
-          & PRESENT(values1d) .AND. PRESENT(values3d)  .AND. PRESENT(field_arrays)) THEN
-            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
-        END IF
-        IF (.NOT. PRESENT(values2d)) THEN
-            ERROR STOP 'Must provide textures in texture_setup'
-        ELSE
-            !! TODO: Implement this once SELECT RANK is incorporated into compilers (Fortran 2015)
-!            SELECT RANK (values)
-!            RANK(2)
-!                me%textures = values
-!            RANK DEFAULT
-!                ERROR STOP 'Bad rank for values. Must be RANK=2. Execution terminated in Subroutine: texture_setup'
-!            END SELECT
-            me%textures = values2d
-        END IF
+        me%textures = values2d
 
         END PROCEDURE texture_setup
 
@@ -759,13 +707,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%datatype = 'double'
         END IF
-        IF (PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
-          & PRESENT(values1d) .AND. PRESENT(values2d)  .AND. PRESENT(field_arrays)) THEN
-            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
-        END IF
-        IF (.NOT. PRESENT(values3d)) THEN
-            ERROR STOP 'Must provide tensors in tensor_setup'
-        ELSE IF (SIZE(values3d,DIM=2) /= 3 .OR. SIZE(values3d,DIM=3) /= 3) THEN
+        IF (SIZE(values3d,DIM=2) /= 3 .OR. SIZE(values3d,DIM=3) /= 3) THEN
             ERROR STOP 'Tensors can only be 3x3'
         ELSE
             ALLOCATE(me%tensors(1:UBOUND(values3d,DIM=1)))
@@ -908,15 +850,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%datatype = 'double'
         END IF
-        IF (PRESENT(numcomp)  .AND. PRESENT(tablename) .AND. &
-          & PRESENT(values1d) .AND. PRESENT(values2d)  .AND. PRESENT(values3d)) THEN
-            !! DO NOTHING. ONLY ELIMINATES COMPILER WARNINGS
-        END IF
-        IF (.NOT. PRESENT(field_arrays)) THEN
-            ERROR STOP 'Must provide field_arrays in field_setup'
-        ELSE
-            me%array = field_arrays
-        END IF
+        me%array = field_arrays
 
         END PROCEDURE field_setup
 

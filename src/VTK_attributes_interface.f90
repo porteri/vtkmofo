@@ -204,9 +204,10 @@ MODULE vtk_attributes
         CLASS(scalar),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-        INTEGER(i4k), DIMENSION(:),  INTENT(IN), OPTIONAL :: ints1d
-        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: tablename
+        INTEGER(i4k), DIMENSION(:), INTENT(IN), OPTIONAL :: ints1d
+        REAL(r8k),    DIMENSION(:), INTENT(IN), OPTIONAL :: values1d
 
         END SUBROUTINE scalar_setup
 
@@ -249,7 +250,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE vector_write
 
-        MODULE SUBROUTINE vector_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+        MODULE SUBROUTINE vector_setup (me, dataname, datatype, values2d)
         !>@brief
         !> Subroutine performs the set-up for a vector attribute
         !>@author
@@ -258,13 +259,8 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(vector),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
-        INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
-        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
-        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
-        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
+        REAL(r8k), DIMENSION(:,:),   INTENT(IN) :: values2d
 
         END SUBROUTINE vector_setup
 
@@ -307,7 +303,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE normal_write
 
-        MODULE SUBROUTINE normal_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+        MODULE SUBROUTINE normal_setup (me, dataname, datatype, values2d)
         !>@brief
         !> Subroutine performs the set-up for a normal attribute
         !>@author
@@ -316,13 +312,8 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(normal),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
-        INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
-        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
-        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
-        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
+        REAL(r8k), DIMENSION(:,:), INTENT(IN) :: values2d
 
         END SUBROUTINE normal_setup
 
@@ -365,7 +356,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE texture_write
 
-        MODULE SUBROUTINE texture_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+        MODULE SUBROUTINE texture_setup (me, dataname, datatype, values2d)
         !>@brief
         !> Subroutine performs the set-up for a texture attribute
         !>@author
@@ -374,13 +365,8 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(texture),   INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
-        INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
-        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
-        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
-        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
+        REAL(r8k), DIMENSION(:,:), INTENT(IN) :: values2d
 
         END SUBROUTINE texture_setup
 
@@ -423,7 +409,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE tensor_write
 
-        MODULE SUBROUTINE tensor_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+        MODULE SUBROUTINE tensor_setup (me, dataname, datatype, values3d)
         !>@brief
         !> Subroutine performs the set-up for a tensor attribute
         !>@author
@@ -432,13 +418,8 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(tensor),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
-        INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
-        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
-        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
-        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
+        REAL(r8k), DIMENSION(:,:,:), INTENT(IN) :: values3d
 
         END SUBROUTINE tensor_setup
 
@@ -481,7 +462,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE field_write
 
-        MODULE SUBROUTINE field_setup (me, dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
+        MODULE SUBROUTINE field_setup (me, dataname, datatype, field_arrays)
         !>@brief
         !> Subroutine performs the set-up for a field attribute
         !>@author
@@ -490,13 +471,8 @@ MODULE vtk_attributes
         !> 12/14/2017
         CLASS(field),     INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
-        INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-!        REAL(r8k), DIMENSION(..),   INTENT(IN), OPTIONAL :: values
-        REAL(r8k), DIMENSION(:),     INTENT(IN), OPTIONAL :: values1d
-        REAL(r8k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: values2d
-        REAL(r8k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: values3d
-        TYPE(field_data_array), DIMENSION(:), INTENT(IN), OPTIONAL :: field_arrays
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
+        TYPE(field_data_array), DIMENSION(:), INTENT(IN) :: field_arrays
 
         END SUBROUTINE field_setup
 
