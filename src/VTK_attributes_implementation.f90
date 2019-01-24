@@ -72,7 +72,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         CLASS IS (tensor)
             CALL me%setup(dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
         CLASS IS (field)
-            
+            CALL me%setup(dataname, datatype, numcomp, tablename, values1d, values2d, values3d, field_arrays)
         CLASS DEFAULT
             ERROR STOP 'Generic class not defined for vtkmofo class attribute'
         END SELECT
