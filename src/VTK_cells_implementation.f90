@@ -183,7 +183,6 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
 
         END PROCEDURE triangle_strip_init
 
-
         MODULE PROCEDURE polygon_init
         !>@brief
         !> Initializes a polygon cell

@@ -31,13 +31,15 @@ MODULE vtk_cells
     !
 
     PRIVATE
-    PUBLIC :: vtkcell, vertex, poly_vertex, line, poly_line, triangle, triangle_strip, polygon, pixel, quad, tetra, voxel
+    PUBLIC :: vtkcell, vtkcell_list
+    PUBLIC :: vertex, poly_vertex, line, poly_line, triangle, triangle_strip, polygon, pixel, quad, tetra, voxel
     PUBLIC :: hexahedron, wedge, pyramid, quadratic_edge, quadratic_triangle, quadratic_quad, quadratic_tetra
     PUBLIC :: quadratic_hexahedron, set_cell_type
 
     TYPE, ABSTRACT :: vtkcell
-        INTEGER(i4k) :: n_points
-        INTEGER(i4k) :: type
+        !! Abstract DT for cell information
+        INTEGER(i4k) :: n_points = 0
+        INTEGER(i4k) :: type     = 0
         INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: points
     CONTAINS
         PROCEDURE, PUBLIC :: read  => abs_read
@@ -47,6 +49,11 @@ MODULE vtk_cells
         PROCEDURE, PRIVATE :: check_for_diffs
         GENERIC :: OPERATOR(.diff.) => check_for_diffs
     END TYPE vtkcell
+
+    TYPE vtkcell_list
+        !! Workaround to allow for different cell classes in a list of cells
+        CLASS(vtkcell), ALLOCATABLE :: cell
+    END TYPE vtkcell_list
 
     TYPE, EXTENDS(vtkcell) :: vertex
     CONTAINS
@@ -362,13 +369,13 @@ MODULE vtk_cells
 
         END SUBROUTINE quadratic_hexahedron_init
 
-        MODULE SUBROUTINE set_cell_type (me, type)
+        MODULE FUNCTION set_cell_type (type) RESULT(me)
         !>@brief
         !> Subroutine allocates the cell based on the type (called during a read)
-        CLASS(vtkcell), INTENT(OUT), ALLOCATABLE :: me
-        INTEGER(i4k),   INTENT(IN)               :: type
+        INTEGER(i4k),   INTENT(IN)  :: type  !! Cell type ID
+        CLASS(vtkcell), ALLOCATABLE :: me    !! DT
 
-        END SUBROUTINE set_cell_type
+        END FUNCTION set_cell_type
 
     END INTERFACE
 

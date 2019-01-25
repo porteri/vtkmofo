@@ -41,13 +41,13 @@ PROGRAM rectangular_prism_test
         vals(i,3) = vals(i-1,3) + SQRT(REAL(i))        !! Stress
     END DO
     dims = (/ n_x, n_y, n_z /)
-    CALL rectangular_prism%setup (dims=dims, origin=origin, spacing=spacing)
+    CALL rectangular_prism%init (dims=dims, origin=origin, spacing=spacing)
     DO i = 1, n_params_to_write
         IF (.NOT. ALLOCATED(vals_to_write(i)%attribute))THEN
             ALLOCATE(scalar::vals_to_write(i)%attribute)
             vals_to_write(1)%n = SIZE(vals(:,1))
         END IF
-        CALL vals_to_write(i)%attribute%setup (TRIM(dataname(i)), numcomp=1, values1d=vals(:,i))
+        CALL vals_to_write(i)%attribute%init (TRIM(dataname(i)), numcomp=1, values1d=vals(:,i))
     END DO
 
     CALL vtk_legacy_write (unit, rectangular_prism, pointdatasets=vals_to_write, filename=filename, title=title)

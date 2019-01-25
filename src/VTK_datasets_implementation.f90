@@ -1,6 +1,7 @@
 SUBMODULE (vtk_datasets) vtk_datasets_implementation
     USE Precision
     USE vtk_cells, ONLY : vtkcell
+    IMPLICIT NONE
     !>@brief
     !> This module contains the dataset formats for vtk format
     !>@author
@@ -20,36 +21,37 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 ! ****************
 ! Abstract dataset
 ! ****************
-        MODULE PROCEDURE abs_read
+
+        MODULE PROCEDURE init
         !>@brief
-        !> Reads the dataset information from the .vtk file
+        !> Initializes the dataset with information
 
         SELECT TYPE (me)
+        CLASS IS (struct_pts)
+            CALL me%setup(dims, origin, spacing)
+        CLASS IS (struct_grid)
+            CALL me%setup(dims, points)
+        CLASS IS (rectlnr_grid)
+            CALL me%setup(dims, x_coords, y_coords, z_coords)
+        CLASS IS (polygonal_data)
+            CALL me%setup(points, vertices, lines, polygons, triangles)
+        CLASS IS (unstruct_grid)
+            IF (PRESENT(cell_list)) THEN
+                CALL me%setup(points, cell_list)
+            ELSE
+                CALL me%setup(points, cells)
+            END IF
+        CLASS DEFAULT
+            ERROR STOP 'Generic class not defined for vtkmofo class dataset'
         END SELECT
 
-        END PROCEDURE abs_read
-
-        MODULE PROCEDURE abs_write
-        !>@brief
-        !> Writes the dataset information to the .vtk file
-
-        SELECT TYPE (me)
-        END SELECT
-
-        END PROCEDURE abs_write
-
-        MODULE PROCEDURE abs_setup
-        !>@brief
-        !> Sets up the dataset with information
-
-        IF (PRESENT(datatype) .OR. PRESENT(dims)     .OR. PRESENT(origin) .OR. &
-            PRESENT(spacing)  .OR. PRESENT(points)   .OR. PRESENT(cells)  .OR. &
-            PRESENT(x_coords) .OR. PRESENT(y_coords) .OR. PRESENT(z_coords)) THEN
-            !! This is done only to avoid compiler warnings. A deferred abstract subroutine should never be called.'
-            WRITE(*,*) 'Warning: More information provided to abs_setup than needed.'
+        IF (PRESENT(datatype)) THEN
+            me%datatype = datatype
+        ELSE
+            me%datatype = 'double'
         END IF
 
-        END PROCEDURE abs_setup
+        END PROCEDURE init
 
         MODULE PROCEDURE check_for_diffs
         !>@brief
@@ -121,12 +123,6 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         MODULE PROCEDURE struct_pts_setup
         !>@brief
         !> Sets up the structured points dataset with information
-
-        IF (.NOT. PRESENT(dims) .OR. .NOT. PRESENT(origin) .OR. .NOT. PRESENT(spacing)) THEN
-            ERROR STOP 'Bad inputs for struct_pts_setup'
-        ELSE IF (PRESENT(datatype)) THEN
-            WRITE(*,*) 'Warning: More information provided to struct_pts_setup than required. Some info not used.'
-        END IF
 
         me%name       = 'STRUCTURED_POINTS'
         me%dimensions = dims
@@ -233,17 +229,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         !>@brief
         !> Sets up the structured grid dataset with information
 
-        IF (.NOT. PRESENT(points) .OR. .NOT. PRESENT(dims)) THEN
-            ERROR STOP 'Bad inputs for struct_grid_setup'
-        END IF
-
         me%name       = 'STRUCTURED_GRID'
         me%dimensions = dims
-        IF (PRESENT(datatype)) THEN
-            me%datatype = datatype
-        ELSE
-            me%datatype = 'double'
-        END IF
         me%n_points   = SIZE(points,DIM=2)
         me%points     = points
         me%firstcall  = .FALSE.
@@ -381,20 +368,12 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         !>@brief
         !> Sets up the rectilinear grid dataset with information
 
-        IF (.NOT. PRESENT(dims)     .OR. .NOT. PRESENT(x_coords) .OR. &
-          & .NOT. PRESENT(y_coords) .OR. .NOT. PRESENT(z_coords)) THEN
-            ERROR STOP 'Bad inputs for rectlnr_grid_setup. Not enough information provided.'
-        ELSE IF (dims(1) /= SIZE(x_coords) .OR. dims(2) /= SIZE(y_coords) .OR. dims(3) /= SIZE(z_coords)) THEN
+        IF (dims(1) /= SIZE(x_coords) .OR. dims(2) /= SIZE(y_coords) .OR. dims(3) /= SIZE(z_coords)) THEN
             ERROR STOP 'Bad inputs for rectlnr_grid_setup. Dims is not equal to size of coords.'
         END IF
 
         me%name       = 'RECTILINEAR_GRID'
         me%dimensions = dims
-        IF (PRESENT(datatype)) THEN
-            me%x%datatype = datatype
-        ELSE
-            me%x%datatype = 'double'
-        END IF
         me%y%datatype = me%x%datatype; me%z%datatype = me%x%datatype
         me%x%coord    = x_coords
         me%y%coord    = y_coords
@@ -649,11 +628,6 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         !> Sets up the polygonal data dataset with information
 
         me%name       = 'POLYDATA'
-        IF (PRESENT(datatype)) THEN
-            me%datatype = datatype
-        ELSE
-            me%datatype = 'double'
-        END IF
         me%n_points   = SIZE(points,DIM=2)
         me%points     = points
         me%firstcall  = .FALSE.
@@ -711,6 +685,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         READ(unit,100,iostat=iostat) line
         CALL interpret_string (line=line, datatype=(/ 'I','I' /), ignore='POINTS ', separator=' ', ints=ints)
         me%n_cells = ints(1); me%size = ints(2); ALLOCATE(read_points(1:ints(1)))
+        ALLOCATE(me%cell_list(1:me%n_cells))
 
         end_of_file = .FALSE.
         get_cells: DO i = 1, me%n_cells
@@ -735,12 +710,10 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
             ELSE IF (TRIM(line) == '') THEN
                 CYCLE     !! Skip blank lines
             ELSE
-                !! TODO: This is temporary. Need to make each cell be able to be allocated independently
                 CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
-                !CALL set_cell_type (me%cell(i), ints(1))
-                CALL set_cell_type (dummy_cell, ints(1))
-                IF (.NOT. ALLOCATED(me%cell)) ALLOCATE(me%cell(1:me%n_cells),mold=dummy_cell)
-                CALL me%cell(i)%setup (read_points(i)%points)
+                dummy_cell = set_cell_type (ints(1))
+                ALLOCATE(me%cell_list(i)%cell,mold=dummy_cell)
+                CALL me%cell_list(i)%cell%setup (read_points(i)%points)
                 DEALLOCATE(dummy_cell)
             END IF
         END DO get_cell_type
@@ -762,12 +735,12 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         WRITE(unit,103) me%n_cells, me%size
         DO i = 1, me%n_cells
-            CALL me%cell(i)%write(unit)
+            CALL me%cell_list(i)%cell%write(unit)
         END DO
 
         WRITE(unit,104) me%n_cell_types
         DO i = 1, me%n_cell_types
-            WRITE(unit,105) me%cell(i)%type
+            WRITE(unit,105) me%cell_list(i)%cell%type
         END DO
 
 100     FORMAT ('DATASET ',(a))
@@ -784,28 +757,40 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         !> Sets up the unstructured grid dataset with information
         INTEGER(i4k) :: i, size_cnt
 
-        IF (.NOT. PRESENT(points) .OR. .NOT. PRESENT(cells)) THEN
-            ERROR STOP 'Bad inputs for unstruct_grid_setup'
-        END IF
-
         me%name         = 'UNSTRUCTURED_GRID'
-        IF (PRESENT(datatype)) THEN
-            me%datatype = datatype
-        ELSE
-            me%datatype = 'double'
-        END IF
         me%n_points     = SIZE(points, DIM=2)
         me%n_cells      = SIZE(cells,  DIM=1)
         me%n_cell_types = SIZE(cells,  DIM=1)
         me%points       = points
-        ALLOCATE(me%cell,source=cells)
+        ALLOCATE(me%cell_list(1:me%n_cells))
         size_cnt = me%n_cells
         DO i = 1, me%n_cells
-            size_cnt = size_cnt + me%cell(i)%n_points
+            ALLOCATE(me%cell_list(i)%cell,source=cells(i))
+            size_cnt = size_cnt + me%cell_list(i)%cell%n_points
         END DO
         me%size         = size_cnt
         me%firstcall    = .FALSE.
 
         END PROCEDURE unstruct_grid_setup
+
+        MODULE PROCEDURE unstruct_grid_setup_multiclass
+        !>@brief
+        !> Sets up the unstructured grid dataset with information
+        INTEGER(i4k) :: i, size_cnt
+
+        me%name         = 'UNSTRUCTURED_GRID'
+        me%n_points     = SIZE(points,    DIM=2)
+        me%n_cells      = SIZE(cell_list, DIM=1)
+        me%n_cell_types = SIZE(cell_list, DIM=1)
+        me%points       = points
+        me%cell_list    = cell_list
+        size_cnt        = me%n_cells
+        DO i = 1, me%n_cells
+            size_cnt = size_cnt + me%cell_list(i)%cell%n_points
+        END DO
+        me%size         = size_cnt
+        me%firstcall    = .FALSE.
+
+        END PROCEDURE unstruct_grid_setup_multiclass
 
 END SUBMODULE vtk_datasets_implementation
