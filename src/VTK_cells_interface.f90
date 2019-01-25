@@ -38,8 +38,8 @@ MODULE vtk_cells
 
     TYPE, ABSTRACT :: vtkcell
         !! Abstract DT for cell information
-        INTEGER(i4k) :: n_points
-        INTEGER(i4k) :: type
+        INTEGER(i4k) :: n_points = 0
+        INTEGER(i4k) :: type     = 0
         INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: points
     CONTAINS
         PROCEDURE, PUBLIC :: read  => abs_read

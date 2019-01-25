@@ -1,6 +1,7 @@
 SUBMODULE (vtk_datasets) vtk_datasets_implementation
     USE Precision
     USE vtk_cells, ONLY : vtkcell
+    IMPLICIT NONE
     !>@brief
     !> This module contains the dataset formats for vtk format
     !>@author
@@ -783,7 +784,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         me%n_cell_types = SIZE(cell_list, DIM=1)
         me%points       = points
         me%cell_list    = cell_list
-        size_cnt = me%n_cells
+        size_cnt        = me%n_cells
         DO i = 1, me%n_cells
             size_cnt = size_cnt + me%cell_list(i)%cell%n_points
         END DO

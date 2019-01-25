@@ -62,16 +62,22 @@ PROGRAM T_shape_test
     CHARACTER(LEN=15), DIMENSION(n_params_to_write), PARAMETER :: point_dataname = &
       & [ 'Temperature(K) ' ]
 
-    CALL voxel_cells(1)%setup ( (/ 0, 1, 2, 3, 4, 5, 6, 7 /) )
-    CALL voxel_cells(2)%setup ( (/ 4, 5, 6, 7, 9, 10, 13, 14 /) )
-    CALL voxel_cells(3)%setup ( (/ 8, 9, 12, 13, 16, 17, 20, 21 /) )
-    CALL voxel_cells(4)%setup ( (/ 9, 10, 13, 14, 17, 18, 21, 22 /) )
-    CALL hexahedron_cell%setup ( (/ 10, 11, 15, 14, 18, 19, 23, 22 /) )
-    cell_list(1)%cell = voxel_cells(1)
-    cell_list(2)%cell = voxel_cells(2)
-    cell_list(3)%cell = voxel_cells(3)
-    cell_list(4)%cell = voxel_cells(4)
-    cell_list(5)%cell   = hexahedron_cell
+    CALL voxel_cells(1)%setup ( [ 0, 1, 2, 3, 4, 5, 6, 7 ] )
+    CALL voxel_cells(2)%setup ( [ 4, 5, 6, 7, 9, 10, 13, 14 ] )
+    CALL voxel_cells(3)%setup ( [ 8, 9, 12, 13, 16, 17, 20, 21 ] )
+    CALL voxel_cells(4)%setup ( [ 9, 10, 13, 14, 17, 18, 21, 22 ] )
+    CALL hexahedron_cell%setup ( [ 10, 11, 15, 14, 18, 19, 23, 22 ] )
+
+!    cell_list(1)%cell = voxel_cells(1) !! Works for Intel 18.5, Not for gfortran-8.2
+!    cell_list(2)%cell = voxel_cells(2)
+!    cell_list(3)%cell = voxel_cells(3)
+!    cell_list(4)%cell = voxel_cells(4)
+!    cell_list(5)%cell = hexahedron_cell
+    ALLOCATE(cell_list(1)%cell,source=voxel_cells(1)) !! Workaround for gfortran-8.2
+    ALLOCATE(cell_list(2)%cell,source=voxel_cells(2))
+    ALLOCATE(cell_list(3)%cell,source=voxel_cells(3))
+    ALLOCATE(cell_list(4)%cell,source=voxel_cells(4))
+    ALLOCATE(cell_list(5)%cell,source=hexahedron_cell)
 
     CALL t_shape%init (points=points, cell_list=cell_list)
 
