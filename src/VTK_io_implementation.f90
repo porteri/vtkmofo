@@ -1,11 +1,21 @@
 SUBMODULE (vtk_io) vtk_io_implementation
-
+    !! author: Ian Porter
+    !! date: 12/1/2017
+    !!
+    !! This module implements the ability to read/write VTK formatted files
+    !!
     CONTAINS
 
         MODULE PROCEDURE vtk_legacy_write
         USE Misc,     ONLY : to_uppercase
         USE vtk_vars, ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, &
           &                  version, fcnt, file_extension
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 12/1/2017
+        !!
+        !! This subroutines writes the legacy vtk output file
+        !!
         INTEGER(i4k)     :: i, inputstat
         LOGICAL          :: file_is_open
         CHARACTER(LEN=8) :: fcnt_char = ''
@@ -81,6 +91,12 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         MODULE PROCEDURE vtk_legacy_read
         USE vtk_vars, ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, version
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 12/20/2017
+        !!
+        !! This subroutines reads the legacy vtk output file
+        !!
         INTEGER(i4k) :: i, inputstat
         LOGICAL      :: file_is_open
         CHARACTER(LEN=:), ALLOCATABLE :: form, filetype_text, vtk_version, line

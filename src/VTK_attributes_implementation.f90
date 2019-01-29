@@ -36,12 +36,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE abs_read
 
         MODULE PROCEDURE abs_write
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Abstract for writing an attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
+        !!
         SELECT TYPE (me)
         CLASS IS (attribute)
             WRITE(unit,*) me%dataname
@@ -49,13 +48,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE abs_write
 
         MODULE PROCEDURE initialize
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Abstract for performing the set-up of an attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
-
+        !!
         SELECT TYPE (me)
         CLASS IS (scalar)
             CALL me%setup(dataname, datatype, numcomp, tablename, ints1d, values1d)
@@ -76,13 +73,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE initialize
 
         MODULE PROCEDURE check_for_diffs
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Function checks for differences in an attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
-
+        !!
         diffs = .FALSE.
         IF      (.NOT. SAME_TYPE_AS(me,you))  THEN
             diffs = .TRUE.
@@ -96,12 +91,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE scalar_read
         USE Misc, ONLY : interpret_string, to_lowercase
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the read for a scalar attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
+        !!
         INTEGER(i4k)               :: i, iostat
         LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
@@ -167,12 +161,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE scalar_read
 
         MODULE PROCEDURE scalar_write
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a scalar attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
+        !!
         INTEGER(i4k) :: i
 
         WRITE(unit,100) me%dataname, me%datatype, me%numcomp
@@ -197,13 +190,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE scalar_write
 
         MODULE PROCEDURE scalar_setup
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the set-up for a scalar attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
-
+        !!
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
             me%datatype = datatype
@@ -233,12 +224,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE scalar_setup
 
         MODULE PROCEDURE check_for_diffs_scalar
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Function checks for differences in a scalar attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
+        !!
         INTEGER(i4k) :: i
 
         diffs = .FALSE.
@@ -277,12 +267,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE vector_read
         USE Misc, ONLY : interpret_string
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a vector attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
+        !!
         INTEGER(i4k)               :: i, iostat
         INTEGER(i4k),  PARAMETER   :: dim = 3
         LOGICAL                    :: end_of_file
@@ -319,12 +308,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE vector_read
 
         MODULE PROCEDURE vector_write
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a vector attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
+        !!
         INTEGER(i4k) :: i
 
         WRITE(unit,100) me%dataname, me%datatype
@@ -337,13 +325,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE vector_write
 
         MODULE PROCEDURE vector_setup
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the set-up for a vector attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
-
+        !!
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
             me%datatype = datatype
@@ -355,12 +341,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE vector_setup
 
         MODULE PROCEDURE check_for_diffs_vector
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Function checks for differences in a vector attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
+        !!
         INTEGER(i4k) :: i, j
 
         diffs = .FALSE.
@@ -391,12 +376,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE normal_read
         USE Misc, ONLY : interpret_string
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a normal attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
+        !!
         INTEGER(i4k)               :: i, iostat
         INTEGER(i4k),  PARAMETER   :: dim = 3
         LOGICAL                    :: end_of_file
@@ -433,12 +417,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE normal_read
 
         MODULE PROCEDURE normal_write
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a normal attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
+        !!
         INTEGER(i4k) :: i
 
         WRITE(unit,100) me%dataname, me%datatype
@@ -451,13 +434,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE normal_write
 
         MODULE PROCEDURE normal_setup
+        !! author: Ian Porter
+        !! date: 12/14/2017        
         !!
         !! Subroutine performs the set-up for a normal attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
-
+        !!
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
             me%datatype = datatype
@@ -469,12 +450,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE normal_setup
 
         MODULE PROCEDURE check_for_diffs_normal
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Function checks for differences in a normal attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
+        !!
         INTEGER(i4k) :: i, j
 
         diffs = .FALSE.
@@ -505,12 +485,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE texture_read
         USE Misc, ONLY : interpret_string
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a texture attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
+        !!
         INTEGER(i4k)                :: i, iostat, dim
         LOGICAL                     :: end_of_file
         CHARACTER(LEN=def_len)      :: line
@@ -549,12 +528,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE texture_read
 
         MODULE PROCEDURE texture_write
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a texture attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
+        !!
         INTEGER(i4k) :: i
 
         WRITE(unit,100) me%dataname, SIZE(me%textures,DIM=2), me%datatype
@@ -567,13 +545,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE texture_write
 
         MODULE PROCEDURE texture_setup
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the set-up for a texture attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
-
+        !!
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
             me%datatype = datatype
@@ -585,12 +561,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE texture_setup
 
         MODULE PROCEDURE check_for_diffs_texture
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Function checks for differences in a texture attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
+        !!
         INTEGER(i4k) :: i, j
 
         diffs = .FALSE.
@@ -621,12 +596,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE tensor_read
         USE Misc, ONLY : interpret_string
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a tensor attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
+        !!
         INTEGER(i4k)               :: i, j, iostat
         LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
@@ -667,12 +641,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE tensor_read
 
         MODULE PROCEDURE tensor_write
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a tensor attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
+        !!
         INTEGER(i4k) :: i, j
 
         WRITE(unit,100) me%dataname, me%datatype
@@ -689,12 +662,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE tensor_write
 
         MODULE PROCEDURE tensor_setup
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the set-up for a tensor attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
+        !!
         INTEGER(i4k) :: i
 
         me%dataname = dataname
@@ -715,12 +687,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE tensor_setup
 
         MODULE PROCEDURE check_for_diffs_tensor
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Function checks for differences in a tensor attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
+        !!
         INTEGER(i4k) :: i, j, k
 
         diffs = .FALSE.
@@ -753,12 +724,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE field_read
         USE Misc, ONLY : interpret_string
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a field attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
+        !!
         INTEGER(i4k)              :: i, j, iostat, dim
         LOGICAL                   :: end_of_file
         CHARACTER(LEN=def_len)    :: line
@@ -809,12 +779,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE field_read
 
         MODULE PROCEDURE field_write
+        !! author: Ian Porter
+        !! date: 12/13/2017        
         !!
         !! Subroutine performs the write for a field attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/13/2017
+        !!
         INTEGER(i4k) :: i, j
 
         WRITE(unit,100) me%dataname, SIZE(me%array,DIM=1)
@@ -833,13 +802,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE field_write
 
         MODULE PROCEDURE field_setup
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the set-up for a field attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
-
+        !!
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
             me%datatype = datatype
@@ -851,12 +818,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE field_setup
 
         MODULE PROCEDURE check_for_diffs_field
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Function checks for differences in a field attribute
-        !! author: Ian Porter
-
-        !! date:
-        !! 12/14/2017
+        !!
         INTEGER(i4k) :: i, j, k
 
         diffs = .FALSE.

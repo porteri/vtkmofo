@@ -141,12 +141,11 @@ PROGRAM vtk_cells_test
     USE vtk_cells_unit_tests, ONLY : vtk_cells_unit
     USE VTKmofoPassFail,      ONLY : all_tests_pass
     IMPLICIT NONE
+    !! author: Ian Porter
+    !! date: 12/15/2017
     !!
     !! Driver testing subroutine for the cells information
-    !! author: Ian Porter
-    
-    !! date:
-    !! 12/15/2017
+    !!
     LOGICAL :: test_passes = .FALSE.
 
     CALL vtk_cells_unit (test_passes)

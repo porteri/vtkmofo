@@ -166,12 +166,11 @@ PROGRAM vtk_attributes_test
     USE vtk_attributes_unit_tests, ONLY : vtk_attributes_unit
     USE VTKmofoPassFail,           ONLY : all_tests_pass
     IMPLICIT NONE
+    !! author: Ian Porter
+    !! date: 12/14/2017
     !!
     !! Driver testing subroutine for the attributes information
-    !! author: Ian Porter
-    
-    !! date:
-    !! 12/14/2017
+    !!
     LOGICAL :: test_passes = .FALSE.
 
     CALL vtk_attributes_unit (test_passes)

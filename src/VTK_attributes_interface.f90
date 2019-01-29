@@ -128,11 +128,10 @@ MODULE vtk_attributes
         END SUBROUTINE abs_read
 
         MODULE SUBROUTINE abs_write (me, unit)
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Abstract for writing an attribute
-        !! author: Ian Porter
-
-        !! date:
         !!
         CLASS(attribute), INTENT(IN) :: me
         INTEGER(i4k),     INTENT(IN) :: unit
@@ -141,11 +140,10 @@ MODULE vtk_attributes
 
         MODULE SUBROUTINE initialize (me, dataname, datatype, numcomp, tablename, ints1d, ints2d, ints3d, &
           &                           values1d, values2d, values3d, field_arrays)
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Abstract for performing the set-up of an attribute
-        !! author: Ian Porter
-
-        !! date: 12/13/2017
         !!
         CLASS(attribute), INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
@@ -162,11 +160,10 @@ MODULE vtk_attributes
         END SUBROUTINE initialize
 
         MODULE FUNCTION check_for_diffs (me, you) RESULT (diffs)
+        !! author: Ian Porter
+        !! date: 12/13/2017        
         !!
         !! Function checks for differences in an attribute
-        !! author: Ian Porter
-
-        !! date: 12/13/2017
         !!
         CLASS(attribute), INTENT(IN) :: me, you
         LOGICAL                      :: diffs
@@ -176,11 +173,10 @@ MODULE vtk_attributes
 ! Scalars
 !********
         MODULE SUBROUTINE scalar_read (me, unit)
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the read for a scalar attribute
-        !! author: Ian Porter
-
-        !! date: 12/13/2017
         !!
         CLASS(scalar), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
@@ -188,11 +184,10 @@ MODULE vtk_attributes
         END SUBROUTINE scalar_read
 
         MODULE SUBROUTINE scalar_write (me, unit)
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a scalar attribute
-        !! author: Ian Porter
-
-        !! date: 12/13/2017
         !!
         CLASS(scalar), INTENT(IN) :: me
         INTEGER(i4k),  INTENT(IN) :: unit
@@ -200,11 +195,10 @@ MODULE vtk_attributes
         END SUBROUTINE scalar_write
 
         MODULE SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, ints1d, values1d)
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the set-up for a scalar attribute
-        !! author: Ian Porter
-
-        !! date: 12/13/2017
         !!
         CLASS(scalar),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
@@ -217,11 +211,10 @@ MODULE vtk_attributes
         END SUBROUTINE scalar_setup
 
         MODULE FUNCTION check_for_diffs_scalar (me, you) RESULT (diffs)
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Function checks for differences in a scalar attribute
-        !! author: Ian Porter
-
-        !! date: 12/13/2017
         !!
         CLASS(scalar),    INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
@@ -232,11 +225,10 @@ MODULE vtk_attributes
 ! Vectors
 !********
         MODULE SUBROUTINE vector_read (me, unit)
+        !! author: Ian Porter
+        !! date: 12/14/2017        
         !!
         !! Subroutine performs the read for a vector attribute
-        !! author: Ian Porter
-
-        !! date: 12/14/2017
         !!
         CLASS(vector), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
@@ -244,11 +236,10 @@ MODULE vtk_attributes
         END SUBROUTINE vector_read
 
         MODULE SUBROUTINE vector_write (me, unit)
+        !! author: Ian Porter
+        !! date: 12/13/2017        
         !!
         !! Subroutine performs the write for a vector attribute
-        !! author: Ian Porter
-
-        !! date: 12/13/2017
         !!
         CLASS(vector), INTENT(IN) :: me
         INTEGER(i4k),  INTENT(IN) :: unit
@@ -256,11 +247,10 @@ MODULE vtk_attributes
         END SUBROUTINE vector_write
 
         MODULE SUBROUTINE vector_setup (me, dataname, datatype, values2d)
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the set-up for a vector attribute
-        !! author: Ian Porter
-
-        !! date: 12/14/2017
         !!
         CLASS(vector),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
@@ -270,11 +260,10 @@ MODULE vtk_attributes
         END SUBROUTINE vector_setup
 
         MODULE FUNCTION check_for_diffs_vector (me, you) RESULT (diffs)
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Function checks for differences in a vector attribute
-        !! author: Ian Porter
-
-        !! date: 12/14/2017
         !!
         CLASS(vector),    INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
@@ -285,11 +274,10 @@ MODULE vtk_attributes
 ! Normals
 !********
         MODULE SUBROUTINE normal_read (me, unit)
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a normal attribute
-        !! author: Ian Porter
-
-        !! date: 12/14/2017
         !!
         CLASS(normal), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
@@ -297,11 +285,10 @@ MODULE vtk_attributes
         END SUBROUTINE normal_read
 
         MODULE SUBROUTINE normal_write (me, unit)
+        !! author: Ian Porter
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a normal attribute
-        !! author: Ian Porter
-
-        !! date: 12/13/2017
         !!
         CLASS(normal), INTENT(IN) :: me
         INTEGER(i4k),  INTENT(IN) :: unit
@@ -309,11 +296,10 @@ MODULE vtk_attributes
         END SUBROUTINE normal_write
 
         MODULE SUBROUTINE normal_setup (me, dataname, datatype, values2d)
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the set-up for a normal attribute
-        !! author: Ian Porter
-
-        !! date: 12/14/2017
         !!
         CLASS(normal),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
@@ -323,11 +309,10 @@ MODULE vtk_attributes
         END SUBROUTINE normal_setup
 
         MODULE FUNCTION check_for_diffs_normal (me, you) RESULT (diffs)
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Function checks for differences in a normal attribute
-        !! author: Ian Porter
-
-        !! date: 12/14/2017
         !!
         CLASS(normal),    INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
@@ -338,11 +323,10 @@ MODULE vtk_attributes
 ! Textures
 !********
         MODULE SUBROUTINE texture_read (me, unit)
+        !! author: Ian Porter
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a texture attribute
-        !! author: Ian Porter
-
-        !! date: 12/14/2017
         !!
         CLASS(texture), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: unit
@@ -350,11 +334,10 @@ MODULE vtk_attributes
         END SUBROUTINE texture_read
 
         MODULE SUBROUTINE texture_write (me, unit)
+        !! author: Ian Porter
+        !! date: 12/13/2017        
         !!
         !! Subroutine performs the write for a texture attribute
-        !! author: Ian Porter
-
-        !! date: 12/13/2017
         !!
         CLASS(texture), INTENT(IN) :: me
         INTEGER(i4k),   INTENT(IN) :: unit
