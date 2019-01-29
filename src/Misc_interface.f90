@@ -1,7 +1,11 @@
 MODULE Misc
     USE Precision
     IMPLICIT NONE
-
+    !! author: Ian Porter
+    !! date: 12/13/2017
+    !!
+    !! This module contains miscellaneous routines used to read/write to the .vtk file
+    !!
     PRIVATE
     PUBLIC :: interpret_string, def_len, to_uppercase, to_lowercase
 
@@ -14,8 +18,8 @@ MODULE Misc
     INTERFACE
 
         MODULE SUBROUTINE interpret_string (line, datatype, ignore, separator, reals, ints, chars)
-        !>@brief
-        !> Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
+        !!
+        !! Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
         CHARACTER(LEN=*), INTENT(INOUT) :: line
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: ignore, separator
         CHARACTER(LEN=1), DIMENSION(:), INTENT(IN) :: datatype
@@ -51,7 +55,7 @@ MODULE Misc
 
         PURE MODULE FUNCTION to_uppercase (string) RESULT (new_string)
         IMPLICIT NONE
-        !! author:  Ian Porter, NRC
+        !! author: Ian Porter
         !! date: 01/23/2019
         !!
         !! This function changes lowercase text in a string to uppercase text
@@ -63,7 +67,7 @@ MODULE Misc
 
         PURE MODULE FUNCTION to_lowercase (string) RESULT (new_string)
         IMPLICIT NONE
-        !! author:  Ian Porter, NRC
+        !! author: Ian Porter
         !! date: 01/23/2019
         !!
         !! This function changes uppercase text in a string to lowercase text

@@ -4,13 +4,11 @@ PROGRAM rectangular_prism_test
     USE vtk_attributes, ONLY : scalar, attributes
     USE vtk,            ONLY : vtk_legacy_write
     IMPLICIT NONE
-    !>@brief
-    !> This is a test of a rectangular_prism geometry using structured points
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/28/2017
-
+    !! author: Ian Porter
+    !! date: 12/28/2017
+    !!
+    !! This is a test of a rectangular_prism geometry using structured points
+    !!
     INTEGER(i4k), PARAMETER     :: n_params_to_write = 3
     TYPE (struct_pts)           :: rectangular_prism
     TYPE (attributes), DIMENSION(n_params_to_write) :: vals_to_write

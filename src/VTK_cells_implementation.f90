@@ -1,39 +1,36 @@
 SUBMODULE (vtk_cells) vtk_cells_implementation
-    !>@brief
-    !> THis module contains the types of cells used by VTK
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/2/2017
-    !
-    ! The following cells are available:
-    !  1) vertex
-    !  2) poly_vertex
-    !  3) line
-    !  4) poly_line
-    !  5) triangle
-    !  6) triangle_strip
-    !  7) polygon
-    !  8) pixel
-    !  9) quad
-    ! 10) tetra
-    ! 11) voxel
-    ! 12) hexahedron
-    ! 13) wedge
-    ! 14) pyramid
-    ! 15) quadratic_edge
-    ! 16) quadratic_triangle
-    ! 17) quadratic_quad
-    ! 18) quadratic_tetra
-    ! 19) quadratic_hexahedron
-    !
-
+    !! author: Ian Porter
+    !! date: 12/2/2017
+    !!
+    !! This module contains the types of cells used by VTK
+    !!
+    !! The following cells are available:
+    !!  1) vertex
+    !!  2) poly_vertex
+    !!  3) line
+    !!  4) poly_line
+    !!  5) triangle
+    !!  6) triangle_strip
+    !!  7) polygon
+    !!  8) pixel
+    !!  9) quad
+    !! 10) tetra
+    !! 11) voxel
+    !! 12) hexahedron
+    !! 13) wedge
+    !! 14) pyramid
+    !! 15) quadratic_edge
+    !! 16) quadratic_triangle
+    !! 17) quadratic_quad
+    !! 18) quadratic_tetra
+    !! 19) quadratic_hexahedron
+    !!
     CONTAINS
 
         MODULE PROCEDURE abs_read
         USE Misc, ONLY : interpret_string, def_len
-        !>@brief
-        !> Subroutine performs the read for a cell
+        !!
+        !! Subroutine performs the read for a cell
         INTEGER(i4k)                :: i, iostat
         LOGICAL                     :: end_of_file, ierr
         CHARACTER(LEN=def_len)      :: line
@@ -68,8 +65,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE abs_read
 
         MODULE PROCEDURE abs_write
-        !>@brief
-        !> Writes the cell information to the .vtk file
+        !!
+        !! Writes the cell information to the .vtk file
         INTEGER(i4k)               :: i
 
         WRITE(unit,100) me%n_points, (me%points(i),i=1,me%n_points)
@@ -77,8 +74,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE abs_write
 
         MODULE PROCEDURE abs_setup
-        !>@brief
-        !> Sets up the cell information
+        !!
+        !! Sets up the cell information
         LOGICAL :: ierr = .FALSE.
 
         CALL me%init(SIZE(points), ierr)     !! Initialize the cell
@@ -88,8 +85,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE abs_setup
 
         MODULE PROCEDURE abs_init
-        !>@brief
-        !> Initializes the cell with size and type information
+        !!
+        !! Initializes the cell with size and type information
 
         me%n_points = n
         ierr        = .FALSE.
@@ -97,12 +94,11 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE abs_init
 
         MODULE PROCEDURE check_for_diffs
-        !>@brief
-        !> Function checks for differences in an cell
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 01/05/2017
+        !! author: Ian Porter
+        !! date: 01/05/2017
+        !!
+        !! Function checks for differences in an cell
+        !!
         INTEGER(i4k) :: i
 
         diffs = .FALSE.
@@ -124,8 +120,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE check_for_diffs
 
         MODULE PROCEDURE vertex_init
-        !>@brief
-        !> Initializes a vertex cell
+        !!
+        !! Initializes a vertex cell
 
         me%n_points = 1
         me%type     = 1
@@ -134,8 +130,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE vertex_init
 
         MODULE PROCEDURE poly_vertex_init
-        !>@brief
-        !> Initializes a poly_vertex cell
+        !!
+        !! Initializes a poly_vertex cell
 
         me%n_points = n
         me%type     = 2
@@ -144,8 +140,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE poly_vertex_init
 
         MODULE PROCEDURE line_init
-        !>@brief
-        !> Initializes a line cell
+        !!
+        !! Initializes a line cell
 
         me%n_points = 2
         me%type     = 3
@@ -154,8 +150,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE line_init
 
         MODULE PROCEDURE poly_line_init
-        !>@brief
-        !> Initializes a poly_line cell
+        !!
+        !! Initializes a poly_line cell
 
         me%n_points = n
         me%type     = 4
@@ -164,8 +160,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE poly_line_init
 
         MODULE PROCEDURE triangle_init
-        !>@brief
-        !> Initializes a triangle cell
+        !!
+        !! Initializes a triangle cell
 
         me%n_points = 3
         me%type     = 5
@@ -174,8 +170,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE triangle_init
 
         MODULE PROCEDURE triangle_strip_init
-        !>@brief
-        !> Initializes a triangle_strip cell
+        !!
+        !! Initializes a triangle_strip cell
 
         me%n_points = n
         me%type     = 6
@@ -184,8 +180,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE triangle_strip_init
 
         MODULE PROCEDURE polygon_init
-        !>@brief
-        !> Initializes a polygon cell
+        !!
+        !! Initializes a polygon cell
 
         me%n_points = n
         me%type     = 7
@@ -194,8 +190,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE polygon_init
 
         MODULE PROCEDURE pixel_init
-        !>@brief
-        !> Initializes a pixel cell
+        !!
+        !! Initializes a pixel cell
 
         me%n_points = 4
         me%type     = 8
@@ -204,8 +200,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE pixel_init
 
         MODULE PROCEDURE quad_init
-        !>@brief
-        !> Initializes a quad cell
+        !!
+        !! Initializes a quad cell
 
         me%n_points = 4
         me%type     = 9
@@ -214,8 +210,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE quad_init
 
         MODULE PROCEDURE tetra_init
-        !>@brief
-        !> Initializes a tetra cell
+        !!
+        !! Initializes a tetra cell
 
         me%n_points = 4
         me%type     = 10
@@ -224,8 +220,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE tetra_init
 
         MODULE PROCEDURE voxel_init
-        !>@brief
-        !> Initializes a voxel cell
+        !!
+        !! Initializes a voxel cell
 
         me%n_points = 8
         me%type     = 11
@@ -234,8 +230,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE voxel_init
 
         MODULE PROCEDURE hexahedron_init
-        !>@brief
-        !> Initializes a hexahedron cell
+        !!
+        !! Initializes a hexahedron cell
 
         me%n_points = 8
         me%type     = 12
@@ -244,8 +240,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE hexahedron_init
 
         MODULE PROCEDURE wedge_init
-        !>@brief
-        !> Initializes a wedge cell
+        !!
+        !! Initializes a wedge cell
 
         me%n_points = 6
         me%type     = 13
@@ -254,8 +250,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE wedge_init
 
         MODULE PROCEDURE pyramid_init
-        !>@brief
-        !> Initializes a pyramid cell
+        !!
+        !! Initializes a pyramid cell
 
         me%n_points = 5
         me%type     = 14
@@ -264,8 +260,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE pyramid_init
 
         MODULE PROCEDURE quadratic_edge_init
-        !>@brief
-        !> Initializes a quadratic_edge cell
+        !!
+        !! Initializes a quadratic_edge cell
 
         me%n_points = 3
         me%type     = 21
@@ -274,8 +270,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE quadratic_edge_init
 
         MODULE PROCEDURE quadratic_triangle_init
-        !>@brief
-        !> Initializes a quadratic_triangle cell
+        !!
+        !! Initializes a quadratic_triangle cell
 
         me%n_points = 6
         me%type     = 22
@@ -284,8 +280,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE quadratic_triangle_init
 
         MODULE PROCEDURE quadratic_quad_init
-        !>@brief
-        !> Initializes a quadratic_quad cell
+        !!
+        !! Initializes a quadratic_quad cell
 
         me%n_points = 8
         me%type     = 23
@@ -294,8 +290,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE quadratic_quad_init
 
         MODULE PROCEDURE quadratic_tetra_init
-        !>@brief
-        !> Initializes a quadratic_tetra cell
+        !!
+        !! Initializes a quadratic_tetra cell
 
         me%n_points = 10
         me%type     = 24
@@ -304,8 +300,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE quadratic_tetra_init
 
         MODULE PROCEDURE quadratic_hexahedron_init
-        !>@brief
-        !> Initializes a quadratic_hexahedron cell
+        !!
+        !! Initializes a quadratic_hexahedron cell
 
         me%n_points = 20
         me%type     = 25
@@ -314,8 +310,8 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END PROCEDURE quadratic_hexahedron_init
 
         MODULE PROCEDURE set_cell_type
-        !>@brief
-        !> Subroutine allocates the cell based on the type (called during a read)
+        !!
+        !! Subroutine allocates the cell based on the type (called during a read)
 
         IF (ALLOCATED(me)) DEALLOCATE(me)
 

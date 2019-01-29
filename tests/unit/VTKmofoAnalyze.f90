@@ -1,12 +1,11 @@
 MODULE VTKmofoPassFail
     USE ISO_FORTRAN_ENV, ONLY : i4k => INT32, r8k => REAL64
     IMPLICIT NONE
-    !>@breif
-    !> This module is used to identity whether the unit test has passed or failed
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 3/21/2015
+    !! author: Ian Porter
+    !! date: 3/21/2015
+    !!
+    !! This module is used to identity whether the unit test has passed or failed
+    !!
     PRIVATE
     PUBLIC :: Analyze, testid, all_tests_pass
     !
@@ -20,22 +19,20 @@ MODULE VTKmofoPassFail
     CHARACTER(LEN=20) :: testid                     !! Name of subroutine/function being tested
                                                     !! (Defined by user as start of each set of unit tests)
     CHARACTER(LEN=20) :: testid_prev                !! Name of previous subroutine/function tested. Used as a tracking tool only
-    !
+
     CONTAINS
+
         ELEMENTAL IMPURE FUNCTION Analyze (known, calc, criteria) RESULT(test_passed)
         IMPLICIT NONE
-        !>@brief
-        !> This subroutine analyzes the results of the unit test
-        !>@author
-        !> Ian Porter
-        !>@date
-        !> 3/21/2015
-        ! Inputs
-        ! known    - Expected value
-        ! calc     - Subroutine/function calculated value
-        ! criteria - Acceptance criteria (Fractional difference between known and calc values, relative to known)
-        !
-        REAL(r8k), INTENT(IN) :: known, calc, criteria
+        !! author: Ian Porter
+        !! date: 3/21/2015
+        !!
+        !! This subroutine analyzes the results of the unit test
+        !!
+        REAL(r8k), INTENT(IN) :: known      !! Expected value
+        REAL(r8k), INTENT(IN) :: calc       !! Subroutine/function calculated value
+        REAL(r8k), INTENT(IN) :: criteria   !! Acceptance criteria (fractional difference between known and calc values,
+                                            !! relative to known)
         LOGICAL :: test_passed
 
         ! Count the # of unit tests performed for each subroutine/function
@@ -77,21 +74,15 @@ MODULE VTKmofoPassFail
 
         SUBROUTINE TestPass (known, calc)
         IMPLICIT NONE
-        !>@brief
-        !> This subroutine indicates that a unit test has passed.
-        !>@author
-        !> Ian Porter
-        !>@date
-        !> 3/21/2015
-        !
-        ! Input
-        !
-        ! known - known value that subroutine/function tested should calulate
-        ! calc  - calculated value from subroutine/function tested
-        !
-        REAL(r8k), INTENT(IN) :: known, calc
+        !! author: Ian Porter
+        !! date: 3/21/2015
+        !!
+        !! This subroutine indicates that a unit test has passed.
+        !!
+        REAL(r8k), INTENT(IN) :: known  !! Known value that subroutine/function tested should calulate
+        REAL(r8k), INTENT(IN) :: calc   !! Calculated value from subroutine/function tested
 
-        ! Write to the command window and unit testing output file
+        !! Write to the command window and unit testing output file
         WRITE (*,100)      testnum, TestID, known, calc
         WRITE (utunit,100) testnum, TestID, known, calc
 100     FORMAT (/,'Unit Test # ',i4,' PASSED for Subroutine/Function ',a20, &
@@ -101,45 +92,37 @@ MODULE VTKmofoPassFail
 
         SUBROUTINE TestFail (known, calc)
         IMPLICIT NONE
-        !>@brief
-        !> This subroutine indicates that a unit test has failed.
-        !>@author
-        !> Ian Porter
-        !>@date
-        !> 3/21/2015
-        !
-        ! Input
-        !
-        ! known    - known value that subroutine/function tested should calulate
-        ! calc     - calculated value from subroutine/function tested
-        !
-        ! Internal
-        !
-        ! nfailures - Counter for # of failed tests
-        !
-        REAL(r8k), INTENT(IN) :: known, calc
+        !! author: Ian Porter
+        !! date: 3/21/2015
+        !!
+        !! This subroutine indicates that a unit test has failed.
+        !!
+        REAL(r8k), INTENT(IN) :: known  !! Known value that subroutine/function tested should calulate
+        REAL(r8k), INTENT(IN) :: calc   !! Calculated value from subroutine/function tested
 
         ! Write to the command window and unit testing output file
         WRITE (*,100)      testnum, TestID, known, calc
         WRITE (utunit,100) testnum, TestID, known, calc
 100     FORMAT (/,'Unit Test # ',i4,' FAILED on Subroutine/Function ',a20, &
           &     /,'Expected = ',e14.7,' Calculated = ',e14.7)
-        
+
         nfailures = nfailures + 1    !! Keep track of the number of cases that have failed
         TestingPassed = .FALSE.      !! Indicate that a unit test has failed
 
         END SUBROUTINE TestFail
 
         SUBROUTINE all_tests_pass ()
-        !>@brief
-        !> This subroutine indicates that all unit tests have passed
-        !> Using ctest, the value "Test passed" is searched for to indicate passing.
-        !>@author
-        !> Ian Porter
-        !>@date
-        !> 12/13/2017
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! This subroutine indicates that all unit tests have passed
+        !! Using ctest, the value "Test passed" is searched for to indicate passing.
+        !!
+        CHARACTER(LEN=*), PARAMETER :: test_passed_message = 'Test passed'
 
-        WRITE(*,*) 'Test passed'
+        WRITE(*,*) test_passed_message
 
         END SUBROUTINE all_tests_pass
+
 END MODULE VTKmofoPassFail
