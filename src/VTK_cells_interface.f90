@@ -1,35 +1,32 @@
 MODULE vtk_cells
     USE Precision
     IMPLICIT NONE
-    !>@brief
-    !> THis module contains the types of cells used by VTK
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/2/2017
-    !
-    ! The following cells are available:
-    !  1) vertex
-    !  2) poly_vertex
-    !  3) line
-    !  4) poly_line
-    !  5) triangle
-    !  6) triangle_strip
-    !  7) polygon
-    !  8) pixel
-    !  9) quad
-    ! 10) tetra
-    ! 11) voxel
-    ! 12) hexahedron
-    ! 13) wedge
-    ! 14) pyramid
-    ! 15) quadratic_edge
-    ! 16) quadratic_triangle
-    ! 17) quadratic_quad
-    ! 18) quadratic_tetra
-    ! 19) quadratic_hexahedron
-    !
-
+    !! author: Ian Porter
+    !! date: 12/2/2017
+    !!
+    !! This module contains the types of cells used by VTK
+    !!
+    !! The following cells are available:
+    !!  1) vertex
+    !!  2) poly_vertex
+    !!  3) line
+    !!  4) poly_line
+    !!  5) triangle
+    !!  6) triangle_strip
+    !!  7) polygon
+    !!  8) pixel
+    !!  9) quad
+    !! 10) tetra
+    !! 11) voxel
+    !! 12) hexahedron
+    !! 13) wedge
+    !! 14) pyramid
+    !! 15) quadratic_edge
+    !! 16) quadratic_triangle
+    !! 17) quadratic_quad
+    !! 18) quadratic_tetra
+    !! 19) quadratic_hexahedron
+    !!
     PRIVATE
     PUBLIC :: vtkcell, vtkcell_list
     PUBLIC :: vertex, poly_vertex, line, poly_line, triangle, triangle_strip, polygon, pixel, quad, tetra, voxel
@@ -153,32 +150,32 @@ MODULE vtk_cells
     INTERFACE
 
         MODULE SUBROUTINE abs_read (me, unit)
-        !>@brief
-        !> Subroutine performs the read for a cell
+        !!
+        !! Subroutine performs the read for a cell
         CLASS(vtkcell), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: unit
 
         END SUBROUTINE abs_read
 
         MODULE SUBROUTINE abs_write (me, unit)
-        !>@brief
-        !> Writes the cell information to the .vtk file
+        !!
+        !! Writes the cell information to the .vtk file
         CLASS(vtkcell), INTENT(IN) :: me
         INTEGER(i4k),   INTENT(IN) :: unit
 
         END SUBROUTINE abs_write
 
         MODULE SUBROUTINE abs_setup (me, points)
-        !>@brief
-        !> Sets up the cell information
+        !!
+        !! Sets up the cell information
         CLASS(vtkcell), INTENT(OUT) :: me
         INTEGER(i4k), DIMENSION(:), INTENT(IN) :: points
 
         END SUBROUTINE abs_setup
 
         MODULE SUBROUTINE abs_init (me, n, ierr)
-        !>@brief
-        !> Initializes the cell with size and type information
+        !!
+        !! Initializes the cell with size and type information
         CLASS(vtkcell), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
@@ -186,20 +183,16 @@ MODULE vtk_cells
         END SUBROUTINE abs_init
 
         MODULE FUNCTION check_for_diffs (me, you) RESULT (diffs)
-        !>@brief
-        !> Function checks for differences in an cell
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 01/05/2017
+        !!
+        !! Function checks for differences in an cell
         CLASS(vtkcell), INTENT(IN) :: me, you
         LOGICAL      :: diffs
 
         END FUNCTION check_for_diffs
 
         MODULE SUBROUTINE vertex_init (me, n, ierr)
-        !>@brief
-        !> Initializes a vertex cell
+        !!
+        !! Initializes a vertex cell
         CLASS(vertex), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: n
         LOGICAL,       INTENT(OUT) :: ierr
@@ -207,8 +200,8 @@ MODULE vtk_cells
         END SUBROUTINE vertex_init
 
         MODULE SUBROUTINE poly_vertex_init (me, n, ierr)
-        !>@brief
-        !> Initializes a poly_vertex cell
+        !!
+        !! Initializes a poly_vertex cell
         CLASS(poly_vertex), INTENT(OUT) :: me
         INTEGER(i4k),       INTENT(IN)  :: n
         LOGICAL,            INTENT(OUT) :: ierr
@@ -216,8 +209,8 @@ MODULE vtk_cells
         END SUBROUTINE poly_vertex_init
 
         MODULE SUBROUTINE line_init (me, n, ierr)
-        !>@brief
-        !> Initializes a line cell
+        !!
+        !! Initializes a line cell
         CLASS(line),  INTENT(OUT) :: me
         INTEGER(i4k), INTENT(IN)  :: n
         LOGICAL,      INTENT(OUT) :: ierr
@@ -225,8 +218,8 @@ MODULE vtk_cells
         END SUBROUTINE line_init
 
         MODULE SUBROUTINE poly_line_init (me, n, ierr)
-        !>@brief
-        !> Initializes a poly_line cell
+        !!
+        !! Initializes a poly_line cell
         CLASS(poly_line), INTENT(OUT) :: me
         INTEGER(i4k),     INTENT(IN)  :: n
         LOGICAL,          INTENT(OUT) :: ierr
@@ -234,8 +227,8 @@ MODULE vtk_cells
         END SUBROUTINE poly_line_init
 
         MODULE SUBROUTINE triangle_init (me, n, ierr)
-        !>@brief
-        !> Initializes a triangle cell
+        !!
+        !! Initializes a triangle cell
         CLASS(triangle), INTENT(OUT) :: me
         INTEGER(i4k),    INTENT(IN)  :: n
         LOGICAL,         INTENT(OUT) :: ierr
@@ -243,8 +236,8 @@ MODULE vtk_cells
         END SUBROUTINE triangle_init
 
         MODULE SUBROUTINE triangle_strip_init (me, n, ierr)
-        !>@brief
-        !> Initializes a triangle_strip cell
+        !!
+        !! Initializes a triangle_strip cell
         CLASS(triangle_strip), INTENT(OUT) :: me
         INTEGER(i4k),          INTENT(IN)  :: n
         LOGICAL,               INTENT(OUT) :: ierr
@@ -253,8 +246,8 @@ MODULE vtk_cells
 
 
         MODULE SUBROUTINE polygon_init (me, n, ierr)
-        !>@brief
-        !> Initializes a polygon cell
+        !!
+        !! Initializes a polygon cell
         CLASS(polygon), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
@@ -262,8 +255,8 @@ MODULE vtk_cells
         END SUBROUTINE polygon_init
 
         MODULE SUBROUTINE pixel_init (me, n, ierr)
-        !>@brief
-        !> Initializes a pixel cell
+        !!
+        !! Initializes a pixel cell
         CLASS(pixel),   INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
@@ -271,8 +264,8 @@ MODULE vtk_cells
         END SUBROUTINE pixel_init
 
         MODULE SUBROUTINE quad_init (me, n, ierr)
-        !>@brief
-        !> Initializes a quad cell
+        !!
+        !! Initializes a quad cell
         CLASS(quad),    INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
@@ -280,8 +273,8 @@ MODULE vtk_cells
         END SUBROUTINE quad_init
 
         MODULE SUBROUTINE tetra_init (me, n, ierr)
-        !>@brief
-        !> Initializes a tetra cell
+        !!
+        !! Initializes a tetra cell
         CLASS(tetra),   INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
@@ -289,8 +282,8 @@ MODULE vtk_cells
         END SUBROUTINE tetra_init
 
         MODULE SUBROUTINE voxel_init (me, n, ierr)
-        !>@brief
-        !> Initializes a voxel cell
+        !!
+        !! Initializes a voxel cell
         CLASS(voxel),   INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
@@ -298,8 +291,8 @@ MODULE vtk_cells
         END SUBROUTINE voxel_init
 
         MODULE SUBROUTINE hexahedron_init (me, n, ierr)
-        !>@brief
-        !> Initializes a hexahedron cell
+        !!
+        !! Initializes a hexahedron cell
         CLASS(hexahedron), INTENT(OUT) :: me
         INTEGER(i4k),      INTENT(IN)  :: n
         LOGICAL,           INTENT(OUT) :: ierr
@@ -307,8 +300,8 @@ MODULE vtk_cells
         END SUBROUTINE hexahedron_init
 
         MODULE SUBROUTINE wedge_init (me, n, ierr)
-        !>@brief
-        !> Initializes a wedge cell
+        !!
+        !! Initializes a wedge cell
         CLASS(wedge),   INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
@@ -316,8 +309,8 @@ MODULE vtk_cells
         END SUBROUTINE wedge_init
 
         MODULE SUBROUTINE pyramid_init (me, n, ierr)
-        !>@brief
-        !> Initializes a pyramid cell
+        !!
+        !! Initializes a pyramid cell
         CLASS(pyramid), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: n
         LOGICAL,        INTENT(OUT) :: ierr
@@ -325,8 +318,8 @@ MODULE vtk_cells
         END SUBROUTINE pyramid_init
 
         MODULE SUBROUTINE quadratic_edge_init (me, n, ierr)
-        !>@brief
-        !> Initializes a quadratic_edge cell
+        !!
+        !! Initializes a quadratic_edge cell
         CLASS(quadratic_edge), INTENT(OUT) :: me
         INTEGER(i4k),          INTENT(IN)  :: n
         LOGICAL,               INTENT(OUT) :: ierr
@@ -334,8 +327,8 @@ MODULE vtk_cells
         END SUBROUTINE quadratic_edge_init
 
         MODULE SUBROUTINE quadratic_triangle_init (me, n, ierr)
-        !>@brief
-        !> Initializes a quadratic_triangle cell
+        !!
+        !! Initializes a quadratic_triangle cell
         CLASS(quadratic_triangle), INTENT(OUT) :: me
         INTEGER(i4k),              INTENT(IN)  :: n
         LOGICAL,                   INTENT(OUT) :: ierr
@@ -343,8 +336,8 @@ MODULE vtk_cells
         END SUBROUTINE quadratic_triangle_init
 
         MODULE SUBROUTINE quadratic_quad_init (me, n, ierr)
-        !>@brief
-        !> Initializes a quadratic_quad cell
+        !!
+        !! Initializes a quadratic_quad cell
         CLASS(quadratic_quad), INTENT(OUT) :: me
         INTEGER(i4k),          INTENT(IN)  :: n
         LOGICAL,               INTENT(OUT) :: ierr
@@ -352,8 +345,8 @@ MODULE vtk_cells
         END SUBROUTINE quadratic_quad_init
 
         MODULE SUBROUTINE quadratic_tetra_init (me, n, ierr)
-        !>@brief
-        !> Initializes a quadratic_tetra cell
+        !!
+        !! Initializes a quadratic_tetra cell
         CLASS(quadratic_tetra), INTENT(OUT) :: me
         INTEGER(i4k),           INTENT(IN)  :: n
         LOGICAL,                INTENT(OUT) :: ierr
@@ -361,8 +354,8 @@ MODULE vtk_cells
         END SUBROUTINE quadratic_tetra_init
 
         MODULE SUBROUTINE quadratic_hexahedron_init (me, n, ierr)
-        !>@brief
-        !> Initializes a quadratic_hexahedron cell
+        !!
+        !! Initializes a quadratic_hexahedron cell
         CLASS(quadratic_hexahedron), INTENT(OUT) :: me
         INTEGER(i4k),                INTENT(IN)  :: n
         LOGICAL,                     INTENT(OUT) :: ierr
@@ -370,8 +363,8 @@ MODULE vtk_cells
         END SUBROUTINE quadratic_hexahedron_init
 
         MODULE FUNCTION set_cell_type (type) RESULT(me)
-        !>@brief
-        !> Subroutine allocates the cell based on the type (called during a read)
+        !!
+        !! Subroutine allocates the cell based on the type (called during a read)
         INTEGER(i4k),   INTENT(IN)  :: type  !! Cell type ID
         CLASS(vtkcell), ALLOCATABLE :: me    !! DT
 

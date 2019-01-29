@@ -3,12 +3,11 @@ MODULE vtk_datasets_unit_tests
     USE vtk_vars,  ONLY : ASCII, Binary
     USE vtk_cells, ONLY : polygon, voxel
     IMPLICIT NONE
-    !>@brief
-    !> Unit testing for datasets
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/17/2017
+    !! author: Ian Porter
+    !! date: 12/17/2017
+    !!
+    !! Unit testing for datasets
+    !!
     PRIVATE
     PUBLIC :: vtk_datasets_unit
 ! Generic information
@@ -302,9 +301,9 @@ MODULE vtk_datasets_unit_tests
         USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         USE VTK,          ONLY : vtk_legacy_write
         IMPLICIT NONE
-        !>@brief
-        !> Loops over each dataset type, performs a write, then performs a read on a different dataset
-        !> and compares the two to make sure they are identical
+        !!
+        !! Loops over each dataset type, performs a write, then performs a read on a different dataset
+        !! and compares the two to make sure they are identical
         CLASS(dataset), ALLOCATABLE :: vtk_dataset_1, vtk_dataset_2
         INTEGER(i4k)                :: i
         LOGICAL, INTENT(OUT)        :: test_pass
@@ -385,12 +384,12 @@ PROGRAM vtk_datasets_test
     USE vtk_datasets_unit_tests, ONLY : vtk_datasets_unit
     USE VTKmofoPassFail,         ONLY : all_tests_pass
     IMPLICIT NONE
-    !>@brief
-    !> Driver testing subroutine for the attributes information
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/14/2017
+    !!
+    !! Driver testing subroutine for the attributes information
+    !! author: Ian Porter
+    
+    !! date:
+    !! 12/14/2017
     LOGICAL :: test_passes = .FALSE.
 
     CALL vtk_datasets_unit (test_passes)

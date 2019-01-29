@@ -2,12 +2,11 @@ MODULE vtk_attributes_unit_tests
     USE Precision
     USE vtk_attributes, ONLY : field_data_array
     IMPLICIT NONE
-    !>@brief
-    !> Unit testing for attributes
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/14/2017
+    !! author: Ian Porter
+    !! date: 12/14/2017
+    !!
+    !! Unit testing for attributes
+    !!
     PRIVATE
     PUBLIC :: vtk_attributes_unit
 ! Generic information
@@ -81,9 +80,9 @@ MODULE vtk_attributes_unit_tests
         USE Precision
         USE vtk_attributes, ONLY : attribute, scalar, vector, normal, texture, tensor, field
         IMPLICIT NONE
-        !>@brief
-        !> Loops over each attribute type, performs a write, then performs a read on a different attribute
-        !> and compares the two to make sure they are identical
+        !!
+        !! Loops over each attribute type, performs a write, then performs a read on a different attribute
+        !! and compares the two to make sure they are identical
         CLASS(attribute), ALLOCATABLE :: vtk_type_1, vtk_type_2
         INTEGER(i4k)                  :: i
         LOGICAL, INTENT(OUT)          :: test_pass
@@ -167,12 +166,12 @@ PROGRAM vtk_attributes_test
     USE vtk_attributes_unit_tests, ONLY : vtk_attributes_unit
     USE VTKmofoPassFail,           ONLY : all_tests_pass
     IMPLICIT NONE
-    !>@brief
-    !> Driver testing subroutine for the attributes information
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/14/2017
+    !!
+    !! Driver testing subroutine for the attributes information
+    !! author: Ian Porter
+    
+    !! date:
+    !! 12/14/2017
     LOGICAL :: test_passes = .FALSE.
 
     CALL vtk_attributes_unit (test_passes)

@@ -5,13 +5,11 @@ PROGRAM pyramid_test
     USE vtk_cells,      ONLY : polygon
     USE vtk,            ONLY : vtk_legacy_write
     IMPLICIT NONE
-    !>@brief
-    !> This is a test of a pyramid geometry using polygonal data
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/31/2017
-
+    !! author: Ian Porter
+    !! date: 12/31/2017
+    !!
+    !! This is a test of a pyramid geometry using polygonal data
+    !!
     INTEGER(i4k), PARAMETER     :: n_params_to_write = 1
     TYPE (polygonal_data)       :: pyramid
     TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write

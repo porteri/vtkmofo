@@ -1,12 +1,11 @@
 MODULE vtk_cells_unit_tests
     USE Precision
     IMPLICIT NONE
-    !>@brief
-    !> Unit testing for cells
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/16/2017
+    !! author: Ian Porter
+    !! date: 12/16/2017
+    !!
+    !! Unit testing for cells
+    !!
     PRIVATE
     PUBLIC :: vtk_cells_unit
 ! Generic information
@@ -46,9 +45,9 @@ MODULE vtk_cells_unit_tests
           &                   tetra, voxel, hexahedron, wedge, pyramid, quadratic_edge, quadratic_triangle, quadratic_quad,  &
           &                   quadratic_tetra, quadratic_hexahedron
         IMPLICIT NONE
-        !>@brief
-        !> Loops over each cell type, performs a write, then performs a read on a different cell
-        !> and compares the two to make sure they are identical
+        !!
+        !! Loops over each cell type, performs a write, then performs a read on a different cell
+        !! and compares the two to make sure they are identical
         CLASS(vtkcell), ALLOCATABLE :: vtk_cell_1, vtk_cell_2
         INTEGER(i4k)                :: i
         LOGICAL, INTENT(OUT)        :: test_pass
@@ -142,12 +141,12 @@ PROGRAM vtk_cells_test
     USE vtk_cells_unit_tests, ONLY : vtk_cells_unit
     USE VTKmofoPassFail,      ONLY : all_tests_pass
     IMPLICIT NONE
-    !>@brief
-    !> Driver testing subroutine for the cells information
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/15/2017
+    !!
+    !! Driver testing subroutine for the cells information
+    !! author: Ian Porter
+    
+    !! date:
+    !! 12/15/2017
     LOGICAL :: test_passes = .FALSE.
 
     CALL vtk_cells_unit (test_passes)

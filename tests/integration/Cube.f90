@@ -4,13 +4,11 @@ PROGRAM cube_test
     USE vtk_attributes, ONLY : scalar, attributes
     USE vtk,            ONLY : vtk_legacy_write
     IMPLICIT NONE
-    !>@brief
-    !> This is a test of a cube geometry using a rectilinear grid
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/20/2017
-
+    !! author: Ian Porter
+    !! date: 12/20/2017
+    !!
+    !! This is a test of a cube geometry using a rectilinear grid
+    !!
     INTEGER(i4k), PARAMETER     :: n_params_to_write = 3
     TYPE (rectlnr_grid)         :: cube
     TYPE (attributes), DIMENSION(n_params_to_write) :: vals_to_write

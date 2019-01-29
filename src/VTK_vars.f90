@@ -1,13 +1,11 @@
 MODULE vtk_vars
     USE Precision, ONLY : i4k
     IMPLICIT NONE
-    !>@brief
-    !> This module contains basic information needed for reading/writing to the vtk file
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/20/2017
-
+    !! author: Ian Porter
+    !! date: 12/20/2017
+    !!
+    !! This module contains basic information needed for reading/writing to the vtk file
+    !!
     PRIVATE
     PUBLIC :: ascii, binary, filetype, vtkunit, version, default_title, default_fn, vtkfilename, vtktitle, fcnt, file_extension
 
