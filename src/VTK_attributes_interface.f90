@@ -220,9 +220,9 @@ MODULE vtk_attributes
         !!
         CLASS(scalar),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
-        INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: tablename
+        INTEGER(i4k),     INTENT(IN)  :: numcomp
+        CHARACTER(LEN=*), INTENT(IN)  :: datatype
+        CHARACTER(LEN=*), INTENT(IN)  :: tablename
         INTEGER(i4k), DIMENSION(:), INTENT(IN), OPTIONAL :: ints1d
         REAL(r8k),    DIMENSION(:), INTENT(IN), OPTIONAL :: values1d
 

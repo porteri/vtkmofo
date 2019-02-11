@@ -94,6 +94,7 @@ MODULE vtk_attributes_unit_tests
 
         DO j = 1, n_file_types
             DO i = 1, n_types
+              write(0,*) 'i= ',i,'j= ',j
                 IF (ALLOCATED(vtk_type_1)) DEALLOCATE(vtk_type_1)
                 IF (ALLOCATED(vtk_type_2)) DEALLOCATE(vtk_type_2)
                 SELECT CASE (i)
@@ -149,16 +150,17 @@ MODULE vtk_attributes_unit_tests
                 END SELECT
 
                 OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
-                WRITE(vtk_unit,*) vtk_type_1
+                WRITE(vtk_unit,'(DT)') vtk_type_1
                 CLOSE(unit=vtk_unit)
 
                 !! Data type is generated from the read
                 OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
-                READ(vtk_unit,*) vtk_type_2
+                READ(vtk_unit,'(DT)') vtk_type_2
                 CLOSE(unit=vtk_unit)
 
                 !! Compare the read file and the written/read file to ensure both types are the same
                 individual_tests_pass(i) = .NOT. (vtk_type_1 .diff. vtk_type_2)
+                write(0,*) 'test_pass= ',individual_tests_pass(i)
             END DO
         END DO
         !! Compare the read file and the written/read file to ensure both types are the same
