@@ -10,9 +10,12 @@ MODULE vtk_attributes_unit_tests
     PRIVATE
     PUBLIC :: vtk_attributes_unit
 ! Generic information
-    INTEGER(i4k), PARAMETER :: n_types  = 7
-    INTEGER(i4k), PARAMETER :: vtk_unit = 20
-    CHARACTER(LEN=15), DIMENSION(n_types), PARAMETER :: filename    = &
+    INTEGER(i4k), PARAMETER :: n_file_types = 2 !! # of file types (binary & ascii)
+    INTEGER(i4k), PARAMETER :: n_types  = 7     !! # of attribute types
+    INTEGER(i4k), PARAMETER :: vtk_unit = 20    !! File unit #
+    CHARACTER(LEN=11), DIMENSION(n_file_types), PARAMETER :: form = [ 'FORMATTED  ', 'UNFORMATTED' ]
+    CHARACTER(LEN=10), DIMENSION(n_file_types), PARAMETER :: access = [ 'SEQUENTIAL', 'STREAM    ' ]
+    CHARACTER(LEN=15), DIMENSION(n_types),      PARAMETER :: filename    = &
       & [ 'scalar.vtk     ', &
       &   'vector.vtk     ', &
       &   'normal.vtk     ', &
@@ -76,6 +79,7 @@ MODULE vtk_attributes_unit_tests
       &   40.0_r8k, 400.0_r8k ], [2,5] )
 
     CONTAINS
+
         SUBROUTINE vtk_attributes_unit (test_pass)
         USE Precision
         USE vtk_attributes, ONLY : attribute, scalar, vector, normal, texture, tensor, field
@@ -84,78 +88,79 @@ MODULE vtk_attributes_unit_tests
         !! Loops over each attribute type, performs a write, then performs a read on a different attribute
         !! and compares the two to make sure they are identical
         CLASS(attribute), ALLOCATABLE :: vtk_type_1, vtk_type_2
-        INTEGER(i4k)                  :: i
+        INTEGER(i4k)                  :: i, j
         LOGICAL, INTENT(OUT)          :: test_pass
-        LOGICAL, DIMENSION(n_types)   :: individual_tests_pass
+        LOGICAL, DIMENSION(n_types*n_file_types) :: individual_tests_pass
 
-        DO i = 1, n_types
-            IF (ALLOCATED(vtk_type_1)) DEALLOCATE(vtk_type_1)
-            IF (ALLOCATED(vtk_type_2)) DEALLOCATE(vtk_type_2)
-            SELECT CASE (i)
-            CASE (1, 7)
-                !! Scalar attribute
-                ALLOCATE(scalar  :: vtk_type_1, vtk_type_2)
+        DO j = 1, n_file_types
+            DO i = 1, n_types
+                IF (ALLOCATED(vtk_type_1)) DEALLOCATE(vtk_type_1)
+                IF (ALLOCATED(vtk_type_2)) DEALLOCATE(vtk_type_2)
+                SELECT CASE (i)
+                CASE (1, 7)
+                    !! Scalar attribute
+                    ALLOCATE(scalar  :: vtk_type_1, vtk_type_2)
 
-                !! Data type is generated from the defined values above
-                IF (i == 1) THEN
-                    !! Test for reals
-                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, values1d=scalar_vals)
-                ELSE IF (i == 7) THEN
-                    !! Test for integers
-                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, ints1d=int_vals)
-                END IF
-            CASE (2)
-                !! Vector attribute
-                ALLOCATE(vector  :: vtk_type_1, vtk_type_2)
+                    !! Data type is generated from the defined values above
+                    IF (i == 1) THEN
+                        !! Test for reals
+                        CALL vtk_type_1%init(dataname='temperature', numcomp=1, values1d=scalar_vals)
+                    ELSE IF (i == 7) THEN
+                        !! Test for integers
+                        CALL vtk_type_1%init(dataname='temperature', numcomp=1, ints1d=int_vals)
+                    END IF
+                CASE (2)
+                    !! Vector attribute
+                    ALLOCATE(vector  :: vtk_type_1, vtk_type_2)
 
-                !! Data type is generated from the defined values above
-                CALL vtk_type_1%init(dataname='temperature', numcomp=1, values2d=vector_vals)
-            CASE (3)
-                !! Normal attribute
-                ALLOCATE(normal  :: vtk_type_1, vtk_type_2)
+                    !! Data type is generated from the defined values above
+                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, values2d=vector_vals)
+                CASE (3)
+                    !! Normal attribute
+                    ALLOCATE(normal  :: vtk_type_1, vtk_type_2)
 
-                !! Data type is generated from the defined values above
-                CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, values2d=normal_vals)
-            CASE (4)
-                !! Texture attribute
-                ALLOCATE(texture :: vtk_type_1, vtk_type_2)
+                    !! Data type is generated from the defined values above
+                    CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, values2d=normal_vals)
+                CASE (4)
+                    !! Texture attribute
+                    ALLOCATE(texture :: vtk_type_1, vtk_type_2)
 
-                !! Data type is generated from the defined values above
-                CALL vtk_type_1%init(dataname='textured_temp', numcomp=1, values2d=texture_vals)
-            CASE (5)
-                !! Tensor attribute
-                ALLOCATE(tensor  :: vtk_type_1, vtk_type_2)
-                tensor_vals(1,:,:) = tensor_1; tensor_vals(2,:,:) = tensor_2
-                tensor_vals(3,:,:) = tensor_3; tensor_vals(4,:,:) = tensor_4
+                    !! Data type is generated from the defined values above
+                    CALL vtk_type_1%init(dataname='textured_temp', numcomp=1, values2d=texture_vals)
+                CASE (5)
+                    !! Tensor attribute
+                    ALLOCATE(tensor  :: vtk_type_1, vtk_type_2)
+                    tensor_vals(1,:,:) = tensor_1; tensor_vals(2,:,:) = tensor_2
+                    tensor_vals(3,:,:) = tensor_3; tensor_vals(4,:,:) = tensor_4
 
-                !! Data type is generated from the defined values above
-                CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, values3d=tensor_vals)
-            CASE (6)
-                !! Field attribute
-                ALLOCATE(field   :: vtk_type_1, vtk_type_2)
-                array_1%name = 'temps';     array_1%numComponents=3; array_1%numTuples=3
-                array_1%datatype='double';  array_1%data = data_1
-                array_2%name = 'pressures'; array_2%numComponents=5; array_2%numTuples=2
-                array_2%datatype='double';  array_2%data = data_2
-                array(1) = array_1; array(2) = array_2
+                    !! Data type is generated from the defined values above
+                    CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, values3d=tensor_vals)
+                CASE (6)
+                    !! Field attribute
+                    ALLOCATE(field   :: vtk_type_1, vtk_type_2)
+                    array_1%name = 'temps';     array_1%numComponents=3; array_1%numTuples=3
+                    array_1%datatype='double';  array_1%data = data_1
+                    array_2%name = 'pressures'; array_2%numComponents=5; array_2%numTuples=2
+                    array_2%datatype='double';  array_2%data = data_2
+                    array(1) = array_1; array(2) = array_2
 
-                !! Data type is generated from the defined values above
-                CALL vtk_type_1%init(dataname='field_temp_press', numcomp=1, field_arrays=array)
-            END SELECT
+                    !! Data type is generated from the defined values above
+                    CALL vtk_type_1%init(dataname='field_temp_press', numcomp=1, field_arrays=array)
+                END SELECT
 
-            OPEN (unit=vtk_unit, file=filename(i), form='formatted')
-            CALL vtk_type_1%write(vtk_unit)
-            CLOSE(unit=vtk_unit)
+                OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
+                WRITE(vtk_unit,*) vtk_type_1
+                CLOSE(unit=vtk_unit)
 
-            !! Data type is generated from the read
-            OPEN (unit=vtk_unit, file=filename(i), form='formatted')
-            CALL vtk_type_2%read(vtk_unit)
-            CLOSE(unit=vtk_unit)
+                !! Data type is generated from the read
+                OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
+                READ(vtk_unit,*) vtk_type_2
+                CLOSE(unit=vtk_unit)
 
-            !! Compare the read file and the written/read file to ensure both types are the same
-            individual_tests_pass(i) = .NOT. (vtk_type_1 .diff. vtk_type_2)
+                !! Compare the read file and the written/read file to ensure both types are the same
+                individual_tests_pass(i) = .NOT. (vtk_type_1 .diff. vtk_type_2)
+            END DO
         END DO
-
         !! Compare the read file and the written/read file to ensure both types are the same
         test_pass = ALL(individual_tests_pass)
 

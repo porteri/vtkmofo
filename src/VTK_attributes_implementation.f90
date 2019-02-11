@@ -96,13 +96,18 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a scalar attribute
         !!
-        INTEGER(i4k)               :: i, iostat
+        INTEGER(i4k)               :: i
         LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
         INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
         REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals, dummy
         CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
 
+!        READ (unit, FMT=*, IOSTAT=iostat, IOMSG=iomsg) n_x
+!        ALLOCATE (Me%x(1:n_x), Me%f(1:n_x), &
+!          &          x(1:n_x),    f(1:n_x))
+!        READ (unit, FMT=*, IOSTAT=iostat, IOMSG=iomsg) Me%x, Me%f
+!
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=(/ 'C','C','I' /), ignore='SCALARS ', separator=' ', &
           &                    ints=ints, chars=chars)
@@ -272,7 +277,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a vector attribute
         !!
-        INTEGER(i4k)               :: i, iostat
+        INTEGER(i4k)               :: i
         INTEGER(i4k),  PARAMETER   :: dim = 3
         LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
@@ -381,7 +386,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a normal attribute
         !!
-        INTEGER(i4k)               :: i, iostat
+        INTEGER(i4k)               :: i
         INTEGER(i4k),  PARAMETER   :: dim = 3
         LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
@@ -435,7 +440,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         MODULE PROCEDURE normal_setup
         !! author: Ian Porter
-        !! date: 12/14/2017        
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the set-up for a normal attribute
         !!
@@ -490,7 +495,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a texture attribute
         !!
-        INTEGER(i4k)                :: i, iostat, dim
+        INTEGER(i4k)                :: i, dim
         LOGICAL                     :: end_of_file
         CHARACTER(LEN=def_len)      :: line
         INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
@@ -601,7 +606,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a tensor attribute
         !!
-        INTEGER(i4k)               :: i, j, iostat
+        INTEGER(i4k)               :: i, j
         LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
         REAL(r8k),          DIMENSION(:), ALLOCATABLE :: reals
@@ -729,7 +734,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a field attribute
         !!
-        INTEGER(i4k)              :: i, j, iostat, dim
+        INTEGER(i4k)              :: i, j, dim
         LOGICAL                   :: end_of_file
         CHARACTER(LEN=def_len)    :: line
         CHARACTER(*), PARAMETER   :: real_char = 'R'
@@ -780,7 +785,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         MODULE PROCEDURE field_write
         !! author: Ian Porter
-        !! date: 12/13/2017        
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a field attribute
         !!

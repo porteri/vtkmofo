@@ -45,18 +45,17 @@ SUBMODULE (vtk_io) vtk_io_implementation
         IF (.NOT. file_is_open) THEN                       !! File is not yet open. Determine format to open file
             SELECT CASE (filetype)
             CASE (ascii)
-                form          = 'formatted'
                 filetype_text = 'ASCII'
+                OPEN(unit=unit, file=vtkfilename, iostat=inputstat, status='unknown', form='formatted')
+                                                               !! Open the VTK file
             CASE (binary)
-                form          = 'unformatted'
                 filetype_text = 'BINARY'
+                OPEN(unit=unit, file=vtkfilename, iostat=inputstat, status='unknown', form='binary', &
+                  &  access='stream')
+                                                               !! Open the VTK file
             CASE DEFAULT
-                WRITE(*,*) 'Warning: filetype is incorrectly defined. Will default to ASCII'
-                form          = 'formatted'
-                filetype_text = 'ASCII'
+                ERROR STOP 'Bad input for filetype. Execution terminated in vtk_legacy_write'
             END SELECT
-            OPEN(unit=unit, file=vtkfilename, iostat=inputstat, status='unknown', form=form)
-                                                           !! Open the VTK file
         END IF
 
         WRITE(unit,100) version                            !! VTK version (currently, 3.0)
@@ -67,20 +66,20 @@ SUBMODULE (vtk_io) vtk_io_implementation
         IF (PRESENT(celldatasets)) THEN
             WRITE(unit,101) celldatasets(1)%n
             DO i = 1, SIZE(celldatasets)
-                CALL celldatasets(i)%attribute%write(unit) !! Write the cell data values
+                WRITE(unit,*) celldatasets(i)%attribute    !! Write the cell data values
             END DO
         ELSE IF (PRESENT(celldata)) THEN
             WRITE(unit,101) celldatasets(1)%n
-            CALL celldata%write(unit)                      !! Write the cell data values
+            WRITE(unit,*) celldata                         !! Write the cell data values
         END IF
         IF (PRESENT(pointdatasets)) THEN
             WRITE(unit,102) pointdatasets(1)%n
             DO I = 1, SIZE(pointdatasets)
-                CALL pointdatasets(i)%attribute%write(unit)
+                WRITE(unit,*) pointdatasets(i)%attribute
             END DO
         ELSE IF (PRESENT(pointdata)) THEN
             WRITE(unit,102) pointdatasets(1)%n
-            CALL pointdata%write(unit)                     !! Write the point data values
+            WRITE(unit,*) pointdata                        !! Write the point data values
         END IF
 
         CLOSE(unit)                                        !! Close the VTK file
@@ -138,20 +137,20 @@ SUBMODULE (vtk_io) vtk_io_implementation
         IF (PRESENT(celldatasets)) THEN
             READ(unit,*)
             DO i = 1, SIZE(celldatasets)
-                CALL celldatasets(i)%attribute%read(unit)  !! Write the cell data values
+                READ(unit,*) celldatasets(i)%attribute     !! Read the cell data values
             END DO
         ELSE IF (PRESENT(celldata)) THEN
             READ(unit,*)
-            CALL celldata%write(unit)                      !! Write the cell data values
+            READ(unit,*) celldata                          !! Read the cell data values
         END IF
         IF (PRESENT(pointdatasets)) THEN
             READ(unit,*)
             DO I = 1, SIZE(pointdatasets)
-                CALL pointdatasets(i)%attribute%read(unit)
+                READ(unit,*) pointdatasets(i)%attribute
             END DO
         ELSE IF (PRESENT(pointdata)) THEN
             READ(unit,*)
-            CALL pointdata%write(unit)                     !! Write the point data values
+            READ(unit,*) pointdata                         !! Read the point data values
         END IF
 
         CLOSE(unit)                                        !! Close the VTK file
