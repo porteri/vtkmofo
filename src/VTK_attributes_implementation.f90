@@ -34,7 +34,12 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                                      !! that a class with intent(out) was not provided a value
         END SELECT
         END PROCEDURE abs_read
+module procedure read_unformatted
 
+end procedure read_unformatted
+
+module procedure write_unformatted
+end procedure write_unformatted
         MODULE PROCEDURE abs_write
         !! author: Ian Porter
         !! date: 12/13/2017
@@ -182,6 +187,79 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 100     FORMAT((a))
         END PROCEDURE scalar_read
 
+        MODULE PROCEDURE scalar_read_unformatted
+        USE Misc, ONLY : interpret_string, to_lowercase
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Subroutine performs the read for a scalar attribute
+        !!
+        INTEGER(i4k)               :: i
+        LOGICAL                    :: end_of_file
+        CHARACTER(LEN=def_len)     :: line
+        INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
+        REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals, dummy
+        CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
+
+        READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+
+        CALL interpret_string (line=line, datatype=(/ 'C','C','I' /), ignore='SCALARS ', separator=' ', &
+          &                    ints=ints, chars=chars)
+        me%numcomp = ints(1); me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
+        DEALLOCATE(ints)
+
+        READ(unit,FMT=100, IOSTAT=iostat, IOMSG=iomsg) line
+
+        CALL interpret_string (line=line, datatype=(/ 'C' /), ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
+        me%tablename = TRIM(chars(1))
+
+        me%datatype = to_lowercase(me%datatype)
+        SELECT CASE (me%datatype)
+        CASE ('unsigned_int', 'int')
+            ALLOCATE(me%ints(0))
+        CASE ('float', 'double')
+            ALLOCATE(me%reals(0))
+        CASE DEFAULT
+            ERROR STOP 'datatype not supported in scalar_read'
+        END SELECT
+
+        end_of_file  = .FALSE.; i = 0
+
+        get_scalars: DO
+            READ(unit,FMT=100, IOSTAT=iostat, IOMSG=iomsg) line
+            end_of_file = (iostat < 0)
+            IF (end_of_file) THEN
+                EXIT get_scalars
+            ELSE IF (TRIM(line) == '') THEN
+                CYCLE     !! Skip blank lines
+            ELSE
+                SELECT CASE (me%datatype)
+                CASE ('unsigned_int', 'int')
+                    ALLOCATE(ints(1:UBOUND(me%ints,DIM=1)+1),source=0_i4k)
+                    IF (i > 0) ints(1:UBOUND(me%ints,DIM=1)) = me%ints
+                    CALL MOVE_ALLOC(ints, me%ints)
+                    i = i + 1
+
+                    CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
+                    me%ints(i) = ints(1)
+                    DEALLOCATE(ints)
+                CASE ('float', 'double')
+                    ALLOCATE(dummy(1:UBOUND(me%reals,DIM=1)+1),source=0.0_r8k)
+                    IF (i > 0) dummy(1:UBOUND(me%reals,DIM=1)) = me%reals
+                    CALL MOVE_ALLOC(dummy, me%reals)
+                    i = i + 1
+
+                    CALL interpret_string (line=line, datatype=(/ 'R' /), separator=' ', reals=reals)
+                    me%reals(i) = reals(1)
+                CASE DEFAULT
+                    ERROR STOP 'datatype not supported in scalar_read'
+                END SELECT
+            END IF
+        END DO get_scalars
+
+100     FORMAT((a))
+        END PROCEDURE scalar_read_unformatted
+
         MODULE PROCEDURE scalar_write
         !! author: Ian Porter
         !! date: 12/13/2017
@@ -210,6 +288,35 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 103     FORMAT(i0,/)
 
         END PROCEDURE scalar_write
+
+        MODULE PROCEDURE scalar_write_unformatted
+        !! author: Ian Porter
+        !! date: 2/11/2018
+        !!
+        !! Subroutine performs the unformatted write for a scalar attribute
+        !!
+        INTEGER(i4k) :: i
+
+!        WRITE(unit) 'SCALARS ' // me%dataname // ', ' // me%datatype // ', ' // me%numcomp
+        WRITE(unit) 'LOOKUP_TABLE ' // me%tablename
+        IF (ALLOCATED(me%reals)) THEN
+            DO i = 1, SIZE(me%reals)
+                WRITE(unit,102) me%reals(i)
+            END DO
+        ELSE IF (ALLOCATED(me%ints)) THEN
+            DO i = 1, SIZE(me%ints)
+                WRITE(unit,103) me%ints(i)
+            END DO
+        ELSE
+            ERROR STOP 'Neither real or integer arrays are allocated for scalar_write'
+        END IF
+
+!100     FORMAT('SCALARS ',(a),' ',(a),' ',(i1),/)
+!101     FORMAT('LOOKUP_TABLE ',(a),/)
+102     FORMAT(es13.6,/)
+103     FORMAT(i0,/)
+
+        END PROCEDURE scalar_write_unformatted
 
         MODULE PROCEDURE scalar_setup
         !! author: Ian Porter

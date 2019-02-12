@@ -25,10 +25,16 @@ MODULE vtk_attributes
         CHARACTER(LEN=:), ALLOCATABLE :: dataname
         CHARACTER(LEN=:), ALLOCATABLE :: datatype
     CONTAINS
-        PROCEDURE(abs_read), DEFERRED :: read
+        PROCEDURE(abs_read),        DEFERRED :: read
+!        PROCEDURE(abs_read_unformatted), DEFERRED :: read_unformatted
+procedure :: read_unformatted
         GENERIC   :: READ(FORMATTED) => read
+        GENERIC   :: READ(UNFORMATTED) => read_unformatted
         PROCEDURE(abs_write), DEFERRED :: write
+!        PROCEDURE(abs_write_unformatted), DEFERRED :: write_unformatted
+procedure :: write_unformatted
         GENERIC   :: WRITE(FORMATTED) => write
+        GENERIC   :: WRITE(UNFORMATTED) => write_unformatted
         PROCEDURE, NON_OVERRIDABLE, PUBLIC :: init => initialize  !! Initialize the attribute
         PROCEDURE, PRIVATE :: check_for_diffs
         GENERIC :: OPERATOR(.diff.) => check_for_diffs
@@ -42,7 +48,9 @@ MODULE vtk_attributes
         REAL(r8k),    DIMENSION(:), ALLOCATABLE :: reals
     CONTAINS
         PROCEDURE :: read  => scalar_read
+        PROCEDURE :: read_unformatted  => scalar_read_unformatted
         PROCEDURE :: write => scalar_write
+        PROCEDURE :: write_unformatted => scalar_write_unformatted
         PROCEDURE :: setup => scalar_setup
         PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_scalar
     END TYPE scalar
@@ -133,6 +141,19 @@ MODULE vtk_attributes
 
         END SUBROUTINE abs_read
 
+        MODULE SUBROUTINE read_unformatted (me, unit, iostat, iomsg)
+        !! author: Ian Porter
+        !! date: 2/11/2019
+        !!
+        !! Abstract unformatted read
+        !!
+        CLASS(attribute), INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(*),     INTENT(INOUT) :: iomsg
+
+        END SUBROUTINE read_unformatted
+
         MODULE SUBROUTINE abs_write (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
         !! date: 2/4/2019
@@ -147,6 +168,19 @@ MODULE vtk_attributes
         CHARACTER(*),     INTENT(INOUT) :: iomsg
 
         END SUBROUTINE abs_write
+
+        MODULE SUBROUTINE write_unformatted (me, unit, iostat, iomsg)
+        !! author: Ian Porter
+        !! date: 2/11/2019
+        !!
+        !! Abstract unformatted write
+        !!
+        CLASS(attribute), INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(*),     INTENT(INOUT) :: iomsg
+
+        END SUBROUTINE write_unformatted
 
         MODULE SUBROUTINE initialize (me, dataname, datatype, numcomp, tablename, ints1d, ints2d, ints3d, &
           &                           values1d, values2d, values3d, field_arrays)
@@ -197,6 +231,19 @@ MODULE vtk_attributes
 
         END SUBROUTINE scalar_read
 
+        MODULE SUBROUTINE scalar_read_unformatted (me, unit, iostat, iomsg)
+        !! author: Ian Porter
+        !! date: 2/4/2019
+        !!
+        !! Subroutine performs the unformatted read for a scalar attribute
+        !!
+        CLASS(scalar), INTENT(INOUT) :: me
+        INTEGER(i4k),  INTENT(IN)    :: unit
+        INTEGER(i4k),  INTENT(OUT)   :: iostat
+        CHARACTER(*),  INTENT(INOUT) :: iomsg
+
+        END SUBROUTINE scalar_read_unformatted
+
         MODULE SUBROUTINE scalar_write(me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
         !! date: 2/4/2019
@@ -211,6 +258,19 @@ MODULE vtk_attributes
         CHARACTER(*),  INTENT(INOUT) :: iomsg
 
         END SUBROUTINE scalar_write
+
+        MODULE SUBROUTINE scalar_write_unformatted (me, unit, iostat, iomsg)
+        !! author: Ian Porter
+        !! date: 2/4/2019
+        !!
+        !! Subroutine performs the unformatted write for a scalar attribute
+        !!
+        CLASS(scalar), INTENT(IN)    :: me
+        INTEGER(i4k),  INTENT(IN)    :: unit
+        INTEGER(i4k),  INTENT(OUT)   :: iostat
+        CHARACTER(*),  INTENT(INOUT) :: iomsg
+
+        END SUBROUTINE scalar_write_unformatted
 
         MODULE SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, ints1d, values1d)
         !! author: Ian Porter

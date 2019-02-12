@@ -149,15 +149,26 @@ MODULE vtk_attributes_unit_tests
                     CALL vtk_type_1%init(dataname='field_temp_press', numcomp=1, field_arrays=array)
                 END SELECT
 
-                OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
-                WRITE(vtk_unit,'(DT)') vtk_type_1
-                CLOSE(unit=vtk_unit)
+                SELECT CASE (trim(form(j)))
+                CASE ('FORMATTED')
+                    OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
+                    WRITE(vtk_unit,FMT='(DT)') vtk_type_1
+                    CLOSE(unit=vtk_unit)
 
-                !! Data type is generated from the read
-                OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
-                READ(vtk_unit,'(DT)') vtk_type_2
-                CLOSE(unit=vtk_unit)
+                    !! Data type is generated from the read
+                    OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
+                    READ(vtk_unit,FMT='(DT)') vtk_type_2
+                    CLOSE(unit=vtk_unit)
+                CASE ('UNFORMATTED')
+                    OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
+                    WRITE(vtk_unit) vtk_type_1
+                    CLOSE(unit=vtk_unit)
 
+                    !! Data type is generated from the read
+                    OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
+                    READ(vtk_unit) vtk_type_2
+                    CLOSE(unit=vtk_unit)
+                END SELECT
                 !! Compare the read file and the written/read file to ensure both types are the same
                 individual_tests_pass(i) = .NOT. (vtk_type_1 .diff. vtk_type_2)
                 write(0,*) 'test_pass= ',individual_tests_pass(i)
