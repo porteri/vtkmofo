@@ -18,7 +18,7 @@ for:
   matrix:
     only:
       - image: Ubuntu1604
-        install:
+      install:
           - sh: sudo -E apt-add-repository ppa:ubuntu-toolchain-r/test -y
           - sh: sudo apt-get -yq update > /dev/null
           - sh: sudo apt-get -yq install gcc-8 gfortran-8 > /dev/null
@@ -32,16 +32,13 @@ for:
           - sh: cmake --version
 
       - image: Ubuntu1804
-        install:
+      install:
           - sh: sudo -E apt-add-repository ppa:ubuntu-toolchain-r/test -y
           - sh: export FC=gfortran
           - sh: export CC=gcc
           - sh: $FC --version
           - sh: $CC --version
           - sh: cmake --version
-
-install:
-
 
 build: off
 build_script:
