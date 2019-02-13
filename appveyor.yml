@@ -1,6 +1,7 @@
 version: 1.0.{build}
 image:
-  - ubuntu
+  - Ubuntu1604
+  - Ubuntu1804
   # - Visual Studio 2017
 stack: python 3
 clone_depth: 30
