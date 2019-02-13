@@ -14,11 +14,11 @@ platform:
 # Need to add ssh_keys for submodules to work on windows
 # howto article: https://www.appveyor.com/docs/how-to/private-git-sub-modules/
 for:
--
+  -
   matrix:
     only:
       - image: Ubuntu1604
-       - install:
+      install:
           - sh: sudo -E apt-add-repository ppa:ubuntu-toolchain-r/test -y
           - sh: sudo apt-get -yq update > /dev/null
           - sh: sudo apt-get -yq install gcc-8 gfortran-8 > /dev/null
