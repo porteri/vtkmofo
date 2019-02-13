@@ -13,32 +13,18 @@ platform:
 
 # Need to add ssh_keys for submodules to work on windows
 # howto article: https://www.appveyor.com/docs/how-to/private-git-sub-modules/
-for:
-  -
-  matrix:
-    only:
-      - image: Ubuntu1604
-      install:
-          - sh: sudo -E apt-add-repository ppa:ubuntu-toolchain-r/test -y
-          - sh: sudo apt-get -yq update > /dev/null
-          - sh: sudo apt-get -yq install gcc-8 gfortran-8 > /dev/null
-          - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-8
-          - sh: sudo update-alternatives --auto gcc
-          - sh: sudo update-alternatives --display gcc
-          - sh: export FC=gfortran
-          - sh: export CC=gcc
-          - sh: $FC --version
-          - sh: $CC --version
-          - sh: cmake --version
-
-      - image: Ubuntu1804
-      install:
-          - sh: sudo -E apt-add-repository ppa:ubuntu-toolchain-r/test -y
-          - sh: export FC=gfortran
-          - sh: export CC=gcc
-          - sh: $FC --version
-          - sh: $CC --version
-          - sh: cmake --version
+install:
+  - sh: sudo -E apt-add-repository ppa:ubuntu-toolchain-r/test -y
+  - sh: sudo apt-get -yq update > /dev/null
+  - sh: sudo apt-get -yq install gcc-8 gfortran-8 > /dev/null
+  - sh: sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/gfortran gfortran /usr/bin/gfortran-8
+  - sh: sudo update-alternatives --auto gcc
+  - sh: sudo update-alternatives --display gcc
+  - sh: export FC=gfortran
+  - sh: export CC=gcc
+  - sh: $FC --version
+  - sh: $CC --version
+  - sh: cmake --version
 
 build: off
 build_script:
