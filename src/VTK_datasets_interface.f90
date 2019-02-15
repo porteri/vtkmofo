@@ -27,7 +27,7 @@ MODULE vtk_datasets
         PRIVATE
         CHARACTER(LEN=:), ALLOCATABLE :: name
         CHARACTER(LEN=:), ALLOCATABLE :: datatype
-        INTEGER(i4k), DIMENSION(3)    :: dimensions
+        INTEGER(i4k), DIMENSION(3)    :: dimensions = [ 0, 0, 0 ]
         LOGICAL, PUBLIC               :: firstcall = .TRUE.
     CONTAINS
         PROCEDURE(abs_read),  DEFERRED, PUBLIC :: read
@@ -40,8 +40,8 @@ MODULE vtk_datasets
     TYPE, EXTENDS(dataset) :: struct_pts
         !! Structured points
         PRIVATE
-        REAL(r8k), DIMENSION(3) :: origin
-        REAL(r8k), DIMENSION(3) :: spacing
+        REAL(r8k), DIMENSION(3) :: origin  = [ 0.0_r8k, 0.0_r8k, 0.0_r8k ]
+        REAL(r8k), DIMENSION(3) :: spacing = [ 0.0_r8k, 0.0_r8k, 0.0_r8k ]
     CONTAINS
         PROCEDURE :: read  => struct_pts_read
         PROCEDURE :: write => struct_pts_write
@@ -52,7 +52,7 @@ MODULE vtk_datasets
     TYPE, EXTENDS(dataset) :: struct_grid
         !! Structured grid
         PRIVATE
-        INTEGER(i4k)                           :: n_points
+        INTEGER(i4k)                           :: n_points = 0
         REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: points
     CONTAINS
         PROCEDURE :: read  => struct_grid_read
@@ -77,7 +77,7 @@ MODULE vtk_datasets
     TYPE, EXTENDS(dataset) :: polygonal_data
         !! Polygonal data
         PRIVATE
-        INTEGER(i4k)                                :: n_points
+        INTEGER(i4k)                                :: n_points = 0
         REAL(r8k),      DIMENSION(:,:), ALLOCATABLE :: points
         CLASS(vtkcell), DIMENSION(:),   ALLOCATABLE :: vertices
         CLASS(vtkcell), DIMENSION(:),   ALLOCATABLE :: lines
@@ -92,10 +92,10 @@ MODULE vtk_datasets
     TYPE, EXTENDS(dataset) :: unstruct_grid
         !! Unstructured grid
         PRIVATE
-        INTEGER(i4k) :: n_points
-        INTEGER(i4k) :: n_cells
-        INTEGER(i4k) :: n_cell_types
-        INTEGER(i4k) :: size
+        INTEGER(i4k) :: n_points     = 0
+        INTEGER(i4k) :: n_cells      = 0
+        INTEGER(i4k) :: n_cell_types = 0
+        INTEGER(i4k) :: size         = 0
         REAL(r8k),          DIMENSION(:,:), ALLOCATABLE :: points
         TYPE(vtkcell_list), DIMENSION(:),   ALLOCATABLE :: cell_list
     CONTAINS
@@ -137,7 +137,7 @@ MODULE vtk_datasets
         CLASS(vtkcell),      DIMENSION(:),   INTENT(IN), OPTIONAL :: triangles
         CLASS(vtkcell),      DIMENSION(:),   INTENT(IN), OPTIONAL :: cells      !! DT of same cell types
         TYPE(vtkcell_list),  DIMENSION(:),   INTENT(IN), OPTIONAL :: cell_list  !! DT of different cell types
-        CHARACTER(LEN=*),                    INTENT(IN), OPTIONAL :: datatype
+        CHARACTER(LEN=*),                    INTENT(IN), OPTIONAL :: datatype   !! Type of data (floating, integer, etc.)
         INTEGER(i4k),        DIMENSION(3),   INTENT(IN), OPTIONAL :: dims
         REAL(r8k),           DIMENSION(3),   INTENT(IN), OPTIONAL :: origin
         REAL(r8k),           DIMENSION(3),   INTENT(IN), OPTIONAL :: spacing
@@ -247,14 +247,15 @@ MODULE vtk_datasets
 
         END SUBROUTINE rectlnr_grid_write
 
-        MODULE SUBROUTINE rectlnr_grid_setup (me, dims, x_coords, y_coords, z_coords)
+        MODULE SUBROUTINE rectlnr_grid_setup (me, dims, x_coords, y_coords, z_coords, datatype)
         !!
         !! Sets up the rectilinear grid dataset with information
-        CLASS (rectlnr_grid),       INTENT(OUT) :: me
-        INTEGER(i4k), DIMENSION(3), INTENT(IN)  :: dims
-        REAL(r8k),    DIMENSION(:), INTENT(IN)  :: x_coords
-        REAL(r8k),    DIMENSION(:), INTENT(IN)  :: y_coords
-        REAL(r8k),    DIMENSION(:), INTENT(IN)  :: z_coords
+        CLASS (rectlnr_grid),       INTENT(OUT) :: me         !! Rectilinear grid DT
+        INTEGER(i4k), DIMENSION(3), INTENT(IN)  :: dims       !! # of dimensions in (x,y,z) direction
+        REAL(r8k),    DIMENSION(:), INTENT(IN)  :: x_coords   !! X coordinates
+        REAL(r8k),    DIMENSION(:), INTENT(IN)  :: y_coords   !! Y coordinates
+        REAL(r8k),    DIMENSION(:), INTENT(IN)  :: z_coords   !! Z coordinates
+        CHARACTER(LEN=*),           INTENT(IN)  :: datatype   !! Type of data (floating, integer, etc.)
 
         END SUBROUTINE rectlnr_grid_setup
 
@@ -319,7 +320,7 @@ MODULE vtk_datasets
         !! Sets up the unstructured grid dataset with information for a single class of cells
         !!
         CLASS(unstruct_grid),           INTENT(OUT) :: me      !! DT
-        REAL(r8k),      DIMENSION(:,:), INTENT(IN)  :: points  !! 
+        REAL(r8k),      DIMENSION(:,:), INTENT(IN)  :: points  !!
         CLASS(vtkcell), DIMENSION(:),   INTENT(IN)  :: cells   !! DT of same cell types
 
         END SUBROUTINE unstruct_grid_setup
@@ -328,7 +329,7 @@ MODULE vtk_datasets
         !! Sets up the unstructured grid dataset with information for a list of different classes of cells
         !!
         CLASS(unstruct_grid),               INTENT(OUT) :: me         !! DT
-        REAL(r8k),          DIMENSION(:,:), INTENT(IN)  :: points     !! 
+        REAL(r8k),          DIMENSION(:,:), INTENT(IN)  :: points     !!
         TYPE(vtkcell_list), DIMENSION(:),   INTENT(IN)  :: cell_list  !! DT of different cell types
 
         END SUBROUTINE unstruct_grid_setup_multiclass
