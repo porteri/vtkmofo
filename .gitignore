@@ -269,5 +269,8 @@ __pycache__/
 # Ignore everything in the Driver folder
 /Driver
 
-# Ignore the solution file (may want to change this?)
+# Ignore the solution file
 vtkmofo.sln
+
+# Ignore the ford files
+/doc

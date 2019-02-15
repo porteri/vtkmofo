@@ -2,28 +2,26 @@ MODULE vtk_attributes
     USE Precision
     USE Misc, ONLY : def_len
     IMPLICIT NONE
-    !>@brief
-    !> This module contains the dataset attributes for vtk format
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/13/2017
-    !
-    ! The following dataset attributes are available:
-    ! 1) scalars
-    ! 2) vectors
-    ! 3) normals
-    ! 4) texture coordinates (1D, 2D & 3D)
-    ! 5) 3x3 tensors
-    ! 6) field data
-    !
-
+    !! author: Ian Porter
+    !! date: 12/13/2017
+    !!
+    !! This module contains the dataset attributes for vtk format
+    !!
+    !! The following dataset attributes are available:
+    !! 1) scalars
+    !! 2) vectors
+    !! 3) normals
+    !! 4) texture coordinates (1D, 2D & 3D)
+    !! 5) 3x3 tensors
+    !! 6) field data
+    !!
     PRIVATE
     PUBLIC :: attribute, attributes, scalar, vector, normal, texture, tensor, field, field_data_array
 
     CHARACTER(LEN=*), PARAMETER :: default = 'default'     !! Default table name
 
     TYPE, ABSTRACT :: attribute
+        !! Abstract DT of attribute information
         CHARACTER(LEN=:), ALLOCATABLE :: dataname
         CHARACTER(LEN=:), ALLOCATABLE :: datatype
     CONTAINS
@@ -35,6 +33,7 @@ MODULE vtk_attributes
     END TYPE attribute
 
     TYPE, EXTENDS(attribute) :: scalar
+        !! Scalar attribute DT
         INTEGER(i4k) :: numcomp = 0
         CHARACTER(LEN=:), ALLOCATABLE :: tablename
         INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints
@@ -47,6 +46,7 @@ MODULE vtk_attributes
     END TYPE scalar
 
     TYPE, EXTENDS(attribute) :: vector
+        !! Vector attribute DT
         REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: vectors
     CONTAINS
         PROCEDURE :: read  => vector_read
@@ -56,6 +56,7 @@ MODULE vtk_attributes
     END TYPE vector
 
     TYPE, EXTENDS(attribute) :: normal
+        !! Normal attribute DT
         REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: normals
     CONTAINS
         PROCEDURE :: read  => normal_read
@@ -65,6 +66,7 @@ MODULE vtk_attributes
     END TYPE normal
 
     TYPE, EXTENDS(attribute) :: texture
+        !! Texture attribute DT
         REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: textures
     CONTAINS
         PROCEDURE :: read  => texture_read
@@ -74,10 +76,12 @@ MODULE vtk_attributes
     END TYPE texture
 
     TYPE :: tensor_array
+        !! Tensor data DT
         REAL(r8k), DIMENSION(3,3) :: val = 0.0_r8k
     END TYPE tensor_array
 
     TYPE, EXTENDS(attribute) :: tensor
+        !! Tensor attribute DT
         TYPE(tensor_array), DIMENSION(:), ALLOCATABLE :: tensors
     CONTAINS
         PROCEDURE :: read  => tensor_read
@@ -87,6 +91,7 @@ MODULE vtk_attributes
     END TYPE tensor
 
     TYPE :: field_data_array
+        !! Field data DT
         CHARACTER(LEN=:), ALLOCATABLE :: name
         INTEGER(i4k) :: numComponents = 0
         INTEGER(i4k) :: numTuples     = 0
@@ -95,6 +100,7 @@ MODULE vtk_attributes
     END TYPE field_data_array
 
     TYPE, EXTENDS(attribute) :: field
+        !! Field attribute DT
         TYPE(field_data_array), DIMENSION(:), ALLOCATABLE :: array
     CONTAINS
         PROCEDURE :: read  => field_read
@@ -104,31 +110,29 @@ MODULE vtk_attributes
     END TYPE field
 
     TYPE :: attributes
-        INTEGER(i4k) :: n = 0 !! # of points or cells in the dataset
+        INTEGER(i4k) :: n = 0                       !! # of points or cells in the dataset
         CLASS(attribute), ALLOCATABLE :: attribute
     END TYPE attributes
 
     INTERFACE
 
         MODULE SUBROUTINE abs_read (me, unit)
-        !>@brief
-        !> Abstract for reading an attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Abstract for reading an attribute
+        !!
         CLASS(attribute), INTENT(OUT) :: me
         INTEGER(i4k),     INTENT(IN)  :: unit
 
         END SUBROUTINE abs_read
 
         MODULE SUBROUTINE abs_write (me, unit)
-        !>@brief
-        !> Abstract for writing an attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Abstract for writing an attribute
+        !!
         CLASS(attribute), INTENT(IN) :: me
         INTEGER(i4k),     INTENT(IN) :: unit
 
@@ -136,12 +140,11 @@ MODULE vtk_attributes
 
         MODULE SUBROUTINE initialize (me, dataname, datatype, numcomp, tablename, ints1d, ints2d, ints3d, &
           &                           values1d, values2d, values3d, field_arrays)
-        !>@brief
-        !> Abstract for performing the set-up of an attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Abstract for performing the set-up of an attribute
+        !!
         CLASS(attribute), INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
@@ -157,12 +160,11 @@ MODULE vtk_attributes
         END SUBROUTINE initialize
 
         MODULE FUNCTION check_for_diffs (me, you) RESULT (diffs)
-        !>@brief
-        !> Function checks for differences in an attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017        
+        !!
+        !! Function checks for differences in an attribute
+        !!
         CLASS(attribute), INTENT(IN) :: me, you
         LOGICAL                      :: diffs
 
@@ -171,36 +173,33 @@ MODULE vtk_attributes
 ! Scalars
 !********
         MODULE SUBROUTINE scalar_read (me, unit)
-        !>@brief
-        !> Subroutine performs the read for a scalar attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Subroutine performs the read for a scalar attribute
+        !!
         CLASS(scalar), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
 
         END SUBROUTINE scalar_read
 
         MODULE SUBROUTINE scalar_write (me, unit)
-        !>@brief
-        !> Subroutine performs the write for a scalar attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Subroutine performs the write for a scalar attribute
+        !!
         CLASS(scalar), INTENT(IN) :: me
         INTEGER(i4k),  INTENT(IN) :: unit
 
         END SUBROUTINE scalar_write
 
         MODULE SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, ints1d, values1d)
-        !>@brief
-        !> Subroutine performs the set-up for a scalar attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Subroutine performs the set-up for a scalar attribute
+        !!
         CLASS(scalar),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
@@ -212,12 +211,11 @@ MODULE vtk_attributes
         END SUBROUTINE scalar_setup
 
         MODULE FUNCTION check_for_diffs_scalar (me, you) RESULT (diffs)
-        !>@brief
-        !> Function checks for differences in a scalar attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Function checks for differences in a scalar attribute
+        !!
         CLASS(scalar),    INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs
@@ -227,36 +225,33 @@ MODULE vtk_attributes
 ! Vectors
 !********
         MODULE SUBROUTINE vector_read (me, unit)
-        !>@brief
-        !> Subroutine performs the read for a vector attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017        
+        !!
+        !! Subroutine performs the read for a vector attribute
+        !!
         CLASS(vector), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
 
         END SUBROUTINE vector_read
 
         MODULE SUBROUTINE vector_write (me, unit)
-        !>@brief
-        !> Subroutine performs the write for a vector attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017        
+        !!
+        !! Subroutine performs the write for a vector attribute
+        !!
         CLASS(vector), INTENT(IN) :: me
         INTEGER(i4k),  INTENT(IN) :: unit
 
         END SUBROUTINE vector_write
 
         MODULE SUBROUTINE vector_setup (me, dataname, datatype, values2d)
-        !>@brief
-        !> Subroutine performs the set-up for a vector attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Subroutine performs the set-up for a vector attribute
+        !!
         CLASS(vector),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
@@ -265,12 +260,11 @@ MODULE vtk_attributes
         END SUBROUTINE vector_setup
 
         MODULE FUNCTION check_for_diffs_vector (me, you) RESULT (diffs)
-        !>@brief
-        !> Function checks for differences in a vector attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Function checks for differences in a vector attribute
+        !!
         CLASS(vector),    INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs
@@ -280,36 +274,33 @@ MODULE vtk_attributes
 ! Normals
 !********
         MODULE SUBROUTINE normal_read (me, unit)
-        !>@brief
-        !> Subroutine performs the read for a normal attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Subroutine performs the read for a normal attribute
+        !!
         CLASS(normal), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
 
         END SUBROUTINE normal_read
 
         MODULE SUBROUTINE normal_write (me, unit)
-        !>@brief
-        !> Subroutine performs the write for a normal attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Subroutine performs the write for a normal attribute
+        !!
         CLASS(normal), INTENT(IN) :: me
         INTEGER(i4k),  INTENT(IN) :: unit
 
         END SUBROUTINE normal_write
 
         MODULE SUBROUTINE normal_setup (me, dataname, datatype, values2d)
-        !>@brief
-        !> Subroutine performs the set-up for a normal attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Subroutine performs the set-up for a normal attribute
+        !!
         CLASS(normal),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
@@ -318,12 +309,11 @@ MODULE vtk_attributes
         END SUBROUTINE normal_setup
 
         MODULE FUNCTION check_for_diffs_normal (me, you) RESULT (diffs)
-        !>@brief
-        !> Function checks for differences in a normal attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Function checks for differences in a normal attribute
+        !!
         CLASS(normal),    INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs
@@ -333,36 +323,33 @@ MODULE vtk_attributes
 ! Textures
 !********
         MODULE SUBROUTINE texture_read (me, unit)
-        !>@brief
-        !> Subroutine performs the read for a texture attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Subroutine performs the read for a texture attribute
+        !!
         CLASS(texture), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: unit
 
         END SUBROUTINE texture_read
 
         MODULE SUBROUTINE texture_write (me, unit)
-        !>@brief
-        !> Subroutine performs the write for a texture attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017        
+        !!
+        !! Subroutine performs the write for a texture attribute
+        !!
         CLASS(texture), INTENT(IN) :: me
         INTEGER(i4k),   INTENT(IN) :: unit
 
         END SUBROUTINE texture_write
 
         MODULE SUBROUTINE texture_setup (me, dataname, datatype, values2d)
-        !>@brief
-        !> Subroutine performs the set-up for a texture attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Subroutine performs the set-up for a texture attribute
+        !!
         CLASS(texture),   INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
@@ -371,12 +358,11 @@ MODULE vtk_attributes
         END SUBROUTINE texture_setup
 
         MODULE FUNCTION check_for_diffs_texture (me, you) RESULT (diffs)
-        !>@brief
-        !> Function checks for differences in a texture attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017        
+        !!
+        !! Function checks for differences in a texture attribute
+        !!
         CLASS(texture),   INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs
@@ -386,36 +372,33 @@ MODULE vtk_attributes
 ! Tensors
 !********
         MODULE SUBROUTINE tensor_read (me, unit)
-        !>@brief
-        !> Subroutine performs the read for a tensor attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Subroutine performs the read for a tensor attribute
+        !!
         CLASS(tensor), INTENT(OUT) :: me
         INTEGER(i4k),  INTENT(IN)  :: unit
 
         END SUBROUTINE tensor_read
 
         MODULE SUBROUTINE tensor_write (me, unit)
-        !>@brief
-        !> Subroutine performs the write for a tensor attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Subroutine performs the write for a tensor attribute
+        !!
         CLASS(tensor), INTENT(IN) :: me
         INTEGER(i4k),  INTENT(IN) :: unit
 
         END SUBROUTINE tensor_write
 
         MODULE SUBROUTINE tensor_setup (me, dataname, datatype, values3d)
-        !>@brief
-        !> Subroutine performs the set-up for a tensor attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Subroutine performs the set-up for a tensor attribute
+        !!
         CLASS(tensor),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
@@ -424,12 +407,11 @@ MODULE vtk_attributes
         END SUBROUTINE tensor_setup
 
         MODULE FUNCTION check_for_diffs_tensor (me, you) RESULT (diffs)
-        !>@brief
-        !> Function checks for differences in a tensor attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Function checks for differences in a tensor attribute
+        !!
         CLASS(tensor),    INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs
@@ -439,36 +421,33 @@ MODULE vtk_attributes
 ! Fields
 !********
         MODULE SUBROUTINE field_read (me, unit)
-        !>@brief
-        !> Subroutine performs the read for a field attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Subroutine performs the read for a field attribute
+        !!
         CLASS(field), INTENT(OUT) :: me
         INTEGER(i4k), INTENT(IN)  :: unit
 
         END SUBROUTINE field_read
 
         MODULE SUBROUTINE field_write (me, unit)
-        !>@brief
-        !> Subroutine performs the write for a field attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/13/2017
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Subroutine performs the write for a field attribute
+        !!
         CLASS(field), INTENT(IN) :: me
         INTEGER(i4k), INTENT(IN) :: unit
 
         END SUBROUTINE field_write
 
         MODULE SUBROUTINE field_setup (me, dataname, datatype, field_arrays)
-        !>@brief
-        !> Subroutine performs the set-up for a field attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Subroutine performs the set-up for a field attribute
+        !!
         CLASS(field),     INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
@@ -477,12 +456,11 @@ MODULE vtk_attributes
         END SUBROUTINE field_setup
 
         MODULE FUNCTION check_for_diffs_field (me, you) RESULT (diffs)
-        !>@brief
-        !> Function checks for differences in a field attribute
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/14/2017
+        !! author: Ian Porter
+        !! date: 12/14/2017
+        !!
+        !! Function checks for differences in a field attribute
+        !!
         CLASS(field),     INTENT(IN) :: me
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs

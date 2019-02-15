@@ -6,13 +6,11 @@ MODULE vtk
     USE vtk_vars
     USE vtk_io, ONLY : vtk_legacy_write
     IMPLICIT NONE
-    !>@brief
-    !> This module the api for VTK format
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/1/2017
-
+    !! author: Ian Porter
+    !! date: 12/1/2017
+    !!
+    !! This module is the api for VTK format
+    !!
     PUBLIC
 
 END MODULE vtk

@@ -5,13 +5,11 @@ PROGRAM T_shape_test
     USE vtk_cells,      ONLY : voxel, hexahedron, vtkcell_list
     USE vtk,            ONLY : vtk_legacy_write
     IMPLICIT NONE
-    !>@brief
-    !> This is a test of an unstructured grid (T-shape) geometry
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 01/04/2018
-
+    !! author: Ian Porter
+    !! date: 01/04/2018
+    !!
+    !! This is a test of an unstructured grid (T-shape) geometry
+    !!
     INTEGER(i4k), PARAMETER     :: n_params_to_write = 1
     TYPE (unstruct_grid)        :: t_shape
     TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write

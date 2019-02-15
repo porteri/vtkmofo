@@ -2,29 +2,33 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
     USE Precision
     USE vtk_cells, ONLY : vtkcell
     IMPLICIT NONE
-    !>@brief
-    !> This module contains the dataset formats for vtk format
-    !>@author
-    !> Ian Porter
-    !>@date
-    !> 12/1/2017
-    !
-    ! The following dataset formats are available:
-    ! 1) Structured points
-    ! 2) Structured grid
-    ! 3) Rectilinear grid
-    ! 4) Polygonal data
-    ! 5) Unstructured grid
-    !
-
+    !! author: Ian Porter
+    !! date: 12/1/2017
+    !!
+    !! This module contains the dataset formats for vtk format
+    !!
+    !! The following dataset formats are available:
+    !! 1) Structured points
+    !! 2) Structured grid
+    !! 3) Rectilinear grid
+    !! 4) Polygonal data
+    !! 5) Unstructured grid
+    !!
     CONTAINS
-! ****************
-! Abstract dataset
-! ****************
+!! ****************
+!! Abstract dataset
+!! ****************
 
         MODULE PROCEDURE init
-        !>@brief
-        !> Initializes the dataset with information
+        !!
+        !! Initializes the dataset with information
+        CHARACTER(LEN=:), ALLOCATABLE :: data_type  !! Internal variable for datatype
+
+        IF (PRESENT(datatype)) THEN
+            data_type = datatype
+        ELSE
+            data_type = 'double'
+        END IF
 
         SELECT TYPE (me)
         CLASS IS (struct_pts)
@@ -32,7 +36,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         CLASS IS (struct_grid)
             CALL me%setup(dims, points)
         CLASS IS (rectlnr_grid)
-            CALL me%setup(dims, x_coords, y_coords, z_coords)
+            CALL me%setup(dims, x_coords, y_coords, z_coords, data_type)
         CLASS IS (polygonal_data)
             CALL me%setup(points, vertices, lines, polygons, triangles)
         CLASS IS (unstruct_grid)
@@ -45,22 +49,16 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
             ERROR STOP 'Generic class not defined for vtkmofo class dataset'
         END SELECT
 
-        IF (PRESENT(datatype)) THEN
-            me%datatype = datatype
-        ELSE
-            me%datatype = 'double'
-        END IF
+        me%datatype = data_type
 
         END PROCEDURE init
 
         MODULE PROCEDURE check_for_diffs
-        !>@brief
-        !> Function checks for differences in a dataset
-        !>@author
-        !> Ian Porter, NRC
-        !>@date
-        !> 12/18/2017
-
+        !! author: Ian Porter
+        !! date: 12/18/2017
+        !!
+        !! Function checks for differences in a dataset
+        !!
         diffs = .FALSE.
         IF      (.NOT. SAME_TYPE_AS(me,you))  THEN
             diffs = .TRUE.
@@ -78,8 +76,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 ! *****************
         MODULE PROCEDURE struct_pts_read
         USE Misc, ONLY : interpret_string, def_len
-        !>@brief
-        !> Reads the structured points dataset information from the .vtk file
+        !!
+        !! Reads the structured points dataset information from the .vtk file
         INTEGER(i4k)                   :: iostat
         CHARACTER(LEN=def_len)         :: line
         INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
@@ -106,8 +104,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE struct_pts_read
 
         MODULE PROCEDURE struct_pts_write
-        !>@brief
-        !> Writes the structured points dataset information to the .vtk file
+        !!
+        !! Writes the structured points dataset information to the .vtk file
 
         WRITE(unit,100) me%name
         WRITE(unit,101) me%dimensions
@@ -121,8 +119,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE struct_pts_write
 
         MODULE PROCEDURE struct_pts_setup
-        !>@brief
-        !> Sets up the structured points dataset with information
+        !!
+        !! Sets up the structured points dataset with information
 
         me%name       = 'STRUCTURED_POINTS'
         me%dimensions = dims
@@ -133,8 +131,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE struct_pts_setup
 
         MODULE PROCEDURE check_for_diffs_struct_pts
-        !>@brief
-        !> Function checks for differences in a structured points dataset
+        !!
+        !! Function checks for differences in a structured points dataset
 
         diffs = .FALSE.
         IF      (.NOT. SAME_TYPE_AS(me,you))  THEN
@@ -166,8 +164,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 ! ***************
         MODULE PROCEDURE struct_grid_read
         USE Misc, ONLY : interpret_string, def_len
-        !>@brief
-        !> Reads the structured grid dataset information from the .vtk file
+        !!
+        !! Reads the structured grid dataset information from the .vtk file
         INTEGER(i4k)                    :: i, iostat
         INTEGER(i4k), PARAMETER         :: dim = 3
         LOGICAL                         :: end_of_File
@@ -207,8 +205,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE struct_grid_read
 
         MODULE PROCEDURE struct_grid_write
-        !>@brief
-        !> Writes the structured grid dataset information to the .vtk file
+        !!
+        !! Writes the structured grid dataset information to the .vtk file
         INTEGER(i4k) :: i
 
         WRITE(unit,100) me%name
@@ -226,8 +224,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE struct_grid_write
 
         MODULE PROCEDURE struct_grid_setup
-        !>@brief
-        !> Sets up the structured grid dataset with information
+        !!
+        !! Sets up the structured grid dataset with information
 
         me%name       = 'STRUCTURED_GRID'
         me%dimensions = dims
@@ -238,8 +236,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE struct_grid_setup
 
         MODULE PROCEDURE check_for_diffs_struct_grid
-        !>@brief
-        !> Function checks for differences in a structured grid dataset
+        !!
+        !! Function checks for differences in a structured grid dataset
 
         INTEGER(i4k) :: i, j
 
@@ -280,8 +278,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 ! ****************
         MODULE PROCEDURE rectlnr_grid_read
         USE Misc, ONLY : interpret_string, def_len
-        !>@brief
-        !> Reads the rectilinear grid dataset information from the .vtk file
+        !!
+        !! Reads the rectilinear grid dataset information from the .vtk file
 
         INTEGER(i4k)                     :: i, j, iostat
         INTEGER(i4k),        PARAMETER   :: dim = 3
@@ -343,8 +341,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE rectlnr_grid_read
 
         MODULE PROCEDURE rectlnr_grid_write
-        !>@brief
-        !> Writes the rectilinear grid dataset information to the .vtk file
+        !!
+        !! Writes the rectilinear grid dataset information to the .vtk file
 
         WRITE(unit,100) me%name
         WRITE(unit,101) me%dimensions
@@ -365,8 +363,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE rectlnr_grid_write
 
         MODULE PROCEDURE rectlnr_grid_setup
-        !>@brief
-        !> Sets up the rectilinear grid dataset with information
+        !!
+        !! Sets up the rectilinear grid dataset with information
 
         IF (dims(1) /= SIZE(x_coords) .OR. dims(2) /= SIZE(y_coords) .OR. dims(3) /= SIZE(z_coords)) THEN
             ERROR STOP 'Bad inputs for rectlnr_grid_setup. Dims is not equal to size of coords.'
@@ -374,7 +372,9 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         me%name       = 'RECTILINEAR_GRID'
         me%dimensions = dims
-        me%y%datatype = me%x%datatype; me%z%datatype = me%x%datatype
+        me%x%datatype = datatype
+        me%y%datatype = datatype
+        me%z%datatype = datatype
         me%x%coord    = x_coords
         me%y%coord    = y_coords
         me%z%coord    = z_coords
@@ -383,8 +383,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE rectlnr_grid_setup
 
         MODULE PROCEDURE check_for_diffs_rectlnr_grid
-        !>@brief
-        !> Function checks for differences in a rectilinear grid dataset
+        !!
+        !! Function checks for differences in a rectilinear grid dataset
         INTEGER(i4k) :: i
 
         diffs = .FALSE.
@@ -434,8 +434,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         MODULE PROCEDURE polygonal_data_read
         USE Misc,      ONLY : interpret_string, def_len
         USE vtk_cells, ONLY : poly_vertex, poly_line, polygon, triangle_strip
-        !>@brief
-        !> Reads the polygonal data dataset information from the .vtk file
+        !!
+        !! Reads the polygonal data dataset information from the .vtk file
         INTEGER(i4k)                       :: i, j, iostat, n, descr_size, n_points
         INTEGER(i4k), PARAMETER            :: dim = 3
         LOGICAL                            :: end_of_File
@@ -545,8 +545,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE polygonal_data_read
 
         MODULE PROCEDURE polygonal_data_write
-        !>@brief
-        !> Writes the polygonal data dataset information to the .vtk file
+        !!
+        !! Writes the polygonal data dataset information to the .vtk file
         INTEGER(i4k) :: i, n, size_cnt
 
         WRITE(unit,100) me%name
@@ -624,8 +624,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE polygonal_data_write
 
         MODULE PROCEDURE polygonal_data_setup
-        !>@brief
-        !> Sets up the polygonal data dataset with information
+        !!
+        !! Sets up the polygonal data dataset with information
 
         me%name       = 'POLYDATA'
         me%n_points   = SIZE(points,DIM=2)
@@ -643,8 +643,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         MODULE PROCEDURE unstruct_grid_read
         USE Misc,      ONLY : interpret_string, def_len
         USE vtk_cells, ONLY : vtkcell, poly_vertex, set_cell_type
-        !>@brief
-        !> Reads the unstructured grid dataset information from the .vtk file
+        !!
+        !! Reads the unstructured grid dataset information from the .vtk file
         CLASS(vtkcell), ALLOCATABLE       :: dummy_cell
         INTEGER(i4k)                      :: i, iostat
         INTEGER(i4k), PARAMETER           :: dim = 3
@@ -722,8 +722,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE unstruct_grid_read
 
         MODULE PROCEDURE unstruct_grid_write
-        !>@brief
-        !> Writes the unstructured grid dataset information from the .vtk file
+        !!
+        !! Writes the unstructured grid dataset information from the .vtk file
         INTEGER(i4k) :: i
 
         WRITE(unit,100) me%name
@@ -753,8 +753,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE unstruct_grid_write
 
         MODULE PROCEDURE unstruct_grid_setup
-        !>@brief
-        !> Sets up the unstructured grid dataset with information
+        !!
+        !! Sets up the unstructured grid dataset with information
         INTEGER(i4k) :: i, size_cnt
 
         me%name         = 'UNSTRUCTURED_GRID'
@@ -774,8 +774,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE unstruct_grid_setup
 
         MODULE PROCEDURE unstruct_grid_setup_multiclass
-        !>@brief
-        !> Sets up the unstructured grid dataset with information
+        !!
+        !! Sets up the unstructured grid dataset with information
         INTEGER(i4k) :: i, size_cnt
 
         me%name         = 'UNSTRUCTURED_GRID'

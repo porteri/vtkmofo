@@ -3,8 +3,8 @@ SUBMODULE (Misc) Misc_implementation
     CONTAINS
 
         MODULE PROCEDURE interpret_string
-        !>@brief
-        !> Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
+        !!
+        !! Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
         INTEGER(i4k) :: i
         CHARACTER(LEN=:), ALLOCATABLE :: string, sep, char
         TYPE :: counter
@@ -104,7 +104,7 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE get_string_real
 
         MODULE PROCEDURE to_uppercase
-        !! author:  Ian Porter, NRC
+        !! author: Ian Porter
         !! date: 01/23/2019
         !!
         !! This function changes lowercase text in a string to uppercase text
@@ -127,7 +127,7 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE to_uppercase
 
         MODULE PROCEDURE to_lowercase
-        !! author:  Ian Porter, NRC
+        !! author: Ian Porter
         !! date: 01/23/2019
         !!
         !! This function changes uppercase text in a string to lowercase text
