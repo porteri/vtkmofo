@@ -22,6 +22,13 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         MODULE PROCEDURE init
         !!
         !! Initializes the dataset with information
+        CHARACTER(LEN=:), ALLOCATABLE :: data_type  !! Internal variable for datatype
+
+        IF (PRESENT(datatype)) THEN
+            data_type = datatype
+        ELSE
+            data_type = 'double'
+        END IF
 
         SELECT TYPE (me)
         CLASS IS (struct_pts)
@@ -29,7 +36,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         CLASS IS (struct_grid)
             CALL me%setup(dims, points)
         CLASS IS (rectlnr_grid)
-            CALL me%setup(dims, x_coords, y_coords, z_coords)
+            CALL me%setup(dims, x_coords, y_coords, z_coords, data_type)
         CLASS IS (polygonal_data)
             CALL me%setup(points, vertices, lines, polygons, triangles)
         CLASS IS (unstruct_grid)
@@ -42,11 +49,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
             ERROR STOP 'Generic class not defined for vtkmofo class dataset'
         END SELECT
 
-        IF (PRESENT(datatype)) THEN
-            me%datatype = datatype
-        ELSE
-            me%datatype = 'double'
-        END IF
+        me%datatype = data_type
 
         END PROCEDURE init
 
@@ -369,7 +372,9 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         me%name       = 'RECTILINEAR_GRID'
         me%dimensions = dims
-        me%y%datatype = me%x%datatype; me%z%datatype = me%x%datatype
+        me%x%datatype = datatype
+        me%y%datatype = datatype
+        me%z%datatype = datatype
         me%x%coord    = x_coords
         me%y%coord    = y_coords
         me%z%coord    = z_coords
