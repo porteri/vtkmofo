@@ -62,7 +62,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         WRITE(unit,100) vtktitle                           !! VTK title card
         WRITE(unit,100) filetype_text                      !! VTK file type
 
-        CALL geometry%write(unit)                          !! Write the geometry information
+        WRITE(unit,FMT='(DT)') geometry                    !! Write the geometry information
         IF (PRESENT(celldatasets)) THEN
             WRITE(unit,101) celldatasets(1)%n
             DO i = 1, SIZE(celldatasets)
@@ -132,7 +132,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         READ(unit,100) line                                !! Skip over this line
         READ(unit,100) line                                !! Skip over this line
 
-        CALL geometry%read(unit)                           !! Read the information from the file
+        READ(unit,FMT='(DT)') geometry                     !! Read the information from the file
 
         IF (PRESENT(celldatasets)) THEN
             READ(unit,*)

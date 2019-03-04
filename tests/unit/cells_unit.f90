@@ -119,12 +119,12 @@ MODULE vtk_cells_unit_tests
             !! Data type is generated from the defined values above
             CALL vtk_cell_1%setup(points=point_vals(1:n_points(i)))
             OPEN (unit=vtk_unit, file=filename(i), form='formatted')
-            CALL vtk_cell_1%write(vtk_unit)
+            WRITE(unit=vtk_unit,FMT='(DT)') vtk_cell_1
             CLOSE(unit=vtk_unit)
 
             !! Data type is generated from the read
             OPEN (unit=vtk_unit, file=filename(i), status='old', form='formatted')
-            CALL vtk_cell_2%read(vtk_unit)
+            READ (unit=vtk_unit,FMT='(DT)') vtk_cell_2
             CLOSE(unit=vtk_unit)
 
             !! Compare the read file and the written/read file to ensure both types are the same
@@ -135,6 +135,7 @@ MODULE vtk_cells_unit_tests
         test_pass = ALL(individual_tests_pass)
 
         END SUBROUTINE vtk_cells_unit
+
 END MODULE vtk_cells_unit_tests
 
 PROGRAM vtk_cells_test

@@ -30,8 +30,10 @@ MODULE vtk_datasets
         INTEGER(i4k), DIMENSION(3)    :: dimensions = [ 0, 0, 0 ]
         LOGICAL, PUBLIC               :: firstcall = .TRUE.
     CONTAINS
-        PROCEDURE(abs_read),  DEFERRED, PUBLIC :: read
-        PROCEDURE(abs_write), DEFERRED, PUBLIC :: write
+        PROCEDURE(abs_read),  DEFERRED :: read_formatted
+        GENERIC, PUBLIC :: READ(FORMATTED) => read_formatted
+        PROCEDURE(abs_write), DEFERRED :: write_formatted
+        GENERIC, PUBLIC :: WRITE(FORMATTED) => write_formatted
         PROCEDURE, NON_OVERRIDABLE, PUBLIC :: init
         PROCEDURE, PRIVATE :: check_for_diffs
         GENERIC, PUBLIC :: OPERATOR(.diff.) => check_for_diffs
@@ -43,8 +45,8 @@ MODULE vtk_datasets
         REAL(r8k), DIMENSION(3) :: origin  = [ 0.0_r8k, 0.0_r8k, 0.0_r8k ]
         REAL(r8k), DIMENSION(3) :: spacing = [ 0.0_r8k, 0.0_r8k, 0.0_r8k ]
     CONTAINS
-        PROCEDURE :: read  => struct_pts_read
-        PROCEDURE :: write => struct_pts_write
+        PROCEDURE :: read_formatted  => struct_pts_read
+        PROCEDURE :: write_formatted => struct_pts_write
         PROCEDURE, PRIVATE :: setup => struct_pts_setup
         PROCEDURE :: check_for_diffs => check_for_diffs_struct_pts
     END TYPE struct_pts
@@ -55,8 +57,8 @@ MODULE vtk_datasets
         INTEGER(i4k)                           :: n_points = 0
         REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: points
     CONTAINS
-        PROCEDURE :: read  => struct_grid_read
-        PROCEDURE :: write => struct_grid_write
+        PROCEDURE :: read_formatted  => struct_grid_read
+        PROCEDURE :: write_formatted => struct_grid_write
         PROCEDURE, PRIVATE :: setup => struct_grid_setup
         PROCEDURE :: check_for_diffs => check_for_diffs_struct_grid
     END TYPE struct_grid
@@ -68,8 +70,8 @@ MODULE vtk_datasets
         TYPE (coordinates) :: y
         TYPE (coordinates) :: z
     CONTAINS
-        PROCEDURE :: read  => rectlnr_grid_read
-        PROCEDURE :: write => rectlnr_grid_write
+        PROCEDURE :: read_formatted  => rectlnr_grid_read
+        PROCEDURE :: write_formatted => rectlnr_grid_write
         PROCEDURE, PRIVATE :: setup => rectlnr_grid_setup
         PROCEDURE :: check_for_diffs => check_for_diffs_rectlnr_grid
     END TYPE rectlnr_grid
@@ -84,8 +86,8 @@ MODULE vtk_datasets
         CLASS(vtkcell), DIMENSION(:),   ALLOCATABLE :: polygons
         CLASS(vtkcell), DIMENSION(:),   ALLOCATABLE :: triangles
     CONTAINS
-        PROCEDURE :: read  => polygonal_data_read
-        PROCEDURE :: write => polygonal_data_write
+        PROCEDURE :: read_formatted  => polygonal_data_read
+        PROCEDURE :: write_formatted => polygonal_data_write
         PROCEDURE, PRIVATE :: setup => polygonal_data_setup
     END TYPE polygonal_data
 
@@ -99,8 +101,8 @@ MODULE vtk_datasets
         REAL(r8k),          DIMENSION(:,:), ALLOCATABLE :: points
         TYPE(vtkcell_list), DIMENSION(:),   ALLOCATABLE :: cell_list
     CONTAINS
-        PROCEDURE :: read  => unstruct_grid_read
-        PROCEDURE :: write => unstruct_grid_write
+        PROCEDURE :: read_formatted  => unstruct_grid_read
+        PROCEDURE :: write_formatted => unstruct_grid_write
         PROCEDURE :: unstruct_grid_setup
         PROCEDURE :: unstruct_grid_setup_multiclass
         GENERIC, PRIVATE :: setup => unstruct_grid_setup, unstruct_grid_setup_multiclass
@@ -110,25 +112,38 @@ MODULE vtk_datasets
 ! ****************
 ! Abstract dataset
 ! ****************
-        MODULE SUBROUTINE abs_read (me, unit)
+        MODULE SUBROUTINE abs_read (me, unit, iotype, v_list, iostat, iomsg)
+        !! author: Ian Porter
+        !! date: 3/4/2019
         !!
-        !! Reads the dataset information from the .vtk file
-        CLASS(dataset), INTENT(OUT) :: me
-        INTEGER(i4k),   INTENT(IN)  :: unit
+        !! Abstract read
+        !!
+        CLASS(dataset),   INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE abs_read
 
-        MODULE SUBROUTINE abs_write (me, unit)
+        MODULE SUBROUTINE abs_write (me, unit, iotype, v_list, iostat, iomsg)
+        !! author: Ian Porter
+        !! date: 3/4/2019
         !!
-        !! Writes the dataset information to the .vtk file
-        CLASS(dataset), INTENT(IN) :: me
-        INTEGER(i4k),   INTENT(IN) :: unit
+        !! Abstract write
+        !!
+        CLASS(dataset),   INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE abs_write
 
         MODULE SUBROUTINE init (me, datatype, dims, origin, spacing, points, cells, cell_list, &
           &                     x_coords, y_coords, z_coords, vertices, lines, polygons, triangles)
-        !!
         !! initializes the dataset
         CLASS (dataset),                     INTENT(OUT)          :: me
         CLASS(vtkcell),      DIMENSION(:),   INTENT(IN), OPTIONAL :: vertices
@@ -159,19 +174,27 @@ MODULE vtk_datasets
 ! *****************
 ! Structured Points
 ! *****************
-        MODULE SUBROUTINE struct_pts_read (me, unit)
+        MODULE SUBROUTINE struct_pts_read (me, unit, iotype, v_list, iostat, iomsg)
         !!
         !! Reads the structured points dataset information from the .vtk file
-        CLASS(struct_pts), INTENT(OUT) :: me
-        INTEGER(i4k),      INTENT(IN)  :: unit
+        CLASS(struct_pts), INTENT(INOUT) :: me
+        INTEGER(i4k),      INTENT(IN)    :: unit
+        CHARACTER(LEN=*),  INTENT(IN)    :: iotype
+        INTEGER(i4k),      DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),      INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*),  INTENT(INOUT) :: iomsg
 
         END SUBROUTINE struct_pts_read
 
-        MODULE SUBROUTINE struct_pts_write (me, unit)
+        MODULE SUBROUTINE struct_pts_write (me, unit, iotype, v_list, iostat, iomsg)
         !!
         !! Writes the structured points dataset information to the .vtk file
-        CLASS(struct_pts), INTENT(IN) :: me
-        INTEGER(i4k),      INTENT(IN) :: unit
+        CLASS(struct_pts), INTENT(IN)    :: me
+        INTEGER(i4k),      INTENT(IN)    :: unit
+        CHARACTER(LEN=*),  INTENT(IN)    :: iotype
+        INTEGER(i4k),      DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),      INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*),  INTENT(INOUT) :: iomsg
 
         END SUBROUTINE struct_pts_write
 
@@ -195,19 +218,27 @@ MODULE vtk_datasets
 ! ***************
 ! Structured Grid
 ! ***************
-        MODULE SUBROUTINE struct_grid_read (me, unit)
+        MODULE SUBROUTINE struct_grid_read (me, unit, iotype, v_list, iostat, iomsg)
         !!
         !! Reads the structured grid dataset information from the .vtk file
-        CLASS(struct_grid), INTENT(OUT) :: me
-        INTEGER(i4k),       INTENT(IN)  :: unit
+        CLASS(struct_grid), INTENT(INOUT) :: me
+        INTEGER(i4k),       INTENT(IN)    :: unit
+        CHARACTER(LEN=*),   INTENT(IN)    :: iotype
+        INTEGER(i4k),       DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),       INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*),   INTENT(INOUT) :: iomsg
 
         END SUBROUTINE struct_grid_read
 
-        MODULE SUBROUTINE struct_grid_write (me, unit)
+        MODULE SUBROUTINE struct_grid_write (me, unit, iotype, v_list, iostat, iomsg)
         !!
         !! Writes the structured grid dataset information to the .vtk file
-        CLASS(struct_grid), INTENT(IN) :: me
-        INTEGER(i4k),       INTENT(IN) :: unit
+        CLASS(struct_grid), INTENT(IN)    :: me
+        INTEGER(i4k),       INTENT(IN)    :: unit
+        CHARACTER(LEN=*),   INTENT(IN)    :: iotype
+        INTEGER(i4k),       DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),       INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*),   INTENT(INOUT) :: iomsg
 
         END SUBROUTINE struct_grid_write
 
@@ -231,19 +262,27 @@ MODULE vtk_datasets
 ! ****************
 ! Rectilinear Grid
 ! ****************
-        MODULE SUBROUTINE rectlnr_grid_read (me, unit)
+        MODULE SUBROUTINE rectlnr_grid_read (me, unit, iotype, v_list, iostat, iomsg)
         !!
         !! Reads the rectilinear grid dataset information from the .vtk file
-        CLASS(rectlnr_grid), INTENT(OUT) :: me
-        INTEGER(i4k),        INTENT(IN)  :: unit
+        CLASS(rectlnr_grid), INTENT(INOUT) :: me
+        INTEGER(i4k),        INTENT(IN)    :: unit
+        CHARACTER(LEN=*),    INTENT(IN)    :: iotype
+        INTEGER(i4k),        DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),        INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*),    INTENT(INOUT) :: iomsg
 
         END SUBROUTINE rectlnr_grid_read
 
-        MODULE SUBROUTINE rectlnr_grid_write (me, unit)
+        MODULE SUBROUTINE rectlnr_grid_write (me, unit, iotype, v_list, iostat, iomsg)
         !!
         !! Writes the rectilinear grid dataset information to the .vtk file
-        CLASS(rectlnr_grid), INTENT(IN) :: me
-        INTEGER(i4k),        INTENT(IN) :: unit
+        CLASS(rectlnr_grid), INTENT(IN)    :: me
+        INTEGER(i4k),        INTENT(IN)    :: unit
+        CHARACTER(LEN=*),    INTENT(IN)    :: iotype
+        INTEGER(i4k),        DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),        INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*),    INTENT(INOUT) :: iomsg
 
         END SUBROUTINE rectlnr_grid_write
 
@@ -270,19 +309,27 @@ MODULE vtk_datasets
 ! **************
 ! Polygonal Data
 ! **************
-        MODULE SUBROUTINE polygonal_data_read (me, unit)
+        MODULE SUBROUTINE polygonal_data_read (me, unit, iotype, v_list, iostat, iomsg)
         !!
         !! Reads the polygonal data dataset information from the .vtk file
-        CLASS(polygonal_data), INTENT(OUT) :: me
-        INTEGER(i4k),          INTENT(IN)  :: unit
+        CLASS(polygonal_data), INTENT(INOUT) :: me
+        INTEGER(i4k),          INTENT(IN)    :: unit
+        CHARACTER(LEN=*),      INTENT(IN)    :: iotype
+        INTEGER(i4k),          DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),          INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*),      INTENT(INOUT) :: iomsg
 
         END SUBROUTINE polygonal_data_read
 
-        MODULE SUBROUTINE polygonal_data_write (me, unit)
+        MODULE SUBROUTINE polygonal_data_write (me, unit, iotype, v_list, iostat, iomsg)
         !!
         !! Writes the polygonal data dataset information to the .vtk file
-        CLASS(polygonal_data), INTENT(IN) :: me
-        INTEGER(i4k),          INTENT(IN) :: unit
+        CLASS(polygonal_data), INTENT(IN)    :: me
+        INTEGER(i4k),          INTENT(IN)    :: unit
+        CHARACTER(LEN=*),      INTENT(IN)    :: iotype
+        INTEGER(i4k),          DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),          INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*),      INTENT(INOUT) :: iomsg
 
         END SUBROUTINE polygonal_data_write
 
@@ -300,19 +347,27 @@ MODULE vtk_datasets
 ! *****************
 ! Unstructured Grid
 ! *****************
-        MODULE SUBROUTINE unstruct_grid_read (me, unit)
+        MODULE SUBROUTINE unstruct_grid_read (me, unit, iotype, v_list, iostat, iomsg)
         !!
         !! Reads the unstructured grid dataset information from the .vtk file
-        CLASS(unstruct_grid), INTENT(OUT) :: me
-        INTEGER(i4k),         INTENT(IN)  :: unit
+        CLASS(unstruct_grid), INTENT(INOUT) :: me
+        INTEGER(i4k),         INTENT(IN)    :: unit
+        CHARACTER(LEN=*),     INTENT(IN)    :: iotype
+        INTEGER(i4k),         DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),         INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*),     INTENT(INOUT) :: iomsg
 
         END SUBROUTINE unstruct_grid_read
 
-        MODULE SUBROUTINE unstruct_grid_write (me, unit)
+        MODULE SUBROUTINE unstruct_grid_write (me, unit, iotype, v_list, iostat, iomsg)
         !!
         !! Writes the unstructured grid dataset information from the .vtk file
-        CLASS(unstruct_grid), INTENT(IN) :: me
-        INTEGER(i4k),         INTENT(IN) :: unit
+        CLASS(unstruct_grid), INTENT(IN)    :: me
+        INTEGER(i4k),         INTENT(IN)    :: unit
+        CHARACTER(LEN=*),     INTENT(IN)    :: iotype
+        INTEGER(i4k),         DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),         INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*),     INTENT(INOUT) :: iomsg
 
         END SUBROUTINE unstruct_grid_write
 

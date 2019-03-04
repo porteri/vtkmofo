@@ -130,14 +130,14 @@ end procedure write_unformatted
 
         READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
 
-        CALL interpret_string (line=line, datatype=(/ 'C','C','I' /), ignore='SCALARS ', separator=' ', &
+        CALL interpret_string (line=line, datatype=[ 'C','C','I' ], ignore='SCALARS ', separator=' ', &
           &                    ints=ints, chars=chars)
         me%numcomp = ints(1); me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
         DEALLOCATE(ints)
 
         READ(unit,FMT=100, IOSTAT=iostat, IOMSG=iomsg) line
 
-        CALL interpret_string (line=line, datatype=(/ 'C' /), ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
+        CALL interpret_string (line=line, datatype=[ 'C' ], ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
         me%tablename = TRIM(chars(1))
 
         me%datatype = to_lowercase(me%datatype)
@@ -150,24 +150,23 @@ end procedure write_unformatted
             ERROR STOP 'datatype not supported in scalar_read'
         END SELECT
 
-        end_of_file  = .FALSE.; i = 0
-
+        i = 0
         get_scalars: DO
             READ(unit,FMT=100, IOSTAT=iostat, IOMSG=iomsg) line
-            end_of_file = (iostat < 0)
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_scalars
             ELSE IF (TRIM(line) == '') THEN
                 CYCLE     !! Skip blank lines
             ELSE
-                SELECT CASE (me%datatype)
+                SELECT CASE (TRIM(me%datatype))
                 CASE ('unsigned_int', 'int')
                     ALLOCATE(ints(1:UBOUND(me%ints,DIM=1)+1),source=0_i4k)
                     IF (i > 0) ints(1:UBOUND(me%ints,DIM=1)) = me%ints
                     CALL MOVE_ALLOC(ints, me%ints)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
+                    CALL interpret_string (line=line, datatype=[ 'I' ], separator=' ', ints=ints)
                     me%ints(i) = ints(1)
                     DEALLOCATE(ints)
                 CASE ('float', 'double')
@@ -176,7 +175,7 @@ end procedure write_unformatted
                     CALL MOVE_ALLOC(dummy, me%reals)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=(/ 'R' /), separator=' ', reals=reals)
+                    CALL interpret_string (line=line, datatype=[ 'R' ], separator=' ', reals=reals)
                     me%reals(i) = reals(1)
                 CASE DEFAULT
                     ERROR STOP 'datatype not supported in scalar_read'
@@ -202,18 +201,19 @@ end procedure write_unformatted
         CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
 
         READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-
-        CALL interpret_string (line=line, datatype=(/ 'C','C','I' /), ignore='SCALARS ', separator=' ', &
+write(0,*) 'line= ',line
+        CALL interpret_string (line=line, datatype=[ 'C','C','I' ], ignore='SCALARS ', separator=' ', &
           &                    ints=ints, chars=chars)
         me%numcomp = ints(1); me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
         DEALLOCATE(ints)
 
         READ(unit,FMT=100, IOSTAT=iostat, IOMSG=iomsg) line
 
-        CALL interpret_string (line=line, datatype=(/ 'C' /), ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
+        CALL interpret_string (line=line, datatype=[ 'C' ], ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
         me%tablename = TRIM(chars(1))
 
         me%datatype = to_lowercase(me%datatype)
+        write(0,*) 'me%datatype= ',me%datatype
         SELECT CASE (me%datatype)
         CASE ('unsigned_int', 'int')
             ALLOCATE(me%ints(0))
@@ -223,11 +223,11 @@ end procedure write_unformatted
             ERROR STOP 'datatype not supported in scalar_read'
         END SELECT
 
-        end_of_file  = .FALSE.; i = 0
+        i = 0
 
         get_scalars: DO
             READ(unit,FMT=100, IOSTAT=iostat, IOMSG=iomsg) line
-            end_of_file = (iostat < 0)
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_scalars
             ELSE IF (TRIM(line) == '') THEN
@@ -240,7 +240,7 @@ end procedure write_unformatted
                     CALL MOVE_ALLOC(ints, me%ints)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
+                    CALL interpret_string (line=line, datatype=[ 'I' ], separator=' ', ints=ints)
                     me%ints(i) = ints(1)
                     DEALLOCATE(ints)
                 CASE ('float', 'double')
@@ -249,7 +249,7 @@ end procedure write_unformatted
                     CALL MOVE_ALLOC(dummy, me%reals)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=(/ 'R' /), separator=' ', reals=reals)
+                    CALL interpret_string (line=line, datatype=[ 'R' ], separator=' ', reals=reals)
                     me%reals(i) = reals(1)
                 CASE DEFAULT
                     ERROR STOP 'datatype not supported in scalar_read'
@@ -268,24 +268,24 @@ end procedure write_unformatted
         !!
         INTEGER(i4k) :: i
 
-        WRITE(unit,100) me%dataname, me%datatype, me%numcomp
-        WRITE(unit,101) me%tablename
+        WRITE(unit,100) me%dataname, me%datatype, me%numcomp, new_line('(a)')
+        WRITE(unit,101) me%tablename, new_line('a')
         IF (ALLOCATED(me%reals)) THEN
             DO i = 1, SIZE(me%reals)
-                WRITE(unit,102) me%reals(i)
+                WRITE(unit,102) me%reals(i), new_line('a')
             END DO
         ELSE IF (ALLOCATED(me%ints)) THEN
             DO i = 1, SIZE(me%ints)
-                WRITE(unit,103) me%ints(i)
+                WRITE(unit,103) me%ints(i), new_line('a')
             END DO
         ELSE
             ERROR STOP 'Neither real or integer arrays are allocated for scalar_write'
         END IF
 
-100     FORMAT('SCALARS ',(a),' ',(a),' ',(i1),/)
-101     FORMAT('LOOKUP_TABLE ',(a),/)
-102     FORMAT(es13.6,/)
-103     FORMAT(i0,/)
+100     FORMAT('SCALARS ',(a),' ',(a),' ',(i1),(a))
+101     FORMAT('LOOKUP_TABLE ',(a),(a))
+102     FORMAT(es13.6,(a))
+103     FORMAT(i0,(a))
 
         END PROCEDURE scalar_write
 
@@ -298,14 +298,17 @@ end procedure write_unformatted
         INTEGER(i4k) :: i
 
 !        WRITE(unit) 'SCALARS ' // me%dataname // ', ' // me%datatype // ', ' // me%numcomp
-        WRITE(unit) 'LOOKUP_TABLE ' // me%tablename
+        WRITE(unit) 'LOOKUP_TABLE ' // me%tablename // new_line('a')
         IF (ALLOCATED(me%reals)) THEN
             DO i = 1, SIZE(me%reals)
-                WRITE(unit,102) me%reals(i)
+!                WRITE(unit,102) me%reals(i)
+WRITE(unit) me%reals(i)
+                WRITE(unit) new_line('a')
             END DO
         ELSE IF (ALLOCATED(me%ints)) THEN
             DO i = 1, SIZE(me%ints)
                 WRITE(unit,103) me%ints(i)
+                WRITE(unit) new_line('a')
             END DO
         ELSE
             ERROR STOP 'Neither real or integer arrays are allocated for scalar_write'
@@ -411,14 +414,14 @@ end procedure write_unformatted
         REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
 
         READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-        CALL interpret_string (line=line, datatype=(/ 'C','C' /), ignore='VECTORS ', separator=' ', chars=chars)
+        CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='VECTORS ', separator=' ', chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
 
-        ALLOCATE(me%vectors(0,0)); end_of_file = .FALSE.; i = 0
+        ALLOCATE(me%vectors(0,0)); i = 0
 
         get_vectors: DO
             READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-            end_of_file = (iostat < 0)
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_vectors
             ELSE IF (TRIM(line) == '') THEN
@@ -429,7 +432,7 @@ end procedure write_unformatted
                 CALL MOVE_ALLOC(dummy, me%vectors)
                 i = i + 1
 
-                CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), separator=' ', reals=reals)
+                CALL interpret_string (line=line, datatype=[ 'R','R','R' ], separator=' ', reals=reals)
                 me%vectors(i,1:dim) = reals(1:dim)
             END IF
         END DO get_vectors
@@ -445,13 +448,15 @@ end procedure write_unformatted
         !!
         INTEGER(i4k) :: i
 
-        WRITE(unit,100) me%dataname, me%datatype
+        WRITE(unit,100) me%dataname, me%datatype, new_line('a')
         DO i = 1, SIZE(me%vectors,DIM=1)
             WRITE(unit,101) me%vectors(i,1:3)
+            WRITE(unit,102) new_line('a')
         END DO
 
-100     FORMAT('VECTORS ',(a),' ',(a),/)
-101     FORMAT(*(es13.6,' '),/)
+100     FORMAT('VECTORS ',(a),' ',(a),(a))
+101     FORMAT(*(es13.6,' '))
+102     FORMAT((a))
         END PROCEDURE vector_write
 
         MODULE PROCEDURE vector_setup
@@ -524,14 +529,14 @@ end procedure write_unformatted
         REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
 
         READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-        CALL interpret_string (line=line, datatype=(/ 'C','C' /), ignore='NORMALS ', separator=' ', chars=chars)
+        CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='NORMALS ', separator=' ', chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
 
-        ALLOCATE(me%normals(0,0)); end_of_file = .FALSE.; i = 0
+        ALLOCATE(me%normals(0,0)); i = 0
 
         get_normals: DO
             READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-            end_of_file = (iostat < 0)
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_normals
             ELSE IF (TRIM(line) == '') THEN
@@ -542,7 +547,7 @@ end procedure write_unformatted
                 CALL MOVE_ALLOC(dummy, me%normals)
                 i = i + 1
 
-                CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), separator=' ', reals=reals)
+                CALL interpret_string (line=line, datatype=[ 'R','R','R' ], separator=' ', reals=reals)
                 me%normals(i,1:dim) = reals(1:dim)
             END IF
         END DO get_normals
@@ -558,13 +563,15 @@ end procedure write_unformatted
         !!
         INTEGER(i4k) :: i
 
-        WRITE(unit,100) me%dataname, me%datatype
+        WRITE(unit,100) me%dataname, me%datatype, new_line('a')
         DO i = 1, SIZE(me%normals,DIM=1)
             WRITE(unit,101) me%normals(i,1:3)
+            WRITE(unit,102) new_line('a')
         END DO
 
-100     FORMAT('NORMALS ',(a),' ',(a),/)
-101     FORMAT(*(es13.6,' '),/)
+100     FORMAT('NORMALS ',(a),' ',(a),(a))
+101     FORMAT(*(es13.6,' '))
+102     FORMAT((a))
         END PROCEDURE normal_write
 
         MODULE PROCEDURE normal_setup
@@ -635,18 +642,18 @@ end procedure write_unformatted
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
         REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
-        CHARACTER(LEN=1), DIMENSION(3),   PARAMETER   :: datatype = (/ 'R','R','R' /)
+        CHARACTER(LEN=1), DIMENSION(3),   PARAMETER   :: datatype = [ 'R','R','R' ]
 
         READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-        CALL interpret_string (line=line, datatype=(/ 'C','I','C' /), ignore='TEXTURE_COORDINATES ', separator=' ', &
+        CALL interpret_string (line=line, datatype=[ 'C','I','C' ], ignore='TEXTURE_COORDINATES ', separator=' ', &
           &                    ints=ints, chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2)); dim = ints(1)
 
-        ALLOCATE(me%textures(0,0)); end_of_file = .FALSE.; i = 0
+        ALLOCATE(me%textures(0,0)); i = 0
 
         get_textures: DO
             READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-            end_of_file = (iostat < 0)
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_textures
             ELSE IF (TRIM(line) == '') THEN
@@ -673,13 +680,15 @@ end procedure write_unformatted
         !!
         INTEGER(i4k) :: i
 
-        WRITE(unit,100) me%dataname, SIZE(me%textures,DIM=2), me%datatype
+        WRITE(unit,100) me%dataname, SIZE(me%textures,DIM=2), me%datatype, new_line('a')
         DO i = 1, SIZE(me%textures,DIM=1)
             WRITE(unit,101) me%textures(i,:)
+            WRITE(unit,102) new_line('a')
         END DO
 
-100     FORMAT('TEXTURE_COORDINATES ',(a),' ',(i1),' ',(a),/)
-101     FORMAT(*(es13.6,' '),/)
+100     FORMAT('TEXTURE_COORDINATES ',(a),' ',(i1),' ',(a),(a))
+101     FORMAT(*(es13.6,' '))
+102     FORMAT((a))
         END PROCEDURE texture_write
 
         MODULE PROCEDURE texture_setup
@@ -751,15 +760,15 @@ end procedure write_unformatted
         TYPE(tensor_array), DIMENSION(:), ALLOCATABLE :: dummy
 
         READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-        CALL interpret_string (line=line, datatype=(/ 'C','C' /), ignore='TENSORS ', separator=' ', &
+        CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='TENSORS ', separator=' ', &
           &                    chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
 
-        ALLOCATE(me%tensors(0)); end_of_file = .FALSE.; i = 0
+        ALLOCATE(me%tensors(0)); i = 0
 
         get_tensors: DO
             READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-            end_of_file = (iostat < 0)
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_tensors
             ELSE IF (TRIM(line) == '') THEN
@@ -772,7 +781,7 @@ end procedure write_unformatted
 
                 DO j = 1, UBOUND(me%tensors(i)%val,DIM=1)
                     IF (j > 1) READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-                    CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), separator=' ', reals=reals)
+                    CALL interpret_string (line=line, datatype=[ 'R','R','R' ], separator=' ', reals=reals)
                     me%tensors(i)%val(j,1:3) = reals(1:3)
                 END DO
 
@@ -789,18 +798,24 @@ end procedure write_unformatted
         !! Subroutine performs the write for a tensor attribute
         !!
         INTEGER(i4k) :: i, j
+        CHARACTER(LEN=:), ALLOCATABLE :: string_to_write
 
-        WRITE(unit,100) me%dataname, me%datatype
+        WRITE(unit,100) me%dataname, me%datatype, new_line('a')
         DO i = 1, SIZE(me%tensors,DIM=1)
             DO j = 1, SIZE(me%tensors(i)%val,DIM=1)
-                WRITE(unit,101) me%tensors(i)%val(j,:)
+!                ALLOCATE(string_to_write(1:14*SIZE(me%tensors(i)%val,DIM=2)))
+!                WRITE(string_to_write,101) me%tensors(i)%val(j,:)
+WRITE(unit,101) me%tensors(i)%val(j,:)
+!                WRITE(unit,101) string_to_write, new_line('a')
+                WRITE(unit,102) new_line('a')
+!                DEALLOCATE(string_to_write)
             END DO
-            WRITE(unit,102)
+            WRITE(unit,102) new_line('a')
         END DO
 
-100     FORMAT('TENSORS ',(a),' ',(a),/)
-101     FORMAT(*(es13.6,' '),/)
-102     FORMAT(/)
+100     FORMAT('TENSORS ',(a),' ',(a),(a))
+101     FORMAT(*(es13.6,' '),(a))
+102     FORMAT((a))
         END PROCEDURE tensor_write
 
         MODULE PROCEDURE tensor_setup
@@ -890,15 +905,15 @@ end procedure write_unformatted
 !        TYPE(field_data_array), DIMENSION(:), ALLOCATABLE :: dummy
 
         READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-        CALL interpret_string (line=line, datatype=(/ 'C','I' /), ignore='FIELD ', separator=' ', &
+        CALL interpret_string (line=line, datatype=[ 'C','I' ], ignore='FIELD ', separator=' ', &
           &                    ints=ints, chars=chars)
         me%dataname = TRIM(chars(1)); dim = ints(1)
 
-        ALLOCATE(me%array(1:dim)); end_of_file = .FALSE.; i = 0
+        ALLOCATE(me%array(1:dim)); i = 0
 
         get_fields: DO
             READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
-            end_of_file = (iostat < 0)
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_fields
             ELSE IF (TRIM(line) == '') THEN
@@ -909,7 +924,7 @@ end procedure write_unformatted
 !                CALL MOVE_ALLOC(dummy, me%array)
                 i = i + 1
 
-                CALL interpret_string (line=line, datatype=(/ 'C','I','I','C' /), separator=' ', chars=chars, ints=ints)
+                CALL interpret_string (line=line, datatype=[ 'C','I','I','C' ], separator=' ', chars=chars, ints=ints)
                 me%array(i)%name = TRIM(chars(1)); me%array(i)%numComponents = ints(1)
                 me%array(i)%numTuples = ints(2); me%array(i)%datatype = chars(2)
                 ALLOCATE(datatype(1:me%array(i)%numComponents),source=real_char)
@@ -936,19 +951,20 @@ end procedure write_unformatted
         !!
         INTEGER(i4k) :: i, j
 
-        WRITE(unit,100) me%dataname, SIZE(me%array,DIM=1)
+        WRITE(unit,100) me%dataname, SIZE(me%array,DIM=1), new_line('a')
         DO i = 1, SIZE(me%array,DIM=1)
-            WRITE(unit,101) me%array(i)%name, me%array(i)%numComponents, me%array(i)%numTuples, me%array(i)%datatype
+            WRITE(unit,101) me%array(i)%name, me%array(i)%numComponents, me%array(i)%numTuples, me%array(i)%datatype, new_line('a')
             DO j = 1, me%array(i)%numTuples
                 WRITE(unit,102) me%array(i)%data(j,:)
+                WRITE(unit,103) new_line('a')
             END DO
-            WRITE(unit,103)
+            WRITE(unit,103) new_line('a')
         END DO
 
-100     FORMAT('FIELD ',(a),' ',(i0),/)
-101     FORMAT((a),' ',(i0),' ',(i0),' ',(a),/)
-102     FORMAT(*(es13.6,' '),/)
-103     FORMAT(/)
+100     FORMAT('FIELD ',(a),' ',(i0),(a))
+101     FORMAT((a),' ',(i0),' ',(i0),' ',(a),(a))
+102     FORMAT(*(es13.6,' '))
+103     FORMAT((a))
         END PROCEDURE field_write
 
         MODULE PROCEDURE field_setup

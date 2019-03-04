@@ -134,10 +134,10 @@ procedure :: write_unformatted
         !!
         CLASS(attribute), INTENT(INOUT) :: me
         INTEGER(i4k),     INTENT(IN)    :: unit
-        CHARACTER(*),     INTENT(IN)    :: iotype
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
         INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
         INTEGER(i4k),     INTENT(OUT)   :: iostat
-        CHARACTER(*),     INTENT(INOUT) :: iomsg
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE abs_read
 
@@ -150,7 +150,7 @@ procedure :: write_unformatted
         CLASS(attribute), INTENT(INOUT) :: me
         INTEGER(i4k),     INTENT(IN)    :: unit
         INTEGER(i4k),     INTENT(OUT)   :: iostat
-        CHARACTER(*),     INTENT(INOUT) :: iomsg
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE read_unformatted
 
@@ -162,10 +162,10 @@ procedure :: write_unformatted
         !!
         CLASS(attribute), INTENT(IN)    :: me
         INTEGER(i4k),     INTENT(IN)    :: unit
-        CHARACTER(*),     INTENT(IN)    :: iotype
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
         INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
         INTEGER(i4k),     INTENT(OUT)   :: iostat
-        CHARACTER(*),     INTENT(INOUT) :: iomsg
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE abs_write
 
@@ -178,7 +178,7 @@ procedure :: write_unformatted
         CLASS(attribute), INTENT(IN)    :: me
         INTEGER(i4k),     INTENT(IN)    :: unit
         INTEGER(i4k),     INTENT(OUT)   :: iostat
-        CHARACTER(*),     INTENT(INOUT) :: iomsg
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE write_unformatted
 
@@ -222,12 +222,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the read for a scalar attribute
         !!
-        CLASS(scalar), INTENT(INOUT) :: me
-        INTEGER(i4k),  INTENT(IN)    :: unit
-        CHARACTER(*),  INTENT(IN)    :: iotype
-        INTEGER(i4k),  DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k),  INTENT(OUT)   :: iostat
-        CHARACTER(*),  INTENT(INOUT) :: iomsg
+        CLASS(scalar),    INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE scalar_read
 
@@ -237,10 +237,10 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the unformatted read for a scalar attribute
         !!
-        CLASS(scalar), INTENT(INOUT) :: me
-        INTEGER(i4k),  INTENT(IN)    :: unit
-        INTEGER(i4k),  INTENT(OUT)   :: iostat
-        CHARACTER(*),  INTENT(INOUT) :: iomsg
+        CLASS(scalar),    INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE scalar_read_unformatted
 
@@ -250,12 +250,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the write for a scalar attribute
         !!
-        CLASS(scalar), INTENT(IN)    :: me
-        INTEGER(i4k),  INTENT(IN)    :: unit
-        CHARACTER(*),  INTENT(IN)    :: iotype
-        INTEGER(i4k),  DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k),  INTENT(OUT)   :: iostat
-        CHARACTER(*),  INTENT(INOUT) :: iomsg
+        CLASS(scalar),    INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE scalar_write
 
@@ -265,10 +265,10 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the unformatted write for a scalar attribute
         !!
-        CLASS(scalar), INTENT(IN)    :: me
-        INTEGER(i4k),  INTENT(IN)    :: unit
-        INTEGER(i4k),  INTENT(OUT)   :: iostat
-        CHARACTER(*),  INTENT(INOUT) :: iomsg
+        CLASS(scalar),    INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE scalar_write_unformatted
 
@@ -308,12 +308,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the read for a vector attribute
         !!
-        CLASS(vector), INTENT(INOUT) :: me
-        INTEGER(i4k),  INTENT(IN)    :: unit
-        CHARACTER(*),  INTENT(IN)    :: iotype
-        INTEGER(i4k),  DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k),  INTENT(OUT)   :: iostat
-        CHARACTER(*),  INTENT(INOUT) :: iomsg
+        CLASS(vector),    INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE vector_read
 
@@ -323,12 +323,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the write for a vector attribute
         !!
-        CLASS(vector), INTENT(IN)    :: me
-        INTEGER(i4k),  INTENT(IN)    :: unit
-        CHARACTER(*),  INTENT(IN)    :: iotype
-        INTEGER(i4k),  DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k),  INTENT(OUT)   :: iostat
-        CHARACTER(*),  INTENT(INOUT) :: iomsg
+        CLASS(vector),    INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE vector_write
 
@@ -341,7 +341,7 @@ procedure :: write_unformatted
         CLASS(vector),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        REAL(r8k), DIMENSION(:,:),   INTENT(IN) :: values2d
+        REAL(r8k), DIMENSION(:,:), INTENT(IN)  :: values2d
 
         END SUBROUTINE vector_setup
 
@@ -365,12 +365,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the read for a normal attribute
         !!
-        CLASS(normal), INTENT(INOUT) :: me
-        INTEGER(i4k),  INTENT(IN)    :: unit
-        CHARACTER(*),  INTENT(IN)    :: iotype
-        INTEGER(i4k),  DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k),  INTENT(OUT)   :: iostat
-        CHARACTER(*),  INTENT(INOUT) :: iomsg
+        CLASS(normal),    INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE normal_read
 
@@ -380,12 +380,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the write for a normal attribute
         !!
-        CLASS(normal), INTENT(IN)    :: me
-        INTEGER(i4k),  INTENT(IN)    :: unit
-        CHARACTER(*),  INTENT(IN)    :: iotype
-        INTEGER(i4k),  DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k),  INTENT(OUT)   :: iostat
-        CHARACTER(*),  INTENT(INOUT) :: iomsg
+        CLASS(normal),    INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE normal_write
 
@@ -398,7 +398,7 @@ procedure :: write_unformatted
         CLASS(normal),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        REAL(r8k), DIMENSION(:,:), INTENT(IN) :: values2d
+        REAL(r8k), DIMENSION(:,:), INTENT(IN)  :: values2d
 
         END SUBROUTINE normal_setup
 
@@ -422,12 +422,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the read for a texture attribute
         !!
-        CLASS(texture), INTENT(INOUT) :: me
-        INTEGER(i4k),   INTENT(IN)    :: unit
-        CHARACTER(*),   INTENT(IN)    :: iotype
-        INTEGER(i4k),   DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k),   INTENT(OUT)   :: iostat
-        CHARACTER(*),   INTENT(INOUT) :: iomsg
+        CLASS(texture),   INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE texture_read
 
@@ -437,12 +437,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the write for a texture attribute
         !!
-        CLASS(texture), INTENT(IN)    :: me
-        INTEGER(i4k),   INTENT(IN)    :: unit
-        CHARACTER(*),   INTENT(IN)    :: iotype
-        INTEGER(i4k),   DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k),   INTENT(OUT)   :: iostat
-        CHARACTER(*),   INTENT(INOUT) :: iomsg
+        CLASS(texture),   INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE texture_write
 
@@ -455,7 +455,7 @@ procedure :: write_unformatted
         CLASS(texture),   INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        REAL(r8k), DIMENSION(:,:), INTENT(IN) :: values2d
+        REAL(r8k), DIMENSION(:,:), INTENT(IN)  :: values2d
 
         END SUBROUTINE texture_setup
 
@@ -479,12 +479,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the read for a tensor attribute
         !!
-        CLASS(tensor), INTENT(INOUT) :: me
-        INTEGER(i4k),  INTENT(IN)    :: unit
-        CHARACTER(*),  INTENT(IN)    :: iotype
-        INTEGER(i4k),  DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k),  INTENT(OUT)   :: iostat
-        CHARACTER(*),  INTENT(INOUT) :: iomsg
+        CLASS(tensor),    INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE tensor_read
 
@@ -494,12 +494,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the write for a tensor attribute
         !!
-        CLASS(tensor), INTENT(IN)    :: me
-        INTEGER(i4k),  INTENT(IN)    :: unit
-        CHARACTER(*),  INTENT(IN)    :: iotype
-        INTEGER(i4k),  DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k),  INTENT(OUT)   :: iostat
-        CHARACTER(*),  INTENT(INOUT) :: iomsg
+        CLASS(tensor),    INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE tensor_write
 
@@ -511,7 +511,7 @@ procedure :: write_unformatted
         !!
         CLASS(tensor),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL  :: datatype
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN) :: values3d
 
         END SUBROUTINE tensor_setup
@@ -536,12 +536,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the read for a field attribute
         !!
-        CLASS(field), INTENT(INOUT) :: me
-        INTEGER(i4k), INTENT(IN)    :: unit
-        CHARACTER(*), INTENT(IN)    :: iotype
-        INTEGER(i4k), DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k), INTENT(OUT)   :: iostat
-        CHARACTER(*), INTENT(INOUT) :: iomsg
+        CLASS(field),     INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE field_read
 
@@ -551,12 +551,12 @@ procedure :: write_unformatted
         !!
         !! Subroutine performs the write for a field attribute
         !!
-        CLASS(field), INTENT(IN)    :: me
-        INTEGER(i4k), INTENT(IN)    :: unit
-        CHARACTER(*), INTENT(IN)    :: iotype
-        INTEGER(i4k), DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k), INTENT(OUT)   :: iostat
-        CHARACTER(*), INTENT(INOUT) :: iomsg
+        CLASS(field),     INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE field_write
 
