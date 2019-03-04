@@ -1,4 +1,5 @@
 SUBMODULE (vtk_cells) vtk_cells_implementation
+    IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/2/2017
     !!
@@ -29,7 +30,6 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
 
         MODULE PROCEDURE read_formatted
         USE Misc, ONLY : interpret_string, def_len
-        !!
         !! Subroutine performs the read for a cell
         INTEGER(i4k)           :: i
         LOGICAL                :: end_of_file, ierr
@@ -64,6 +64,19 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
 100     FORMAT((a))
         END PROCEDURE read_formatted
 
+        MODULE PROCEDURE read_unformatted
+        USE Misc, ONLY : interpret_string, def_len
+        !! Subroutine performs the read for a cell
+        INTEGER(i4k) :: n_points
+
+        IF (ALLOCATED(me%points)) DEALLOCATE(me%points)
+
+        READ(unit,iostat=iostat) n_points
+        ALLOCATE(me%points(n_points))
+        READ(unit,iostat=iostat) me%points(1:n_points)
+
+        END PROCEDURE read_unformatted
+
         MODULE PROCEDURE write_formatted
         !! Writes the cell information to the .vtk file
         INTEGER(i4k) :: i
@@ -75,6 +88,15 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
 101     FORMAT ((a))
 
         END PROCEDURE write_formatted
+
+        MODULE PROCEDURE write_unformatted
+        !! Writes the cell information to the .vtk file
+        INTEGER(i4k) :: i
+
+        WRITE(unit,iostat=iostat) me%n_points, (me%points(i),i=1,me%n_points)
+        WRITE(unit,iostat=iostat) new_line('a')
+
+        END PROCEDURE write_unformatted
 
         MODULE PROCEDURE abs_setup
         !!

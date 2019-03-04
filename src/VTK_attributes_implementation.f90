@@ -121,9 +121,9 @@ end procedure write_unformatted
         !!
         !! Subroutine performs the read for a scalar attribute
         !!
-        INTEGER(i4k)               :: i
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
+        INTEGER(i4k)           :: i
+        LOGICAL                :: end_of_file
+        CHARACTER(LEN=def_len) :: line
         INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
         REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals, dummy
         CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
@@ -193,9 +193,9 @@ end procedure write_unformatted
         !!
         !! Subroutine performs the read for a scalar attribute
         !!
-        INTEGER(i4k)               :: i
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
+        INTEGER(i4k)           :: i
+        LOGICAL                :: end_of_file
+        CHARACTER(LEN=def_len) :: line
         INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
         REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals, dummy
         CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
@@ -405,10 +405,10 @@ WRITE(unit) me%reals(i)
         !!
         !! Subroutine performs the read for a vector attribute
         !!
-        INTEGER(i4k)               :: i
-        INTEGER(i4k),  PARAMETER   :: dim = 3
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
+        INTEGER(i4k)            :: i
+        INTEGER(i4k), PARAMETER :: dim = 3
+        LOGICAL                 :: end_of_file
+        CHARACTER(LEN=def_len)  :: line
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
         REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
@@ -520,10 +520,10 @@ WRITE(unit) me%reals(i)
         !!
         !! Subroutine performs the read for a normal attribute
         !!
-        INTEGER(i4k)               :: i
-        INTEGER(i4k),  PARAMETER   :: dim = 3
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
+        INTEGER(i4k)            :: i
+        INTEGER(i4k), PARAMETER :: dim = 3
+        LOGICAL                 :: end_of_file
+        CHARACTER(LEN=def_len)  :: line
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
         REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
@@ -635,9 +635,9 @@ WRITE(unit) me%reals(i)
         !!
         !! Subroutine performs the read for a texture attribute
         !!
-        INTEGER(i4k)                :: i, dim
-        LOGICAL                     :: end_of_file
-        CHARACTER(LEN=def_len)      :: line
+        INTEGER(i4k)           :: i, dim
+        LOGICAL                :: end_of_file
+        CHARACTER(LEN=def_len) :: line
         INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
@@ -752,9 +752,9 @@ WRITE(unit) me%reals(i)
         !!
         !! Subroutine performs the read for a tensor attribute
         !!
-        INTEGER(i4k)               :: i, j
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
+        INTEGER(i4k)           :: i, j
+        LOGICAL                :: end_of_file
+        CHARACTER(LEN=def_len) :: line
         REAL(r8k),          DIMENSION(:), ALLOCATABLE :: reals
         CHARACTER(LEN=:),   DIMENSION(:), ALLOCATABLE :: chars
         TYPE(tensor_array), DIMENSION(:), ALLOCATABLE :: dummy
@@ -894,14 +894,14 @@ WRITE(unit,101) me%tensors(i)%val(j,:)
         !!
         !! Subroutine performs the read for a field attribute
         !!
-        INTEGER(i4k)              :: i, j, dim
-        LOGICAL                   :: end_of_file
-        CHARACTER(LEN=def_len)    :: line
-        CHARACTER(*), PARAMETER   :: real_char = 'R'
-        REAL(r8k),              DIMENSION(:), ALLOCATABLE :: reals
-        INTEGER(i4k),           DIMENSION(:), ALLOCATABLE :: ints
-        CHARACTER(LEN=:),       DIMENSION(:), ALLOCATABLE :: chars
-        CHARACTER(LEN=1),       DIMENSION(:), ALLOCATABLE :: datatype
+        INTEGER(i4k)                :: i, j, dim
+        LOGICAL                     :: end_of_file
+        CHARACTER(LEN=def_len)      :: line
+        CHARACTER(LEN=*), PARAMETER :: real_char = 'R'
+        REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals
+        INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
+        CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
+        CHARACTER(LEN=1), DIMENSION(:), ALLOCATABLE :: datatype
 !        TYPE(field_data_array), DIMENSION(:), ALLOCATABLE :: dummy
 
         READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line

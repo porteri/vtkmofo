@@ -14,7 +14,7 @@ MODULE vtk_attributes_unit_tests
     INTEGER(i4k), PARAMETER :: n_types  = 7     !! # of attribute types
     INTEGER(i4k), PARAMETER :: n_tests = n_types * n_file_types !! Total # of tests
     INTEGER(i4k), PARAMETER :: vtk_unit = 20    !! File unit #
-    CHARACTER(LEN=11), DIMENSION(n_file_types), PARAMETER :: form = [ 'FORMATTED  ', 'UNFORMATTED' ]
+    CHARACTER(LEN=11), DIMENSION(n_file_types), PARAMETER :: form   = [ 'FORMATTED  ', 'UNFORMATTED' ]
     CHARACTER(LEN=10), DIMENSION(n_file_types), PARAMETER :: access = [ 'SEQUENTIAL', 'STREAM    ' ]
     CHARACTER(LEN=15), DIMENSION(n_types),      PARAMETER :: filename    = &
       & [ 'scalar.vtk     ', &
@@ -152,25 +152,25 @@ MODULE vtk_attributes_unit_tests
             DO j = 1, n_file_types
                 write(0,*) 'i= ',i,'j= ',j
                 if (j>1) cycle
-                SELECT CASE (trim(form(j)))
+                SELECT CASE (TRIM(form(j)))
                 CASE ('FORMATTED')
                     !! Write the data populated from above
-                    OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
+                    OPEN (unit=vtk_unit, file=TRIM(filename(i)), form=TRIM(form(j)), access=TRIM(access(j)))
                     WRITE(vtk_unit,FMT='(DT)') vtk_type_1
                     CLOSE(unit=vtk_unit)
 
                     !! Data type is generated from the read
-                    OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
+                    OPEN (unit=vtk_unit, file=TRIM(filename(i)), form=TRIM(form(j)), access=TRIM(access(j)))
                     READ(vtk_unit,FMT='(DT)') vtk_type_2
                     CLOSE(unit=vtk_unit)
                 CASE ('UNFORMATTED')
                     !! Write the data populated from above
-                    OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
+                    OPEN (unit=vtk_unit, file=TRIM(filename(i)), form=TRIM(form(j)), access=TRIM(access(j)))
                     WRITE(vtk_unit) vtk_type_1
                     CLOSE(unit=vtk_unit)
 
                     !! Data type is generated from the read
-                    OPEN (unit=vtk_unit, file=filename(i), form=trim(form(j)), access=TRIM(access(j)))
+                    OPEN (unit=vtk_unit, file=TRIM(filename(i)), form=TRIM(form(j)), access=TRIM(access(j)))
                     READ(vtk_unit) vtk_type_2
                     CLOSE(unit=vtk_unit)
                 END SELECT
