@@ -10,9 +10,13 @@ MODULE vtk_attributes_unit_tests
     PRIVATE
     PUBLIC :: vtk_attributes_unit
 ! Generic information
-    INTEGER(i4k), PARAMETER :: n_types  = 7
-    INTEGER(i4k), PARAMETER :: vtk_unit = 20
-    CHARACTER(LEN=15), DIMENSION(n_types), PARAMETER :: filename    = &
+    INTEGER(i4k), PARAMETER :: n_file_types = 2 !! # of file types (binary & ascii)
+    INTEGER(i4k), PARAMETER :: n_types  = 7     !! # of attribute types
+    INTEGER(i4k), PARAMETER :: n_tests = n_types * n_file_types !! Total # of tests
+    INTEGER(i4k), PARAMETER :: vtk_unit = 20    !! File unit #
+    CHARACTER(LEN=11), DIMENSION(n_file_types), PARAMETER :: form   = [ 'FORMATTED  ', 'UNFORMATTED' ]
+    CHARACTER(LEN=10), DIMENSION(n_file_types), PARAMETER :: access = [ 'SEQUENTIAL', 'STREAM    ' ]
+    CHARACTER(LEN=15), DIMENSION(n_types),      PARAMETER :: filename    = &
       & [ 'scalar.vtk     ', &
       &   'vector.vtk     ', &
       &   'normal.vtk     ', &
@@ -76,6 +80,7 @@ MODULE vtk_attributes_unit_tests
       &   40.0_r8k, 400.0_r8k ], [2,5] )
 
     CONTAINS
+
         SUBROUTINE vtk_attributes_unit (test_pass)
         USE Precision
         USE vtk_attributes, ONLY : attribute, scalar, vector, normal, texture, tensor, field
@@ -84,10 +89,11 @@ MODULE vtk_attributes_unit_tests
         !! Loops over each attribute type, performs a write, then performs a read on a different attribute
         !! and compares the two to make sure they are identical
         CLASS(attribute), ALLOCATABLE :: vtk_type_1, vtk_type_2
-        INTEGER(i4k)                  :: i
+        INTEGER(i4k)                  :: i, j, cnt
         LOGICAL, INTENT(OUT)          :: test_pass
-        LOGICAL, DIMENSION(n_types)   :: individual_tests_pass
+        LOGICAL, DIMENSION(n_tests/2) :: individual_tests_pass
 
+        cnt = 0
         DO i = 1, n_types
             IF (ALLOCATED(vtk_type_1)) DEALLOCATE(vtk_type_1)
             IF (ALLOCATED(vtk_type_2)) DEALLOCATE(vtk_type_2)
@@ -143,17 +149,36 @@ MODULE vtk_attributes_unit_tests
                 CALL vtk_type_1%init(dataname='field_temp_press', numcomp=1, field_arrays=array)
             END SELECT
 
-            OPEN (unit=vtk_unit, file=filename(i), form='formatted')
-            CALL vtk_type_1%write(vtk_unit)
-            CLOSE(unit=vtk_unit)
+            DO j = 1, n_file_types
+                write(0,*) 'i= ',i,'j= ',j
+                if (j>1) cycle
+                SELECT CASE (TRIM(form(j)))
+                CASE ('FORMATTED')
+                    !! Write the data populated from above
+                    OPEN (unit=vtk_unit, file=TRIM(filename(i)), form=TRIM(form(j)), access=TRIM(access(j)))
+                    WRITE(vtk_unit,FMT='(DT)') vtk_type_1
+                    CLOSE(unit=vtk_unit)
 
-            !! Data type is generated from the read
-            OPEN (unit=vtk_unit, file=filename(i), form='formatted')
-            CALL vtk_type_2%read(vtk_unit)
-            CLOSE(unit=vtk_unit)
+                    !! Data type is generated from the read
+                    OPEN (unit=vtk_unit, file=TRIM(filename(i)), form=TRIM(form(j)), access=TRIM(access(j)))
+                    READ(vtk_unit,FMT='(DT)') vtk_type_2
+                    CLOSE(unit=vtk_unit)
+                CASE ('UNFORMATTED')
+                    !! Write the data populated from above
+                    OPEN (unit=vtk_unit, file=TRIM(filename(i)), form=TRIM(form(j)), access=TRIM(access(j)))
+                    WRITE(vtk_unit) vtk_type_1
+                    CLOSE(unit=vtk_unit)
 
-            !! Compare the read file and the written/read file to ensure both types are the same
-            individual_tests_pass(i) = .NOT. (vtk_type_1 .diff. vtk_type_2)
+                    !! Data type is generated from the read
+                    OPEN (unit=vtk_unit, file=TRIM(filename(i)), form=TRIM(form(j)), access=TRIM(access(j)))
+                    READ(vtk_unit) vtk_type_2
+                    CLOSE(unit=vtk_unit)
+                END SELECT
+                !! Compare the read file and the written/read file to ensure both types are the same
+                cnt = cnt + 1
+                individual_tests_pass(cnt) = .NOT. (vtk_type_1 .diff. vtk_type_2)
+                write(0,*) 'test_pass= ',individual_tests_pass(cnt)
+            END DO
         END DO
 
         !! Compare the read file and the written/read file to ensure both types are the same

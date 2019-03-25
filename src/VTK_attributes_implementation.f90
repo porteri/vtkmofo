@@ -34,7 +34,12 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                                      !! that a class with intent(out) was not provided a value
         END SELECT
         END PROCEDURE abs_read
+module procedure read_unformatted
 
+end procedure read_unformatted
+
+module procedure write_unformatted
+end procedure write_unformatted
         MODULE PROCEDURE abs_write
         !! author: Ian Porter
         !! date: 12/13/2017
@@ -53,9 +58,29 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Abstract for performing the set-up of an attribute
         !!
+        INTEGER(i4k) :: my_numcomp
+        CHARACTER(LEN=:), ALLOCATABLE :: my_datatype, my_tablename
+
+        IF (PRESENT(datatype)) THEN
+            my_datatype = datatype
+        ELSE IF (PRESENT(ints1d)) THEN
+            my_datatype = 'int'
+        ELSE
+            my_datatype = 'double'
+        END IF
         SELECT TYPE (me)
         CLASS IS (scalar)
-            CALL me%setup(dataname, datatype, numcomp, tablename, ints1d, values1d)
+            IF (PRESENT(numcomp)) THEN
+                my_numcomp = numcomp
+            ELSE
+                my_numcomp = 1
+            END IF
+            IF (PRESENT(tablename)) THEN
+                my_tablename = tablename
+            ELSE
+                my_tablename = default
+            END IF
+            CALL me%setup(dataname, my_datatype, my_numcomp, tablename, ints1d, values1d)
         CLASS IS (vector)
             CALL me%setup(dataname, datatype, values2d)
         CLASS IS (normal)
@@ -96,21 +121,23 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a scalar attribute
         !!
-        INTEGER(i4k)               :: i, iostat
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
+        INTEGER(i4k)           :: i
+        LOGICAL                :: end_of_file
+        CHARACTER(LEN=def_len) :: line
         INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
         REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals, dummy
         CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=(/ 'C','C','I' /), ignore='SCALARS ', separator=' ', &
+        READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+
+        CALL interpret_string (line=line, datatype=[ 'C','C','I' ], ignore='SCALARS ', separator=' ', &
           &                    ints=ints, chars=chars)
         me%numcomp = ints(1); me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
         DEALLOCATE(ints)
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=(/ 'C' /), ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
+        READ(unit,FMT=100, IOSTAT=iostat, IOMSG=iomsg) line
+
+        CALL interpret_string (line=line, datatype=[ 'C' ], ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
         me%tablename = TRIM(chars(1))
 
         me%datatype = to_lowercase(me%datatype)
@@ -123,11 +150,84 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             ERROR STOP 'datatype not supported in scalar_read'
         END SELECT
 
-        end_of_file  = .FALSE.; i = 0
+        i = 0
+        get_scalars: DO
+            READ(unit,FMT=100, IOSTAT=iostat, IOMSG=iomsg) line
+            end_of_file = (is_iostat_end(iostat))
+            IF (end_of_file) THEN
+                EXIT get_scalars
+            ELSE IF (TRIM(line) == '') THEN
+                CYCLE     !! Skip blank lines
+            ELSE
+                SELECT CASE (TRIM(me%datatype))
+                CASE ('unsigned_int', 'int')
+                    ALLOCATE(ints(1:UBOUND(me%ints,DIM=1)+1),source=0_i4k)
+                    IF (i > 0) ints(1:UBOUND(me%ints,DIM=1)) = me%ints
+                    CALL MOVE_ALLOC(ints, me%ints)
+                    i = i + 1
+
+                    CALL interpret_string (line=line, datatype=[ 'I' ], separator=' ', ints=ints)
+                    me%ints(i) = ints(1)
+                    DEALLOCATE(ints)
+                CASE ('float', 'double')
+                    ALLOCATE(dummy(1:UBOUND(me%reals,DIM=1)+1),source=0.0_r8k)
+                    IF (i > 0) dummy(1:UBOUND(me%reals,DIM=1)) = me%reals
+                    CALL MOVE_ALLOC(dummy, me%reals)
+                    i = i + 1
+
+                    CALL interpret_string (line=line, datatype=[ 'R' ], separator=' ', reals=reals)
+                    me%reals(i) = reals(1)
+                CASE DEFAULT
+                    ERROR STOP 'datatype not supported in scalar_read'
+                END SELECT
+            END IF
+        END DO get_scalars
+
+100     FORMAT((a))
+        END PROCEDURE scalar_read
+
+        MODULE PROCEDURE scalar_read_unformatted
+        USE Misc, ONLY : interpret_string, to_lowercase
+        !! author: Ian Porter
+        !! date: 12/13/2017
+        !!
+        !! Subroutine performs the read for a scalar attribute
+        !!
+        INTEGER(i4k)           :: i
+        LOGICAL                :: end_of_file
+        CHARACTER(LEN=def_len) :: line
+        INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
+        REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals, dummy
+        CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
+
+        READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+write(0,*) 'line= ',line
+        CALL interpret_string (line=line, datatype=[ 'C','C','I' ], ignore='SCALARS ', separator=' ', &
+          &                    ints=ints, chars=chars)
+        me%numcomp = ints(1); me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
+        DEALLOCATE(ints)
+
+        READ(unit,FMT=100, IOSTAT=iostat, IOMSG=iomsg) line
+
+        CALL interpret_string (line=line, datatype=[ 'C' ], ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
+        me%tablename = TRIM(chars(1))
+
+        me%datatype = to_lowercase(me%datatype)
+        write(0,*) 'me%datatype= ',me%datatype
+        SELECT CASE (me%datatype)
+        CASE ('unsigned_int', 'int')
+            ALLOCATE(me%ints(0))
+        CASE ('float', 'double')
+            ALLOCATE(me%reals(0))
+        CASE DEFAULT
+            ERROR STOP 'datatype not supported in scalar_read'
+        END SELECT
+
+        i = 0
 
         get_scalars: DO
-            READ(unit,100,iostat=iostat) line
-            end_of_file = (iostat < 0)
+            READ(unit,FMT=100, IOSTAT=iostat, IOMSG=iomsg) line
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_scalars
             ELSE IF (TRIM(line) == '') THEN
@@ -140,7 +240,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     CALL MOVE_ALLOC(ints, me%ints)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
+                    CALL interpret_string (line=line, datatype=[ 'I' ], separator=' ', ints=ints)
                     me%ints(i) = ints(1)
                     DEALLOCATE(ints)
                 CASE ('float', 'double')
@@ -149,7 +249,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     CALL MOVE_ALLOC(dummy, me%reals)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=(/ 'R' /), separator=' ', reals=reals)
+                    CALL interpret_string (line=line, datatype=[ 'R' ], separator=' ', reals=reals)
                     me%reals(i) = reals(1)
                 CASE DEFAULT
                     ERROR STOP 'datatype not supported in scalar_read'
@@ -158,7 +258,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END DO get_scalars
 
 100     FORMAT((a))
-        END PROCEDURE scalar_read
+        END PROCEDURE scalar_read_unformatted
 
         MODULE PROCEDURE scalar_write
         !! author: Ian Porter
@@ -168,26 +268,58 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         INTEGER(i4k) :: i
 
-        WRITE(unit,100) me%dataname, me%datatype, me%numcomp
-        WRITE(unit,101) me%tablename
+        WRITE(unit,100) me%dataname, me%datatype, me%numcomp, new_line('(a)')
+        WRITE(unit,101) me%tablename, new_line('a')
         IF (ALLOCATED(me%reals)) THEN
             DO i = 1, SIZE(me%reals)
-                WRITE(unit,102) me%reals(i)
+                WRITE(unit,102) me%reals(i), new_line('a')
             END DO
         ELSE IF (ALLOCATED(me%ints)) THEN
             DO i = 1, SIZE(me%ints)
-                WRITE(unit,103) me%ints(i)
+                WRITE(unit,103) me%ints(i), new_line('a')
             END DO
         ELSE
             ERROR STOP 'Neither real or integer arrays are allocated for scalar_write'
         END IF
 
-100     FORMAT('SCALARS ',(a),' ',(a),' ',(i1))
-101     FORMAT('LOOKUP_TABLE ',(a))
-102     FORMAT(es13.6)
-103     FORMAT(i0)
+100     FORMAT('SCALARS ',(a),' ',(a),' ',(i1),(a))
+101     FORMAT('LOOKUP_TABLE ',(a),(a))
+102     FORMAT(es13.6,(a))
+103     FORMAT(i0,(a))
 
         END PROCEDURE scalar_write
+
+        MODULE PROCEDURE scalar_write_unformatted
+        !! author: Ian Porter
+        !! date: 2/11/2018
+        !!
+        !! Subroutine performs the unformatted write for a scalar attribute
+        !!
+        INTEGER(i4k) :: i
+
+!        WRITE(unit) 'SCALARS ' // me%dataname // ', ' // me%datatype // ', ' // me%numcomp
+        WRITE(unit) 'LOOKUP_TABLE ' // me%tablename // new_line('a')
+        IF (ALLOCATED(me%reals)) THEN
+            DO i = 1, SIZE(me%reals)
+!                WRITE(unit,102) me%reals(i)
+WRITE(unit) me%reals(i)
+                WRITE(unit) new_line('a')
+            END DO
+        ELSE IF (ALLOCATED(me%ints)) THEN
+            DO i = 1, SIZE(me%ints)
+                WRITE(unit,103) me%ints(i)
+                WRITE(unit) new_line('a')
+            END DO
+        ELSE
+            ERROR STOP 'Neither real or integer arrays are allocated for scalar_write'
+        END IF
+
+!100     FORMAT('SCALARS ',(a),' ',(a),' ',(i1),/)
+!101     FORMAT('LOOKUP_TABLE ',(a),/)
+102     FORMAT(es13.6,/)
+103     FORMAT(i0,/)
+
+        END PROCEDURE scalar_write_unformatted
 
         MODULE PROCEDURE scalar_setup
         !! author: Ian Porter
@@ -196,30 +328,23 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !! Subroutine performs the set-up for a scalar attribute
         !!
         me%dataname = dataname
-        IF (PRESENT(datatype)) THEN
-            me%datatype = datatype
-        ELSE IF (PRESENT(ints1d)) THEN
-            me%datatype = 'int'
-        ELSE
-            me%datatype = 'double'
-        END IF
-        IF (PRESENT(numcomp)) THEN
-            me%numcomp = numcomp
-        ELSE
-            me%numcomp = 1
-        END IF
-        IF (PRESENT(tablename)) THEN
-            me%tablename = tablename
-        ELSE
-            me%tablename = default
-        END IF
-        IF (PRESENT(ints1d)) THEN
+        me%datatype = datatype
+        me%numcomp = numcomp
+        me%tablename = tablename
+        SELECT CASE (datatype)
+        CASE ('int')
+            IF (.NOT. PRESENT(ints1d) .OR. .NOT. (SIZE(ints1d) > 0)) THEN
+                ERROR STOP 'Must have input array of integers. Terminated in scalar_setup'
+            END IF
             me%ints = ints1d
-        ELSE IF (PRESENT(values1d)) THEN
+        CASE ('double')
+            IF (.NOT. PRESENT(values1d) .OR. .NOT. (SIZE(values1d) > 0)) THEN
+                ERROR STOP 'Must have input array of reals. Terminated in scalar_setup'
+            END IF
             me%reals = values1d
-        ELSE
-            ERROR STOP 'Must provide either array of integers or reals in scalar_setup'
-        END IF
+        CASE DEFAULT
+            ERROR STOP 'Unsupported datatype in scalar_setup'
+        END SELECT
 
         END PROCEDURE scalar_setup
 
@@ -246,17 +371,25 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                 ELSE IF (me%tablename /= you%tablename) THEN
                     diffs = .TRUE.
                 ELSE IF (ALLOCATED(me%reals))           THEN
-                    DO i = 1, UBOUND(me%reals,DIM=1)
-                        IF (me%reals(i) /= you%reals(i))THEN
-                            diffs = .TRUE.
-                        END IF
-                    END DO
+                    IF (SIZE(me%reals) /= SIZE(you%reals)) THEN
+                        diffs = .TRUE.
+                    ELSE
+                        DO i = 1, UBOUND(me%reals,DIM=1)
+                            IF (me%reals(i) /= you%reals(i))THEN
+                                diffs = .TRUE.
+                            END IF
+                        END DO
+                    END IF
                 ELSE IF (ALLOCATED(me%ints))            THEN
-                    DO i = 1, UBOUND(me%ints,DIM=1)
-                        IF (me%ints(i) /= you%ints(i))  THEN
-                            diffs = .TRUE.
-                        END IF
-                    END DO
+                    IF (SIZE(me%ints) /= SIZE(you%ints)) THEN
+                        diffs = .TRUE.
+                    ELSE
+                        DO i = 1, UBOUND(me%ints,DIM=1)
+                            IF (me%ints(i) /= you%ints(i))THEN
+                                diffs = .TRUE.
+                            END IF
+                        END DO
+                    END IF
                 END IF
             END SELECT
         END IF
@@ -272,23 +405,23 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a vector attribute
         !!
-        INTEGER(i4k)               :: i, iostat
-        INTEGER(i4k),  PARAMETER   :: dim = 3
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
+        INTEGER(i4k)            :: i
+        INTEGER(i4k), PARAMETER :: dim = 3
+        LOGICAL                 :: end_of_file
+        CHARACTER(LEN=def_len)  :: line
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
         REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=(/ 'C','C' /), ignore='VECTORS ', separator=' ', chars=chars)
+        READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+        CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='VECTORS ', separator=' ', chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
 
-        ALLOCATE(me%vectors(0,0)); end_of_file = .FALSE.; i = 0
+        ALLOCATE(me%vectors(0,0)); i = 0
 
         get_vectors: DO
-            READ(unit,100,iostat=iostat) line
-            end_of_file = (iostat < 0)
+            READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_vectors
             ELSE IF (TRIM(line) == '') THEN
@@ -299,7 +432,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                 CALL MOVE_ALLOC(dummy, me%vectors)
                 i = i + 1
 
-                CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), separator=' ', reals=reals)
+                CALL interpret_string (line=line, datatype=[ 'R','R','R' ], separator=' ', reals=reals)
                 me%vectors(i,1:dim) = reals(1:dim)
             END IF
         END DO get_vectors
@@ -315,13 +448,15 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         INTEGER(i4k) :: i
 
-        WRITE(unit,100) me%dataname, me%datatype
+        WRITE(unit,100) me%dataname, me%datatype, new_line('a')
         DO i = 1, SIZE(me%vectors,DIM=1)
             WRITE(unit,101) me%vectors(i,1:3)
+            WRITE(unit,102) new_line('a')
         END DO
 
-100     FORMAT('VECTORS ',(a),' ',(a))
+100     FORMAT('VECTORS ',(a),' ',(a),(a))
 101     FORMAT(*(es13.6,' '))
+102     FORMAT((a))
         END PROCEDURE vector_write
 
         MODULE PROCEDURE vector_setup
@@ -358,6 +493,10 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     diffs = .TRUE.
                 ELSE IF (me%datatype /= you%datatype)   THEN
                     diffs = .TRUE.
+                ELSE IF (SIZE(me%vectors,DIM=1) /= SIZE(you%vectors,DIM=1)) THEN
+                     diffs = .TRUE.
+                ELSE IF (SIZE(me%vectors,DIM=2) /= SIZE(you%vectors,DIM=2)) THEN
+                     diffs = .TRUE.
                 ELSE
                     DO i = 1, UBOUND(me%vectors,DIM=1)
                         DO j = 1, UBOUND(me%vectors,DIM=2)
@@ -381,23 +520,23 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a normal attribute
         !!
-        INTEGER(i4k)               :: i, iostat
-        INTEGER(i4k),  PARAMETER   :: dim = 3
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
+        INTEGER(i4k)            :: i
+        INTEGER(i4k), PARAMETER :: dim = 3
+        LOGICAL                 :: end_of_file
+        CHARACTER(LEN=def_len)  :: line
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
         REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=(/ 'C','C' /), ignore='NORMALS ', separator=' ', chars=chars)
+        READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+        CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='NORMALS ', separator=' ', chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
 
-        ALLOCATE(me%normals(0,0)); end_of_file = .FALSE.; i = 0
+        ALLOCATE(me%normals(0,0)); i = 0
 
         get_normals: DO
-            READ(unit,100,iostat=iostat) line
-            end_of_file = (iostat < 0)
+            READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_normals
             ELSE IF (TRIM(line) == '') THEN
@@ -408,7 +547,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                 CALL MOVE_ALLOC(dummy, me%normals)
                 i = i + 1
 
-                CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), separator=' ', reals=reals)
+                CALL interpret_string (line=line, datatype=[ 'R','R','R' ], separator=' ', reals=reals)
                 me%normals(i,1:dim) = reals(1:dim)
             END IF
         END DO get_normals
@@ -424,18 +563,20 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         INTEGER(i4k) :: i
 
-        WRITE(unit,100) me%dataname, me%datatype
+        WRITE(unit,100) me%dataname, me%datatype, new_line('a')
         DO i = 1, SIZE(me%normals,DIM=1)
             WRITE(unit,101) me%normals(i,1:3)
+            WRITE(unit,102) new_line('a')
         END DO
 
-100     FORMAT('NORMALS ',(a),' ',(a))
+100     FORMAT('NORMALS ',(a),' ',(a),(a))
 101     FORMAT(*(es13.6,' '))
+102     FORMAT((a))
         END PROCEDURE normal_write
 
         MODULE PROCEDURE normal_setup
         !! author: Ian Porter
-        !! date: 12/14/2017        
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the set-up for a normal attribute
         !!
@@ -467,6 +608,10 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     diffs = .TRUE.
                 ELSE IF (me%datatype /= you%datatype)   THEN
                     diffs = .TRUE.
+                ELSE IF (SIZE(me%normals,DIM=1) /= SIZE(you%normals,DIM=1)) THEN
+                     diffs = .TRUE.
+                ELSE IF (SIZE(me%normals,DIM=2) /= SIZE(you%normals,DIM=2)) THEN
+                     diffs = .TRUE.
                 ELSE
                     DO i = 1, UBOUND(me%normals,DIM=1)
                         DO j = 1, UBOUND(me%normals,DIM=2)
@@ -490,25 +635,25 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a texture attribute
         !!
-        INTEGER(i4k)                :: i, iostat, dim
-        LOGICAL                     :: end_of_file
-        CHARACTER(LEN=def_len)      :: line
+        INTEGER(i4k)           :: i, dim
+        LOGICAL                :: end_of_file
+        CHARACTER(LEN=def_len) :: line
         INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
         REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
-        CHARACTER(LEN=1), DIMENSION(3),   PARAMETER   :: datatype = (/ 'R','R','R' /)
+        CHARACTER(LEN=1), DIMENSION(3),   PARAMETER   :: datatype = [ 'R','R','R' ]
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=(/ 'C','I','C' /), ignore='TEXTURE_COORDINATES ', separator=' ', &
+        READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+        CALL interpret_string (line=line, datatype=[ 'C','I','C' ], ignore='TEXTURE_COORDINATES ', separator=' ', &
           &                    ints=ints, chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2)); dim = ints(1)
 
-        ALLOCATE(me%textures(0,0)); end_of_file = .FALSE.; i = 0
+        ALLOCATE(me%textures(0,0)); i = 0
 
         get_textures: DO
-            READ(unit,100,iostat=iostat) line
-            end_of_file = (iostat < 0)
+            READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_textures
             ELSE IF (TRIM(line) == '') THEN
@@ -535,13 +680,15 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         INTEGER(i4k) :: i
 
-        WRITE(unit,100) me%dataname, SIZE(me%textures,DIM=2), me%datatype
+        WRITE(unit,100) me%dataname, SIZE(me%textures,DIM=2), me%datatype, new_line('a')
         DO i = 1, SIZE(me%textures,DIM=1)
             WRITE(unit,101) me%textures(i,:)
+            WRITE(unit,102) new_line('a')
         END DO
 
-100     FORMAT('TEXTURE_COORDINATES ',(a),' ',(i1),' ',(a))
+100     FORMAT('TEXTURE_COORDINATES ',(a),' ',(i1),' ',(a),(a))
 101     FORMAT(*(es13.6,' '))
+102     FORMAT((a))
         END PROCEDURE texture_write
 
         MODULE PROCEDURE texture_setup
@@ -578,6 +725,10 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     diffs = .TRUE.
                 ELSE IF (me%datatype /= you%datatype)   THEN
                     diffs = .TRUE.
+                ELSE IF (SIZE(me%textures,DIM=1) /= SIZE(you%textures,DIM=1)) THEN
+                     diffs = .TRUE.
+                ELSE IF (SIZE(me%textures,DIM=2) /= SIZE(you%textures,DIM=2)) THEN
+                     diffs = .TRUE.
                 ELSE
                     DO i = 1, UBOUND(me%textures,DIM=1)
                         DO j = 1, UBOUND(me%textures,DIM=2)
@@ -601,23 +752,23 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a tensor attribute
         !!
-        INTEGER(i4k)               :: i, j, iostat
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
+        INTEGER(i4k)           :: i, j
+        LOGICAL                :: end_of_file
+        CHARACTER(LEN=def_len) :: line
         REAL(r8k),          DIMENSION(:), ALLOCATABLE :: reals
         CHARACTER(LEN=:),   DIMENSION(:), ALLOCATABLE :: chars
         TYPE(tensor_array), DIMENSION(:), ALLOCATABLE :: dummy
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=(/ 'C','C' /), ignore='TENSORS ', separator=' ', &
+        READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+        CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='TENSORS ', separator=' ', &
           &                    chars=chars)
         me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
 
-        ALLOCATE(me%tensors(0)); end_of_file = .FALSE.; i = 0
+        ALLOCATE(me%tensors(0)); i = 0
 
         get_tensors: DO
-            READ(unit,100,iostat=iostat) line
-            end_of_file = (iostat < 0)
+            READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_tensors
             ELSE IF (TRIM(line) == '') THEN
@@ -629,8 +780,8 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                 i = i + 1
 
                 DO j = 1, UBOUND(me%tensors(i)%val,DIM=1)
-                    IF (j > 1) READ(unit,100,iostat=iostat) line
-                    CALL interpret_string (line=line, datatype=(/ 'R','R','R' /), separator=' ', reals=reals)
+                    IF (j > 1) READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+                    CALL interpret_string (line=line, datatype=[ 'R','R','R' ], separator=' ', reals=reals)
                     me%tensors(i)%val(j,1:3) = reals(1:3)
                 END DO
 
@@ -647,18 +798,24 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !! Subroutine performs the write for a tensor attribute
         !!
         INTEGER(i4k) :: i, j
+        CHARACTER(LEN=:), ALLOCATABLE :: string_to_write
 
-        WRITE(unit,100) me%dataname, me%datatype
+        WRITE(unit,100) me%dataname, me%datatype, new_line('a')
         DO i = 1, SIZE(me%tensors,DIM=1)
             DO j = 1, SIZE(me%tensors(i)%val,DIM=1)
-                WRITE(unit,101) me%tensors(i)%val(j,:)
+!                ALLOCATE(string_to_write(1:14*SIZE(me%tensors(i)%val,DIM=2)))
+!                WRITE(string_to_write,101) me%tensors(i)%val(j,:)
+WRITE(unit,101) me%tensors(i)%val(j,:)
+!                WRITE(unit,101) string_to_write, new_line('a')
+                WRITE(unit,102) new_line('a')
+!                DEALLOCATE(string_to_write)
             END DO
-            WRITE(unit,102)
+            WRITE(unit,102) new_line('a')
         END DO
 
-100     FORMAT('TENSORS ',(a),' ',(a))
-101     FORMAT(*(es13.6,' '))
-102     FORMAT()
+100     FORMAT('TENSORS ',(a),' ',(a),(a))
+101     FORMAT(*(es13.6,' '),(a))
+102     FORMAT((a))
         END PROCEDURE tensor_write
 
         MODULE PROCEDURE tensor_setup
@@ -704,15 +861,23 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     diffs = .TRUE.
                 ELSE IF (me%datatype /= you%datatype)   THEN
                     diffs = .TRUE.
+                ELSE IF (SIZE(me%tensors,DIM=1) /= SIZE(you%tensors,DIM=1)) THEN
+                     diffs = .TRUE.
                 ELSE
                     DO i = 1, UBOUND(me%tensors,DIM=1)
-                        DO j = 1, UBOUND(me%tensors(i)%val,DIM=1)
-                            DO k = 1, UBOUND(me%tensors(i)%val,DIM=2)
-                                IF (me%tensors(i)%val(j,k) /= you%tensors(i)%val(j,k)) THEN
-                                    diffs = .TRUE.
-                                END IF
+                        IF (SIZE(me%tensors(i)%val,DIM=1) /= SIZE(you%tensors(i)%val,DIM=1)) THEN
+                            diffs = .TRUE.
+                        ELSE IF (SIZE(me%tensors(i)%val,DIM=2) /= SIZE(you%tensors(i)%val,DIM=2)) THEN
+                            diffs = .TRUE.
+                        ELSE
+                            DO j = 1, UBOUND(me%tensors(i)%val,DIM=1)
+                                DO k = 1, UBOUND(me%tensors(i)%val,DIM=2)
+                                    IF (me%tensors(i)%val(j,k) /= you%tensors(i)%val(j,k)) THEN
+                                        diffs = .TRUE.
+                                    END IF
+                                END DO
                             END DO
-                        END DO
+                        END IF
                     END DO
                 END IF
             END SELECT
@@ -729,26 +894,26 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a field attribute
         !!
-        INTEGER(i4k)              :: i, j, iostat, dim
-        LOGICAL                   :: end_of_file
-        CHARACTER(LEN=def_len)    :: line
-        CHARACTER(*), PARAMETER   :: real_char = 'R'
-        REAL(r8k),              DIMENSION(:), ALLOCATABLE :: reals
-        INTEGER(i4k),           DIMENSION(:), ALLOCATABLE :: ints
-        CHARACTER(LEN=:),       DIMENSION(:), ALLOCATABLE :: chars
-        CHARACTER(LEN=1),       DIMENSION(:), ALLOCATABLE :: datatype
+        INTEGER(i4k)                :: i, j, dim
+        LOGICAL                     :: end_of_file
+        CHARACTER(LEN=def_len)      :: line
+        CHARACTER(LEN=*), PARAMETER :: real_char = 'R'
+        REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals
+        INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
+        CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
+        CHARACTER(LEN=1), DIMENSION(:), ALLOCATABLE :: datatype
 !        TYPE(field_data_array), DIMENSION(:), ALLOCATABLE :: dummy
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=(/ 'C','I' /), ignore='FIELD ', separator=' ', &
+        READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+        CALL interpret_string (line=line, datatype=[ 'C','I' ], ignore='FIELD ', separator=' ', &
           &                    ints=ints, chars=chars)
         me%dataname = TRIM(chars(1)); dim = ints(1)
 
-        ALLOCATE(me%array(1:dim)); end_of_file = .FALSE.; i = 0
+        ALLOCATE(me%array(1:dim)); i = 0
 
         get_fields: DO
-            READ(unit,100,iostat=iostat) line
-            end_of_file = (iostat < 0)
+            READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
+            end_of_file = (is_iostat_end(iostat))
             IF (end_of_file) THEN
                 EXIT get_fields
             ELSE IF (TRIM(line) == '') THEN
@@ -759,14 +924,14 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !                CALL MOVE_ALLOC(dummy, me%array)
                 i = i + 1
 
-                CALL interpret_string (line=line, datatype=(/ 'C','I','I','C' /), separator=' ', chars=chars, ints=ints)
+                CALL interpret_string (line=line, datatype=[ 'C','I','I','C' ], separator=' ', chars=chars, ints=ints)
                 me%array(i)%name = TRIM(chars(1)); me%array(i)%numComponents = ints(1)
                 me%array(i)%numTuples = ints(2); me%array(i)%datatype = chars(2)
                 ALLOCATE(datatype(1:me%array(i)%numComponents),source=real_char)
                 ALLOCATE(me%array(i)%data(1:me%array(i)%numTuples,1:me%array(i)%numComponents),source=0.0_r8k)
 
                 DO j = 1, me%array(i)%numTuples
-                    READ(unit,100,iostat=iostat) line
+                    READ(unit,FMT=100,IOSTAT=iostat,IOMSG=iomsg) line
                     CALL interpret_string (line=line, datatype=datatype, separator=' ', reals=reals)
                     me%array(i)%data(j,:) = reals(:)
                 END DO
@@ -780,25 +945,26 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         MODULE PROCEDURE field_write
         !! author: Ian Porter
-        !! date: 12/13/2017        
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a field attribute
         !!
         INTEGER(i4k) :: i, j
 
-        WRITE(unit,100) me%dataname, SIZE(me%array,DIM=1)
+        WRITE(unit,100) me%dataname, SIZE(me%array,DIM=1), new_line('a')
         DO i = 1, SIZE(me%array,DIM=1)
-            WRITE(unit,101) me%array(i)%name, me%array(i)%numComponents, me%array(i)%numTuples, me%array(i)%datatype
+            WRITE(unit,101) me%array(i)%name, me%array(i)%numComponents, me%array(i)%numTuples, me%array(i)%datatype, new_line('a')
             DO j = 1, me%array(i)%numTuples
                 WRITE(unit,102) me%array(i)%data(j,:)
+                WRITE(unit,103) new_line('a')
             END DO
-            WRITE(unit,103)
+            WRITE(unit,103) new_line('a')
         END DO
 
-100     FORMAT('FIELD ',(a),' ',(i0))
-101     FORMAT((a),' ',(i0),' ',(i0),' ',(a))
+100     FORMAT('FIELD ',(a),' ',(i0),(a))
+101     FORMAT((a),' ',(i0),' ',(i0),' ',(a),(a))
 102     FORMAT(*(es13.6,' '))
-103     FORMAT()
+103     FORMAT((a))
         END PROCEDURE field_write
 
         MODULE PROCEDURE field_setup

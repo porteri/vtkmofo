@@ -61,7 +61,7 @@ PROGRAM Cylinder_test
     END DO
 
     vals(:,1) = temp(:)
-    dims = (/ n_x, n_y, n_z /)
+    dims = [ n_x, n_y, n_z ]
 
     CALL cylinder%init (dims=dims, points=points)
 

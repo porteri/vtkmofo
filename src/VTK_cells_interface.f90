@@ -39,12 +39,16 @@ MODULE vtk_cells
         INTEGER(i4k) :: type     = 0
         INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: points
     CONTAINS
-        PROCEDURE, PUBLIC :: read  => abs_read
-        PROCEDURE, PUBLIC :: write => abs_write
-        PROCEDURE, PUBLIC :: setup => abs_setup
+        PROCEDURE, PRIVATE :: read_formatted, read_unformatted
+        GENERIC, PUBLIC    :: READ(FORMATTED)    => read_formatted
+        GENERIC, PUBLIC    :: READ(UNFORMATTED)  => read_unformatted
+        PROCEDURE, PRIVATE :: write_formatted, write_unformatted
+        GENERIC, PUBLIC    :: WRITE(FORMATTED)   => write_formatted
+        GENERIC, PUBLIC    :: WRITE(UNFORMATTED) => write_unformatted
+        PROCEDURE, PUBLIC  :: setup => abs_setup
         PROCEDURE(abs_init), DEFERRED, PRIVATE :: init
         PROCEDURE, PRIVATE :: check_for_diffs
-        GENERIC :: OPERATOR(.diff.) => check_for_diffs
+        GENERIC, PUBLIC    :: OPERATOR(.diff.) => check_for_diffs
     END TYPE vtkcell
 
     TYPE vtkcell_list
@@ -149,21 +153,45 @@ MODULE vtk_cells
 
     INTERFACE
 
-        MODULE SUBROUTINE abs_read (me, unit)
-        !!
-        !! Subroutine performs the read for a cell
-        CLASS(vtkcell), INTENT(OUT) :: me
-        INTEGER(i4k),   INTENT(IN)  :: unit
+        MODULE SUBROUTINE read_formatted (me, unit, iotype, v_list, iostat, iomsg)
+        !! Subroutine performs a formatted read for a cell
+        CLASS(vtkcell),   INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
-        END SUBROUTINE abs_read
+        END SUBROUTINE read_formatted
 
-        MODULE SUBROUTINE abs_write (me, unit)
-        !!
-        !! Writes the cell information to the .vtk file
-        CLASS(vtkcell), INTENT(IN) :: me
-        INTEGER(i4k),   INTENT(IN) :: unit
+        MODULE SUBROUTINE read_unformatted (me, unit, iostat, iomsg)
+        !! Subroutine performs an unformatted read for a cell
+        CLASS(vtkcell),   INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
-        END SUBROUTINE abs_write
+        END SUBROUTINE read_unformatted
+
+        MODULE SUBROUTINE write_formatted (me, unit, iotype, v_list, iostat, iomsg)
+        !! Subroutine performs a formatted write for a cell
+        CLASS(vtkcell),   INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
+
+        END SUBROUTINE write_formatted
+
+        MODULE SUBROUTINE write_unformatted (me, unit, iostat, iomsg)
+        !! Subroutine performs an unformatted write for a cell
+        CLASS(vtkcell),   INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
+
+        END SUBROUTINE write_unformatted
 
         MODULE SUBROUTINE abs_setup (me, points)
         !!

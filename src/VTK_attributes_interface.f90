@@ -25,9 +25,17 @@ MODULE vtk_attributes
         CHARACTER(LEN=:), ALLOCATABLE :: dataname
         CHARACTER(LEN=:), ALLOCATABLE :: datatype
     CONTAINS
-        PROCEDURE(abs_read),  DEFERRED, PUBLIC :: read
-        PROCEDURE(abs_write), DEFERRED, PUBLIC :: write
-        PROCEDURE, NON_OVERRIDABLE,     PUBLIC :: init => initialize  !! Initialize the attribute
+        PROCEDURE(abs_read),        DEFERRED :: read
+!        PROCEDURE(abs_read_unformatted), DEFERRED :: read_unformatted
+procedure :: read_unformatted
+        GENERIC   :: READ(FORMATTED) => read
+        GENERIC   :: READ(UNFORMATTED) => read_unformatted
+        PROCEDURE(abs_write), DEFERRED :: write
+!        PROCEDURE(abs_write_unformatted), DEFERRED :: write_unformatted
+procedure :: write_unformatted
+        GENERIC   :: WRITE(FORMATTED) => write
+        GENERIC   :: WRITE(UNFORMATTED) => write_unformatted
+        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: init => initialize  !! Initialize the attribute
         PROCEDURE, PRIVATE :: check_for_diffs
         GENERIC :: OPERATOR(.diff.) => check_for_diffs
     END TYPE attribute
@@ -40,7 +48,9 @@ MODULE vtk_attributes
         REAL(r8k),    DIMENSION(:), ALLOCATABLE :: reals
     CONTAINS
         PROCEDURE :: read  => scalar_read
+        PROCEDURE :: read_unformatted  => scalar_read_unformatted
         PROCEDURE :: write => scalar_write
+        PROCEDURE :: write_unformatted => scalar_write_unformatted
         PROCEDURE :: setup => scalar_setup
         PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_scalar
     END TYPE scalar
@@ -116,27 +126,61 @@ MODULE vtk_attributes
 
     INTERFACE
 
-        MODULE SUBROUTINE abs_read (me, unit)
+        MODULE SUBROUTINE abs_read (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
-        !! date: 12/13/2017
+        !! date: 2/4/2019
         !!
-        !! Abstract for reading an attribute
+        !! Abstract read
         !!
-        CLASS(attribute), INTENT(OUT) :: me
-        INTEGER(i4k),     INTENT(IN)  :: unit
+        CLASS(attribute), INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE abs_read
 
-        MODULE SUBROUTINE abs_write (me, unit)
+        MODULE SUBROUTINE read_unformatted (me, unit, iostat, iomsg)
         !! author: Ian Porter
-        !! date: 12/13/2017
+        !! date: 2/11/2019
         !!
-        !! Abstract for writing an attribute
+        !! Abstract unformatted read
         !!
-        CLASS(attribute), INTENT(IN) :: me
-        INTEGER(i4k),     INTENT(IN) :: unit
+        CLASS(attribute), INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
+
+        END SUBROUTINE read_unformatted
+
+        MODULE SUBROUTINE abs_write (me, unit, iotype, v_list, iostat, iomsg)
+        !! author: Ian Porter
+        !! date: 2/4/2019
+        !!
+        !! Abstract write
+        !!
+        CLASS(attribute), INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE abs_write
+
+        MODULE SUBROUTINE write_unformatted (me, unit, iostat, iomsg)
+        !! author: Ian Porter
+        !! date: 2/11/2019
+        !!
+        !! Abstract unformatted write
+        !!
+        CLASS(attribute), INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
+
+        END SUBROUTINE write_unformatted
 
         MODULE SUBROUTINE initialize (me, dataname, datatype, numcomp, tablename, ints1d, ints2d, ints3d, &
           &                           values1d, values2d, values3d, field_arrays)
@@ -161,7 +205,7 @@ MODULE vtk_attributes
 
         MODULE FUNCTION check_for_diffs (me, you) RESULT (diffs)
         !! author: Ian Porter
-        !! date: 12/13/2017        
+        !! date: 12/13/2017
         !!
         !! Function checks for differences in an attribute
         !!
@@ -172,27 +216,61 @@ MODULE vtk_attributes
 !********
 ! Scalars
 !********
-        MODULE SUBROUTINE scalar_read (me, unit)
+        MODULE SUBROUTINE scalar_read (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
-        !! date: 12/13/2017
+        !! date: 2/4/2019
         !!
         !! Subroutine performs the read for a scalar attribute
         !!
-        CLASS(scalar), INTENT(OUT) :: me
-        INTEGER(i4k),  INTENT(IN)  :: unit
+        CLASS(scalar),    INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE scalar_read
 
-        MODULE SUBROUTINE scalar_write (me, unit)
+        MODULE SUBROUTINE scalar_read_unformatted (me, unit, iostat, iomsg)
         !! author: Ian Porter
-        !! date: 12/13/2017
+        !! date: 2/4/2019
+        !!
+        !! Subroutine performs the unformatted read for a scalar attribute
+        !!
+        CLASS(scalar),    INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
+
+        END SUBROUTINE scalar_read_unformatted
+
+        MODULE SUBROUTINE scalar_write(me, unit, iotype, v_list, iostat, iomsg)
+        !! author: Ian Porter
+        !! date: 2/4/2019
         !!
         !! Subroutine performs the write for a scalar attribute
         !!
-        CLASS(scalar), INTENT(IN) :: me
-        INTEGER(i4k),  INTENT(IN) :: unit
+        CLASS(scalar),    INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE scalar_write
+
+        MODULE SUBROUTINE scalar_write_unformatted (me, unit, iostat, iomsg)
+        !! author: Ian Porter
+        !! date: 2/4/2019
+        !!
+        !! Subroutine performs the unformatted write for a scalar attribute
+        !!
+        CLASS(scalar),    INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
+
+        END SUBROUTINE scalar_write_unformatted
 
         MODULE SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, ints1d, values1d)
         !! author: Ian Porter
@@ -202,9 +280,9 @@ MODULE vtk_attributes
         !!
         CLASS(scalar),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
-        INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: tablename
+        INTEGER(i4k),     INTENT(IN)  :: numcomp
+        CHARACTER(LEN=*), INTENT(IN)  :: datatype
+        CHARACTER(LEN=*), INTENT(IN)  :: tablename
         INTEGER(i4k), DIMENSION(:), INTENT(IN), OPTIONAL :: ints1d
         REAL(r8k),    DIMENSION(:), INTENT(IN), OPTIONAL :: values1d
 
@@ -224,25 +302,33 @@ MODULE vtk_attributes
 !********
 ! Vectors
 !********
-        MODULE SUBROUTINE vector_read (me, unit)
+        MODULE SUBROUTINE vector_read (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
-        !! date: 12/14/2017        
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a vector attribute
         !!
-        CLASS(vector), INTENT(OUT) :: me
-        INTEGER(i4k),  INTENT(IN)  :: unit
+        CLASS(vector),    INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE vector_read
 
-        MODULE SUBROUTINE vector_write (me, unit)
+        MODULE SUBROUTINE vector_write(me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
-        !! date: 12/13/2017        
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a vector attribute
         !!
-        CLASS(vector), INTENT(IN) :: me
-        INTEGER(i4k),  INTENT(IN) :: unit
+        CLASS(vector),    INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE vector_write
 
@@ -255,7 +341,7 @@ MODULE vtk_attributes
         CLASS(vector),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        REAL(r8k), DIMENSION(:,:),   INTENT(IN) :: values2d
+        REAL(r8k), DIMENSION(:,:), INTENT(IN)  :: values2d
 
         END SUBROUTINE vector_setup
 
@@ -273,25 +359,33 @@ MODULE vtk_attributes
 !********
 ! Normals
 !********
-        MODULE SUBROUTINE normal_read (me, unit)
+        MODULE SUBROUTINE normal_read (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a normal attribute
         !!
-        CLASS(normal), INTENT(OUT) :: me
-        INTEGER(i4k),  INTENT(IN)  :: unit
+        CLASS(normal),    INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE normal_read
 
-        MODULE SUBROUTINE normal_write (me, unit)
+        MODULE SUBROUTINE normal_write (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a normal attribute
         !!
-        CLASS(normal), INTENT(IN) :: me
-        INTEGER(i4k),  INTENT(IN) :: unit
+        CLASS(normal),    INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE normal_write
 
@@ -304,7 +398,7 @@ MODULE vtk_attributes
         CLASS(normal),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        REAL(r8k), DIMENSION(:,:), INTENT(IN) :: values2d
+        REAL(r8k), DIMENSION(:,:), INTENT(IN)  :: values2d
 
         END SUBROUTINE normal_setup
 
@@ -322,25 +416,33 @@ MODULE vtk_attributes
 !********
 ! Textures
 !********
-        MODULE SUBROUTINE texture_read (me, unit)
+        MODULE SUBROUTINE texture_read (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a texture attribute
         !!
-        CLASS(texture), INTENT(OUT) :: me
-        INTEGER(i4k),   INTENT(IN)  :: unit
+        CLASS(texture),   INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE texture_read
 
-        MODULE SUBROUTINE texture_write (me, unit)
+        MODULE SUBROUTINE texture_write (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
-        !! date: 12/13/2017        
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a texture attribute
         !!
-        CLASS(texture), INTENT(IN) :: me
-        INTEGER(i4k),   INTENT(IN) :: unit
+        CLASS(texture),   INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE texture_write
 
@@ -353,13 +455,13 @@ MODULE vtk_attributes
         CLASS(texture),   INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        REAL(r8k), DIMENSION(:,:), INTENT(IN) :: values2d
+        REAL(r8k), DIMENSION(:,:), INTENT(IN)  :: values2d
 
         END SUBROUTINE texture_setup
 
         MODULE FUNCTION check_for_diffs_texture (me, you) RESULT (diffs)
         !! author: Ian Porter
-        !! date: 12/14/2017        
+        !! date: 12/14/2017
         !!
         !! Function checks for differences in a texture attribute
         !!
@@ -371,25 +473,33 @@ MODULE vtk_attributes
 !********
 ! Tensors
 !********
-        MODULE SUBROUTINE tensor_read (me, unit)
+        MODULE SUBROUTINE tensor_read (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a tensor attribute
         !!
-        CLASS(tensor), INTENT(OUT) :: me
-        INTEGER(i4k),  INTENT(IN)  :: unit
+        CLASS(tensor),    INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE tensor_read
 
-        MODULE SUBROUTINE tensor_write (me, unit)
+        MODULE SUBROUTINE tensor_write (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a tensor attribute
         !!
-        CLASS(tensor), INTENT(IN) :: me
-        INTEGER(i4k),  INTENT(IN) :: unit
+        CLASS(tensor),    INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE tensor_write
 
@@ -401,7 +511,7 @@ MODULE vtk_attributes
         !!
         CLASS(tensor),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL  :: datatype
         REAL(r8k), DIMENSION(:,:,:), INTENT(IN) :: values3d
 
         END SUBROUTINE tensor_setup
@@ -420,25 +530,33 @@ MODULE vtk_attributes
 !********
 ! Fields
 !********
-        MODULE SUBROUTINE field_read (me, unit)
+        MODULE SUBROUTINE field_read (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a field attribute
         !!
-        CLASS(field), INTENT(OUT) :: me
-        INTEGER(i4k), INTENT(IN)  :: unit
+        CLASS(field),     INTENT(INOUT) :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE field_read
 
-        MODULE SUBROUTINE field_write (me, unit)
+        MODULE SUBROUTINE field_write (me, unit, iotype, v_list, iostat, iomsg)
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a field attribute
         !!
-        CLASS(field), INTENT(IN) :: me
-        INTEGER(i4k), INTENT(IN) :: unit
+        CLASS(field),     INTENT(IN)    :: me
+        INTEGER(i4k),     INTENT(IN)    :: unit
+        CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        INTEGER(i4k),     INTENT(OUT)   :: iostat
+        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
 
         END SUBROUTINE field_write
 

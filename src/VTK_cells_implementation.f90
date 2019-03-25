@@ -1,4 +1,5 @@
 SUBMODULE (vtk_cells) vtk_cells_implementation
+    IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/2/2017
     !!
@@ -27,26 +28,25 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
     !!
     CONTAINS
 
-        MODULE PROCEDURE abs_read
+        MODULE PROCEDURE read_formatted
         USE Misc, ONLY : interpret_string, def_len
-        !!
         !! Subroutine performs the read for a cell
-        INTEGER(i4k)                :: i, iostat
-        LOGICAL                     :: end_of_file, ierr
-        CHARACTER(LEN=def_len)      :: line
+        INTEGER(i4k)           :: i
+        LOGICAL                :: end_of_file, ierr
+        CHARACTER(LEN=def_len) :: line
         INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints, dummy, points
 
-        ALLOCATE(me%points(0)); i = 0; end_of_file = .FALSE.
+        ALLOCATE(me%points(0))
 
         READ(unit,100,iostat=iostat) line
-        end_of_file = (iostat < 0)
+        end_of_file = (is_iostat_end(iostat))
         IF (end_of_file) THEN
             RETURN
         ELSE
-            i = 0! IF(ALLOCATED(points)) DEALLOCATE(points)
+            i = 0
             get_vals: DO
                 i = i + 1
-                CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
+                CALL interpret_string (line=line, datatype=[ 'I' ], separator=' ', ints=ints)
                 IF (i == 1) THEN
                     CALL me%init(ints(1), ierr)
                 ELSE
@@ -62,16 +62,41 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
         END IF
 
 100     FORMAT((a))
-        END PROCEDURE abs_read
+        END PROCEDURE read_formatted
 
-        MODULE PROCEDURE abs_write
-        !!
+        MODULE PROCEDURE read_unformatted
+        USE Misc, ONLY : interpret_string, def_len
+        !! Subroutine performs the read for a cell
+        INTEGER(i4k) :: n_points
+
+        IF (ALLOCATED(me%points)) DEALLOCATE(me%points)
+
+        READ(unit,iostat=iostat) n_points
+        ALLOCATE(me%points(n_points))
+        READ(unit,iostat=iostat) me%points(1:n_points)
+
+        END PROCEDURE read_unformatted
+
+        MODULE PROCEDURE write_formatted
         !! Writes the cell information to the .vtk file
-        INTEGER(i4k)               :: i
+        INTEGER(i4k) :: i
 
         WRITE(unit,100) me%n_points, (me%points(i),i=1,me%n_points)
+        WRITE(unit,101) new_line('a')
+
 100     FORMAT ((i0,' '),*(i0,' '))
-        END PROCEDURE abs_write
+101     FORMAT ((a))
+
+        END PROCEDURE write_formatted
+
+        MODULE PROCEDURE write_unformatted
+        !! Writes the cell information to the .vtk file
+        INTEGER(i4k) :: i
+
+        WRITE(unit,iostat=iostat) me%n_points, (me%points(i),i=1,me%n_points)
+        WRITE(unit,iostat=iostat) new_line('a')
+
+        END PROCEDURE write_unformatted
 
         MODULE PROCEDURE abs_setup
         !!
