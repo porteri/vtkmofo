@@ -64,6 +64,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         WRITE(unit,100) filetype_text                      !! VTK file type
 
         CALL geometry%write(unit)                          !! Write the geometry information
+
         IF (PRESENT(celldatasets)) THEN
             WRITE(unit,101) celldatasets(1)%n
             DO i = 1, SIZE(celldatasets)
@@ -73,6 +74,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
             WRITE(unit,101) celldatasets(1)%n
             CALL celldata%write(unit)                      !! Write the cell data values
         END IF
+
         IF (PRESENT(pointdatasets)) THEN
             WRITE(unit,102) pointdatasets(1)%n
             DO I = 1, SIZE(pointdatasets)
@@ -83,10 +85,14 @@ SUBMODULE (vtk_io) vtk_io_implementation
             CALL pointdata%write(unit)                     !! Write the point data values
         END IF
 
-        CLOSE(unit)                                        !! Close the VTK file
+        IF (.NOT. file_is_open) THEN
+            CLOSE(unit)                                    !! Close the VTK file if file was not open prior to calling vtkmofo
+        END IF
+
 100     FORMAT(a)
 101     FORMAT('CELL_DATA ',i0)
 102     FORMAT('POINT_DATA ',i0)
+
         END PROCEDURE vtk_legacy_write
 
         MODULE PROCEDURE vtk_legacy_read
@@ -161,6 +167,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         filetype    = data_type                            !! Save the file type for future internal use
 
 100     FORMAT(a)
+
         END PROCEDURE vtk_legacy_read
 
 END SUBMODULE vtk_io_implementation
