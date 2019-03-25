@@ -13,7 +13,8 @@ foreach(test
     Cylinder
     Rectangular_prism
     Pyramid
-    T_shape)
+    T_shape
+    DTIO_T_shape)
   add_VTKmofo_integration_test(${test})
   list(APPEND VTKmofo_integration_test_list "${test}")
 endforeach()
