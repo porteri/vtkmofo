@@ -6,7 +6,7 @@ VTK legacy format using modern Fortran
 [![release downloads][download image]](https://github.com/porteri/vtkmofo/releases)
 [![codecov][codecov image]](https://codecov.io/gh/porteri/vtkmofo)
 
-This is a generic modern Fortran interface to write a .vtk file using the legacy .vtk file format, version 3.0.
+This is a generic modern Fortran interface to write a .vtk file using the legacy .vtk file format, [version 3.0][VTK Format Link].
 
 This code is built and tested with the following:
 
@@ -20,7 +20,7 @@ Operating Systems:
  - Windows
 
 Build System:
- - [CMake][CMake link] 3.10 or newer
+ - [CMake][CMake link] 3.9 or newer
 
 Examples:
 # 2D example
@@ -42,3 +42,4 @@ Examples:
 [gcc link]: https://gcc.gnu.org/
 [Intel link]: https://software.intel.com/en-us/fortran-compilers
 [CMake link]: https://cmake.org
+[VTK Format link]: https://vtk.org/wp-content/uploads/2015/04/file-formats.pdf
