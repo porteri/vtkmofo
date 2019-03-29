@@ -11,8 +11,8 @@ This is a generic modern Fortran interface to write a .vtk file using the legacy
 This code is built and tested with the following:
 
 Compilers: (may work for older ones as well)
- - [gfortran][gcc link] 7.2, 8.0, 8.2, 9.0.1
- - [Intel][Intel link] 2018
+ - [gfortran][gcc link] 8.1, 8.2, 8.3, 9.0.1
+ - [Intel][Intel link] 2019
 
 Operating Systems:
  - Linnux (Ubuntu 16 & 18)
