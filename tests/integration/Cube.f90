@@ -50,7 +50,7 @@ PROGRAM cube_test
         CALL vals_to_write(i)%attribute%init (dataname(i), numcomp=1, values1d=vals(:,i))
     END DO
 
-    CALL vtk_legacy_write (unit, cube, pointdatasets=vals_to_write, filename=filename, title=title)
+    CALL vtk_legacy_write (cube, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)
 
     WRITE(*,*) 'Finished'
 

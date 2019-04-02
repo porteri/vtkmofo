@@ -115,8 +115,8 @@ MODULE DTIO_vtkmofo
             CALL point_vals_to_write(i)%attribute%init (TRIM(point_dataname(i)), numcomp=1, values1d=point_vals(:,i))
         END DO
 
-        CALL vtk_legacy_write (unit, t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
-          &                    title=title, multiple_io=.FALSE.)
+        CALL vtk_legacy_write (t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
+          &                    unit=unit, title=title, multiple_io=.FALSE.)
 
         iostat = 0
 
