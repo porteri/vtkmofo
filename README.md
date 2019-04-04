@@ -6,7 +6,24 @@ VTK legacy format using modern Fortran
 [![release downloads][download image]](https://github.com/porteri/vtkmofo/releases)
 [![codecov][codecov image]](https://codecov.io/gh/porteri/vtkmofo)
 
-This is a generic modern Fortran interface to write a .vtk file using the legacy .vtk file format, version 3.0.
+This is a generic modern Fortran interface to write a VTK formatted file using the specifications outlined in [version 3.0][VTK Format Link].
+
+Format support:
+ - [X] Legacy Format
+  * This code fully supports the legacy .vtk file format in ASCII
+ - [ ] XML Format
+  - [ ] Serial Formats
+   - [ ] Image Data (.vti)
+   - [ ] Poly Data (.vtp)
+   - [ ] Rectilinear Grid (.vtr)
+   - [ ] Structured Grid (.vts)
+   - [ ] Unstructured Grid (.vtu)
+  - [ ] Parallel Formats
+   - [ ] Image Data (.pvti)
+   - [ ] Poly Data (.pvtp)
+   - [ ] Rectilinear Grid (.pvtr)
+   - [ ] Structured Grid (.pvts)
+   - [ ] Unstructured Grid (.pvtu)
 
 This code is built and tested with the following:
 
