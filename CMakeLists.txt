@@ -122,10 +122,9 @@ set_property(TARGET vtkmofo
   FOLDER "VTKmofo")
 install(TARGETS vtkmofo DESTINATION lib EXPORT vtkmofo-targets)
 install(EXPORT vtkmofo-targets DESTINATION lib/vtkmofo)
-install(DIRECTORY "${VTKmofo_mod_dir}/" DESTINATION include/vtkmofo/mod
-  FILES_MATCHING PATTERN "*.*"
-  PATTERN "*/" EXCLUDE
-  ) # Don't get a $<CONFIG> subdirectory when using an IDE like MSVS
+install(DIRECTORY "${VTKmofo_mod_dir}" DESTINATION include/vtkmofo/mod
+  FILES_MATCHING
+  PATTERN "*.*") # Don't get a $<CONFIG> subdirectory when using an IDE like MSVS
 
 
 ######################
