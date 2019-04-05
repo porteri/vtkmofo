@@ -15,8 +15,8 @@ MODULE vtk_io
 
     INTERFACE
 
-        MODULE SUBROUTINE vtk_legacy_write (unit, geometry, celldata, pointdata, celldatasets, pointdatasets, &
-          &                                 filename, multiple_io, data_type, title)
+        MODULE SUBROUTINE vtk_legacy_write (geometry, celldata, pointdata, celldatasets, pointdatasets, &
+          &                                 unit, filename, multiple_io, data_type, title)
         !! author: Ian Porter
         !! date: 12/1/2017
         !!
@@ -27,7 +27,7 @@ MODULE vtk_io
         CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !! 
         CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !! 
         CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !! 
-        INTEGER(i4k),      INTENT(IN)           :: unit        !! VTK file unit
+        INTEGER(i4k),      INTENT(IN), OPTIONAL :: unit        !! VTK file unit
         INTEGER(i4k),      INTENT(IN), OPTIONAL :: data_type   !! Identifier to write in ascii or Binary
         LOGICAL,           INTENT(IN), OPTIONAL :: multiple_io !! Identifier as to whether there will be multiple files written
                                                                !! (i.e., time-dependent output)

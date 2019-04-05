@@ -48,7 +48,7 @@ PROGRAM rectangular_prism_test
         CALL vals_to_write(i)%attribute%init (TRIM(dataname(i)), numcomp=1, values1d=vals(:,i))
     END DO
 
-    CALL vtk_legacy_write (unit, rectangular_prism, pointdatasets=vals_to_write, filename=filename, title=title)
+    CALL vtk_legacy_write (rectangular_prism, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)
 
     WRITE(*,*) 'Finished'
 

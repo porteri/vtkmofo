@@ -98,8 +98,8 @@ PROGRAM T_shape_test
             CALL point_vals_to_write(i)%attribute%init (TRIM(point_dataname(i)), numcomp=1, values1d=point_vals(:,i))
         END DO
 
-        CALL vtk_legacy_write (unit, t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
-          &                    filename=filename, title=title, multiple_io=.TRUE.)
+        CALL vtk_legacy_write (t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
+          &                    unit=unit, filename=filename, title=title, multiple_io=.TRUE.)
     END DO
 
     WRITE(*,*) 'Finished'
