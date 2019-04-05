@@ -14,9 +14,7 @@ PROGRAM pyramid_test
     TYPE (polygonal_data)       :: pyramid
     TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
     INTEGER(i4k)                :: i = 0_i4k
-    INTEGER(i4k),     PARAMETER :: n_x = 3, n_y = 3, n_z = 3, n_faces = 20, unit = 20
-    CHARACTER(LEN=*), PARAMETER :: filename = 'pyramid.vtk'
-    CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of pyramid geometry'
+    INTEGER(i4k),     PARAMETER :: n_x = 3, n_y = 3, n_z = 3, n_faces = 20
     INTEGER(i4k), DIMENSION(3)  :: dims
     REAL(r8k), DIMENSION(n_faces,1:n_params_to_write)     :: cell_vals
     REAL(r8k), DIMENSION(n_x*n_y*n_z,1:n_params_to_write) :: point_vals
@@ -101,8 +99,7 @@ PROGRAM pyramid_test
         CALL point_vals_to_write(i)%attribute%init (TRIM(point_dataname(i)), numcomp=1, values1d=point_vals(:,i))
     END DO
 
-    CALL vtk_legacy_write (unit, pyramid, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
-      &                    filename=filename, title=title)
+    CALL vtk_legacy_write (pyramid, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write)
 
     WRITE(*,*) 'Finished'
 
