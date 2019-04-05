@@ -112,7 +112,7 @@ set_property(TARGET vtkmofo
 # Tell consumers where to find .mod files
 target_include_directories(vtkmofo PUBLIC
   $<BUILD_INTERFACE:${VTKmofo_mod_dir}>
-  $<INSTALL_INTERFACE:include/vtkmofo/mod>
+  $<INSTALL_INTERFACE:include/vtkmofo>
   )
 
 # Organize things in Visual Studio
@@ -121,8 +121,17 @@ set_property(TARGET vtkmofo
   PROPERTY
   FOLDER "VTKmofo")
 install(TARGETS vtkmofo DESTINATION lib EXPORT vtkmofo-targets)
+# Breaking this code out into a function would be nice
+set(MOD_DIR_TO_INSTALL "${VTKmofo_mod_dir}")
+set(MOD_DESTINATION_DIR include/vtkmofo)
+install(
+  CODE "file(GLOB_RECURSE MODULE_FILES \"${MOD_DIR_TO_INSTALL}/*.mod\")"
+  CODE "file(GLOB_RECURSE SUBMOD_FILES \"${MOD_DIR_TO_INSTALL}/*.smod\")"
+  CODE "file(INSTALL \${MODULE_FILES} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${MOD_DESTINATION_DIR}\")"
+  CODE "file(INSTALL \${SUBMOD_FILES} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${MOD_DESTINATION_DIR}\")"
+  )
 install(EXPORT vtkmofo-targets DESTINATION lib/vtkmofo)
-install(DIRECTORY "${VTKmofo_mod_dir}" DESTINATION include/vtkmofo)
+
 
 
 ######################
