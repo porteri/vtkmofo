@@ -11,7 +11,12 @@ set_property(TARGET VTKmofoPassFail
 function(add_VTKmofo_unit_test test_name)
   # Assumes source file is ${test_name}.f90
   add_executable(${test_name} ${test_name}.f90 $<TARGET_OBJECTS:VTKmofoPassFail>)
-  target_link_libraries(${test_name} vtkmofo)
+  if(VTKmofo_USE_OpenCoarrays)
+    target_link_libraries(${test_name}
+      PUBLIC OpenCoarrays::caf_mpi_static)
+  endif()
+  target_link_libraries(${test_name}
+    PUBLIC vtkmofo)
   set_property(TARGET ${test_name}
     PROPERTY
     FOLDER "VTKmofo-Unit-Tests")

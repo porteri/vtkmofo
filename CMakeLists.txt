@@ -1,6 +1,9 @@
 # CMAKE minimum version
 cmake_minimum_required(VERSION 3.9)
 
+option(VTKmofo_USE_OpenCoarrays
+  "Build VTKmofo with support for linking against OpenCoarray programs" OFF)
+
 # Project name
 project(vtkmofo LANGUAGES Fortran)
 
@@ -58,6 +61,10 @@ else()
   )
 endif()
 
+if(VTKmofo_USE_OpenCoarrays)
+  find_package(OpenCoarrays)
+endif()
+
 ##################################################
 # Begin VTKmofo specific targets and configuration
 ##################################################
@@ -96,6 +103,10 @@ add_library(vtkmofo_interfaces OBJECT ${VTKmofo_interface_srcs})
 set_property(TARGET vtkmofo_interfaces
   PROPERTY
   Fortran_MODULE_DIRECTORY ${VTKmofo_mod_dir})
+if(VTKmofo_USE_OpenCoarrays)
+  target_link_libraries(vtkmofo_interfaces
+    PRIVATE OpenCoarrays::caf_mpi_static)
+endif()
 
 # Add any object files from the interfaces to the main library build
 foreach(item ${VTKmofo_implementations})
@@ -103,6 +114,10 @@ foreach(item ${VTKmofo_implementations})
 endforeach()
 add_library(vtkmofo
   STATIC ${VTKmofo_implementation_srcs} $<TARGET_OBJECTS:vtkmofo_interfaces>)
+if(VTKmofo_USE_OpenCoarrays)
+  target_link_libraries(vtkmofo
+    PRIVATE OpenCoarrays::caf_mpi_static)
+endif()
 
 # Tell CMake where to put vtkmofo .mod files generated with libvtkmofo
 set_property(TARGET vtkmofo

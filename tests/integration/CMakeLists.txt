@@ -1,7 +1,13 @@
 function(add_VTKmofo_integration_test test_name)
   # Assumes source file is ${test_name}.f90
   add_executable(${test_name} ${test_name}.f90)
-  target_link_libraries(${test_name} vtkmofo)
+
+  if(VTKmofo_USE_OpenCoarrays)
+    target_link_libraries(${test_name}
+      PUBLIC OpenCoarrays::caf_mpi_static)
+  endif()
+  target_link_libraries(${test_name}
+    PUBLIC vtkmofo)
   set_property(TARGET ${test_name}
     PROPERTY
     FOLDER "VTKmofo-Integration-Tests")
