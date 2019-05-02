@@ -27,7 +27,8 @@ foreach(test
     attributes_unit
     cells_unit
     datasets_unit
-    xml_unit)
+    xml_unit
+    linked_list_unit)
   add_VTKmofo_unit_test(${test})
   list(APPEND VTKmofo_unit_test_list ${test})
 endforeach()
