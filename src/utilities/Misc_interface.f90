@@ -7,7 +7,7 @@ MODULE Misc
     !! This module contains miscellaneous routines used to read/write to the .vtk file
     !!
     PRIVATE
-    PUBLIC :: interpret_string, def_len, to_uppercase, to_lowercase
+    PUBLIC :: interpret_string, def_len, to_uppercase, to_lowercase, sleep_for
 
     INTERFACE get_string_value
         PROCEDURE :: get_string_char, get_string_int, get_string_real
@@ -76,6 +76,17 @@ MODULE Misc
         CHARACTER(LEN=:), ALLOCATABLE :: new_string
 
         END FUNCTION to_lowercase
+
+        MODULE SUBROUTINE sleep_for (msecs)
+        IMPLICIT NONE
+        !! author: Zaak Beekman, ParaTools
+        !! date: 8/8/2018
+        !!
+        !! This performs a 'sleep' for a specified amount of time
+        !!
+        INTEGER(i4k), INTENT(IN) :: msecs  !! # of milliseconds to sleep for
+
+        END SUBROUTINE
 
     END INTERFACE
 

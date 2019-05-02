@@ -1,4 +1,5 @@
 SUBMODULE (Misc) Misc_implementation
+    USE Precision, ONLY : i4k, i8k, r8k
 
     CONTAINS
 
@@ -148,5 +149,28 @@ SUBMODULE (Misc) Misc_implementation
         END DO
 
         END PROCEDURE to_lowercase
+
+        MODULE PROCEDURE sleep_for
+        IMPLICIT NONE
+        !! author: Zaak Beekman, ParaTools
+        !! date: 8/8/2018
+        !!
+        !! This performs a 'sleep' for a specified amount of time
+        !!
+        INTEGER(i4k), DIMENSION(8) :: time
+        INTEGER(i8k) :: ms_t1, ms_t2, msecs_big
+
+        CALL DATE_AND_TIME(values=time)
+
+        ms_t1=(time(5)*3600+time(6)*60+time(7))*1000+time(8)
+        msecs_big = msecs
+
+        DO !! spin until elapsed time is greater than msecs
+            CALL DATE_AND_TIME(values=time)
+            ms_t2=(time(5)*3600+time(6)*60+time(7))*1000+time(8)
+            IF ( ms_t2 - ms_t1 >= msecs_big ) EXIT
+        END DO
+
+        END PROCEDURE
 
 END SUBMODULE Misc_implementation

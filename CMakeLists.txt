@@ -76,8 +76,9 @@ set(VTKmofo_mod_dir ${CMAKE_CURRENT_BINARY_DIR}/mod)
 #    put interfaces and submodules in separate libraries
 # Specify VTKmofo interfaces
 set(VTKmofo_interfaces
-  utilities/Precision.f90
+  utilities/file_utility_interface.f90
   utilities/Misc_interface.f90
+  utilities/Precision.f90
   utilities/xml.f90
   legacy/VTK_io_interface.f90
   legacy/VTK_datasets_interface.f90
@@ -87,6 +88,7 @@ set(VTKmofo_interfaces
 
 # Specify VTKmofo implementations
 set(VTKmofo_implementations
+  utilities/file_utility_implementation.f90
   utilities/Misc_implementation.f90
   utilities/xml_implementation.f90
   legacy/VTK_attributes_implementation.f90
