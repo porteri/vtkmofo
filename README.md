@@ -15,7 +15,7 @@ Format support:
   - [ ] Serial Formats
    - [ ] Image Data (.vti)
    - [ ] Poly Data (.vtp)
-   - [ ] Rectilinear Grid (.vtr)
+   - [ ] Rectilinear Grid (.vtr) (Currently under development)
    - [ ] Structured Grid (.vts)
    - [ ] Unstructured Grid (.vtu)
   - [ ] Parallel Formats
@@ -28,15 +28,15 @@ Format support:
 This code is built and tested with the following:
 
 Compilers: (may work for older ones as well)
- - [gfortran][gcc link] 7.2, 8.0
+ - [gfortran][gcc link] 7.2, 8.0, 8.3
  - [Intel][Intel link] 2018
 
 Operating Systems:
- - Linnux (Tested on Ubuntu 16)
- - Windows
+ - Linnux (Tested on Ubuntu 18)
+ - Windows (Tested on Windows 8, 10)
 
 Build System:
- - [CMake][CMake link] 3.10 or newer
+ - [CMake][CMake link] 3.14 or newer
 
 Examples:
 # 2D example
@@ -52,7 +52,7 @@ Examples:
 
 [Hyperlinks]:#
 [AppVeyor build image]: https://ci.appveyor.com/api/projects/status/omlvmn8xcr9sxuwt?svg=true "AppVeyor build badge"
-[Travis CI build image]: https://img.shields.io/travis-ci/porteri/vtkmofo/master.svg?style=flat-square "Travis CI build badge"
+[Travis CI build image]:https://travis-ci.org/porteri/vtkmofo.svg?branch=modern_vtk "Travis CI build badge"
 [download image]: https://img.shields.io/github/downloads/porteri/vtkmofo/total.svg?style=flat-square "Download count badge"
 [codecov image]: https://codecov.io/gh/porteri/vtkmofo/branch/master/graph/badge.svg
 [gcc link]: https://gcc.gnu.org/
