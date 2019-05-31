@@ -1,11 +1,11 @@
-PROGRAM cube_test
+PROGRAM modern_Rectilinear_test
     USE Precision
     USE vtk_datasets,   ONLY : rectlnr_grid
     USE vtk_attributes, ONLY : scalar, attributes
-    USE vtk,            ONLY : vtk_legacy_write
+    USE vtk,            ONLY : vtk_serial_write
     IMPLICIT NONE
     !! author: Ian Porter
-    !! date: 12/20/2017
+    !! date: 05/20/2019
     !!
     !! This is a test of a cube geometry using a rectilinear grid
     !!
@@ -16,7 +16,7 @@ PROGRAM cube_test
     INTEGER(i4k),     PARAMETER :: n_x = 11, n_y = 6, n_z = 3, unit = 20
     REAL(r8k)                   :: j = 0.0_r8k
     REAL(r8k),        PARAMETER :: temp_val = 555.0_r8k
-    CHARACTER(LEN=*), PARAMETER :: filename = 'cube.vtk'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'cube.vtr'
     CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of cube geometry'
     INTEGER(i4k), DIMENSION(3)  :: dims
     REAL(r8k), DIMENSION(n_x), PARAMETER :: x_coords = &
@@ -50,8 +50,8 @@ PROGRAM cube_test
         CALL vals_to_write(i)%attribute%init (dataname(i), numcomp=1, values1d=vals(:,i))
     END DO
 
-    CALL vtk_legacy_write (cube, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)
+    CALL vtk_serial_write (cube, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)
 
     WRITE(*,*) 'Finished'
 
-END PROGRAM cube_test
+END PROGRAM modern_Rectilinear_test

@@ -15,7 +15,8 @@ function(add_VTKmofo_integration_test test_name)
 endfunction(add_VTKmofo_integration_test)
 
 foreach(test
-    Cube
+    legacy_Rectilinear
+    modern_Rectilinear
     Cylinder
     Rectangular_prism
     Pyramid

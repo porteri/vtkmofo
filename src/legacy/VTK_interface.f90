@@ -4,7 +4,7 @@ MODULE vtk
     USE vtk_cells
     USE vtk_datasets
     USE vtk_vars
-    USE vtk_io, ONLY : vtk_legacy_write
+    USE vtk_io
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/1/2017

@@ -85,7 +85,10 @@ set(VTKmofo_interfaces
   legacy/VTK_datasets_interface.f90
   legacy/VTK_cells_interface.f90
   legacy/VTK_attributes_interface.f90
-  legacy/VTK_vars.f90)
+  legacy/VTK_vars.f90
+  modern/VTK_serial_file.f90
+  modern/VTK_serial_RectilinearGrid.f90
+  )
 
 # Specify VTKmofo implementations
 set(VTKmofo_implementations
@@ -98,6 +101,8 @@ set(VTKmofo_implementations
   legacy/VTK_datasets_implementation.f90
   legacy/VTK_interface.f90
   legacy/VTK_io_implementation.f90
+  modern/VTK_serial_file_implementation.f90
+  modern/VTK_serial_RectilinearGrid_implementation.f90
   )
 
 # Compile all the interfaces first

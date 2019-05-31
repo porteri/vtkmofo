@@ -40,7 +40,7 @@ MODULE vtk_cells
         INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: points
     CONTAINS
         PROCEDURE, PUBLIC :: read  => abs_read
-        PROCEDURE, PUBLIC :: write => abs_write
+        PROCEDURE, PUBLIC :: write => cell_legacy_write
         PROCEDURE, PUBLIC :: setup => abs_setup
         PROCEDURE(abs_init), DEFERRED, PRIVATE :: init
         PROCEDURE, PRIVATE :: check_for_diffs
@@ -157,13 +157,13 @@ MODULE vtk_cells
 
         END SUBROUTINE abs_read
 
-        MODULE SUBROUTINE abs_write (me, unit)
+        MODULE SUBROUTINE cell_legacy_write (me, unit)
         !!
         !! Writes the cell information to the .vtk file
         CLASS(vtkcell), INTENT(IN) :: me
         INTEGER(i4k),   INTENT(IN) :: unit
 
-        END SUBROUTINE abs_write
+        END SUBROUTINE cell_legacy_write
 
         MODULE SUBROUTINE abs_setup (me, points)
         !!
