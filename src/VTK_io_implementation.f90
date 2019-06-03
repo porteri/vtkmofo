@@ -19,6 +19,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         INTEGER(i4k)  :: i, inputstat, newunit
         LOGICAL, SAVE :: file_was_already_open = .FALSE.
         CHARACTER(LEN=:), ALLOCATABLE :: form, filetype_text
+        CHARACTER(LEN=11) :: fm
 
         IF (PRESENT(data_type)) filetype = data_type          !! Calling program provided what file type to use for vtk file
         IF (ALLOCATED(vtkfilename)) DEALLOCATE(vtkfilename)
@@ -49,7 +50,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         IF (PRESENT(unit)) THEN
             newunit = unit
             INQUIRE(unit=newunit, opened=file_was_already_open) !! Check to see if file is already open
-            IF (.NOT. file_was_already_open) THEN               !! File is not yet open. Determine format to open file
+            IF (.NOT. file_was_already_open) THEN               !! File is not yet open. Determine format from filetype
                 SELECT CASE (filetype)
                 CASE (ascii)
                     ALLOCATE(form, source='formatted')
@@ -64,8 +65,17 @@ SUBMODULE (vtk_io) vtk_io_implementation
                 END SELECT
                 OPEN(unit=newunit, file=vtkfilename, iostat=inputstat, status='REPLACE', form=form)
                                                                 !! Open the VTK file
+            ELSE                                                !! File is already open. Determine format based on file format
+                INQUIRE(unit=newunit,form=fm)
+                SELECT CASE (TO_UPPERCASE(TRIM(fm)))
+                CASE ('FORMATTED')
+                    ALLOCATE(filetype_text, source='ASCII')
+                CASE DEFAULT
+                    ALLOCATE(filetype_text, source='BINARY')
+                END SELECT
             END IF
         ELSE
+            !! No unit # provided. Make determination by value set for filetype
             SELECT CASE (filetype)
             CASE (ascii)
                 ALLOCATE(form, source='formatted')
