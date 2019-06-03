@@ -1,5 +1,6 @@
 MODULE DTIO_vtkmofo
-    USE Precision
+    USE Precision,    ONLY : i4k, r8k
+    USE vtk_datasets, ONLY : unstruct_grid
     IMPLICIT NONE
     !! This module contains a TBP to write a formatted file
     !! Inside the TBP is the call to vtkmofo
@@ -7,20 +8,19 @@ MODULE DTIO_vtkmofo
     PRIVATE
     PUBLIC :: foo
 
-    TYPE foo
+    TYPE, EXTENDS(unstruct_grid) :: foo
         !! foo dt
     CONTAINS
         PROCEDURE, PRIVATE :: write_formatted
         GENERIC, PUBLIC :: WRITE(FORMATTED) => write_formatted
-        PROCEDURE, PRIVATE :: read_formatted
-        GENERIC, PUBLIC :: READ(FORMATTED) => read_formatted
+        !PROCEDURE, PRIVATE :: read_formatted
+        !GENERIC, PUBLIC :: READ(FORMATTED) => read_formatted
     END TYPE foo
 
     CONTAINS
 
         SUBROUTINE write_formatted (me, unit, iotype, v_list, iostat, iomsg)
         USE Precision
-        USE vtk_datasets,   ONLY : unstruct_grid
         USE vtk_attributes, ONLY : scalar, attributes
         USE vtk_cells,      ONLY : voxel, hexahedron, vtkcell_list
         USE vtk,            ONLY : vtk_legacy_write
@@ -32,9 +32,9 @@ MODULE DTIO_vtkmofo
         INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
         INTEGER(i4k),     INTENT(OUT)   :: iostat
         CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
+        CLASS(foo),       ALLOCATABLE   :: t_shape
 
         INTEGER(i4k), PARAMETER     :: n_params_to_write = 1
-        TYPE (unstruct_grid)        :: t_shape
         TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
         INTEGER(i4k)                :: i
         INTEGER(i4k),     PARAMETER :: n_points = 24, n_cells = 5
@@ -81,6 +81,10 @@ MODULE DTIO_vtkmofo
         CHARACTER(LEN=15), DIMENSION(n_params_to_write), PARAMETER :: point_dataname = &
           & [ 'Temperature(K) ' ]
 
+        IF (SIZE(v_list) > 0) THEN
+            !! Maybe at some point, do something with v_list. For now this silences the compiler warning for unused variable
+        END IF
+
         CALL voxel_cells(1)%setup ( [ 0, 1, 2, 3, 4, 5, 6, 7 ] )
         CALL voxel_cells(2)%setup ( [ 4, 5, 6, 7, 9, 10, 13, 14 ] )
         CALL voxel_cells(3)%setup ( [ 8, 9, 12, 13, 16, 17, 20, 21 ] )
@@ -93,6 +97,7 @@ MODULE DTIO_vtkmofo
         ALLOCATE(cell_list(4)%cell,source=voxel_cells(4))
         ALLOCATE(cell_list(5)%cell,source=hexahedron_cell)
 
+        ALLOCATE(t_shape, source=me)
         CALL t_shape%init (points=points, cell_list=cell_list)
 
         DO i = 1, n_params_to_write
@@ -110,33 +115,37 @@ MODULE DTIO_vtkmofo
             CALL point_vals_to_write(i)%attribute%init (TRIM(point_dataname(i)), numcomp=1, real1d=point_vals(:,i))
         END DO
 
-        CALL vtk_legacy_write (t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
-          &                    unit=unit, title=title, multiple_io=.FALSE.)
+        SELECT CASE (iotype)
+        CASE DEFAULT
+            !! No specific formatting at this point
+            CALL vtk_legacy_write (t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
+              &                    unit=unit, title=title, multiple_io=.FALSE.)
+        END SELECT
 
-        iostat = 0
+        iostat = 0; iomsg=''
 
         END SUBROUTINE write_formatted
 
 
-        SUBROUTINE read_formatted (me, unit, iotype, v_list, iostat, iomsg)
-        IMPLICIT NONE
-        !! Subroutine performs a formatted read for a cell
-        CLASS(foo),       INTENT(INOUT) :: me
-        INTEGER(i4k),     INTENT(IN)    :: unit
-        CHARACTER(LEN=*), INTENT(IN)    :: iotype
-        INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
-        INTEGER(i4k),     INTENT(OUT)   :: iostat
-        CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
-
-        iostat = 0
-
-        END SUBROUTINE read_formatted
+        !SUBROUTINE read_formatted (me, unit, iotype, v_list, iostat, iomsg)
+        !IMPLICIT NONE
+        !!! Subroutine performs a formatted read for a cell
+        !CLASS(foo),       INTENT(INOUT) :: me
+        !INTEGER(i4k),     INTENT(IN)    :: unit
+        !CHARACTER(LEN=*), INTENT(IN)    :: iotype
+        !INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
+        !INTEGER(i4k),     INTENT(OUT)   :: iostat
+        !CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
+        !
+        !iostat = 0
+        !
+        !END SUBROUTINE read_formatted
 
 END MODULE DTIO_vtkmofo
 
 
 PROGRAM DTIO_T_shape_test
-    USE Precision
+    USE Precision,    ONLY : i4k
     USE DTIO_vtkmofo, ONLY : foo
     IMPLICIT NONE
     !! author: Ian Porter
@@ -145,16 +154,16 @@ PROGRAM DTIO_T_shape_test
     !! This is a test of an unstructured grid (T-shape) geometry
     !!
     INTEGER(i4k) :: unit
-    TYPE(foo) :: foo_dt
+    TYPE(foo) :: t_shape
     CHARACTER(LEN=*), PARAMETER :: filename = 'dtio_t_shape.vtk'
 
     OPEN(newunit=unit, file=filename, status='unknown', form='formatted')
-    WRITE(unit,'(DT)') foo_dt
+    WRITE(unit,'(DT)') t_shape
 
     CLOSE(unit)
 
-    OPEN(newunit=unit, file=filename, status='old', form='formatted')
-    READ(unit,'(DT)') foo_dt
+    !OPEN(newunit=unit, file=filename, status='old', form='formatted')
+    !READ(unit,'(DT)') t_shape
 
     WRITE(*,*) 'Finished'
 
