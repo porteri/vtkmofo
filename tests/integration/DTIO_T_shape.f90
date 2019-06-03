@@ -87,11 +87,6 @@ MODULE DTIO_vtkmofo
         CALL voxel_cells(4)%setup ( [ 9, 10, 13, 14, 17, 18, 21, 22 ] )
         CALL hexahedron_cell%setup ( [ 10, 11, 15, 14, 18, 19, 23, 22 ] )
 
-    !    cell_list(1)%cell = voxel_cells(1) !! Works for Intel 18.5, Not for gfortran-8.2
-    !    cell_list(2)%cell = voxel_cells(2)
-    !    cell_list(3)%cell = voxel_cells(3)
-    !    cell_list(4)%cell = voxel_cells(4)
-    !    cell_list(5)%cell = hexahedron_cell
         ALLOCATE(cell_list(1)%cell,source=voxel_cells(1)) !! Workaround for gfortran-8.2
         ALLOCATE(cell_list(2)%cell,source=voxel_cells(2))
         ALLOCATE(cell_list(3)%cell,source=voxel_cells(3))
@@ -106,13 +101,13 @@ MODULE DTIO_vtkmofo
                 ALLOCATE(scalar::cell_vals_to_write(i)%attribute)
                 cell_vals_to_write(1)%n = SIZE(cell_vals(:,1))
             END IF
-            CALL cell_vals_to_write(i)%attribute%init (TRIM(cell_dataname(i)), numcomp=1, values1d=cell_vals(:,i))
+            CALL cell_vals_to_write(i)%attribute%init (TRIM(cell_dataname(i)), numcomp=1, real1d=cell_vals(:,i))
             ! Point values
             IF (.NOT. ALLOCATED(point_vals_to_write(i)%attribute))THEN
                 ALLOCATE(scalar::point_vals_to_write(i)%attribute)
                 point_vals_to_write(1)%n = SIZE(point_vals(:,1))
             END IF
-            CALL point_vals_to_write(i)%attribute%init (TRIM(point_dataname(i)), numcomp=1, values1d=point_vals(:,i))
+            CALL point_vals_to_write(i)%attribute%init (TRIM(point_dataname(i)), numcomp=1, real1d=point_vals(:,i))
         END DO
 
         CALL vtk_legacy_write (t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
