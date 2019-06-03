@@ -1,6 +1,6 @@
 SUBMODULE (vtk_attributes) vtk_attributes_implementation
     USE Precision, ONLY : i4k, r8k
-    USE Misc,      ONLY : def_len
+    USE Misc,      ONLY : def_len, char_dt
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/13/2017
@@ -99,21 +99,21 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         INTEGER(i4k)               :: i, iostat
         LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
-        INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
-        REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals, dummy
-        CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE :: chars
+        INTEGER(i4k),  DIMENSION(:), ALLOCATABLE :: ints
+        REAL(r8k),     DIMENSION(:), ALLOCATABLE :: reals, dummy
+        TYPE(char_dt), DIMENSION(:), ALLOCATABLE :: chars
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=[ 'C','C','I' ], ignore='SCALARS ', separator=' ', &
           &                    ints=ints, chars=chars)
-        me%numcomp = ints(1); me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
-        DEALLOCATE(ints)
+        me%numcomp = ints(1); me%dataname = TRIM(chars(1)%text); me%datatype = to_lowercase(TRIM(chars(2)%text))
+        IF (ALLOCATED(ints)) DEALLOCATE(ints)
+        IF (ALLOCATED(chars)) DEALLOCATE(chars)
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=[ 'C' ], ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
-        me%tablename = TRIM(chars(1))
+        me%tablename = TRIM(chars(1)%text)
 
-        me%datatype = to_lowercase(me%datatype)
         SELECT CASE (me%datatype)
         CASE ('unsigned_int', 'int')
             ALLOCATE(me%ints(0))
@@ -276,15 +276,15 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         INTEGER(i4k),  PARAMETER   :: dim = 3
         LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
-        INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
-        REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
-        CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
-        INTEGER(i4k),     DIMENSION(:,:), ALLOCATABLE :: i_dummy
-        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: r_dummy
+        INTEGER(i4k),  DIMENSION(:),   ALLOCATABLE :: ints
+        REAL(r8k),     DIMENSION(:),   ALLOCATABLE :: reals
+        TYPE(char_dt), DIMENSION(:),   ALLOCATABLE :: chars
+        INTEGER(i4k),  DIMENSION(:,:), ALLOCATABLE :: i_dummy
+        REAL(r8k),     DIMENSION(:,:), ALLOCATABLE :: r_dummy
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='VECTORS ', separator=' ', chars=chars)
-        me%dataname = TRIM(chars(1)); me%datatype = to_lowercase(TRIM(chars(2)))
+        me%dataname = TRIM(chars(1)%text); me%datatype = to_lowercase(TRIM(chars(2)%text))
 
         SELECT CASE (me%datatype)
         CASE ('unsigned_int', 'int')
@@ -431,15 +431,15 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         INTEGER(i4k),  PARAMETER   :: dim = 3
         LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
-        INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
-        REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
-        CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
-        INTEGER(i4k),     DIMENSION(:,:), ALLOCATABLE :: i_dummy
-        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: r_dummy
+        INTEGER(i4k),  DIMENSION(:),   ALLOCATABLE :: ints
+        REAL(r8k),     DIMENSION(:),   ALLOCATABLE :: reals
+        TYPE(char_dt), DIMENSION(:),   ALLOCATABLE :: chars
+        INTEGER(i4k),  DIMENSION(:,:), ALLOCATABLE :: i_dummy
+        REAL(r8k),     DIMENSION(:,:), ALLOCATABLE :: r_dummy
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='NORMALS ', separator=' ', chars=chars)
-        me%dataname = TRIM(chars(1)); me%datatype = to_lowercase(TRIM(chars(2)))
+        me%dataname = TRIM(chars(1)%text); me%datatype = to_lowercase(TRIM(chars(2)%text))
 
         SELECT CASE (me%datatype)
         CASE ('unsigned_int', 'int')
@@ -510,7 +510,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         MODULE PROCEDURE normal_setup
         !! author: Ian Porter
-        !! date: 12/14/2017        
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the set-up for a normal attribute
         !!
@@ -587,7 +587,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         CHARACTER(LEN=def_len)      :: line
         INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
-        CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
+        TYPE(char_dt),    DIMENSION(:),   ALLOCATABLE :: chars
         INTEGER(i4k),     DIMENSION(:,:), ALLOCATABLE :: i_dummy
         REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: r_dummy
         CHARACTER(LEN=1), DIMENSION(3),   PARAMETER   :: i_datatype = [ 'I','I','I' ]
@@ -596,7 +596,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=[ 'C','I','C' ], ignore='TEXTURE_COORDINATES ', separator=' ', &
           &                    ints=ints, chars=chars)
-        me%dataname = TRIM(chars(1)); dim = ints(1); me%datatype = to_lowercase(TRIM(chars(2)))
+        me%dataname = TRIM(chars(1)%text); dim = ints(1); me%datatype = to_lowercase(TRIM(chars(2)%text))
 
         SELECT CASE (me%datatype)
         CASE ('unsigned_int', 'int')
@@ -752,14 +752,14 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         CHARACTER(LEN=def_len)     :: line
         INTEGER(i4k),         DIMENSION(:), ALLOCATABLE :: ints
         REAL(r8k),            DIMENSION(:), ALLOCATABLE :: reals
-        CHARACTER(LEN=:),     DIMENSION(:), ALLOCATABLE :: chars
+        TYPE(char_dt),        DIMENSION(:), ALLOCATABLE :: chars
         TYPE(r_tensor_array), DIMENSION(:), ALLOCATABLE :: r_dummy
         TYPE(i_tensor_array), DIMENSION(:), ALLOCATABLE :: i_dummy
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='TENSORS ', separator=' ', &
           &                    chars=chars)
-        me%dataname = TRIM(chars(1)); me%datatype = to_lowercase(TRIM(chars(2)))
+        me%dataname = TRIM(chars(1)%text); me%datatype = to_lowercase(TRIM(chars(2)%text))
 
         SELECT CASE (me%datatype)
         CASE ('unsigned_int', 'int')
@@ -769,7 +769,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         CASE DEFAULT
             ERROR STOP 'Unsupported data type for tensor.'
         END SELECT
-        
+
         end_of_file = .FALSE.; i = 0
 
         get_tensors: DO
@@ -942,16 +942,16 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         LOGICAL                   :: end_of_file
         CHARACTER(LEN=def_len)    :: line
         CHARACTER(*), PARAMETER   :: real_char = 'R'
-        REAL(r8k),              DIMENSION(:), ALLOCATABLE :: reals
-        INTEGER(i4k),           DIMENSION(:), ALLOCATABLE :: ints
-        CHARACTER(LEN=:),       DIMENSION(:), ALLOCATABLE :: chars
-        CHARACTER(LEN=1),       DIMENSION(:), ALLOCATABLE :: datatype
-!        TYPE(field_data_array), DIMENSION(:), ALLOCATABLE :: dummy
+        REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals
+        INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
+        TYPE(char_dt),    DIMENSION(:), ALLOCATABLE :: chars
+        CHARACTER(LEN=1), DIMENSION(:), ALLOCATABLE :: datatype
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=[ 'C','I' ], ignore='FIELD ', separator=' ', &
           &                    ints=ints, chars=chars)
-        me%dataname = TRIM(chars(1)); dim = ints(1)
+        me%dataname = TRIM(chars(1)%text); dim = ints(1)
+        IF (ALLOCATED(chars)) DEALLOCATE(chars)
 
         ALLOCATE(me%array(1:dim)); end_of_file = .FALSE.; i = 0
 
@@ -963,14 +963,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             ELSE IF (TRIM(line) == '') THEN
                 CYCLE      !! Skip blank lines
             ELSE
-!                ALLOCATE(dummy(1:UBOUND(me%array,DIM=1)))
-!                dummy(1:UBOUND(me%array,DIM=1)) = me%array
-!                CALL MOVE_ALLOC(dummy, me%array)
                 i = i + 1
 
                 CALL interpret_string (line=line, datatype=[ 'C','I','I','C' ], separator=' ', chars=chars, ints=ints)
-                me%array(i)%name = TRIM(chars(1)); me%array(i)%numComponents = ints(1)
-                me%array(i)%numTuples = ints(2); me%array(i)%datatype = chars(2)
+                me%array(i)%name = TRIM(chars(1)%text); me%array(i)%numComponents = ints(1)
+                me%array(i)%numTuples = ints(2); me%array(i)%datatype = TRIM(chars(2)%text)
                 ALLOCATE(datatype(1:me%array(i)%numComponents),source=real_char)
                 ALLOCATE(me%array(i)%data(1:me%array(i)%numTuples,1:me%array(i)%numComponents),source=0.0_r8k)
 
@@ -979,7 +976,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     CALL interpret_string (line=line, datatype=datatype, separator=' ', reals=reals)
                     me%array(i)%data(j,:) = reals(:)
                 END DO
-                DEALLOCATE(datatype)
+                IF (ALLOCATED(datatype)) DEALLOCATE(datatype)
 
             END IF
         END DO get_fields
@@ -989,7 +986,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         MODULE PROCEDURE field_write
         !! author: Ian Porter
-        !! date: 12/13/2017        
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a field attribute
         !!

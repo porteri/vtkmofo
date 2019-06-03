@@ -14,8 +14,6 @@ MODULE vtk_datasets_unit_tests
     INTEGER(i4k), PARAMETER :: n_types  = 5
     INTEGER(i4k), PARAMETER :: vtk_unit = 20
     INTEGER(i4k), PARAMETER :: n_x = 11, n_y = 6, n_z = 3
-    INTEGER(i4k), DIMENSION(n_types), PARAMETER :: filetype = &
-      & [ ASCII, ASCII, ASCII, ASCII, ASCII ]
     CHARACTER(LEN=*), DIMENSION(n_types), PARAMETER :: filename = &
       & [ 'struct_pts.vtk      ', &
       &   'struct_grid.vtk     ', &
@@ -310,6 +308,7 @@ MODULE vtk_datasets_unit_tests
         LOGICAL, DIMENSION(n_types) :: individual_tests_pass
 
         DO i = 1, n_types
+        write(0,*) i
             IF (ALLOCATED(vtk_dataset_1)) DEALLOCATE (vtk_dataset_1)
             IF (ALLOCATED(vtk_dataset_2)) DEALLOCATE (vtk_dataset_2)
             SELECT CASE (i)
@@ -385,7 +384,7 @@ PROGRAM vtk_datasets_test
     USE VTKmofoPassFail,         ONLY : all_tests_pass
     IMPLICIT NONE
     !! author: Ian Porter
-    !! date: 12/14/2017    
+    !! date: 12/14/2017
     !!
     !! Driver testing subroutine for the attributes information
     !!

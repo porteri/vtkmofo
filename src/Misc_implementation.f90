@@ -18,9 +18,9 @@ SUBMODULE (Misc) Misc_implementation
             string = TRIM(ADJUSTL(line))
         END IF
         IF (PRESENT(separator)) THEN
-            sep = separator
+            ALLOCATE(sep, source=separator)
         ELSE
-            sep = ' '
+            ALLOCATE(sep, source=' ')
         END IF
         IF (PRESENT(ints)) THEN
             IF (ALLOCATED(ints)) DEALLOCATE(ints)
@@ -32,7 +32,7 @@ SUBMODULE (Misc) Misc_implementation
         END IF
         IF (PRESENT(chars)) THEN
             IF (ALLOCATED(chars)) DEALLOCATE(chars)
-            ALLOCATE(chars(1:SIZE(datatype)),source=string)
+            ALLOCATE(chars(1:SIZE(datatype)))
         END IF
 
         DO i = 1, SIZE(datatype)
@@ -49,7 +49,7 @@ SUBMODULE (Misc) Misc_implementation
                 !! Character
                 cnt%c = cnt%c + 1
                 CALL get_string_value (string, sep, char)
-                chars(cnt%c) = char
+                ALLOCATE(chars(cnt%c)%text, source=char)
             END SELECT
             CALL reduce_string (string, sep)
             cnt%t = cnt%t + 1
@@ -83,11 +83,11 @@ SUBMODULE (Misc) Misc_implementation
         CHARACTER(LEN=:), ALLOCATABLE :: text
 
         IF (INDEX(string,sep) == 0) THEN
-            text = string(1:)                    !! Read to end of string
+            ALLOCATE(text, source=string(1:))                    !! Read to end of string
         ELSE
-            text = string(1:INDEX(string,sep)-1) !! Read until sep is found
+            ALLOCATE(text, source=string(1:INDEX(string,sep)-1)) !! Read until sep is found
         END IF
-        READ(text,'(i8)') name                   !! Store value
+        READ(text,'(i8)') name                                   !! Store value
 
         END PROCEDURE get_string_int
 
@@ -95,11 +95,11 @@ SUBMODULE (Misc) Misc_implementation
         CHARACTER(LEN=:), ALLOCATABLE :: text
 
         IF (INDEX(string,sep) == 0) THEN
-            text = string(1:)                    !! Read to end of string
+            ALLOCATE(text, source=string(1:))                    !! Read to end of string
         ELSE
-            text = string(1:INDEX(string,sep)-1) !! Read until sep is found
+            ALLOCATE(text, source=string(1:INDEX(string,sep)-1)) !! Read until sep is found
         END IF
-        READ(text,'(es13.6)') name               !! Store value
+        READ(text,'(es13.6)') name                               !! Store value
 
         END PROCEDURE get_string_real
 
