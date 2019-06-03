@@ -21,6 +21,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         CHARACTER(LEN=:), ALLOCATABLE :: form, filetype_text
 
         IF (PRESENT(data_type)) filetype = data_type          !! Calling program provided what file type to use for vtk file
+        IF (ALLOCATED(vtkfilename)) DEALLOCATE(vtkfilename)
         IF (PRESENT(filename)) THEN
             ALLOCATE(vtkfilename, source=filename)            !! Calling program provided a filename
         ELSE
