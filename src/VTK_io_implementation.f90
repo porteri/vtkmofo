@@ -16,8 +16,8 @@ SUBMODULE (vtk_io) vtk_io_implementation
         !!
         !! This subroutines writes the legacy vtk output file
         !!
-        INTEGER(i4k)     :: i, inputstat, newunit
-        LOGICAL          :: file_is_open
+        INTEGER(i4k)  :: i, inputstat, newunit
+        LOGICAL, SAVE :: file_was_already_open = .FALSE.
         CHARACTER(LEN=:), ALLOCATABLE :: form, filetype_text
 
         IF (PRESENT(data_type)) filetype = data_type          !! Calling program provided what file type to use for vtk file
@@ -40,15 +40,15 @@ SUBMODULE (vtk_io) vtk_io_implementation
             END IF
         END IF
         IF (PRESENT(title)) THEN
-            vtktitle = title                                  !! Calling program provided a title
+            vtktitle = title                                    !! Calling program provided a title
         ELSE
-            vtktitle = default_title                          !! Calling program did not provide a title. Use default
+            vtktitle = default_title                            !! Calling program did not provide a title. Use default
         END IF
 
         IF (PRESENT(unit)) THEN
             newunit = unit
-            INQUIRE(unit=newunit, opened=file_is_open)        !! Check to see if file is already open
-            IF (.NOT. file_is_open) THEN                      !! File is not yet open. Determine format to open file
+            INQUIRE(unit=newunit, opened=file_was_already_open) !! Check to see if file is already open
+            IF (.NOT. file_was_already_open) THEN               !! File is not yet open. Determine format to open file
                 SELECT CASE (filetype)
                 CASE (ascii)
                     ALLOCATE(form, source='formatted')
@@ -62,7 +62,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
                     ALLOCATE(filetype_text, source='ASCII')
                 END SELECT
                 OPEN(unit=newunit, file=vtkfilename, iostat=inputstat, status='REPLACE', form=form)
-                                                              !! Open the VTK file
+                                                                !! Open the VTK file
             END IF
         ELSE
             SELECT CASE (filetype)
@@ -78,23 +78,23 @@ SUBMODULE (vtk_io) vtk_io_implementation
                 ALLOCATE(filetype_text, source='ASCII')
             END SELECT
             OPEN(newunit=newunit, file=vtkfilename, iostat=inputstat, status='REPLACE', form=form)
-                                                              !! Open the VTK file
+                                                                !! Open the VTK file
         END IF
 
-        WRITE(newunit,100) version                            !! VTK version (currently, 3.0)
-        WRITE(newunit,100) vtktitle                           !! VTK title card
-        WRITE(newunit,100) filetype_text                      !! VTK file type
+        WRITE(newunit,100) version                              !! VTK version (currently, 3.0)
+        WRITE(newunit,100) vtktitle                             !! VTK title card
+        WRITE(newunit,100) filetype_text                        !! VTK file type
 
-        CALL geometry%write(newunit)                          !! Write the geometry information
+        CALL geometry%write(newunit)                            !! Write the geometry information
 
         IF (PRESENT(celldatasets)) THEN
             WRITE(newunit,101) celldatasets(1)%n
             DO i = 1, SIZE(celldatasets)
-                CALL celldatasets(i)%attribute%write(newunit) !! Write the cell data values
+                CALL celldatasets(i)%attribute%write(newunit)   !! Write the cell data values
             END DO
         ELSE IF (PRESENT(celldata)) THEN
             WRITE(newunit,101) celldatasets(1)%n
-            CALL celldata%write(newunit)                      !! Write the cell data values
+            CALL celldata%write(newunit)                        !! Write the cell data values
         END IF
 
         IF (PRESENT(pointdatasets)) THEN
@@ -104,11 +104,11 @@ SUBMODULE (vtk_io) vtk_io_implementation
             END DO
         ELSE IF (PRESENT(pointdata)) THEN
             WRITE(newunit,102) pointdatasets(1)%n
-            CALL pointdata%write(newunit)                     !! Write the point data values
+            CALL pointdata%write(newunit)                       !! Write the point data values
         END IF
 
-        IF (.NOT. file_is_open) THEN
-            CLOSE(newunit)                                    !! Close the VTK file if file was not open prior to calling vtkmofo
+        IF (.NOT. file_was_already_open) THEN
+            CLOSE(newunit)                                      !! Close the VTK file if file was not open prior to calling vtkmofo
         END IF
 
 100     FORMAT(a)
