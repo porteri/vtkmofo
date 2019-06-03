@@ -310,17 +310,17 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
             i = i + 1
             READ(unit,100,iostat=iostat) line
             CALL interpret_string (line=line, datatype=[ 'I','C' ], ignore=descr_coord(i), separator=' ', ints=ints, chars=chars)
-            ASSOCIATE (my_datatype => to_lowercase(TRIM(chars(1)%text)))
-                SELECT CASE (i)
-                CASE (1)
-                    me%x%datatype = my_datatype
-                CASE (2)
-                    me%y%datatype = my_datatype
-                CASE (3)
-                    me%z%datatype = my_datatype
-                END SELECT
-            END ASSOCIATE
+            SELECT CASE (i)
+            CASE (1)
+                me%x%datatype = to_lowercase(TRIM(chars(1)%text))
+            CASE (2)
+                me%y%datatype = to_lowercase(TRIM(chars(1)%text))
+            CASE (3)
+                me%z%datatype = to_lowercase(TRIM(chars(1)%text))
+            END SELECT
+
             IF (ALLOCATED(chars)) DEALLOCATE(chars)
+
             READ(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
             IF (end_of_file) THEN

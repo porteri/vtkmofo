@@ -38,7 +38,7 @@ PROGRAM rectangular_prism_test
         vals(i,2) = vals(i-1,2) + MAX(50.0_r8k, j)     !! Pressure
         vals(i,3) = vals(i-1,3) + SQRT(REAL(i))        !! Stress
     END DO
-    dims = (/ n_x, n_y, n_z /)
+    dims = [ n_x, n_y, n_z ]
     CALL rectangular_prism%init (dims=dims, origin=origin, spacing=spacing)
     DO i = 1, n_params_to_write
         IF (.NOT. ALLOCATED(vals_to_write(i)%attribute))THEN
