@@ -1,5 +1,5 @@
 PROGRAM Append_test
-    USE Precision
+    USE Precision,      ONLY : i4k, r8k
     USE vtk_datasets,   ONLY : unstruct_grid
     USE vtk_attributes, ONLY : scalar, attributes
     USE vtk_cells,      ONLY : voxel, hexahedron, vtkcell_list
@@ -14,57 +14,96 @@ PROGRAM Append_test
     TYPE (unstruct_grid)        :: I_shape
     TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
     INTEGER(i4k)                :: i, t
-    INTEGER(i4k),     PARAMETER :: n_points = 24, n_cells = 5, unit = 20, n_steps = 10
+    INTEGER(i4k),     PARAMETER :: n_points = 32, n_cells = 7, unit = 20, n_steps = 10
     CHARACTER(LEN=*), PARAMETER :: filename = 'Append.vtk'
     CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of T-shape unstructured grid geometry'
     CHARACTER(LEN=8)            :: t_char
     REAL(r8k), DIMENSION(n_cells, 1:n_params_to_write) :: cell_vals
     REAL(r8k), DIMENSION(n_points,1:n_params_to_write) :: point_vals
     REAL(r8k), DIMENSION(3,n_points), PARAMETER        :: points = RESHAPE ( &
-      & [ 0.5_r8k, 0.0_r8k, 0.0_r8k, &
+      & [ 0.0_r8k, 0.0_r8k, 0.0_r8k, &
       &   1.0_r8k, 0.0_r8k, 0.0_r8k, &
-      &   0.5_r8k, 0.5_r8k, 0.0_r8k, &
-      &   1.0_r8k, 0.5_r8k, 0.0_r8k, &
-      &   0.5_r8k, 0.0_r8k, 0.5_r8k, &
-      &   1.0_r8k, 0.0_r8k, 0.5_r8k, &
-      &   0.5_r8k, 0.5_r8k, 0.5_r8k, &
-      &   1.0_r8k, 0.5_r8k, 0.5_r8k, &
+      &   2.0_r8k, 0.0_r8k, 0.0_r8k, &
+      &   3.0_r8k, 0.0_r8k, 0.0_r8k, &
+      &   0.0_r8k, 1.0_r8k, 0.0_r8k, &
+      &   1.0_r8k, 1.0_r8k, 0.0_r8k, &
+      &   2.0_r8k, 1.0_r8k, 0.0_r8k, &
+      &   3.0_r8k, 1.0_r8k, 0.0_r8k, &
       &   0.0_r8k, 0.0_r8k, 1.0_r8k, &
-      &   0.5_r8k, 0.0_r8k, 1.0_r8k, &
       &   1.0_r8k, 0.0_r8k, 1.0_r8k, &
-      &   1.5_r8k, 0.0_r8k, 1.0_r8k, &
-      &   0.0_r8k, 0.5_r8k, 1.0_r8k, &
-      &   0.5_r8k, 0.5_r8k, 1.0_r8k, &
-      &   1.0_r8k, 0.5_r8k, 1.0_r8k, &
-      &   1.5_r8k, 0.5_r8k, 1.0_r8k, &
-      &   0.0_r8k, 0.0_r8k, 1.5_r8k, &
-      &   0.5_r8k, 0.0_r8k, 1.5_r8k, &
-      &   1.0_r8k, 0.0_r8k, 1.5_r8k, &
-      &   1.5_r8k, 0.0_r8k, 1.5_r8k, &
-      &   0.0_r8k, 0.5_r8k, 1.5_r8k, &
-      &   0.5_r8k, 0.5_r8k, 1.5_r8k, &
-      &   1.0_r8k, 0.5_r8k, 1.5_r8k, &
-      &   1.5_r8k, 0.5_r8k, 1.5_r8k ], [3,n_points] )
+      &   2.0_r8k, 0.0_r8k, 1.0_r8k, &
+      &   3.0_r8k, 0.0_r8k, 1.0_r8k, &
+      &   0.0_r8k, 1.0_r8k, 1.0_r8k, &
+      &   1.0_r8k, 1.0_r8k, 1.0_r8k, &
+      &   2.0_r8k, 1.0_r8k, 1.0_r8k, &
+      &   3.0_r8k, 1.0_r8k, 1.0_r8k, &
+      &   0.0_r8k, 0.0_r8k, 2.0_r8k, &
+      &   1.0_r8k, 0.0_r8k, 2.0_r8k, &
+      &   2.0_r8k, 0.0_r8k, 2.0_r8k, &
+      &   3.0_r8k, 0.0_r8k, 2.0_r8k, &
+      &   0.0_r8k, 1.0_r8k, 2.0_r8k, &
+      &   1.0_r8k, 1.0_r8k, 2.0_r8k, &
+      &   2.0_r8k, 1.0_r8k, 2.0_r8k, &
+      &   3.0_r8k, 1.0_r8k, 2.0_r8k, &
+      &   0.0_r8k, 0.0_r8k, 3.0_r8k, &
+      &   1.0_r8k, 0.0_r8k, 3.0_r8k, &
+      &   2.0_r8k, 0.0_r8k, 3.0_r8k, &
+      &   3.0_r8k, 0.0_r8k, 3.0_r8k, &
+      &   0.0_r8k, 1.0_r8k, 3.0_r8k, &
+      &   1.0_r8k, 1.0_r8k, 3.0_r8k, &
+      &   2.0_r8k, 1.0_r8k, 3.0_r8k, &
+      &   3.0_r8k, 1.0_r8k, 3.0_r8k ], [3,n_points] )
     REAL(r8k), PARAMETER :: temp_default = 100.0_r8k, temp_increment = 10.0_r8k
     REAL(r8k), DIMENSION(n_points), PARAMETER :: temp_norm = &
-      & [ 1.0_r8k, 1.0_r8k, 1.0_r8k, 1.0_r8k, 2.0_r8k, 2.0_r8k, 2.0_r8k, 2.0_r8k, 1.0_r8k, &
-      &   3.0_r8k, 3.0_r8k, 1.0_r8k, 1.0_r8k, 4.0_r8k, 4.0_r8k, 1.0_r8k, 1.0_r8k, 2.0_r8k, &
-      &   2.0_r8k, 1.0_r8k, 1.0_r8k, 3.0_r8k, 3.0_r8k, 1.0_r8k ]
+      & [ 0.8_r8k, &
+      &   1.0_r8k, &
+      &   1.2_r8k, &
+      &   0.8_r8k, &
+      &   1.0_r8k, &
+      &   1.2_r8k, &
+      &   0.8_r8k, &
+      &   1.0_r8k, &
+      &   1.2_r8k, &
+      &   0.8_r8k, &
+      &   1.0_r8k, &
+      &   1.2_r8k, &
+      &   0.8_r8k, &
+      &   1.0_r8k, &
+      &   1.2_r8k, &
+      &   0.8_r8k, &
+      &   1.0_r8k, &
+      &   1.2_r8k, &
+      &   0.8_r8k, &
+      &   1.0_r8k, &
+      &   1.2_r8k, &
+      &   0.8_r8k, &
+      &   1.0_r8k, &
+      &   1.2_r8k, &
+      &   0.8_r8k, &
+      &   1.0_r8k, &
+      &   1.2_r8k, &
+      &   0.8_r8k, &
+      &   1.0_r8k, &
+      &   1.2_r8k, &
+      &   0.8_r8k, &
+      &   1.0_r8k ]
     INTEGER(i4k), DIMENSION(n_cells), PARAMETER :: cellID = &
-      & [ 11, 11, 11, 11, 12 ]
+      & [ 1, 2, 3, 4, 5, 6, 7 ]
     TYPE(voxel),        DIMENSION(n_cells-1) :: voxel_cells     !! Voxel cell type
     TYPE(hexahedron)                         :: hexahedron_cell !! Hexahedron cell type
     TYPE(vtkcell_list), DIMENSION(n_cells)   :: cell_list       !! Full list of all cells
-    CHARACTER(LEN=10), DIMENSION(n_params_to_write), PARAMETER :: cell_dataname = &
-      & [ 'cellIDs   ' ]
-    CHARACTER(LEN=15), DIMENSION(n_params_to_write), PARAMETER :: point_dataname = &
-      & [ 'Temperature(K) ' ]
+    CHARACTER(LEN=10), DIMENSION(*), PARAMETER :: cell_dataname = &
+      & [ 'cellIDs   ', 'matType   ' ]
+    CHARACTER(LEN=15), DIMENSION(*), PARAMETER :: point_dataname = &
+      & [ 'Temperature(K) ','Stress (Pa)    ' ]
 
-    CALL voxel_cells(1)%setup ( [ 0, 1, 2, 3, 4, 5, 6, 7 ] )
-    CALL voxel_cells(2)%setup ( [ 4, 5, 6, 7, 9, 10, 13, 14 ] )
-    CALL voxel_cells(3)%setup ( [ 8, 9, 12, 13, 16, 17, 20, 21 ] )
-    CALL voxel_cells(4)%setup ( [ 9, 10, 13, 14, 17, 18, 21, 22 ] )
-    CALL hexahedron_cell%setup ( [ 10, 11, 15, 14, 18, 19, 23, 22 ] )
+    CALL voxel_cells(1)%setup ( [  0,  1,  4,  5,  8,  9, 12, 13 ] )
+    CALL voxel_cells(2)%setup ( [  1,  2,  5,  6,  9, 10, 13, 14 ] )
+    CALL voxel_cells(3)%setup ( [  2,  3,  6,  7, 10, 11, 14, 15 ] )
+    CALL voxel_cells(4)%setup ( [ 16, 17, 20, 21, 24, 25, 28, 29 ] )
+    CALL voxel_cells(5)%setup ( [ 17, 18, 21, 22, 25, 26, 29, 30 ] )
+    CALL voxel_cells(6)%setup ( [ 18, 19, 22, 23, 26, 27, 30, 31 ] )
+    CALL hexahedron_cell%setup ( [ 9, 10, 14, 13, 17, 18, 22, 21 ] )
 
     ALLOCATE(cell_list(1)%cell,source=voxel_cells(1)) !! Workaround for gfortran-8.2
     ALLOCATE(cell_list(2)%cell,source=voxel_cells(2))
@@ -74,15 +113,15 @@ PROGRAM Append_test
     ALLOCATE(cell_list(6)%cell,source=voxel_cells(5))
     ALLOCATE(cell_list(7)%cell,source=voxel_cells(6))
 
-    CALL i_shape%init (points=points, cell_list=cell_list)
+    CALL I_shape%init (points=points, cell_list=cell_list)
 
     DO t = 1, n_steps
         cell_vals(:,1)  = REAL(cellID(:)); WRITE(t_char,'(i0)') t
         point_vals(:,1) = temp_default + (t-1) * temp_increment * temp_norm
 
-        CALL vtk_legacy_write (i_shape, unit=unit, filename=filename, title=title, multiple_io=.TRUE.)
-                               !! Initialize the new file with just geometry information
-        DO i = 1, n_params_to_write
+        CALL vtk_legacy_write (I_shape, unit=unit, filename=filename, title=title, multiple_io=.TRUE.)
+                                   !! Initialize the new file with just geometry information
+        DO i = 1, SIZE(cell_vals_to_write,DIM=1)
             ! Cell values
             IF (.NOT. ALLOCATED(cell_vals_to_write(i)%attribute))THEN
                 ALLOCATE(scalar::cell_vals_to_write(i)%attribute)
@@ -90,7 +129,7 @@ PROGRAM Append_test
             END IF
             CALL cell_vals_to_write(i)%attribute%init (TRIM(cell_dataname(i)), numcomp=1, real1d=cell_vals(:,i))
 
-            CALL vtk_legacy_write (celldatasets=cell_vals_to_write(i))
+            CALL vtk_legacy_write (celldatasets=[cell_vals_to_write(i)])
                                    !! Append cell information
         END DO
 
@@ -102,7 +141,7 @@ PROGRAM Append_test
             END IF
             CALL point_vals_to_write(i)%attribute%init (TRIM(point_dataname(i)), numcomp=1, real1d=point_vals(:,i))
 
-            CALL vtk_legacy_write (pointdatasets=point_vals_to_write(i))
+            CALL vtk_legacy_write (pointdatasets=[point_vals_to_write(i)])
                                    !! Append point information
         END DO
 
