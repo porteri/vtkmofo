@@ -47,7 +47,8 @@ MODULE vtk_attributes
 
     TYPE, EXTENDS(attribute) :: vector
         !! Vector attribute DT
-        REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: vectors
+        INTEGER(i4k), DIMENSION(:,:), ALLOCATABLE :: i_vector
+        REAL(r8k),    DIMENSION(:,:), ALLOCATABLE :: r_vector
     CONTAINS
         PROCEDURE :: read  => vector_read
         PROCEDURE :: write => vector_write

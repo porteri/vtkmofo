@@ -266,7 +266,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 ! Vectors
 !********
         MODULE PROCEDURE vector_read
-        USE Misc, ONLY : interpret_string
+        USE Misc, ONLY : interpret_string, to_lowercase
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -276,15 +276,26 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         INTEGER(i4k),  PARAMETER   :: dim = 3
         LOGICAL                    :: end_of_file
         CHARACTER(LEN=def_len)     :: line
+        INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
-        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
+        INTEGER(i4k),     DIMENSION(:,:), ALLOCATABLE :: i_dummy
+        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: r_dummy
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='VECTORS ', separator=' ', chars=chars)
-        me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2))
+        me%dataname = TRIM(chars(1)); me%datatype = to_lowercase(TRIM(chars(2)))
 
-        ALLOCATE(me%vectors(0,0)); end_of_file = .FALSE.; i = 0
+        SELECT CASE (me%datatype)
+        CASE ('unsigned_int', 'int')
+            ALLOCATE(me%i_vector(0,0))
+        CASE ('float', 'double')
+            ALLOCATE(me%r_vector(0,0))
+        CASE DEFAULT
+            ERROR STOP 'datatype not supported in scalar_read'
+        END SELECT
+
+        end_of_file = .FALSE.; i = 0
 
         get_vectors: DO
             READ(unit,100,iostat=iostat) line
@@ -294,13 +305,24 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             ELSE IF (TRIM(line) == '') THEN
                 CYCLE     !! Skip blank lines
             ELSE
-                ALLOCATE(dummy(1:UBOUND(me%vectors,DIM=1)+1,1:dim),source=0.0_r8k)
-                IF (i > 0) dummy(1:UBOUND(me%vectors,DIM=1),1:dim) = me%vectors
-                CALL MOVE_ALLOC(dummy, me%vectors)
-                i = i + 1
+                SELECT CASE (me%datatype)
+                CASE ('unsigned_int', 'int')
+                    ALLOCATE(i_dummy(1:UBOUND(me%i_vector,DIM=1)+1,1:dim),source=0_i4k)
+                    IF (i > 0) i_dummy(1:UBOUND(me%i_vector,DIM=1),1:dim) = me%i_vector
+                    CALL MOVE_ALLOC(i_dummy, me%i_vector)
+                    i = i + 1
 
-                CALL interpret_string (line=line, datatype=[ 'R','R','R' ], separator=' ', reals=reals)
-                me%vectors(i,1:dim) = reals(1:dim)
+                    CALL interpret_string (line=line, datatype=[ 'I','I','I' ], separator=' ', ints=ints)
+                    me%i_vector(i,1:dim) = ints(1:dim)
+                CASE ('float', 'double')
+                    ALLOCATE(r_dummy(1:UBOUND(me%r_vector,DIM=1)+1,1:dim),source=0.0_r8k)
+                    IF (i > 0) r_dummy(1:UBOUND(me%r_vector,DIM=1),1:dim) = me%r_vector
+                    CALL MOVE_ALLOC(r_dummy, me%r_vector)
+                    i = i + 1
+
+                    CALL interpret_string (line=line, datatype=[ 'R','R','R' ], separator=' ', reals=reals)
+                    me%r_vector(i,1:dim) = reals(1:dim)
+                END SELECT
             END IF
         END DO get_vectors
 
@@ -316,12 +338,19 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         INTEGER(i4k) :: i
 
         WRITE(unit,100) me%dataname, me%datatype
-        DO i = 1, SIZE(me%vectors,DIM=1)
-            WRITE(unit,101) me%vectors(i,1:3)
-        END DO
+        IF (ALLOCATED(me%i_vector)) THEN
+            DO i = 1, SIZE(me%i_vector,DIM=1)
+                WRITE(unit,101) me%i_vector(i,1:3)
+            END DO
+        ELSE IF (ALLOCATED(me%r_vector)) THEN
+            DO i = 1, SIZE(me%r_vector,DIM=1)
+                WRITE(unit,102) me%r_vector(i,1:3)
+            END DO
+        END IF
 
 100     FORMAT('VECTORS ',(a),' ',(a))
-101     FORMAT(*(es13.6,' '))
+101     FORMAT(*(i8,' '))
+102     FORMAT(*(es13.6,' '))
         END PROCEDURE vector_write
 
         MODULE PROCEDURE vector_setup
@@ -336,7 +365,14 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%datatype = 'double'
         END IF
-        me%vectors = real2d
+        IF (PRESENT(ints2d)) THEN
+            IF (me%datatype == 'double') me%datatype = 'int'
+            ALLOCATE(me%i_vector, source=ints2d)
+        ELSE IF (PRESENT(real2d)) THEN
+            ALLOCATE(me%r_vector, source=real2d)
+        ELSE
+            ERROR STOP 'Error: Must provide either ints2d or real2d in vector_setup'
+        END IF
 
         END PROCEDURE vector_setup
 
@@ -358,14 +394,24 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     diffs = .TRUE.
                 ELSE IF (me%datatype /= you%datatype)   THEN
                     diffs = .TRUE.
-                ELSE
-                    DO i = 1, UBOUND(me%vectors,DIM=1)
-                        DO j = 1, UBOUND(me%vectors,DIM=2)
-                            IF (me%vectors(i,j) /= you%vectors(i,j))     THEN
+                ELSE IF (ALLOCATED(me%i_vector)) THEN
+                    DO i = 1, UBOUND(me%i_vector,DIM=1)
+                        DO j = 1, UBOUND(me%i_vector,DIM=2)
+                            IF (me%i_vector(i,j) /= you%i_vector(i,j))     THEN
                                 diffs = .TRUE.
                             END IF
                         END DO
                     END DO
+                ELSE IF (ALLOCATED(me%r_vector)) THEN
+                    DO i = 1, UBOUND(me%r_vector,DIM=1)
+                        DO j = 1, UBOUND(me%r_vector,DIM=2)
+                            IF (me%r_vector(i,j) /= you%r_vector(i,j))     THEN
+                                diffs = .TRUE.
+                            END IF
+                        END DO
+                    END DO
+                ELSE
+                    diffs = .TRUE.
                 END IF
             END SELECT
         END IF

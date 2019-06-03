@@ -27,9 +27,13 @@ MODULE vtk_attributes_unit_tests
     INTEGER(i4k), DIMENSION(*),   PARAMETER :: int_vals    = &
       & [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
 ! Vector information
-    REAL(r8k), DIMENSION(2,3), PARAMETER :: vector_vals  = RESHAPE ( &
+    REAL(r8k), DIMENSION(2,3), PARAMETER :: vector_r_vals  = RESHAPE ( &
       & [ 0.5_r8k, 1.0_r8k, 0.5_r8k, &
       &   4.0_r8k, 2.0_r8k, 1.0_r8k ], [2,3])
+    INTEGER(i4k), DIMENSION(2,3), PARAMETER :: vector_i_vals  = RESHAPE ( &
+      & [ 10_i4k, 10_i4k, &
+      &   20_i4k, 20_i4k, &
+      &   30_i4k, 30_i4k ], [3,2])
 ! Normal information
     REAL(r8k), DIMENSION(4,3), PARAMETER :: normal_vals  = RESHAPE ( &
       & [ 0.5_r8k, 1.0_r8k, 0.5_r8k, &
@@ -104,7 +108,7 @@ MODULE vtk_attributes_unit_tests
             SELECT CASE (i)
             CASE (1, 7)
                 !! Scalar attribute
-                ALLOCATE(scalar  :: vtk_type_1, vtk_type_2)
+                ALLOCATE(scalar :: vtk_type_1, vtk_type_2)
 
                 !! Data type is generated from the defined values above
                 IF (i == 1) THEN
@@ -114,15 +118,20 @@ MODULE vtk_attributes_unit_tests
                     !! Test for integers
                     CALL vtk_type_1%init(dataname='temperature', numcomp=1, ints1d=int_vals)
                 END IF
-            CASE (2)
+            CASE (2, 8)
                 !! Vector attribute
-                ALLOCATE(vector  :: vtk_type_1, vtk_type_2)
+                ALLOCATE(vector :: vtk_type_1, vtk_type_2)
 
-                !! Data type is generated from the defined values above
-                CALL vtk_type_1%init(dataname='temperature', numcomp=1, real2d=vector_vals)
+                IF (i == 2) THEN
+                    !! Test for reals
+                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, real2d=vector_r_vals)
+                ELSE IF (i == 8) THEN
+                    !! Test for integers
+                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, ints2d=vector_i_vals)
+                END IF
             CASE (3)
                 !! Normal attribute
-                ALLOCATE(normal  :: vtk_type_1, vtk_type_2)
+                ALLOCATE(normal :: vtk_type_1, vtk_type_2)
 
                 !! Data type is generated from the defined values above
                 CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, real2d=normal_vals)
@@ -132,22 +141,22 @@ MODULE vtk_attributes_unit_tests
 
                 !! Data type is generated from the defined values above
                 CALL vtk_type_1%init(dataname='textured_temp', numcomp=1, real2d=texture_vals)
-            CASE (5, 8)
+            CASE (5, 9)
                 !! Tensor attribute
-                ALLOCATE(tensor  :: vtk_type_1, vtk_type_2)
+                ALLOCATE(tensor :: vtk_type_1, vtk_type_2)
                 IF (i == 5) THEN
                     tensor_r_vals(1,:,:) = tensor_1; tensor_r_vals(2,:,:) = tensor_2
                     tensor_r_vals(3,:,:) = tensor_3; tensor_r_vals(4,:,:) = tensor_4
                     !! Data type is generated from the defined values above
                     CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, real3d=tensor_r_vals)
-                ELSE IF (i == 8) THEN
+                ELSE IF (i == 9) THEN
                     tensor_i_vals(1,:,:) = tensor_5; tensor_i_vals(2,:,:) = tensor_6
                     !! Data type is generated from the defined values above
                     CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, ints3d=tensor_i_vals)
                 END IF
             CASE (6)
                 !! Field attribute
-                ALLOCATE(field   :: vtk_type_1, vtk_type_2)
+                ALLOCATE(field :: vtk_type_1, vtk_type_2)
                 array_1%name = 'temps';     array_1%numComponents=3; array_1%numTuples=3
                 array_1%datatype='double';  array_1%data = data_1
                 array_2%name = 'pressures'; array_2%numComponents=5; array_2%numTuples=2
