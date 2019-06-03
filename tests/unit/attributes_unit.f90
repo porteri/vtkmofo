@@ -30,16 +30,21 @@ MODULE vtk_attributes_unit_tests
     REAL(r8k), DIMENSION(2,3), PARAMETER :: vector_r_vals  = RESHAPE ( &
       & [ 0.5_r8k, 1.0_r8k, 0.5_r8k, &
       &   4.0_r8k, 2.0_r8k, 1.0_r8k ], [2,3])
-    INTEGER(i4k), DIMENSION(2,3), PARAMETER :: vector_i_vals  = RESHAPE ( &
-      & [ 10_i4k, 10_i4k, &
-      &   20_i4k, 20_i4k, &
-      &   30_i4k, 30_i4k ], [3,2])
+    INTEGER(i4k), DIMENSION(3,3), PARAMETER :: vector_i_vals  = RESHAPE ( &
+      & [ 10_i4k, 10_i4k, 10_i4k, &
+      &   20_i4k, 20_i4k, 20_i4k, &
+      &   30_i4k, 30_i4k, 30_i4k ], [3,3])
 ! Normal information
-    REAL(r8k), DIMENSION(4,3), PARAMETER :: normal_vals  = RESHAPE ( &
+    REAL(r8k), DIMENSION(4,3), PARAMETER :: normal_r_vals  = RESHAPE ( &
       & [ 0.5_r8k, 1.0_r8k, 0.5_r8k, &
       &   1.0_r8k, 1.0_r8k, 1.0_r8k, &
       &   1.0_r8k, 0.5_r8k, 1.0_r8k, &
       &   1.0_r8k, 0.9_r8k, 1.0_r8k ], [4,3])
+    INTEGER(i4k), DIMENSION(4,3), PARAMETER :: normal_i_vals  = RESHAPE ( &
+      & [  1_i4k, 0_i4k, -1_i4k, &
+      &   -1_i4k, 0_i4k,  1_i4k, &
+      &    1_i4k, 0_i4k, -1_i4k, &
+      &   -1_i4k, 0_i4k,  1_i4k ], [4,3])
 ! Texture information
     REAL(r8k), DIMENSION(6,2), PARAMETER :: texture_vals = RESHAPE ( &
       & [ 0.5_r8k, 1.0_r8k, &
@@ -129,19 +134,24 @@ MODULE vtk_attributes_unit_tests
                     !! Test for integers
                     CALL vtk_type_1%init(dataname='temperature', numcomp=1, ints2d=vector_i_vals)
                 END IF
-            CASE (3)
+            CASE (3, 9)
                 !! Normal attribute
                 ALLOCATE(normal :: vtk_type_1, vtk_type_2)
 
-                !! Data type is generated from the defined values above
-                CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, real2d=normal_vals)
+                IF (i == 3) THEN
+                    !! Test for reals
+                    CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, real2d=normal_r_vals)
+                ELSE IF (i == 9) THEN
+                    !! Test for integers
+                    CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, ints2d=normal_i_vals)
+                END IF
             CASE (4)
                 !! Texture attribute
                 ALLOCATE(texture :: vtk_type_1, vtk_type_2)
 
                 !! Data type is generated from the defined values above
                 CALL vtk_type_1%init(dataname='textured_temp', numcomp=1, real2d=texture_vals)
-            CASE (5, 9)
+            CASE (5, 10)
                 !! Tensor attribute
                 ALLOCATE(tensor :: vtk_type_1, vtk_type_2)
                 IF (i == 5) THEN
@@ -149,7 +159,7 @@ MODULE vtk_attributes_unit_tests
                     tensor_r_vals(3,:,:) = tensor_3; tensor_r_vals(4,:,:) = tensor_4
                     !! Data type is generated from the defined values above
                     CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, real3d=tensor_r_vals)
-                ELSE IF (i == 9) THEN
+                ELSE IF (i == 10) THEN
                     tensor_i_vals(1,:,:) = tensor_5; tensor_i_vals(2,:,:) = tensor_6
                     !! Data type is generated from the defined values above
                     CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, ints3d=tensor_i_vals)

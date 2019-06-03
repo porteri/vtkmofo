@@ -58,7 +58,8 @@ MODULE vtk_attributes
 
     TYPE, EXTENDS(attribute) :: normal
         !! Normal attribute DT
-        REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: normals
+        INTEGER(i4k), DIMENSION(:,:), ALLOCATABLE :: i_normal
+        REAL(r8k),    DIMENSION(:,:), ALLOCATABLE :: r_normal
     CONTAINS
         PROCEDURE :: read  => normal_read
         PROCEDURE :: write => normal_write
