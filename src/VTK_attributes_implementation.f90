@@ -576,7 +576,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 ! Textures
 !********
         MODULE PROCEDURE texture_read
-        USE Misc, ONLY : interpret_string
+        USE Misc, ONLY : interpret_string, to_lowercase
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -588,15 +588,26 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         CHARACTER(LEN=:), DIMENSION(:),   ALLOCATABLE :: chars
-        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: dummy
-        CHARACTER(LEN=1), DIMENSION(3),   PARAMETER   :: datatype = [ 'R','R','R' ]
+        INTEGER(i4k),     DIMENSION(:,:), ALLOCATABLE :: i_dummy
+        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: r_dummy
+        CHARACTER(LEN=1), DIMENSION(3),   PARAMETER   :: i_datatype = [ 'I','I','I' ]
+        CHARACTER(LEN=1), DIMENSION(3),   PARAMETER   :: r_datatype = [ 'R','R','R' ]
 
         READ(unit,100) line
         CALL interpret_string (line=line, datatype=[ 'C','I','C' ], ignore='TEXTURE_COORDINATES ', separator=' ', &
           &                    ints=ints, chars=chars)
-        me%dataname = TRIM(chars(1)); me%datatype = TRIM(chars(2)); dim = ints(1)
+        me%dataname = TRIM(chars(1)); dim = ints(1); me%datatype = to_lowercase(TRIM(chars(2)))
 
-        ALLOCATE(me%textures(0,0)); end_of_file = .FALSE.; i = 0
+        SELECT CASE (me%datatype)
+        CASE ('unsigned_int', 'int')
+            ALLOCATE(me%i_texture(0,0))
+        CASE ('float', 'double')
+            ALLOCATE(me%r_texture(0,0))
+        CASE DEFAULT
+            ERROR STOP 'datatype not supported in scalar_read'
+        END SELECT
+
+        end_of_file = .FALSE.; i = 0
 
         get_textures: DO
             READ(unit,100,iostat=iostat) line
@@ -606,13 +617,24 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             ELSE IF (TRIM(line) == '') THEN
                 CYCLE     !! Skip blank lines
             ELSE
-                ALLOCATE(dummy(1:UBOUND(me%textures,DIM=1)+1,1:dim),source=0.0_r8k)
-                IF (i > 0) dummy(1:UBOUND(me%textures,DIM=1),1:dim) = me%textures
-                CALL MOVE_ALLOC(dummy, me%textures)
-                i = i + 1
+                SELECT CASE (me%datatype)
+                CASE ('unsigned_int', 'int')
+                    ALLOCATE(i_dummy(1:UBOUND(me%i_texture,DIM=1)+1,1:dim),source=0_i4k)
+                    IF (i > 0) i_dummy(1:UBOUND(me%i_texture,DIM=1),1:dim) = me%i_texture
+                    CALL MOVE_ALLOC(i_dummy, me%i_texture)
+                    i = i + 1
 
-                CALL interpret_string (line=line, datatype=datatype(1:dim), separator=' ', reals=reals)
-                me%textures(i,1:dim) = reals(1:dim)
+                    CALL interpret_string (line=line, datatype=i_datatype(1:dim), separator=' ', ints=ints)
+                    me%i_texture(i,1:dim) = ints(1:dim)
+                CASE ('float', 'double')
+                    ALLOCATE(r_dummy(1:UBOUND(me%r_texture,DIM=1)+1,1:dim),source=0.0_r8k)
+                    IF (i > 0) r_dummy(1:UBOUND(me%r_texture,DIM=1),1:dim) = me%r_texture
+                    CALL MOVE_ALLOC(r_dummy, me%r_texture)
+                    i = i + 1
+
+                    CALL interpret_string (line=line, datatype=r_datatype(1:dim), separator=' ', reals=reals)
+                    me%r_texture(i,1:dim) = reals(1:dim)
+                END SELECT
             END IF
         END DO get_textures
 
@@ -625,15 +647,30 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the write for a texture attribute
         !!
-        INTEGER(i4k) :: i
+        INTEGER(i4k) :: i, dim
 
-        WRITE(unit,100) me%dataname, SIZE(me%textures,DIM=2), me%datatype
-        DO i = 1, SIZE(me%textures,DIM=1)
-            WRITE(unit,101) me%textures(i,:)
-        END DO
+        IF (ALLOCATED(me%i_texture)) THEN
+            dim = SIZE(me%i_texture,DIM=2)
+        ELSE IF (ALLOCATED(me%r_texture)) THEN
+            dim = SIZE(me%r_texture,DIM=2)
+        ELSE
+            dim = 0
+        END IF
+
+        WRITE(unit,100) me%dataname, dim, me%datatype
+        IF (ALLOCATED(me%i_texture)) THEN
+            DO i = 1, SIZE(me%i_texture,DIM=1)
+                WRITE(unit,101) me%i_texture(i,:)
+            END DO
+        ELSE IF (ALLOCATED(me%r_texture)) THEN
+            DO i = 1, SIZE(me%r_texture,DIM=1)
+                WRITE(unit,102) me%r_texture(i,:)
+            END DO
+        END IF
 
 100     FORMAT('TEXTURE_COORDINATES ',(a),' ',(i1),' ',(a))
-101     FORMAT(*(es13.6,' '))
+101     FORMAT(*(i8,' '))
+102     FORMAT(*(es13.6,' '))
         END PROCEDURE texture_write
 
         MODULE PROCEDURE texture_setup
@@ -648,7 +685,14 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%datatype = 'double'
         END IF
-        me%textures = real2d
+        IF (PRESENT(ints2d)) THEN
+            IF (me%datatype == 'double') me%datatype = 'int'
+            ALLOCATE(me%i_texture, source=ints2d)
+        ELSE IF (PRESENT(real2d)) THEN
+            ALLOCATE(me%r_texture, source=real2d)
+        ELSE
+            ERROR STOP 'Error: Must provide either ints2d or real2d in texture_setup'
+        END IF
 
         END PROCEDURE texture_setup
 
@@ -670,14 +714,24 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     diffs = .TRUE.
                 ELSE IF (me%datatype /= you%datatype)   THEN
                     diffs = .TRUE.
-                ELSE
-                    DO i = 1, UBOUND(me%textures,DIM=1)
-                        DO j = 1, UBOUND(me%textures,DIM=2)
-                            IF (me%textures(i,j) /= you%textures(i,j))     THEN
+                ELSE IF (ALLOCATED(me%i_texture)) THEN
+                    DO i = 1, UBOUND(me%i_texture,DIM=1)
+                        DO j = 1, UBOUND(me%i_texture,DIM=2)
+                            IF (me%i_texture(i,j) /= you%i_texture(i,j)) THEN
                                 diffs = .TRUE.
                             END IF
                         END DO
                     END DO
+                ELSE IF (ALLOCATED(me%r_texture)) THEN
+                    DO i = 1, UBOUND(me%r_texture,DIM=1)
+                        DO j = 1, UBOUND(me%r_texture,DIM=2)
+                            IF (me%r_texture(i,j) /= you%r_texture(i,j)) THEN
+                                diffs = .TRUE.
+                            END IF
+                        END DO
+                    END DO
+                ELSE
+                    diffs = .TRUE.
                 END IF
             END SELECT
         END IF

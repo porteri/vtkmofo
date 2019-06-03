@@ -69,7 +69,8 @@ MODULE vtk_attributes
 
     TYPE, EXTENDS(attribute) :: texture
         !! Texture attribute DT
-        REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: textures
+        INTEGER(i4k), DIMENSION(:,:), ALLOCATABLE :: i_texture
+        REAL(r8k),    DIMENSION(:,:), ALLOCATABLE :: r_texture
     CONTAINS
         PROCEDURE :: read  => texture_read
         PROCEDURE :: write => texture_write
