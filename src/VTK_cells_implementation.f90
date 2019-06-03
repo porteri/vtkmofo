@@ -46,7 +46,7 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
             i = 0! IF(ALLOCATED(points)) DEALLOCATE(points)
             get_vals: DO
                 i = i + 1
-                CALL interpret_string (line=line, datatype=(/ 'I' /), separator=' ', ints=ints)
+                CALL interpret_string (line=line, datatype=[ 'I' ], separator=' ', ints=ints)
                 IF (i == 1) THEN
                     CALL me%init(ints(1), ierr)
                 ELSE
