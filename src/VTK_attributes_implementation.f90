@@ -55,15 +55,15 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         SELECT TYPE (me)
         CLASS IS (scalar)
-            CALL me%setup(dataname, datatype, numcomp, tablename, ints1d, real1d)
+            CALL me%setup(dataname, datatype, numcomp, tablename, int1d, real1d)
         CLASS IS (vector)
-            CALL me%setup(dataname, datatype, ints2d, real2d)
+            CALL me%setup(dataname, datatype, int2d, real2d)
         CLASS IS (normal)
-            CALL me%setup(dataname, datatype, ints2d, real2d)
+            CALL me%setup(dataname, datatype, int2d, real2d)
         CLASS IS (texture)
-            CALL me%setup(dataname, datatype, ints2d, real2d)
+            CALL me%setup(dataname, datatype, int2d, real2d)
         CLASS IS (tensor)
-            CALL me%setup(dataname, datatype, ints3d, real3d)
+            CALL me%setup(dataname, datatype, int3d, real3d)
         CLASS IS (field)
             CALL me%setup(dataname, datatype, field_arrays)
         CLASS DEFAULT
@@ -198,7 +198,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
             me%datatype = datatype
-        ELSE IF (PRESENT(ints1d)) THEN
+        ELSE IF (PRESENT(int1d)) THEN
             me%datatype = 'int'
         ELSE
             me%datatype = 'double'
@@ -213,8 +213,8 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%tablename = default
         END IF
-        IF (PRESENT(ints1d)) THEN
-            me%ints = ints1d
+        IF (PRESENT(int1d)) THEN
+            me%ints = int1d
         ELSE IF (PRESENT(real1d)) THEN
             me%reals = real1d
         ELSE
@@ -365,13 +365,13 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%datatype = 'double'
         END IF
-        IF (PRESENT(ints2d)) THEN
+        IF (PRESENT(int2d)) THEN
             IF (me%datatype == 'double') me%datatype = 'int'
-            ALLOCATE(me%i_vector, source=ints2d)
+            ALLOCATE(me%i_vector, source=int2d)
         ELSE IF (PRESENT(real2d)) THEN
             ALLOCATE(me%r_vector, source=real2d)
         ELSE
-            ERROR STOP 'Error: Must provide either ints2d or real2d in vector_setup'
+            ERROR STOP 'Error: Must provide either int2d or real2d in vector_setup'
         END IF
 
         END PROCEDURE vector_setup
@@ -520,13 +520,13 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%datatype = 'double'
         END IF
-        IF (PRESENT(ints2d)) THEN
+        IF (PRESENT(int2d)) THEN
             IF (me%datatype == 'double') me%datatype = 'int'
-            ALLOCATE(me%i_normal, source=ints2d)
+            ALLOCATE(me%i_normal, source=int2d)
         ELSE IF (PRESENT(real2d)) THEN
             ALLOCATE(me%r_normal, source=real2d)
         ELSE
-            ERROR STOP 'Error: Must provide either ints2d or real2d in normal_setup'
+            ERROR STOP 'Error: Must provide either int2d or real2d in normal_setup'
         END IF
 
         END PROCEDURE normal_setup
@@ -685,13 +685,13 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             me%datatype = 'double'
         END IF
-        IF (PRESENT(ints2d)) THEN
+        IF (PRESENT(int2d)) THEN
             IF (me%datatype == 'double') me%datatype = 'int'
-            ALLOCATE(me%i_texture, source=ints2d)
+            ALLOCATE(me%i_texture, source=int2d)
         ELSE IF (PRESENT(real2d)) THEN
             ALLOCATE(me%r_texture, source=real2d)
         ELSE
-            ERROR STOP 'Error: Must provide either ints2d or real2d in texture_setup'
+            ERROR STOP 'Error: Must provide either int2d or real2d in texture_setup'
         END IF
 
         END PROCEDURE texture_setup
@@ -854,18 +854,18 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         me%dataname = dataname
         IF (PRESENT(datatype)) THEN
             me%datatype = datatype
-        ELSE IF (PRESENT(ints3d)) THEN
+        ELSE IF (PRESENT(int3d)) THEN
             me%datatype = 'int'
         ELSE
             me%datatype = 'double'
         END IF
-        IF (PRESENT(ints3d)) THEN
-            IF (SIZE(ints3d,DIM=2) /= 3 .OR. SIZE(ints3d,DIM=3) /= 3) THEN
+        IF (PRESENT(int3d)) THEN
+            IF (SIZE(int3d,DIM=2) /= 3 .OR. SIZE(int3d,DIM=3) /= 3) THEN
                 ERROR STOP 'Tensors can only be 3x3'
             ELSE
-                ALLOCATE(me%i_tensor(1:UBOUND(ints3d,DIM=1)))
-                DO i = 1, UBOUND(ints3d,DIM=1)
-                    me%i_tensor(i)%val(1:3,1:3) = ints3d(i,1:3,1:3)
+                ALLOCATE(me%i_tensor(1:UBOUND(int3d,DIM=1)))
+                DO i = 1, UBOUND(int3d,DIM=1)
+                    me%i_tensor(i)%val(1:3,1:3) = int3d(i,1:3,1:3)
                 END DO
             END IF
         ELSE IF (PRESENT(real3d)) THEN
@@ -878,7 +878,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                 END DO
             END IF
         ELSE
-            ERROR STOP 'Error: Must provide either ints3d or real3d in tensor_setup'
+            ERROR STOP 'Error: Must provide either int3d or real3d in tensor_setup'
         END IF
 
         END PROCEDURE tensor_setup

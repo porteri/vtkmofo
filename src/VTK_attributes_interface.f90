@@ -147,7 +147,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE abs_write
 
-        MODULE SUBROUTINE initialize (me, dataname, datatype, numcomp, tablename, ints1d, ints2d, ints3d, &
+        MODULE SUBROUTINE initialize (me, dataname, datatype, numcomp, tablename, int1d, int2d, int3d, &
           &                           real1d, real2d, real3d, field_arrays)
         !! author: Ian Porter
         !! date: 12/13/2017
@@ -158,9 +158,9 @@ MODULE vtk_attributes
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype, tablename
-        INTEGER(i4k), DIMENSION(:),     INTENT(IN), OPTIONAL :: ints1d
-        INTEGER(i4k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: ints2d
-        INTEGER(i4k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: ints3d
+        INTEGER(i4k), DIMENSION(:),     INTENT(IN), OPTIONAL :: int1d
+        INTEGER(i4k), DIMENSION(:,:),   INTENT(IN), OPTIONAL :: int2d
+        INTEGER(i4k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: int3d
         REAL(r8k),    DIMENSION(:),     INTENT(IN), OPTIONAL :: real1d
         REAL(r8k),    DIMENSION(:,:),   INTENT(IN), OPTIONAL :: real2d
         REAL(r8k),    DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: real3d
@@ -203,7 +203,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE scalar_write
 
-        MODULE SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, ints1d, real1d)
+        MODULE SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, int1d, real1d)
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -214,7 +214,7 @@ MODULE vtk_attributes
         INTEGER(i4k),     INTENT(IN), OPTIONAL :: numcomp
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: tablename
-        INTEGER(i4k), DIMENSION(:), INTENT(IN), OPTIONAL :: ints1d
+        INTEGER(i4k), DIMENSION(:), INTENT(IN), OPTIONAL :: int1d
         REAL(r8k),    DIMENSION(:), INTENT(IN), OPTIONAL :: real1d
 
         END SUBROUTINE scalar_setup
@@ -255,7 +255,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE vector_write
 
-        MODULE SUBROUTINE vector_setup (me, dataname, datatype, ints2d, real2d)
+        MODULE SUBROUTINE vector_setup (me, dataname, datatype, int2d, real2d)
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -264,7 +264,7 @@ MODULE vtk_attributes
         CLASS(vector),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: ints2d
+        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: int2d
         REAL(r8k),    DIMENSION(:,:), INTENT(IN), OPTIONAL :: real2d
 
         END SUBROUTINE vector_setup
@@ -305,7 +305,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE normal_write
 
-        MODULE SUBROUTINE normal_setup (me, dataname, datatype, ints2d, real2d)
+        MODULE SUBROUTINE normal_setup (me, dataname, datatype, int2d, real2d)
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -314,7 +314,7 @@ MODULE vtk_attributes
         CLASS(normal),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: ints2d
+        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: int2d
         REAL(r8k),    DIMENSION(:,:), INTENT(IN), OPTIONAL :: real2d
 
         END SUBROUTINE normal_setup
@@ -355,7 +355,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE texture_write
 
-        MODULE SUBROUTINE texture_setup (me, dataname, datatype, ints2d, real2d)
+        MODULE SUBROUTINE texture_setup (me, dataname, datatype, int2d, real2d)
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -364,7 +364,7 @@ MODULE vtk_attributes
         CLASS(texture),   INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: ints2d
+        INTEGER(i4k), DIMENSION(:,:), INTENT(IN), OPTIONAL :: int2d
         REAL(r8k),    DIMENSION(:,:), INTENT(IN), OPTIONAL :: real2d
 
         END SUBROUTINE texture_setup
@@ -405,7 +405,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE tensor_write
 
-        MODULE SUBROUTINE tensor_setup (me, dataname, datatype, ints3d, real3d)
+        MODULE SUBROUTINE tensor_setup (me, dataname, datatype, int3d, real3d)
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -414,7 +414,7 @@ MODULE vtk_attributes
         CLASS(tensor),    INTENT(OUT) :: me
         CHARACTER(LEN=*), INTENT(IN)  :: dataname
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: datatype
-        INTEGER(i4k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: ints3d
+        INTEGER(i4k), DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: int3d
         REAL(r8k),    DIMENSION(:,:,:), INTENT(IN), OPTIONAL :: real3d
 
         END SUBROUTINE tensor_setup

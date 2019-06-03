@@ -128,7 +128,7 @@ MODULE vtk_attributes_unit_tests
                     CALL vtk_type_1%init(dataname='temperature', numcomp=1, real1d=scalar_vals)
                 ELSE IF (i == 7) THEN
                     !! Test for integers
-                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, ints1d=int_vals)
+                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, int1d=int_vals)
                 END IF
             CASE (2, 8)
                 !! Vector attribute
@@ -139,7 +139,7 @@ MODULE vtk_attributes_unit_tests
                     CALL vtk_type_1%init(dataname='temperature', numcomp=1, real2d=vector_r_vals)
                 ELSE IF (i == 8) THEN
                     !! Test for integers
-                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, ints2d=vector_i_vals)
+                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, int2d=vector_i_vals)
                 END IF
             CASE (3, 9)
                 !! Normal attribute
@@ -150,7 +150,7 @@ MODULE vtk_attributes_unit_tests
                     CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, real2d=normal_r_vals)
                 ELSE IF (i == 9) THEN
                     !! Test for integers
-                    CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, ints2d=normal_i_vals)
+                    CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, int2d=normal_i_vals)
                 END IF
             CASE (4, 10)
                 !! Texture attribute
@@ -161,7 +161,7 @@ MODULE vtk_attributes_unit_tests
                     CALL vtk_type_1%init(dataname='textured_temp', numcomp=1, real2d=texture_r_vals)
                 ELSE IF (i == 10) THEN
                     !! Test for integers
-                    CALL vtk_type_1%init(dataname='textured_temp', numcomp=1, ints2d=texture_i_vals)
+                    CALL vtk_type_1%init(dataname='textured_temp', numcomp=1, int2d=texture_i_vals)
                 END IF
             CASE (5, 11)
                 !! Tensor attribute
@@ -174,7 +174,7 @@ MODULE vtk_attributes_unit_tests
                 ELSE IF (i == 11) THEN
                     tensor_i_vals(1,:,:) = tensor_5; tensor_i_vals(2,:,:) = tensor_6
                     !! Data type is generated from the defined values above
-                    CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, ints3d=tensor_i_vals)
+                    CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, int3d=tensor_i_vals)
                 END IF
             CASE (6)
                 !! Field attribute
