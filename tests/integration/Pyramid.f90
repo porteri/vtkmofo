@@ -88,13 +88,11 @@ PROGRAM pyramid_test
         ! Cell values
         IF (.NOT. ALLOCATED(cell_vals_to_write(i)%attribute))THEN
             ALLOCATE(scalar::cell_vals_to_write(i)%attribute)
-            cell_vals_to_write(1)%n = SIZE(cell_vals(:,1))
         END IF
         CALL cell_vals_to_write(i)%attribute%init (TRIM(cell_dataname(i)), numcomp=1, real1d=cell_vals(:,i))
         ! Point values
         IF (.NOT. ALLOCATED(point_vals_to_write(i)%attribute))THEN
             ALLOCATE(scalar::point_vals_to_write(i)%attribute)
-            point_vals_to_write(1)%n = SIZE(point_vals(:,1))
         END IF
         CALL point_vals_to_write(i)%attribute%init (TRIM(point_dataname(i)), numcomp=1, real1d=point_vals(:,i))
     END DO

@@ -157,6 +157,12 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             END IF
         END DO get_scalars
 
+        IF (ALLOCATED(me%ints)) THEN
+            me%nvals = SIZE(me%ints)
+        ELSE IF (ALLOCATED(me%reals)) THEN
+            me%nvals = SIZE(me%reals)
+        END IF
+
 100     FORMAT((a))
         END PROCEDURE scalar_read
 
@@ -215,8 +221,10 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END IF
         IF (PRESENT(int1d)) THEN
             me%ints = int1d
+            me%nvals = SIZE(me%ints)
         ELSE IF (PRESENT(real1d)) THEN
             me%reals = real1d
+            me%nvals = SIZE(me%reals)
         ELSE
             ERROR STOP 'Must provide either array of integers or reals in scalar_setup'
         END IF
@@ -237,23 +245,25 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             SELECT TYPE (you)
             CLASS IS (scalar)
-                IF (me%dataname /= you%dataname)        THEN
+                IF (me%dataname /= you%dataname)         THEN
                     diffs = .TRUE.
-                ELSE IF (me%datatype /= you%datatype)   THEN
+                ELSE IF (me%datatype /= you%datatype)    THEN
                     diffs = .TRUE.
-                ELSE IF (me%numcomp /= you%numcomp)     THEN
+                ELSE IF (me%nvals /= you%nvals)          THEN
                     diffs = .TRUE.
-                ELSE IF (me%tablename /= you%tablename) THEN
+                ELSE IF (me%numcomp /= you%numcomp)      THEN
                     diffs = .TRUE.
-                ELSE IF (ALLOCATED(me%reals))           THEN
+                ELSE IF (me%tablename /= you%tablename)  THEN
+                    diffs = .TRUE.
+                ELSE IF (ALLOCATED(me%reals))            THEN
                     DO i = 1, UBOUND(me%reals,DIM=1)
-                        IF (me%reals(i) /= you%reals(i))THEN
+                        IF (me%reals(i) /= you%reals(i)) THEN
                             diffs = .TRUE.
                         END IF
                     END DO
-                ELSE IF (ALLOCATED(me%ints))            THEN
+                ELSE IF (ALLOCATED(me%ints))             THEN
                     DO i = 1, UBOUND(me%ints,DIM=1)
-                        IF (me%ints(i) /= you%ints(i))  THEN
+                        IF (me%ints(i) /= you%ints(i))   THEN
                             diffs = .TRUE.
                         END IF
                     END DO
@@ -326,6 +336,12 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             END IF
         END DO get_vectors
 
+        IF (ALLOCATED(me%i_vector)) THEN
+            me%nvals = SIZE(me%i_vector, DIM=1)
+        ELSE IF (ALLOCATED(me%r_vector)) THEN
+            me%nvals = SIZE(me%r_vector, DIM=1)
+        END IF
+
 100     FORMAT((a))
         END PROCEDURE vector_read
 
@@ -368,8 +384,10 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         IF (PRESENT(int2d)) THEN
             IF (me%datatype == 'double') me%datatype = 'int'
             ALLOCATE(me%i_vector, source=int2d)
+            me%nvals = SIZE(me%i_vector,DIM=1)
         ELSE IF (PRESENT(real2d)) THEN
             ALLOCATE(me%r_vector, source=real2d)
+            me%nvals = SIZE(me%r_vector,DIM=1)
         ELSE
             ERROR STOP 'Error: Must provide either int2d or real2d in vector_setup'
         END IF
@@ -394,7 +412,9 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     diffs = .TRUE.
                 ELSE IF (me%datatype /= you%datatype) THEN
                     diffs = .TRUE.
-                ELSE IF (ALLOCATED(me%i_vector)) THEN
+                ELSE IF (me%nvals /= you%nvals)       THEN
+                    diffs = .TRUE.
+                ELSE IF (ALLOCATED(me%i_vector))      THEN
                     DO i = 1, UBOUND(me%i_vector,DIM=1)
                         DO j = 1, UBOUND(me%i_vector,DIM=2)
                             IF (me%i_vector(i,j) /= you%i_vector(i,j)) THEN
@@ -402,7 +422,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                             END IF
                         END DO
                     END DO
-                ELSE IF (ALLOCATED(me%r_vector)) THEN
+                ELSE IF (ALLOCATED(me%r_vector))      THEN
                     DO i = 1, UBOUND(me%r_vector,DIM=1)
                         DO j = 1, UBOUND(me%r_vector,DIM=2)
                             IF (me%r_vector(i,j) /= you%r_vector(i,j)) THEN
@@ -447,7 +467,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         CASE ('float', 'double')
             ALLOCATE(me%r_normal(0,0))
         CASE DEFAULT
-            ERROR STOP 'datatype not supported in scalar_read'
+            ERROR STOP 'datatype not supported in normal_read'
         END SELECT
 
         end_of_file = .FALSE.; i = 0
@@ -480,6 +500,12 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                 END SELECT
             END IF
         END DO get_normals
+
+        IF (ALLOCATED(me%i_normal)) THEN
+            me%nvals = SIZE(me%i_normal, DIM=1)
+        ELSE IF (ALLOCATED(me%r_normal)) THEN
+            me%nvals = SIZE(me%r_normal, DIM=1)
+        END IF
 
 100     FORMAT((a))
         END PROCEDURE normal_read
@@ -523,8 +549,10 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         IF (PRESENT(int2d)) THEN
             IF (me%datatype == 'double') me%datatype = 'int'
             ALLOCATE(me%i_normal, source=int2d)
+            me%nvals = SIZE(me%i_normal,DIM=1)
         ELSE IF (PRESENT(real2d)) THEN
             ALLOCATE(me%r_normal, source=real2d)
+            me%nvals = SIZE(me%r_normal,DIM=1)
         ELSE
             ERROR STOP 'Error: Must provide either int2d or real2d in normal_setup'
         END IF
@@ -549,7 +577,9 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                     diffs = .TRUE.
                 ELSE IF (me%datatype /= you%datatype) THEN
                     diffs = .TRUE.
-                ELSE IF (ALLOCATED(me%i_normal)) THEN
+                ELSE IF (me%nvals /= you%nvals)       THEN
+                    diffs = .TRUE.
+                ELSE IF (ALLOCATED(me%i_normal))      THEN
                     DO i = 1, UBOUND(me%i_normal,DIM=1)
                         DO j = 1, UBOUND(me%i_normal,DIM=2)
                             IF (me%i_normal(i,j) /= you%i_normal(i,j)) THEN
@@ -557,7 +587,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                             END IF
                         END DO
                     END DO
-                ELSE IF (ALLOCATED(me%r_normal)) THEN
+                ELSE IF (ALLOCATED(me%r_normal))      THEN
                     DO i = 1, UBOUND(me%r_normal,DIM=1)
                         DO j = 1, UBOUND(me%r_normal,DIM=2)
                             IF (me%r_normal(i,j) /= you%r_normal(i,j)) THEN
@@ -604,7 +634,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         CASE ('float', 'double')
             ALLOCATE(me%r_texture(0,0))
         CASE DEFAULT
-            ERROR STOP 'datatype not supported in scalar_read'
+            ERROR STOP 'datatype not supported in texture_read'
         END SELECT
 
         end_of_file = .FALSE.; i = 0
@@ -637,6 +667,12 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                 END SELECT
             END IF
         END DO get_textures
+
+        IF (ALLOCATED(me%i_texture)) THEN
+            me%nvals = SIZE(me%i_texture, DIM=1)
+        ELSE IF (ALLOCATED(me%r_texture)) THEN
+            me%nvals = SIZE(me%r_texture, DIM=1)
+        END IF
 
 100     FORMAT((a))
         END PROCEDURE texture_read
@@ -688,8 +724,10 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         IF (PRESENT(int2d)) THEN
             IF (me%datatype == 'double') me%datatype = 'int'
             ALLOCATE(me%i_texture, source=int2d)
+            me%nvals = SIZE(me%i_texture,DIM=1)
         ELSE IF (PRESENT(real2d)) THEN
             ALLOCATE(me%r_texture, source=real2d)
+            me%nvals = SIZE(me%r_texture,DIM=1)
         ELSE
             ERROR STOP 'Error: Must provide either int2d or real2d in texture_setup'
         END IF
@@ -710,11 +748,13 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             SELECT TYPE (you)
             CLASS IS (texture)
-                IF (me%dataname /= you%dataname)        THEN
+                IF (me%dataname /= you%dataname)      THEN
                     diffs = .TRUE.
-                ELSE IF (me%datatype /= you%datatype)   THEN
+                ELSE IF (me%datatype /= you%datatype) THEN
                     diffs = .TRUE.
-                ELSE IF (ALLOCATED(me%i_texture)) THEN
+                ELSE IF (me%nvals /= you%nvals)       THEN
+                    diffs = .TRUE.
+                ELSE IF (ALLOCATED(me%i_texture))     THEN
                     DO i = 1, UBOUND(me%i_texture,DIM=1)
                         DO j = 1, UBOUND(me%i_texture,DIM=2)
                             IF (me%i_texture(i,j) /= you%i_texture(i,j)) THEN
@@ -722,7 +762,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                             END IF
                         END DO
                     END DO
-                ELSE IF (ALLOCATED(me%r_texture)) THEN
+                ELSE IF (ALLOCATED(me%r_texture))     THEN
                     DO i = 1, UBOUND(me%r_texture,DIM=1)
                         DO j = 1, UBOUND(me%r_texture,DIM=2)
                             IF (me%r_texture(i,j) /= you%r_texture(i,j)) THEN
@@ -767,7 +807,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         CASE ('float', 'double')
             ALLOCATE(me%r_tensor(0))
         CASE DEFAULT
-            ERROR STOP 'Unsupported data type for tensor.'
+            ERROR STOP 'Unsupported data type for tensor_read.'
         END SELECT
 
         end_of_file = .FALSE.; i = 0
@@ -808,6 +848,12 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                 END SELECT
             END IF
         END DO get_tensors
+
+        IF (ALLOCATED(me%i_tensor)) THEN
+            me%nvals = SIZE(me%i_tensor, DIM=1)
+        ELSE IF (ALLOCATED(me%r_tensor)) THEN
+            me%nvals = SIZE(me%r_tensor, DIM=1)
+        END IF
 
 100     FORMAT((a))
         END PROCEDURE tensor_read
@@ -867,6 +913,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                 DO i = 1, UBOUND(int3d,DIM=1)
                     me%i_tensor(i)%val(1:3,1:3) = int3d(i,1:3,1:3)
                 END DO
+                me%nvals = SIZE(me%i_tensor,DIM=1)
             END IF
         ELSE IF (PRESENT(real3d)) THEN
             IF (SIZE(real3d,DIM=2) /= 3 .OR. SIZE(real3d,DIM=3) /= 3) THEN
@@ -876,6 +923,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                 DO i = 1, UBOUND(real3d,DIM=1)
                     me%r_tensor(i)%val(1:3,1:3) = real3d(i,1:3,1:3)
                 END DO
+                me%nvals = SIZE(me%r_tensor,DIM=1)
             END IF
         ELSE
             ERROR STOP 'Error: Must provide either int3d or real3d in tensor_setup'
@@ -897,11 +945,13 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         ELSE
             SELECT TYPE (you)
             CLASS IS (tensor)
-                IF (me%dataname /= you%dataname)        THEN
+                IF (me%dataname /= you%dataname)      THEN
                     diffs = .TRUE.
-                ELSE IF (me%datatype /= you%datatype)   THEN
+                ELSE IF (me%datatype /= you%datatype) THEN
                     diffs = .TRUE.
-                ELSE IF (ALLOCATED(me%i_tensor)) THEN
+                ELSE IF (me%nvals /= you%nvals)       THEN
+                    diffs = .TRUE.
+                ELSE IF (ALLOCATED(me%i_tensor))      THEN
                         DO i = 1, UBOUND(me%i_tensor,DIM=1)
                             DO j = 1, UBOUND(me%i_tensor(i)%val,DIM=1)
                                 DO k = 1, UBOUND(me%i_tensor(i)%val,DIM=2)
@@ -911,11 +961,11 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
                                 END DO
                             END DO
                         END DO
-                ELSE IF (ALLOCATED(me%r_tensor)) THEN
+                ELSE IF (ALLOCATED(me%r_tensor))      THEN
                     DO i = 1, UBOUND(me%r_tensor,DIM=1)
                         DO j = 1, UBOUND(me%r_tensor(i)%val,DIM=1)
                             DO k = 1, UBOUND(me%r_tensor(i)%val,DIM=2)
-                                IF (me%r_tensor(i)%val(j,k) /= you%r_tensor(i)%val(j,k)) THEN
+                                IF (me%r_tensor(i)%val(j,k) /= you%r_tensor(i)%val(j,k))     THEN
                                     diffs = .TRUE.
                                 END IF
                             END DO
@@ -981,6 +1031,10 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             END IF
         END DO get_fields
 
+        IF (ALLOCATED(me%array)) THEN
+            me%nvals = SIZE(me%array, DIM=1)
+        END IF
+
 100     FORMAT((a))
         END PROCEDURE field_read
 
@@ -1020,6 +1074,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             me%datatype = 'double'
         END IF
         me%array = field_arrays
+        me%nvals = SIZE(me%array,DIM=1)
 
         END PROCEDURE field_setup
 
@@ -1038,6 +1093,8 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             SELECT TYPE (you)
             CLASS IS (field)
                 IF      (me%dataname /= you%dataname) THEN
+                    diffs = .TRUE.
+                ELSE IF (me%nvals /= you%nvals)       THEN
                     diffs = .TRUE.
                 ELSE
                     DO i = 1, UBOUND(me%array,DIM=1)

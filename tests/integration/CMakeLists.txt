@@ -15,6 +15,7 @@ function(add_VTKmofo_integration_test test_name)
 endfunction(add_VTKmofo_integration_test)
 
 foreach(test
+    Append
     Cube
     Cylinder
     Rectangular_prism

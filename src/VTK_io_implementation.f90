@@ -4,9 +4,16 @@ SUBMODULE (vtk_io) vtk_io_implementation
     !!
     !! This module implements the ability to read/write VTK formatted files
     !!
+
+    LOGICAL,      SAVE :: file_was_already_open     = .FALSE.
+    LOGICAL,      SAVE :: printed_cell_data_header  = .FALSE.
+    LOGICAL,      SAVE :: printed_point_data_header = .FALSE.
+    INTEGER(i4k), SAVE :: newunit
+    CHARACTER(LEN=:), ALLOCATABLE, SAVE :: form
+
     CONTAINS
 
-        MODULE PROCEDURE vtk_legacy_write
+        MODULE PROCEDURE vtk_legacy_full_write
         USE Misc,     ONLY : to_uppercase
         USE vtk_vars, ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, &
           &                  version, fcnt, file_extension
@@ -16,35 +23,39 @@ SUBMODULE (vtk_io) vtk_io_implementation
         !!
         !! This subroutines writes the legacy vtk output file
         !!
-        INTEGER(i4k)  :: i, inputstat, newunit
-        LOGICAL, SAVE :: file_was_already_open = .FALSE.
-        CHARACTER(LEN=:), ALLOCATABLE :: form, filetype_text
+        INTEGER(i4k)  :: i, inputstat
+        CHARACTER(LEN=:), ALLOCATABLE :: filetype_text
         CHARACTER(LEN=11) :: fm
 
-        IF (PRESENT(data_type)) filetype = data_type          !! Calling program provided what file type to use for vtk file
+        ! Clear out any pre-existing data
         IF (ALLOCATED(vtkfilename)) DEALLOCATE(vtkfilename)
+        IF (ALLOCATED(form))        DEALLOCATE(form)
+        IF (ALLOCATED(vtktitle))    DEALLOCATE(vtktitle)
+
+        IF (PRESENT(data_type)) filetype = data_type            !! Calling program provided what file type to use for vtk file
         IF (PRESENT(filename)) THEN
-            ALLOCATE(vtkfilename, source=filename)            !! Calling program provided a filename
+            ALLOCATE(vtkfilename, source=filename)              !! Calling program provided a filename
         ELSE
-            ALLOCATE(vtkfilename, source=default_fn)          !! Calling program did not provide a filename. Use default
+            ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename. Use default
         END IF
         IF (PRESENT(multiple_io)) THEN
             IF (multiple_io) THEN
                 mio_filename: BLOCK
-                    CHARACTER(LEN=8) :: fcnt_char = ''        !! File count character
-                    CHARACTER(LEN=:), ALLOCATABLE :: base_fn  !! Base file name
+                    CHARACTER(LEN=8) :: fcnt_char = ''          !! File count character
+                    CHARACTER(LEN=:), ALLOCATABLE :: base_fn    !! Base file name
                     WRITE (fcnt_char,FMT='(i8)') fcnt
                     ALLOCATE(base_fn, source=vtkfilename(1:INDEX(to_uppercase(vtkfilename),to_uppercase(file_extension))-1))
                     DEALLOCATE(vtkfilename)
                     ALLOCATE(vtkfilename, source=base_fn // "_" // TRIM(ADJUSTL(fcnt_char)) // file_extension)
-                    fcnt = fcnt + 1                           !! Increase timestep file counter by 1
+                    fcnt = fcnt + 1                             !! Increase timestep file counter by 1
                 END BLOCK mio_filename
             END IF
         END IF
+
         IF (PRESENT(title)) THEN
-            vtktitle = title                                    !! Calling program provided a title
+            ALLOCATE(vtktitle, source=title)                    !! Calling program provided a title
         ELSE
-            vtktitle = default_title                            !! Calling program did not provide a title. Use default
+            ALLOCATE(vtktitle, source=default_title)            !! Calling program did not provide a title. Use default
         END IF
 
         IF (PRESENT(unit)) THEN
@@ -99,34 +110,108 @@ SUBMODULE (vtk_io) vtk_io_implementation
         CALL geometry%write(newunit)                            !! Write the geometry information
 
         IF (PRESENT(celldatasets)) THEN
-            WRITE(newunit,101) celldatasets(1)%n
+            WRITE(newunit,101) celldatasets(1)%attribute%nvals
             DO i = 1, SIZE(celldatasets)
                 CALL celldatasets(i)%attribute%write(newunit)   !! Write the cell data values
             END DO
         ELSE IF (PRESENT(celldata)) THEN
-            WRITE(newunit,101) celldatasets(1)%n
+            WRITE(newunit,101) celldata%nvals
             CALL celldata%write(newunit)                        !! Write the cell data values
         END IF
 
         IF (PRESENT(pointdatasets)) THEN
-            WRITE(newunit,102) pointdatasets(1)%n
+            WRITE(newunit,102) pointdatasets(1)%attribute%nvals
             DO I = 1, SIZE(pointdatasets)
                 CALL pointdatasets(i)%attribute%write(newunit)
             END DO
         ELSE IF (PRESENT(pointdata)) THEN
-            WRITE(newunit,102) pointdatasets(1)%n
+            WRITE(newunit,102) pointdata%nvals
             CALL pointdata%write(newunit)                       !! Write the point data values
         END IF
 
-        IF (.NOT. file_was_already_open) THEN
-            CLOSE(newunit)                                      !! Close the VTK file if file was not open prior to calling vtkmofo
+        IF (ANY([ PRESENT(celldatasets), PRESENT(celldata), PRESENT(pointdatasets), PRESENT(pointdata) ])) THEN
+            CALL vtk_legacy_finalize (finished=.TRUE.)          !! Full legacy write w/ data. Close file.
+        ELSE
+            CALL vtk_legacy_finalize (finished=.FALSE.)         !! No data was provided, only geometry info. Do not close file.
         END IF
 
 100     FORMAT(a)
 101     FORMAT('CELL_DATA ',i0)
 102     FORMAT('POINT_DATA ',i0)
 
-        END PROCEDURE vtk_legacy_write
+        END PROCEDURE vtk_legacy_full_write
+
+        MODULE PROCEDURE vtk_legacy_append
+        USE Misc,     ONLY : to_uppercase
+        USE vtk_vars, ONLY : default_fn, default_title, ascii, binary, &
+          &                  version, file_extension
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 12/1/2017
+        !!
+        !! This subroutines writes the legacy vtk output file
+        !!
+        INTEGER(i4k) :: i, inputstat
+        LOGICAL :: file_is_still_open
+        
+        INQUIRE(unit=newunit,opened=file_is_still_open)
+        IF (.NOT. file_is_still_open) THEN
+            !! For some reason, file was closed. Re-open the file to a new unit
+            OPEN(newunit=newunit, file=vtkfilename, iostat=inputstat, status='REPLACE', form=form, position='APPEND')
+        END IF
+
+        IF (PRESENT(celldatasets)) THEN
+            IF (.NOT. printed_cell_data_header) THEN
+                WRITE(newunit,101) celldatasets(1)%attribute%nvals
+            END IF
+            DO i = 1, SIZE(celldatasets)
+                CALL celldatasets(i)%attribute%write(newunit)   !! Write the cell data values
+            END DO
+        ELSE IF (PRESENT(celldata)) THEN
+            IF (.NOT. printed_cell_data_header) THEN
+                WRITE(newunit,101) celldata%nvals
+                printed_cell_data_header = .TRUE.
+            END IF
+            CALL celldata%write(newunit)                        !! Write the cell data values
+        END IF
+
+        IF (PRESENT(pointdatasets)) THEN
+            IF (.NOT. printed_point_data_header) THEN
+                WRITE(newunit,102) pointdatasets(1)%attribute%nvals
+            END IF
+            DO I = 1, SIZE(pointdatasets)
+                CALL pointdatasets(i)%attribute%write(newunit)
+            END DO
+        ELSE IF (PRESENT(pointdata)) THEN
+            IF (.NOT. printed_point_data_header) THEN
+                WRITE(newunit,102) pointdata%nvals
+                printed_point_data_header = .TRUE.
+            END IF
+            
+            CALL pointdata%write(newunit)                       !! Write the point data values
+        END IF
+
+101     FORMAT('CELL_DATA ',i0)
+102     FORMAT('POINT_DATA ',i0)
+
+        END PROCEDURE vtk_legacy_append
+
+        MODULE PROCEDURE vtk_legacy_finalize
+        !! author: Ian Porter
+        !! date: 06/03/2019
+        !!
+        !! This subroutines is a finalizer for the vtk file write
+        !!
+
+        IF (finished) THEN
+            IF (.NOT. file_was_already_open) THEN
+                CLOSE(newunit)                                  !! Close the VTK file if file was not open prior to calling vtkmofo
+            END IF
+            printed_cell_data_header  = .FALSE.
+            printed_point_data_header = .FALSE.
+        END IF
+
+        END PROCEDURE vtk_legacy_finalize
 
         MODULE PROCEDURE vtk_legacy_read
         USE Misc,     ONLY : def_len
@@ -203,9 +288,9 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         CLOSE(unit)                                        !! Close the VTK file
 
-        vtkfilename = filename                             !! Save the filename for future internal use
-        vtktitle    = title                                !! Save the title for future internal use
-        filetype    = data_type                            !! Save the file type for future internal use
+        ALLOCATE(vtkfilename, source=filename)             !! Save the filename for future internal use
+        ALLOCATE(vtktitle, source=title)                   !! Save the title for future internal use
+        filetype = data_type                               !! Save the file type for future internal use
 
 100     FORMAT(a)
 
