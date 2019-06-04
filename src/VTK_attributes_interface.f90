@@ -22,6 +22,7 @@ MODULE vtk_attributes
 
     TYPE, ABSTRACT :: attribute
         !! Abstract DT of attribute information
+        INTEGER(i4k) :: nvals = 0_i4k
         CHARACTER(LEN=:), ALLOCATABLE :: dataname
         CHARACTER(LEN=:), ALLOCATABLE :: datatype
     CONTAINS
@@ -119,7 +120,6 @@ MODULE vtk_attributes
     END TYPE field
 
     TYPE :: attributes
-        INTEGER(i4k) :: n = 0                       !! # of points or cells in the dataset
         CLASS(attribute), ALLOCATABLE :: attribute
     END TYPE attributes
 

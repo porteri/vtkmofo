@@ -10,17 +10,16 @@ PROGRAM Append_test
     !!
     !! This is a test for appending to a file
     !!
-    INTEGER(i4k), PARAMETER     :: n_params_to_write = 3
     TYPE (unstruct_grid)        :: I_shape
-    TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
-    INTEGER(i4k)                :: i, t
+    TYPE (attributes), DIMENSION(:), ALLOCATABLE :: point_vals_to_write, cell_vals_to_write
+    TYPE (scalar)               :: cell_val_1, cell_val_2, point_val_1, point_val_2, point_val_3
+    INTEGER(i4k)                :: t
     INTEGER(i4k),     PARAMETER :: n_points = 32, n_cells = 7, unit = 20, n_steps = 10
     CHARACTER(LEN=*), PARAMETER :: filename = 'Append.vtk'
-    CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of T-shape unstructured grid geometry'
+    CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of appending to a VTK file'
     CHARACTER(LEN=8)            :: t_char
-    REAL(r8k), DIMENSION(n_cells, 1:n_params_to_write) :: cell_vals
-    REAL(r8k), DIMENSION(n_points,1:n_params_to_write) :: point_vals
-    REAL(r8k), DIMENSION(3,n_points), PARAMETER        :: points = RESHAPE ( &
+    REAL(r8k), DIMENSION(n_points,1:3) :: point_vals = 0.0_r8k
+    REAL(r8k), DIMENSION(3,n_points), PARAMETER :: points = RESHAPE ( &
       & [ 0.0_r8k, 0.0_r8k, 0.0_r8k, &
       &   1.0_r8k, 0.0_r8k, 0.0_r8k, &
       &   2.0_r8k, 0.0_r8k, 0.0_r8k, &
@@ -87,13 +86,13 @@ PROGRAM Append_test
       &   1.2_r8k, &
       &   0.8_r8k, &
       &   1.0_r8k ]
-    INTEGER(i4k), DIMENSION(n_cells), PARAMETER :: cellID = &
+    INTEGER(i4k), DIMENSION(n_cells), PARAMETER :: cellID  = &
       & [ 1, 2, 3, 4, 5, 6, 7 ]
+    INTEGER(i4k), DIMENSION(n_cells), PARAMETER :: matType = &
+      & [ 10, 10, 10, 20, 10, 10, 10 ]
     TYPE(voxel),        DIMENSION(n_cells-1) :: voxel_cells     !! Voxel cell type
     TYPE(hexahedron)                         :: hexahedron_cell !! Hexahedron cell type
     TYPE(vtkcell_list), DIMENSION(n_cells)   :: cell_list       !! Full list of all cells
-    CHARACTER(LEN=10), DIMENSION(*), PARAMETER :: cell_dataname = &
-      & [ 'cellIDs   ', 'matType   ' ]
     CHARACTER(LEN=15), DIMENSION(*), PARAMETER :: point_dataname = &
       & [ 'Temperature(K) ','Stress (Pa)    ' ]
 
@@ -116,35 +115,35 @@ PROGRAM Append_test
     CALL I_shape%init (points=points, cell_list=cell_list)
 
     DO t = 1, n_steps
-        cell_vals(:,1)  = REAL(cellID(:)); WRITE(t_char,'(i0)') t
+        WRITE(t_char,'(i0)') t
         point_vals(:,1) = temp_default + (t-1) * temp_increment * temp_norm
 
         CALL vtk_legacy_write (I_shape, unit=unit, filename=filename, title=title, multiple_io=.TRUE.)
                                    !! Initialize the new file with just geometry information
-        DO i = 1, SIZE(cell_vals_to_write,DIM=1)
-            ! Cell values
-            IF (.NOT. ALLOCATED(cell_vals_to_write(i)%attribute))THEN
-                ALLOCATE(scalar::cell_vals_to_write(i)%attribute)
-                cell_vals_to_write(1)%n = SIZE(cell_vals(:,1))
-            END IF
-            CALL cell_vals_to_write(i)%attribute%init (TRIM(cell_dataname(i)), numcomp=1, real1d=cell_vals(:,i))
+        ! Cell values
+        CALL cell_val_1%init (dataname='cellID', numcomp=1, int1d=cellID)
+        CALL cell_val_2%init (dataname='matType', numcomp=1, int1d=matType)
+        IF (.NOT. ALLOCATED(cell_vals_to_write)) ALLOCATE(cell_vals_to_write(1))
+        ALLOCATE(cell_vals_to_write(1)%attribute,source=cell_val_2)
 
-            CALL vtk_legacy_write (celldatasets=[cell_vals_to_write(i)])
-                                   !! Append cell information
-        END DO
+        CALL vtk_legacy_write (celldata=cell_val_1)
+                                !! Append cell information
+        CALL vtk_legacy_write (celldatasets=cell_vals_to_write)
+                                !! Append cell information
+        ! Point values
+        CALL point_val_1%init (dataname='Temperature_(K)', numcomp=1, real1d=point_vals(:,1))
+        CALL point_val_2%init (dataname='Stress_(Pa)', numcomp=1, real1d=point_vals(:,2))
+        CALL point_val_3%init (dataname='Displacement_(m)', numcomp=1, real1d=point_vals(:,3))
+        IF (.NOT. ALLOCATED(point_vals_to_write)) ALLOCATE(point_vals_to_write(2))
+        ALLOCATE(point_vals_to_write(1)%attribute,source=point_val_2)
+        ALLOCATE(point_vals_to_write(2)%attribute,source=point_val_3)
 
-        DO i = 1, SIZE(point_vals_to_write,DIM=1)
-            !! Point values
-            IF (.NOT. ALLOCATED(point_vals_to_write(i)%attribute))THEN
-                ALLOCATE(scalar::point_vals_to_write(i)%attribute)
-                point_vals_to_write(1)%n = SIZE(point_vals(:,1))
-            END IF
-            CALL point_vals_to_write(i)%attribute%init (TRIM(point_dataname(i)), numcomp=1, real1d=point_vals(:,i))
-
-            CALL vtk_legacy_write (pointdatasets=[point_vals_to_write(i)])
-                                   !! Append point information
-        END DO
-
+        CALL vtk_legacy_write (pointdata=point_val_1)
+                                !! Append point information
+        CALL vtk_legacy_write (pointdatasets=point_vals_to_write)
+                                !! Append point information
+        CALL vtk_legacy_write (finished=.TRUE.)
+                                !! Append point information
     END DO
 
     WRITE(*,*) 'Finished'

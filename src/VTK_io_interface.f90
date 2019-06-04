@@ -14,7 +14,9 @@ MODULE vtk_io
     PUBLIC :: vtk_legacy_write
 
     INTERFACE vtk_legacy_write
-        PROCEDURE :: vtk_legacy_full_write, vtk_legacy_append
+        PROCEDURE :: vtk_legacy_full_write
+        PROCEDURE :: vtk_legacy_append
+        PROCEDURE :: vtk_legacy_finalize
     END INTERFACE
     
     INTERFACE
@@ -40,19 +42,28 @@ MODULE vtk_io
 
         END SUBROUTINE vtk_legacy_full_write
 
-        MODULE SUBROUTINE vtk_legacy_append (celldata, pointdata, celldatasets, pointdatasets, data_type)
+        MODULE SUBROUTINE vtk_legacy_append (celldata, pointdata, celldatasets, pointdatasets)
         !! author: Ian Porter
         !! date: 12/1/2017
         !!
-        !! This subroutines writes the legacy vtk output file
+        !! This subroutines appends data to the legacy vtk output file
         !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !! 
         CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !! 
         CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !! 
         CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !! 
-        INTEGER(i4k),      INTENT(IN), OPTIONAL :: data_type   !! Identifier to write in ascii or Binary
 
         END SUBROUTINE vtk_legacy_append
+
+        MODULE SUBROUTINE vtk_legacy_finalize (finished)
+        !! author: Ian Porter
+        !! date: 06/03/2019
+        !!
+        !! This subroutines is a finalizer for the legacy vtk file write
+        !!
+        LOGICAL, INTENT(IN) :: finished  !! Finished flag
+
+        END SUBROUTINE vtk_legacy_finalize
 
         MODULE SUBROUTINE vtk_legacy_read (unit, geometry, celldata, pointdata, celldatasets, pointdatasets, &
           &                                filename, data_type, title)
