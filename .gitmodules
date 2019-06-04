@@ -1,0 +1,3 @@
+[submodule "documents/wiki"]
+    path = documents/wiki
+    url = ../../porteri/vtkmofo.wiki

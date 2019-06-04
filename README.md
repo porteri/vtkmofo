@@ -41,15 +41,15 @@ Build System:
 
 Examples:
 # 2D example
-![Cylinder_2d](files/cylinder_image_2d.png?raw=true "Cylinder 2D example")
+![Cylinder_2d](documents/files/cylinder_image_2d.png?raw=true "Cylinder 2D example")
 # 3D example
-![Cube_3d](files/cube_image.png?raw=true "Cube example")
+![Cube_3d](documents/files/cube_image.png?raw=true "Cube example")
 # Polygonal example
-![Pyramid](files/pyramid_image.png?raw=true "Pyramid example")
+![Pyramid](documents/files/pyramid_image.png?raw=true "Pyramid example")
 # Prism example
-![Prism](files/rectangle_image.png?raw=true "Prism example")
+![Prism](documents/files/rectangle_image.png?raw=true "Prism example")
 # Unstructured Grid example
-![T_shape](files/t_shape.png?raw=true "T-shape example")
+![T_shape](documents/files/t_shape.png?raw=true "T-shape example")
 
 [Hyperlinks]:#
 [AppVeyor build image]: https://ci.appveyor.com/api/projects/status/omlvmn8xcr9sxuwt?svg=true "AppVeyor build badge"
