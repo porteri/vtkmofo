@@ -61,16 +61,15 @@ PROGRAM Cylinder_test
     END DO
 
     vals(:,1) = temp(:)
-    dims = (/ n_x, n_y, n_z /)
+    dims = [ n_x, n_y, n_z ]
 
     CALL cylinder%init (dims=dims, points=points)
 
     DO i = 1, n_params_to_write
         IF (.NOT. ALLOCATED(vals_to_write(i)%attribute))THEN
             ALLOCATE(scalar::vals_to_write(i)%attribute)
-            vals_to_write(1)%n = SIZE(vals(:,1))
         END IF
-        CALL vals_to_write(i)%attribute%init (dataname(i), numcomp=1, values1d=vals(:,i))
+        CALL vals_to_write(i)%attribute%init (dataname(i), numcomp=1, real1d=vals(:,i))
     END DO
 
     CALL vtk_legacy_write (cylinder, unit=unit, pointdatasets=vals_to_write)

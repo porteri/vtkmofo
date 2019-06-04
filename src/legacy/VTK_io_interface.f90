@@ -13,10 +13,16 @@ MODULE vtk_io
     PRIVATE
     PUBLIC :: vtk_legacy_write, vtk_serial_write
 
+    INTERFACE vtk_legacy_write
+        PROCEDURE :: vtk_legacy_full_write
+        PROCEDURE :: vtk_legacy_append
+        PROCEDURE :: vtk_legacy_finalize
+    END INTERFACE
+    
     INTERFACE
 
-        MODULE SUBROUTINE vtk_legacy_write (geometry, celldata, pointdata, celldatasets, pointdatasets, &
-          &                                 unit, filename, multiple_io, data_type, title)
+        MODULE SUBROUTINE vtk_legacy_full_write (geometry, celldata, pointdata, celldatasets, pointdatasets, &
+          &                                      unit, filename, multiple_io, data_type, title)
         !! author: Ian Porter
         !! date: 12/1/2017
         !!
@@ -34,7 +40,30 @@ MODULE vtk_io
         CHARACTER(LEN=*),  INTENT(IN), OPTIONAL :: filename    !! VTK filename
         CHARACTER(LEN=*),  INTENT(IN), OPTIONAL :: title       !! Title to be written on title line (#2) in output file
 
-        END SUBROUTINE vtk_legacy_write
+        END SUBROUTINE vtk_legacy_full_write
+
+        MODULE SUBROUTINE vtk_legacy_append (celldata, pointdata, celldatasets, pointdatasets)
+        !! author: Ian Porter
+        !! date: 12/1/2017
+        !!
+        !! This subroutines appends data to the legacy vtk output file
+        !!
+        CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !! 
+        CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !! 
+        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !! 
+        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !! 
+
+        END SUBROUTINE vtk_legacy_append
+
+        MODULE SUBROUTINE vtk_legacy_finalize (finished)
+        !! author: Ian Porter
+        !! date: 06/03/2019
+        !!
+        !! This subroutines is a finalizer for the legacy vtk file write
+        !!
+        LOGICAL, INTENT(IN) :: finished  !! Finished flag
+
+        END SUBROUTINE vtk_legacy_finalize
 
         MODULE SUBROUTINE vtk_legacy_read (unit, geometry, celldata, pointdata, celldatasets, pointdatasets, &
           &                                filename, data_type, title)

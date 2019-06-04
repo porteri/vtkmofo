@@ -1,5 +1,5 @@
 PROGRAM modern_Rectilinear_test
-    USE Precision
+    USE Precision,      ONLY : i4k, r8k
     USE vtk_datasets,   ONLY : rectlnr_grid
     USE vtk_attributes, ONLY : scalar, attributes
     USE vtk,            ONLY : vtk_serial_write
@@ -45,9 +45,8 @@ PROGRAM modern_Rectilinear_test
     DO i = 1, n_params_to_write
         IF (.NOT. ALLOCATED(vals_to_write(i)%attribute))THEN
             ALLOCATE(scalar::vals_to_write(i)%attribute)
-            vals_to_write(1)%n = SIZE(vals(:,1))
         END IF
-        CALL vals_to_write(i)%attribute%init (dataname(i), numcomp=1, values1d=vals(:,i))
+        CALL vals_to_write(i)%attribute%init (dataname(i), numcomp=1, real1d=vals(:,i))
     END DO
 
     CALL vtk_serial_write (cube, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)

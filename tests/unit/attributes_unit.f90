@@ -1,5 +1,5 @@
 MODULE vtk_attributes_unit_tests
-    USE Precision
+    USE Precision,      ONLY : i4k, r8k
     USE vtk_attributes, ONLY : field_data_array
     IMPLICIT NONE
     !! author: Ian Porter
@@ -10,7 +10,7 @@ MODULE vtk_attributes_unit_tests
     PRIVATE
     PUBLIC :: vtk_attributes_unit
 ! Generic information
-    INTEGER(i4k), PARAMETER :: n_types  = 7
+    INTEGER(i4k), PARAMETER :: n_types  = 8
     INTEGER(i4k), PARAMETER :: vtk_unit = 20
     CHARACTER(LEN=15), DIMENSION(n_types), PARAMETER :: filename    = &
       & [ 'scalar.vtk     ', &
@@ -19,30 +19,47 @@ MODULE vtk_attributes_unit_tests
       &   'texture.vtk    ', &
       &   'tensor.vtk     ', &
       &   'field.vtk      ', &
-      &   'scalar_int.vtk ' ]
+      &   'scalar_int.vtk ', &
+      &   'tensor_int.vtk ' ]
 ! Scalar information
     REAL(r8k), DIMENSION(*),   PARAMETER :: scalar_vals = &
       & [ 0.5_r8k, 1.0_r8k, 2.0_r8k, 4.0_r8k, 2.0_r8k, 1.0_r8k, 0.5_r8k ]
     INTEGER(i4k), DIMENSION(*),   PARAMETER :: int_vals    = &
       & [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
 ! Vector information
-    REAL(r8k), DIMENSION(2,3), PARAMETER :: vector_vals  = RESHAPE ( &
+    REAL(r8k), DIMENSION(2,3), PARAMETER :: vector_r_vals  = RESHAPE ( &
       & [ 0.5_r8k, 1.0_r8k, 0.5_r8k, &
       &   4.0_r8k, 2.0_r8k, 1.0_r8k ], [2,3])
+    INTEGER(i4k), DIMENSION(3,3), PARAMETER :: vector_i_vals  = RESHAPE ( &
+      & [ 10_i4k, 10_i4k, 10_i4k, &
+      &   20_i4k, 20_i4k, 20_i4k, &
+      &   30_i4k, 30_i4k, 30_i4k ], [3,3])
 ! Normal information
-    REAL(r8k), DIMENSION(4,3), PARAMETER :: normal_vals  = RESHAPE ( &
+    REAL(r8k), DIMENSION(4,3), PARAMETER :: normal_r_vals  = RESHAPE ( &
       & [ 0.5_r8k, 1.0_r8k, 0.5_r8k, &
       &   1.0_r8k, 1.0_r8k, 1.0_r8k, &
       &   1.0_r8k, 0.5_r8k, 1.0_r8k, &
       &   1.0_r8k, 0.9_r8k, 1.0_r8k ], [4,3])
+    INTEGER(i4k), DIMENSION(4,3), PARAMETER :: normal_i_vals  = RESHAPE ( &
+      & [  1_i4k, 0_i4k, -1_i4k, &
+      &   -1_i4k, 0_i4k,  1_i4k, &
+      &    1_i4k, 0_i4k, -1_i4k, &
+      &   -1_i4k, 0_i4k,  1_i4k ], [4,3])
 ! Texture information
-    REAL(r8k), DIMENSION(6,2), PARAMETER :: texture_vals = RESHAPE ( &
+    REAL(r8k), DIMENSION(6,2), PARAMETER :: texture_r_vals = RESHAPE ( &
       & [ 0.5_r8k, 1.0_r8k, &
       &   1.0_r8k, 1.0_r8k, &
       &   1.0_r8k, 0.5_r8k, &
       &   1.0_r8k, 0.9_r8k, &
       &   1.0_r8k, 0.9_r8k, &
       &   1.0_r8k, 0.9_r8k ], [6,2])
+    INTEGER(i4k), DIMENSION(6,1), PARAMETER :: texture_i_vals = RESHAPE ( &
+      & [ 0_i4k, &
+      &   1_i4k, &
+      &   2_i4k, &
+      &   3_i4k, &
+      &   4_i4k, &
+      &   5_i4k ], [6,1])
 ! Tensor information
     REAL(r8k), DIMENSION(3,3), PARAMETER :: tensor_1     = RESHAPE ( &
       & [ 0.57_r8k, 1.00_r8k, 0.00_r8k, &
@@ -60,7 +77,16 @@ MODULE vtk_attributes_unit_tests
       & [ 3.57_r8k, 4.00_r8k, 3.00_r8k, &
       &   4.00_r8k, 3.75_r8k, 3.80_r8k, &
       &   3.00_r8k, 3.80_r8k, 3.57_r8k ], [3,3])
-    REAL(r8k), DIMENSION(4,3,3) :: tensor_vals
+    INTEGER(i4k), DIMENSION(3,3), PARAMETER :: tensor_5     = RESHAPE ( &
+      & [ -1_i4k,  0_i4k,  1_i4k, &
+      &   -2_i4k, -1_i4k,  0_i4k, &
+      &   -3_i4k, -2_i4k, -1_i4k ], [3,3])
+    INTEGER(i4k), DIMENSION(3,3), PARAMETER :: tensor_6     = RESHAPE ( &
+      & [ 1_i4k, 0_i4k,  1_i4k, &
+      &   2_i4k, 1_i4k,  0_i4k, &
+      &   3_i4k, 2_i4k,  1_i4k ], [3,3])
+    REAL(r8k),    DIMENSION(4,3,3) :: tensor_r_vals
+    INTEGER(i4k), DIMENSION(2,3,3) :: tensor_i_vals
 ! Fields information
     TYPE(field_data_array)               :: array_1, array_2
     TYPE(field_data_array), DIMENSION(2) :: array
@@ -76,8 +102,8 @@ MODULE vtk_attributes_unit_tests
       &   40.0_r8k, 400.0_r8k ], [2,5] )
 
     CONTAINS
+
         SUBROUTINE vtk_attributes_unit (test_pass)
-        USE Precision
         USE vtk_attributes, ONLY : attribute, scalar, vector, normal, texture, tensor, field
         IMPLICIT NONE
         !!
@@ -94,45 +120,65 @@ MODULE vtk_attributes_unit_tests
             SELECT CASE (i)
             CASE (1, 7)
                 !! Scalar attribute
-                ALLOCATE(scalar  :: vtk_type_1, vtk_type_2)
+                ALLOCATE(scalar :: vtk_type_1, vtk_type_2)
 
                 !! Data type is generated from the defined values above
                 IF (i == 1) THEN
                     !! Test for reals
-                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, values1d=scalar_vals)
+                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, real1d=scalar_vals)
                 ELSE IF (i == 7) THEN
                     !! Test for integers
-                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, ints1d=int_vals)
+                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, int1d=int_vals)
                 END IF
-            CASE (2)
+            CASE (2, 8)
                 !! Vector attribute
-                ALLOCATE(vector  :: vtk_type_1, vtk_type_2)
+                ALLOCATE(vector :: vtk_type_1, vtk_type_2)
 
-                !! Data type is generated from the defined values above
-                CALL vtk_type_1%init(dataname='temperature', numcomp=1, values2d=vector_vals)
-            CASE (3)
+                IF (i == 2) THEN
+                    !! Test for reals
+                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, real2d=vector_r_vals)
+                ELSE IF (i == 8) THEN
+                    !! Test for integers
+                    CALL vtk_type_1%init(dataname='temperature', numcomp=1, int2d=vector_i_vals)
+                END IF
+            CASE (3, 9)
                 !! Normal attribute
-                ALLOCATE(normal  :: vtk_type_1, vtk_type_2)
+                ALLOCATE(normal :: vtk_type_1, vtk_type_2)
 
-                !! Data type is generated from the defined values above
-                CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, values2d=normal_vals)
-            CASE (4)
+                IF (i == 3) THEN
+                    !! Test for reals
+                    CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, real2d=normal_r_vals)
+                ELSE IF (i == 9) THEN
+                    !! Test for integers
+                    CALL vtk_type_1%init(dataname='normalized_temp', numcomp=1, int2d=normal_i_vals)
+                END IF
+            CASE (4, 10)
                 !! Texture attribute
                 ALLOCATE(texture :: vtk_type_1, vtk_type_2)
 
-                !! Data type is generated from the defined values above
-                CALL vtk_type_1%init(dataname='textured_temp', numcomp=1, values2d=texture_vals)
-            CASE (5)
+                IF (i == 4) THEN
+                    !! Test for reals
+                    CALL vtk_type_1%init(dataname='textured_temp', numcomp=1, real2d=texture_r_vals)
+                ELSE IF (i == 10) THEN
+                    !! Test for integers
+                    CALL vtk_type_1%init(dataname='textured_temp', numcomp=1, int2d=texture_i_vals)
+                END IF
+            CASE (5, 11)
                 !! Tensor attribute
-                ALLOCATE(tensor  :: vtk_type_1, vtk_type_2)
-                tensor_vals(1,:,:) = tensor_1; tensor_vals(2,:,:) = tensor_2
-                tensor_vals(3,:,:) = tensor_3; tensor_vals(4,:,:) = tensor_4
-
-                !! Data type is generated from the defined values above
-                CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, values3d=tensor_vals)
+                ALLOCATE(tensor :: vtk_type_1, vtk_type_2)
+                IF (i == 5) THEN
+                    tensor_r_vals(1,:,:) = tensor_1; tensor_r_vals(2,:,:) = tensor_2
+                    tensor_r_vals(3,:,:) = tensor_3; tensor_r_vals(4,:,:) = tensor_4
+                    !! Data type is generated from the defined values above
+                    CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, real3d=tensor_r_vals)
+                ELSE IF (i == 11) THEN
+                    tensor_i_vals(1,:,:) = tensor_5; tensor_i_vals(2,:,:) = tensor_6
+                    !! Data type is generated from the defined values above
+                    CALL vtk_type_1%init(dataname='tensor_temp', numcomp=1, int3d=tensor_i_vals)
+                END IF
             CASE (6)
                 !! Field attribute
-                ALLOCATE(field   :: vtk_type_1, vtk_type_2)
+                ALLOCATE(field :: vtk_type_1, vtk_type_2)
                 array_1%name = 'temps';     array_1%numComponents=3; array_1%numTuples=3
                 array_1%datatype='double';  array_1%data = data_1
                 array_2%name = 'pressures'; array_2%numComponents=5; array_2%numTuples=2

@@ -7,13 +7,18 @@ MODULE Misc
     !! This module contains miscellaneous routines used to read/write to the .vtk file
     !!
     PRIVATE
-    PUBLIC :: interpret_string, def_len, to_uppercase, to_lowercase, sleep_for
+    PUBLIC :: interpret_string, def_len, to_uppercase, to_lowercase, char_dt, sleep_for
 
     INTERFACE get_string_value
         PROCEDURE :: get_string_char, get_string_int, get_string_real
     END INTERFACE
 
-    INTEGER(i4k), PARAMETER :: def_len = 1000          !! Default character length for each line in file
+    INTEGER(i4k), PARAMETER :: def_len = 1024          !! Default character length for each line in file
+
+    TYPE char_dt
+        !! Character string DT
+        CHARACTER(LEN=:), ALLOCATABLE :: text
+    END TYPE char_dt
 
     INTERFACE
 
@@ -25,7 +30,7 @@ MODULE Misc
         CHARACTER(LEN=1), DIMENSION(:), INTENT(IN) :: datatype
         INTEGER(i4k),     DIMENSION(:), ALLOCATABLE, OPTIONAL :: ints
         REAL(r8k),        DIMENSION(:), ALLOCATABLE, OPTIONAL :: reals
-        CHARACTER(LEN=:), DIMENSION(:), ALLOCATABLE, OPTIONAL :: chars
+        TYPE(char_dt),    DIMENSION(:), ALLOCATABLE, OPTIONAL :: chars
 
         END SUBROUTINE interpret_string
 
