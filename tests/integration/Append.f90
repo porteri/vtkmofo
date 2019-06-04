@@ -123,7 +123,8 @@ PROGRAM Append_test
         ! Cell values
         CALL cell_val_1%init (dataname='cellID', numcomp=1, int1d=cellID)
         CALL cell_val_2%init (dataname='matType', numcomp=1, int1d=matType)
-        IF (.NOT. ALLOCATED(cell_vals_to_write)) ALLOCATE(cell_vals_to_write(1))
+        IF (ALLOCATED(cell_vals_to_write)) DEALLOCATE(cell_vals_to_write)
+        ALLOCATE(cell_vals_to_write(1))
         ALLOCATE(cell_vals_to_write(1)%attribute,source=cell_val_2)
 
         CALL vtk_legacy_write (celldata=cell_val_1)
@@ -134,7 +135,8 @@ PROGRAM Append_test
         CALL point_val_1%init (dataname='Temperature_(K)', numcomp=1, real1d=point_vals(:,1))
         CALL point_val_2%init (dataname='Stress_(Pa)', numcomp=1, real1d=point_vals(:,2))
         CALL point_val_3%init (dataname='Displacement_(m)', numcomp=1, real1d=point_vals(:,3))
-        IF (.NOT. ALLOCATED(point_vals_to_write)) ALLOCATE(point_vals_to_write(2))
+        IF (ALLOCATED(point_vals_to_write)) DEALLOCATE(point_vals_to_write)
+        ALLOCATE(point_vals_to_write(2))
         ALLOCATE(point_vals_to_write(1)%attribute,source=point_val_2)
         ALLOCATE(point_vals_to_write(2)%attribute,source=point_val_3)
 
