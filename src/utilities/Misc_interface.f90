@@ -1,5 +1,5 @@
 MODULE Misc
-    USE Precision
+    USE Precision, ONLY : i4k, r8k
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/13/2017
@@ -23,7 +23,7 @@ MODULE Misc
     INTERFACE
 
         MODULE SUBROUTINE interpret_string (line, datatype, ignore, separator, reals, ints, chars)
-        !!
+        IMPLICIT NONE
         !! Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
         CHARACTER(LEN=*), INTENT(INOUT) :: line
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: ignore, separator
@@ -35,24 +35,28 @@ MODULE Misc
         END SUBROUTINE interpret_string
 
         MODULE SUBROUTINE reduce_string (string, sep)
+        IMPLICIT NONE
         CHARACTER(LEN=:), ALLOCATABLE, INTENT(INOUT) :: string
         CHARACTER(LEN=*), INTENT(IN)  :: sep
 
         END SUBROUTINE reduce_string
 
         MODULE SUBROUTINE get_string_char (string, sep, name)
+        IMPLICIT NONE
         CHARACTER(LEN=*), INTENT(IN)  :: string, sep
         CHARACTER(LEN=:), ALLOCATABLE, INTENT(OUT) :: name
 
         END SUBROUTINE get_string_char
 
         MODULE SUBROUTINE get_string_int (string, sep, name)
+        IMPLICIT NONE
         CHARACTER(LEN=*), INTENT(IN)  :: string, sep
         INTEGER(i4k),     INTENT(OUT) :: name
 
         END SUBROUTINE get_string_int
 
         MODULE SUBROUTINE get_string_real (string, sep, name)
+        IMPLICIT NONE
         CHARACTER(LEN=*), INTENT(IN)  :: string, sep
         REAL(r8k),        INTENT(OUT) :: name
 

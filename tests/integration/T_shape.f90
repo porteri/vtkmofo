@@ -1,5 +1,5 @@
 PROGRAM T_shape_test
-    USE Precision
+    USE Precision,      ONLY : i4k, r8k
     USE vtk_datasets,   ONLY : unstruct_grid
     USE vtk_attributes, ONLY : scalar, attributes
     USE vtk_cells,      ONLY : voxel, hexahedron, vtkcell_list

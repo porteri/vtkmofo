@@ -32,15 +32,15 @@ PROGRAM modern_Rectilinear_test
     vals(1,:) = temp_val
     DO i = 2, SIZE(vals,DIM=1)
         IF (i <= SIZE(vals) / 2) THEN
-            vals(i,1) = vals(i-1,1) + 2.0_r8k          !! Temperature
+            vals(i,1) = vals(i-1,1) + 2.0_r8k              !! Temperature
         ELSE
-            vals(i,1) = vals(i-1,1) - 2.0_r8k          !! Temperature
+            vals(i,1) = vals(i-1,1) - 2.0_r8k              !! Temperature
         END IF
         j = j + 1.0_r8k
-        vals(i,2) = vals(i-1,2) + MAX(50.0_r8k, j)     !! Pressure
-        vals(i,3) = vals(i-1,3) + SQRT(REAL(i))        !! Stress
+        vals(i,2) = vals(i-1,2) + MAX(50.0_r8k, j)         !! Pressure
+        vals(i,3) = vals(i-1,3) + SQRT(REAL(i))            !! Stress
     END DO
-    dims = (/ n_x, n_y, n_z /)
+    dims = [ n_x, n_y, n_z ]
     CALL cube%init (dims=dims, x_coords=x_coords, y_coords=y_coords, z_coords=z_coords)
     DO i = 1, n_params_to_write
         IF (.NOT. ALLOCATED(vals_to_write(i)%attribute))THEN
@@ -50,6 +50,13 @@ PROGRAM modern_Rectilinear_test
     END DO
 
     CALL vtk_serial_write (cube, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)
+                                                           !! This tests a full 1-time write
+
+    CALL vtk_serial (cube)
+
+    CALL vtk_serial (vals_to_write(1))
+
+    CALL vtk_serial ([vals_to_write(2:3)])
 
     WRITE(*,*) 'Finished'
 

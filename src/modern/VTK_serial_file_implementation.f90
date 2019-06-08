@@ -41,7 +41,7 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
             ALLOCATE(compression_string,source='')
         END IF
 
-        string = type_string // version_string // byte_order_string // compression_string
+        ALLOCATE(string, source=type_string // version_string // byte_order_string // compression_string)
 
         CALL me%setup(name=name,string=string)
 
@@ -61,5 +61,17 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
         IF (PRESENT(file_extension)) ALLOCATE(me%file_extension,source=file_extension)
 
         END PROCEDURE initialize
+
+        MODULE PROCEDURE finalize
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 05/07/2019
+        !!
+        !! This writes the end of the file
+        !!
+
+        WRITE(me%unit,'(a)') '</VTKFile>'
+
+        END PROCEDURE finalize
 
 END SUBMODULE VTK_Serial_file_implementation

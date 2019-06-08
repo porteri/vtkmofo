@@ -23,6 +23,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
     CONTAINS
 
         MODULE PROCEDURE abs_read
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -36,6 +37,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE abs_read
 
         MODULE PROCEDURE abs_write
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -48,6 +50,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE abs_write
 
         MODULE PROCEDURE initialize
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -73,6 +76,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE initialize
 
         MODULE PROCEDURE check_for_diffs
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -91,6 +95,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE scalar_read
         USE Misc, ONLY : interpret_string, to_lowercase
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -167,6 +172,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE scalar_read
 
         MODULE PROCEDURE scalar_write
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -196,6 +202,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE scalar_write
 
         MODULE PROCEDURE scalar_setup
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -232,6 +239,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE scalar_setup
 
         MODULE PROCEDURE check_for_diffs_scalar
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -277,6 +285,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE vector_read
         USE Misc, ONLY : interpret_string, to_lowercase
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -346,6 +355,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE vector_read
 
         MODULE PROCEDURE vector_write
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -370,6 +380,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE vector_write
 
         MODULE PROCEDURE vector_setup
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -395,6 +406,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE vector_setup
 
         MODULE PROCEDURE check_for_diffs_vector
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -442,6 +454,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE normal_read
         USE Misc, ONLY : interpret_string, to_lowercase
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -511,6 +524,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE normal_read
 
         MODULE PROCEDURE normal_write
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -535,6 +549,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE normal_write
 
         MODULE PROCEDURE normal_setup
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -560,6 +575,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE normal_setup
 
         MODULE PROCEDURE check_for_diffs_normal
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -607,6 +623,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE texture_read
         USE Misc, ONLY : interpret_string, to_lowercase
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -678,6 +695,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE texture_read
 
         MODULE PROCEDURE texture_write
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -710,6 +728,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE texture_write
 
         MODULE PROCEDURE texture_setup
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -735,6 +754,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE texture_setup
 
         MODULE PROCEDURE check_for_diffs_texture
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -782,6 +802,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE tensor_read
         USE Misc, ONLY : interpret_string, to_lowercase
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -859,6 +880,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE tensor_read
 
         MODULE PROCEDURE tensor_write
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -890,6 +912,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE tensor_write
 
         MODULE PROCEDURE tensor_setup
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -932,6 +955,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE tensor_setup
 
         MODULE PROCEDURE check_for_diffs_tensor
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -983,6 +1007,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 !********
         MODULE PROCEDURE field_read
         USE Misc, ONLY : interpret_string
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -1039,6 +1064,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE field_read
 
         MODULE PROCEDURE field_write
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -1062,6 +1088,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE field_write
 
         MODULE PROCEDURE field_setup
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -1079,6 +1106,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END PROCEDURE field_setup
 
         MODULE PROCEDURE check_for_diffs_field
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!

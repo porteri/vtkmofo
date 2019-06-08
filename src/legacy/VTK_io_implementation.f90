@@ -296,15 +296,15 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         END PROCEDURE vtk_legacy_read
 
-        MODULE PROCEDURE vtk_serial_write
+        MODULE PROCEDURE vtk_serial_full_write
         !! author: Ian Porter
         !! date: 5/08/2019
         !!
         !! This subroutines writes the modern serial vtk output file
         !!
-        
-        ERROR STOP 'vtk_serial_write not yet implemented'
-        
-        END PROCEDURE vtk_serial_write
+
+        ERROR STOP 'vtk_serial_full_write not yet implemented'
+
+        END PROCEDURE vtk_serial_full_write
 
 END SUBMODULE vtk_io_implementation

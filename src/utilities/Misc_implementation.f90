@@ -1,10 +1,11 @@
 SUBMODULE (Misc) Misc_implementation
     USE Precision, ONLY : i4k, i8k, r8k
+    IMPLICIT NONE
 
     CONTAINS
 
         MODULE PROCEDURE interpret_string
-        !!
+        IMPLICIT NONE
         !! Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
         INTEGER(i4k) :: i
         CHARACTER(LEN=:), ALLOCATABLE :: string, sep, char
@@ -61,6 +62,7 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE interpret_string
 
         MODULE PROCEDURE reduce_string
+        IMPLICIT NONE
 
         IF (INDEX(string,sep) == 0) THEN
             string = ''
@@ -71,6 +73,7 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE reduce_string
 
         MODULE PROCEDURE get_string_char
+        IMPLICIT NONE
 
         IF (INDEX(string,sep) == 0) THEN
             name = string(1:)                    !! Read to end of string
@@ -81,6 +84,8 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE get_string_char
 
         MODULE PROCEDURE get_string_int
+        IMPLICIT NONE
+
         CHARACTER(LEN=:), ALLOCATABLE :: text
 
         IF (INDEX(string,sep) == 0) THEN
@@ -93,6 +98,7 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE get_string_int
 
         MODULE PROCEDURE get_string_real
+        IMPLICIT NONE
         CHARACTER(LEN=:), ALLOCATABLE :: text
 
         IF (INDEX(string,sep) == 0) THEN
@@ -105,6 +111,7 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE get_string_real
 
         MODULE PROCEDURE to_uppercase
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 01/23/2019
         !!
@@ -128,6 +135,7 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE to_uppercase
 
         MODULE PROCEDURE to_lowercase
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 01/23/2019
         !!

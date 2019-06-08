@@ -178,6 +178,7 @@ SUBMODULE (file_utility) file_utility_implementation
         END PROCEDURE wait_for_file
 
         MODULE PROCEDURE get_unit
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 04/03/2019
         !!

@@ -1,5 +1,5 @@
 MODULE vtk_io
-    USE Precision
+    USE Precision, ONLY : i4k, r8k
     USE vtk_attributes
     USE vtk_cells
     USE vtk_datasets
@@ -17,12 +17,17 @@ MODULE vtk_io
         PROCEDURE :: vtk_legacy_full_write
         PROCEDURE :: vtk_legacy_append
         PROCEDURE :: vtk_legacy_finalize
-    END INTERFACE
-    
+    END INTERFACE vtk_legacy_write
+
+    INTERFACE vtk_serial_write
+        PROCEDURE :: vtk_serial_full_write
+    END INTERFACE vtk_serial_write
+
     INTERFACE
 
         MODULE SUBROUTINE vtk_legacy_full_write (geometry, celldata, pointdata, celldatasets, pointdatasets, &
           &                                      unit, filename, multiple_io, data_type, title)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/1/2017
         !!
@@ -43,6 +48,7 @@ MODULE vtk_io
         END SUBROUTINE vtk_legacy_full_write
 
         MODULE SUBROUTINE vtk_legacy_append (celldata, pointdata, celldatasets, pointdatasets)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/1/2017
         !!
@@ -56,6 +62,7 @@ MODULE vtk_io
         END SUBROUTINE vtk_legacy_append
 
         MODULE SUBROUTINE vtk_legacy_finalize (finished)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/03/2019
         !!
@@ -67,6 +74,7 @@ MODULE vtk_io
 
         MODULE SUBROUTINE vtk_legacy_read (unit, geometry, celldata, pointdata, celldatasets, pointdatasets, &
           &                                filename, data_type, title)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/20/2017
         !!
@@ -84,8 +92,9 @@ MODULE vtk_io
 
         END SUBROUTINE vtk_legacy_read
 
-        MODULE SUBROUTINE vtk_serial_write (geometry, celldata, pointdata, celldatasets, pointdatasets, &
-          &                                 unit, filename, multiple_io, data_type, title)
+        MODULE SUBROUTINE vtk_serial_full_write (geometry, celldata, pointdata, celldatasets, pointdatasets, &
+          &                                      unit, filename, multiple_io, data_type, title)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 5/08/2019
         !!
@@ -103,7 +112,7 @@ MODULE vtk_io
         CHARACTER(LEN=*),  INTENT(IN), OPTIONAL :: filename    !! VTK filename
         CHARACTER(LEN=*),  INTENT(IN), OPTIONAL :: title       !! Title to be written on title line (#2) in output file
 
-        END SUBROUTINE vtk_serial_write
+        END SUBROUTINE vtk_serial_full_write
 
     END INTERFACE
 

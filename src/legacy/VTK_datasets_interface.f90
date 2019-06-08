@@ -1,5 +1,5 @@
 MODULE vtk_datasets
-    USE Precision
+    USE Precision, ONLY : i4k, r8k
     USE vtk_cells, ONLY : vtkcell, vtkcell_list
     IMPLICIT NONE
     !! author: Ian Porter
@@ -111,7 +111,7 @@ MODULE vtk_datasets
 ! Abstract dataset
 ! ****************
         MODULE SUBROUTINE abs_read (me, unit)
-        !!
+        IMPLICIT NONE
         !! Reads the dataset information from the .vtk file
         CLASS(dataset), INTENT(OUT) :: me
         INTEGER(i4k),   INTENT(IN)  :: unit
@@ -119,7 +119,7 @@ MODULE vtk_datasets
         END SUBROUTINE abs_read
 
         MODULE SUBROUTINE abs_write (me, unit)
-        !!
+        IMPLICIT NONE
         !! Writes the dataset information to the .vtk file
         CLASS(dataset), INTENT(IN) :: me
         INTEGER(i4k),   INTENT(IN) :: unit
@@ -128,8 +128,8 @@ MODULE vtk_datasets
 
         MODULE SUBROUTINE init (me, datatype, dims, origin, spacing, points, cells, cell_list, &
           &                     x_coords, y_coords, z_coords, vertices, lines, polygons, triangles)
-        !!
-        !! initializes the dataset
+        IMPLICIT NONE
+        !! Initializes the dataset
         CLASS (dataset),                     INTENT(OUT)          :: me
         CLASS(vtkcell),      DIMENSION(:),   INTENT(IN), OPTIONAL :: vertices
         CLASS(vtkcell),      DIMENSION(:),   INTENT(IN), OPTIONAL :: lines
@@ -149,9 +149,8 @@ MODULE vtk_datasets
         END SUBROUTINE init
 
         MODULE FUNCTION check_for_diffs (me, you) RESULT (diffs)
-        !!
+        IMPLICIT NONE
         !! Function checks for differences in a dataset
-        !!
         CLASS(dataset), INTENT(IN) :: me, you
         LOGICAL :: diffs
 
@@ -160,7 +159,7 @@ MODULE vtk_datasets
 ! Structured Points
 ! *****************
         MODULE SUBROUTINE struct_pts_read (me, unit)
-        !!
+        IMPLICIT NONE
         !! Reads the structured points dataset information from the .vtk file
         CLASS(struct_pts), INTENT(OUT) :: me
         INTEGER(i4k),      INTENT(IN)  :: unit
@@ -168,7 +167,7 @@ MODULE vtk_datasets
         END SUBROUTINE struct_pts_read
 
         MODULE SUBROUTINE struct_pts_write (me, unit)
-        !!
+        IMPLICIT NONE
         !! Writes the structured points dataset information to the .vtk file
         CLASS(struct_pts), INTENT(IN) :: me
         INTEGER(i4k),      INTENT(IN) :: unit
@@ -176,7 +175,7 @@ MODULE vtk_datasets
         END SUBROUTINE struct_pts_write
 
         MODULE SUBROUTINE struct_pts_setup (me, dims, origin, spacing)
-        !!
+        IMPLICIT NONE
         !! Sets up the structured points dataset with information
         CLASS (struct_pts),         INTENT(OUT) :: me
         INTEGER(i4k), DIMENSION(3), INTENT(IN)  :: dims
@@ -185,7 +184,7 @@ MODULE vtk_datasets
         END SUBROUTINE struct_pts_setup
 
         MODULE FUNCTION check_for_diffs_struct_pts (me, you) RESULT (diffs)
-        !!
+        IMPLICIT NONE
         !! Function checks for differences in a structured points dataset
         CLASS(struct_pts), INTENT(IN) :: me
         CLASS(dataset),    INTENT(IN) :: you
@@ -196,7 +195,7 @@ MODULE vtk_datasets
 ! Structured Grid
 ! ***************
         MODULE SUBROUTINE struct_grid_read (me, unit)
-        !!
+        IMPLICIT NONE
         !! Reads the structured grid dataset information from the .vtk file
         CLASS(struct_grid), INTENT(OUT) :: me
         INTEGER(i4k),       INTENT(IN)  :: unit
@@ -204,7 +203,7 @@ MODULE vtk_datasets
         END SUBROUTINE struct_grid_read
 
         MODULE SUBROUTINE struct_grid_write (me, unit)
-        !!
+        IMPLICIT NONE
         !! Writes the structured grid dataset information to the .vtk file
         CLASS(struct_grid), INTENT(IN) :: me
         INTEGER(i4k),       INTENT(IN) :: unit
@@ -212,7 +211,7 @@ MODULE vtk_datasets
         END SUBROUTINE struct_grid_write
 
         MODULE SUBROUTINE struct_grid_setup (me, dims, points)
-        !!
+        IMPLICIT NONE
         !! Sets up the structured grid dataset with information
         CLASS (struct_grid),          INTENT(OUT) :: me
         INTEGER(i4k), DIMENSION(3),   INTENT(IN)  :: dims
@@ -221,7 +220,7 @@ MODULE vtk_datasets
         END SUBROUTINE struct_grid_setup
 
         MODULE FUNCTION check_for_diffs_struct_grid (me, you) RESULT (diffs)
-        !!
+        IMPLICIT NONE
         !! Function checks for differences in a structured grid dataset
         CLASS(struct_grid), INTENT(IN) :: me
         CLASS(dataset),     INTENT(IN) :: you
@@ -232,7 +231,7 @@ MODULE vtk_datasets
 ! Rectilinear Grid
 ! ****************
         MODULE SUBROUTINE rectlnr_grid_read (me, unit)
-        !!
+        IMPLICIT NONE
         !! Reads the rectilinear grid dataset information from the .vtk file
         CLASS(rectlnr_grid), INTENT(OUT) :: me
         INTEGER(i4k),        INTENT(IN)  :: unit
@@ -240,7 +239,7 @@ MODULE vtk_datasets
         END SUBROUTINE rectlnr_grid_read
 
         MODULE SUBROUTINE rectlnr_grid_write (me, unit)
-        !!
+        IMPLICIT NONE
         !! Writes the rectilinear grid dataset information to the .vtk file
         CLASS(rectlnr_grid), INTENT(IN) :: me
         INTEGER(i4k),        INTENT(IN) :: unit
@@ -248,7 +247,7 @@ MODULE vtk_datasets
         END SUBROUTINE rectlnr_grid_write
 
         MODULE SUBROUTINE rectlnr_grid_setup (me, dims, x_coords, y_coords, z_coords, datatype)
-        !!
+        IMPLICIT NONE
         !! Sets up the rectilinear grid dataset with information
         CLASS (rectlnr_grid),       INTENT(OUT) :: me         !! Rectilinear grid DT
         INTEGER(i4k), DIMENSION(3), INTENT(IN)  :: dims       !! # of dimensions in (x,y,z) direction
@@ -260,7 +259,7 @@ MODULE vtk_datasets
         END SUBROUTINE rectlnr_grid_setup
 
         MODULE FUNCTION check_for_diffs_rectlnr_grid (me, you) RESULT (diffs)
-        !!
+        IMPLICIT NONE
         !! Function checks for differences in a rectilinear grid dataset
         CLASS(rectlnr_grid), INTENT(IN) :: me
         CLASS(dataset),      INTENT(IN) :: you
@@ -271,7 +270,7 @@ MODULE vtk_datasets
 ! Polygonal Data
 ! **************
         MODULE SUBROUTINE polygonal_data_read (me, unit)
-        !!
+        IMPLICIT NONE
         !! Reads the polygonal data dataset information from the .vtk file
         CLASS(polygonal_data), INTENT(OUT) :: me
         INTEGER(i4k),          INTENT(IN)  :: unit
@@ -279,7 +278,7 @@ MODULE vtk_datasets
         END SUBROUTINE polygonal_data_read
 
         MODULE SUBROUTINE polygonal_data_write (me, unit)
-        !!
+        IMPLICIT NONE
         !! Writes the polygonal data dataset information to the .vtk file
         CLASS(polygonal_data), INTENT(IN) :: me
         INTEGER(i4k),          INTENT(IN) :: unit
@@ -287,7 +286,7 @@ MODULE vtk_datasets
         END SUBROUTINE polygonal_data_write
 
         MODULE SUBROUTINE polygonal_data_setup (me, points, vertices, lines, polygons, triangles)
-        !!
+        IMPLICIT NONE
         !! Sets up the polygonal data dataset with information
         CLASS (polygonal_data),       INTENT(OUT)          :: me
         REAL(r8k),    DIMENSION(:,:), INTENT(IN)           :: points
@@ -301,7 +300,7 @@ MODULE vtk_datasets
 ! Unstructured Grid
 ! *****************
         MODULE SUBROUTINE unstruct_grid_read (me, unit)
-        !!
+        IMPLICIT NONE
         !! Reads the unstructured grid dataset information from the .vtk file
         CLASS(unstruct_grid), INTENT(OUT) :: me
         INTEGER(i4k),         INTENT(IN)  :: unit
@@ -309,7 +308,7 @@ MODULE vtk_datasets
         END SUBROUTINE unstruct_grid_read
 
         MODULE SUBROUTINE unstruct_grid_write (me, unit)
-        !!
+        IMPLICIT NONE
         !! Writes the unstructured grid dataset information from the .vtk file
         CLASS(unstruct_grid), INTENT(IN) :: me
         INTEGER(i4k),         INTENT(IN) :: unit
@@ -317,8 +316,8 @@ MODULE vtk_datasets
         END SUBROUTINE unstruct_grid_write
 
         MODULE SUBROUTINE unstruct_grid_setup (me, points, cells)
+        IMPLICIT NONE
         !! Sets up the unstructured grid dataset with information for a single class of cells
-        !!
         CLASS(unstruct_grid),           INTENT(OUT) :: me      !! DT
         REAL(r8k),      DIMENSION(:,:), INTENT(IN)  :: points  !!
         CLASS(vtkcell), DIMENSION(:),   INTENT(IN)  :: cells   !! DT of same cell types
@@ -326,8 +325,8 @@ MODULE vtk_datasets
         END SUBROUTINE unstruct_grid_setup
 
         MODULE SUBROUTINE unstruct_grid_setup_multiclass (me, points, cell_list)
+        IMPLICIT NONE
         !! Sets up the unstructured grid dataset with information for a list of different classes of cells
-        !!
         CLASS(unstruct_grid),               INTENT(OUT) :: me         !! DT
         REAL(r8k),          DIMENSION(:,:), INTENT(IN)  :: points     !!
         TYPE(vtkcell_list), DIMENSION(:),   INTENT(IN)  :: cell_list  !! DT of different cell types

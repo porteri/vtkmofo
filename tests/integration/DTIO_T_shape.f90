@@ -20,7 +20,6 @@ MODULE DTIO_vtkmofo
     CONTAINS
 
         SUBROUTINE write_formatted (me, unit, iotype, v_list, iostat, iomsg)
-        USE Precision
         USE vtk_attributes, ONLY : scalar, attributes
         USE vtk_cells,      ONLY : voxel, hexahedron, vtkcell_list
         USE vtk,            ONLY : vtk_legacy_write

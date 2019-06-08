@@ -1,6 +1,6 @@
 MODULE vtk_attributes
-    USE Precision
-    USE Misc, ONLY : def_len
+    USE Precision, ONLY : i4k, r8k
+    USE Misc,      ONLY : def_len
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/13/2017
@@ -126,6 +126,7 @@ MODULE vtk_attributes
     INTERFACE
 
         MODULE SUBROUTINE abs_read (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -137,6 +138,7 @@ MODULE vtk_attributes
         END SUBROUTINE abs_read
 
         MODULE SUBROUTINE abs_write (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -149,6 +151,7 @@ MODULE vtk_attributes
 
         MODULE SUBROUTINE initialize (me, dataname, datatype, numcomp, tablename, int1d, int2d, int3d, &
           &                           real1d, real2d, real3d, field_arrays)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -169,6 +172,7 @@ MODULE vtk_attributes
         END SUBROUTINE initialize
 
         MODULE FUNCTION check_for_diffs (me, you) RESULT (diffs)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017        
         !!
@@ -182,6 +186,7 @@ MODULE vtk_attributes
 ! Scalars
 !********
         MODULE SUBROUTINE scalar_read (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -193,6 +198,7 @@ MODULE vtk_attributes
         END SUBROUTINE scalar_read
 
         MODULE SUBROUTINE scalar_write (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -204,6 +210,7 @@ MODULE vtk_attributes
         END SUBROUTINE scalar_write
 
         MODULE SUBROUTINE scalar_setup (me, dataname, datatype, numcomp, tablename, int1d, real1d)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -220,6 +227,7 @@ MODULE vtk_attributes
         END SUBROUTINE scalar_setup
 
         MODULE FUNCTION check_for_diffs_scalar (me, you) RESULT (diffs)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -234,6 +242,7 @@ MODULE vtk_attributes
 ! Vectors
 !********
         MODULE SUBROUTINE vector_read (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017        
         !!
@@ -245,6 +254,7 @@ MODULE vtk_attributes
         END SUBROUTINE vector_read
 
         MODULE SUBROUTINE vector_write (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017        
         !!
@@ -256,6 +266,7 @@ MODULE vtk_attributes
         END SUBROUTINE vector_write
 
         MODULE SUBROUTINE vector_setup (me, dataname, datatype, int2d, real2d)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -270,6 +281,7 @@ MODULE vtk_attributes
         END SUBROUTINE vector_setup
 
         MODULE FUNCTION check_for_diffs_vector (me, you) RESULT (diffs)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -284,6 +296,7 @@ MODULE vtk_attributes
 ! Normals
 !********
         MODULE SUBROUTINE normal_read (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -295,6 +308,7 @@ MODULE vtk_attributes
         END SUBROUTINE normal_read
 
         MODULE SUBROUTINE normal_write (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -306,6 +320,7 @@ MODULE vtk_attributes
         END SUBROUTINE normal_write
 
         MODULE SUBROUTINE normal_setup (me, dataname, datatype, int2d, real2d)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -320,6 +335,7 @@ MODULE vtk_attributes
         END SUBROUTINE normal_setup
 
         MODULE FUNCTION check_for_diffs_normal (me, you) RESULT (diffs)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -334,6 +350,7 @@ MODULE vtk_attributes
 ! Textures
 !********
         MODULE SUBROUTINE texture_read (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -345,6 +362,7 @@ MODULE vtk_attributes
         END SUBROUTINE texture_read
 
         MODULE SUBROUTINE texture_write (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017        
         !!
@@ -356,6 +374,7 @@ MODULE vtk_attributes
         END SUBROUTINE texture_write
 
         MODULE SUBROUTINE texture_setup (me, dataname, datatype, int2d, real2d)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -370,6 +389,7 @@ MODULE vtk_attributes
         END SUBROUTINE texture_setup
 
         MODULE FUNCTION check_for_diffs_texture (me, you) RESULT (diffs)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017        
         !!
@@ -384,6 +404,7 @@ MODULE vtk_attributes
 ! Tensors
 !********
         MODULE SUBROUTINE tensor_read (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -395,6 +416,7 @@ MODULE vtk_attributes
         END SUBROUTINE tensor_read
 
         MODULE SUBROUTINE tensor_write (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -406,6 +428,7 @@ MODULE vtk_attributes
         END SUBROUTINE tensor_write
 
         MODULE SUBROUTINE tensor_setup (me, dataname, datatype, int3d, real3d)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -420,6 +443,7 @@ MODULE vtk_attributes
         END SUBROUTINE tensor_setup
 
         MODULE FUNCTION check_for_diffs_tensor (me, you) RESULT (diffs)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -434,6 +458,7 @@ MODULE vtk_attributes
 ! Fields
 !********
         MODULE SUBROUTINE field_read (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -445,6 +470,7 @@ MODULE vtk_attributes
         END SUBROUTINE field_read
 
         MODULE SUBROUTINE field_write (me, unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
@@ -456,6 +482,7 @@ MODULE vtk_attributes
         END SUBROUTINE field_write
 
         MODULE SUBROUTINE field_setup (me, dataname, datatype, field_arrays)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
@@ -469,6 +496,7 @@ MODULE vtk_attributes
         END SUBROUTINE field_setup
 
         MODULE FUNCTION check_for_diffs_field (me, you) RESULT (diffs)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
         !!

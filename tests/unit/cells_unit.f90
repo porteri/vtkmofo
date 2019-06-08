@@ -1,5 +1,5 @@
 MODULE vtk_cells_unit_tests
-    USE Precision
+    USE Precision, ONLY : i4k
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/16/2017
@@ -38,9 +38,10 @@ MODULE vtk_cells_unit_tests
         &   'quadratic_quad.vtk       ', &
         &   'quadratic_tetra.vtk      ', &
         &   'quadratic_hexahedron.vtk ' ]
+
     CONTAINS
+
         SUBROUTINE vtk_cells_unit (test_pass)
-        USE Precision
         USE vtk_cells, ONLY : vtkcell, vertex, poly_vertex, line, poly_line, triangle, triangle_strip, polygon, pixel, quad, &
           &                   tetra, voxel, hexahedron, wedge, pyramid, quadratic_edge, quadratic_triangle, quadratic_quad,  &
           &                   quadratic_tetra, quadratic_hexahedron

@@ -1,5 +1,5 @@
 MODULE vtk_datasets_unit_tests
-    USE Precision
+    USE Precision, ONLY : i4k, r8k
     USE vtk_vars,  ONLY : ASCII, Binary
     USE vtk_cells, ONLY : polygon, voxel
     IMPLICIT NONE
@@ -293,9 +293,10 @@ MODULE vtk_datasets_unit_tests
       &   1.0_r8k, 0.5_r8k, 1.5_r8k, &
       &   1.5_r8k, 0.5_r8k, 1.5_r8k ], [3,n_unstr_grid] )
     TYPE(voxel), DIMENSION(n_unstr_cells) :: cells
+
     CONTAINS
+
         SUBROUTINE vtk_datasets_unit (test_pass)
-        USE Precision
         USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         USE VTK,          ONLY : vtk_legacy_write
         IMPLICIT NONE

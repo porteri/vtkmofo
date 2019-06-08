@@ -27,7 +27,8 @@ MODULE VTK_Serial_file
         PROCEDURE, NON_OVERRIDABLE :: vtk_element_setup
         PROCEDURE, NON_OVERRIDABLE, PUBLIC :: initialize
         PROCEDURE(abs_set_grid_data), DEFERRED :: set_grid_data
-        GENERIC :: set => set_grid_data
+        GENERIC, PUBLIC :: set => set_grid_data
+        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: finalize
     END TYPE VTK_element_dt
 
     INTERFACE
@@ -68,6 +69,17 @@ MODULE VTK_Serial_file
         CLASS(VTK_element_dt), INTENT(INOUT) :: me
 
         END SUBROUTINE abs_set_grid_data
+
+        MODULE SUBROUTINE finalize (me)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! This writes the end of the file
+        !!
+        CLASS(VTK_element_dt), INTENT(IN) :: me              !!
+
+        END SUBROUTINE finalize
 
     END INTERFACE
 

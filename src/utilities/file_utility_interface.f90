@@ -120,6 +120,7 @@ MODULE File_utility
         END SUBROUTINE file_read_error
 
         MODULE SUBROUTINE wait_for_file (me)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 04/04/2018
         !!
@@ -130,6 +131,7 @@ MODULE File_utility
         END SUBROUTINE wait_for_file
 
         MODULE FUNCTION get_unit (me) RESULT (unit)
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 04/03/2019
         !!
