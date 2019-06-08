@@ -1,5 +1,5 @@
 MODULE VTK_serial_RectilinearGrid
-    USE VTK_Serial_file, ONLY : VTK_element_dt
+    USE VTK_Serial_file, ONLY : VTK_element_dt, xml_file_dt
     IMPLICIT NONE
     !!
     !!
@@ -11,6 +11,7 @@ MODULE VTK_serial_RectilinearGrid
     PUBLIC :: VTK_serial_RectilinearGrid_dt
 
     TYPE, EXTENDS(VTK_element_dt) :: VTK_serial_RectilinearGrid_dt
+        CLASS(VTK_element_dt) :: file_header
     CONTAINS
         PROCEDURE :: set_grid_data
     END TYPE VTK_serial_RectilinearGrid_dt
