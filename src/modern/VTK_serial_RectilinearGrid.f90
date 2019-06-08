@@ -1,5 +1,5 @@
 MODULE VTK_serial_RectilinearGrid
-    USE VTK_Serial_file, ONLY : VTK_element_dt, xml_file_dt
+    USE VTK_Serial_file, ONLY : VTK_element_dt
     IMPLICIT NONE
     !!
     !!
@@ -11,7 +11,7 @@ MODULE VTK_serial_RectilinearGrid
     PUBLIC :: VTK_serial_RectilinearGrid_dt
 
     TYPE, EXTENDS(VTK_element_dt) :: VTK_serial_RectilinearGrid_dt
-        CLASS(VTK_element_dt) :: file_header
+        CLASS(VTK_element_dt), ALLOCATABLE :: file_header
     CONTAINS
         PROCEDURE :: set_grid_data
     END TYPE VTK_serial_RectilinearGrid_dt
@@ -27,6 +27,16 @@ MODULE VTK_serial_RectilinearGrid
         !!
         CLASS(VTK_serial_RectilinearGrid_dt), INTENT(INOUT) :: me
         END SUBROUTINE set_grid_data
+
+        MODULE SUBROUTINE rectilinear_grid_write (me)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 05/06/2019
+        !!
+        !! This writes the body of a rectilinear grid
+        !!
+        CLASS(VTK_serial_RectilinearGrid_dt), INTENT(INOUT) :: me
+        END SUBROUTINE rectilinear_grid_write
 
     END INTERFACE
 

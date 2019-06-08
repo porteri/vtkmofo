@@ -70,7 +70,7 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
         !! This writes the end of the file
         !!
 
-        WRITE(me%unit,'(a)') '</VTKFile>'
+!        WRITE(me%unit,'(a)') '</VTKFile>'
 
         END PROCEDURE finalize
 

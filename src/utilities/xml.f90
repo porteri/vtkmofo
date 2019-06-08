@@ -60,7 +60,7 @@ MODULE XML
         IMPLICIT NONE
         !! This begins an xml element block
         CLASS(xml_element_dt), INTENT(IN) :: me      !! XML element derived type
-        INTEGER(i4k),          INTENT(IN)  :: unit   !! File unit # to write to
+        INTEGER(i4k),          INTENT(IN) :: unit    !! File unit # to write to
         END SUBROUTINE element_begin
 
         MODULE SUBROUTINE element_add_data (me, string)

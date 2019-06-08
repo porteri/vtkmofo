@@ -26,6 +26,7 @@ endfunction(add_VTKmofo_unit_test)
 foreach(test
     attributes_unit
     cells_unit
+    DataArray_unit
     datasets_unit
     linked_list_unit
     xml_unit
