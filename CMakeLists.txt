@@ -7,6 +7,21 @@ option(VTKmofo_USE_OpenCoarrays
 # Project name
 project(vtkmofo LANGUAGES Fortran)
 
+# vtkmofo project version
+set (VTKMOFO_VERSION_MAJOR 1)
+set (VTKMOFO_VERSION_MINOR 0)
+
+# Print project logo, version and tag line
+file(READ ${CMAKE_CURRENT_LIST_DIR}/cmake/VTKMOFO-logo.txt VTKMOFO_LOGO)
+string(JOIN "\n         " VTKMOFO_GREETING "${VTKMOFO_LOGO}"
+  "VTKMOFO, v${VTKMOFO_VERSION_MAJOR}.${VTKMOFO_VERSION_MINOR}: VTK in MOdern FOrtran")
+if(NOT isMultiConfig)
+  string(APPEND VTKMOFO_GREETING "\n         Build type: ${CMAKE_BUILD_TYPE}")
+endif()
+string(APPEND VTKMOFO_GREETING "\n")
+string(PREPEND VTKMOFO_GREETING "\n")
+message(STATUS "${VTKMOFO_GREETING}")
+
 # Turn on the ability to create folders to organize projects (.vcproj)
 # It creates "CMakePredefinedTargets" folder by default and adds CMake
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
