@@ -8,7 +8,7 @@ matrix:
         - export FC=gfortran-${GCC}
     - os: osx
       osx_image: xcode10
-      env: GCC=8.3
+      env: GCC=8
       before_install:
         - brew install gcc@8
         - export FC=gfortran-${GCC}
@@ -17,9 +17,9 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - george-edison55-precise-backports
+      - dluxen-cmake-backports
     packages:
-      - gfortran-7
+      - gfortran-8
       - cmake-data
       - cmake
 script:
