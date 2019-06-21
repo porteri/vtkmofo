@@ -3,14 +3,12 @@ matrix:
   include:
     - os: linux
       dist: trusty
-      env:
-        global: GCC=7
+      env: GCC=7
       before_install:
-          - export FC=gfortran-${GCC}
+        - export FC=gfortran-${GCC}
     - os: osx
       osx_image: xcode10
-      env:
-        global: GCC=8.3
+      env: GCC=8.3
       before_install:
         - brew install gcc@8
         - export FC=gfortran-${GCC}
