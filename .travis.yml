@@ -7,6 +7,9 @@ matrix:
       before_install:
         - sudo add-apt-repository ppa:dluxen/cmake-backports -y
         - sudo apt-get update
+        - sudo apt autoremove
+        - cmake --version
+        - sudo apt-get install cmake3-data
         - sudo apt-get install cmake3
         - export FC=gfortran-${GCC}
         - cmake --version
@@ -16,7 +19,9 @@ matrix:
       before_install:
         - sudo add-apt-repository ppa:dluxen/cmake-backports -y
         - sudo apt-get update -q
-        - sudo apt-get install cmake-3.13.4
+        - sudo apt autoremove
+        - cmake --version
+        - sudo apt-get install cmake3
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: osx
