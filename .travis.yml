@@ -5,7 +5,7 @@ matrix:
       dist: trusty
       env: GCC=7
       before_install:
-        - sudo add-apt-repository ppa:dluxen/cmake-backports
+        - sudo add-apt-repository ppa:dluxen/cmake-backports -y
         - sudo apt-get update
         - export FC=gfortran-${GCC}
         - cmake --version
@@ -13,8 +13,8 @@ matrix:
       dist: trusty
       env: GCC=8
       before_install:
-        - add-apt-repository ppa:dluxen/cmake-backports
-        - apt-get update
+        - sudo add-apt-repository ppa:dluxen/cmake-backports -y
+        - sudo apt-get update
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: osx
@@ -36,7 +36,6 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - ppa:dluxen/cmake-backports
     packages:
       - gfortran-7
       - gfortran-8
