@@ -16,7 +16,7 @@ matrix:
       dist: trusty
       env: GCC=8
       before_install:
-        - sudo apt-get purge cmake
+        - sudo update-alternatives --remove-all cmake
         - sudo add-apt-repository ppa:dluxen/cmake-backports -y
         - sudo apt-get update -q
         - sudo apt autoremove
