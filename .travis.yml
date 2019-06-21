@@ -16,14 +16,13 @@ matrix:
       dist: trusty
       env: GCC=8
       before_install:
+        - sudo apt-get purge cmake
         - sudo add-apt-repository ppa:dluxen/cmake-backports -y
         - sudo apt-get update -q
         - sudo apt autoremove
-        - cmake --version
         - sudo apt-get install cmake3 -y
         - export FC=gfortran-${GCC}
         - cmake --version
-        - cmake3 --version
     - os: osx
       osx_image: xcode10
       env: GCC=8
