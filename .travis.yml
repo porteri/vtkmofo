@@ -18,6 +18,13 @@ matrix:
         - brew install gcc@8
         - export FC=gfortran-${GCC}
         - cmake --version
+    - os: osx
+      osx_image: xcode10
+      env: GCC=9
+      before_install:
+        - brew install gcc@9
+        - export FC=gfortran-${GCC}
+        - cmake --version
 sudo: false
 addons:
   apt:
@@ -28,7 +35,7 @@ addons:
       - gfortran-7
       - gfortran-8
       - cmake-data
-      - cmake
+      - cmake3
 script:
   - mkdir build && cd build && cmake ../ && make -j $(nproc) && ctest -j $(nproc)
 after_success:
