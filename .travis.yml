@@ -45,8 +45,6 @@ addons:
     packages:
       - gfortran-7
       - gfortran-8
-      - cmake3-data
-      - cmake3
 script:
   - mkdir build && cd build && cmake ../ && make -j $(nproc) && ctest -j $(nproc)
 after_success:
