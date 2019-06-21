@@ -6,12 +6,18 @@ matrix:
       env: GCC=7
       before_install:
         - export FC=gfortran-${GCC}
+    - os: linux
+      dist: trusty
+      env: GCC=8
+      before_install:
+        - export FC=gfortran-${GCC}
     - os: osx
       osx_image: xcode10
       env: GCC=8
       before_install:
         - brew install gcc@8
         - export FC=gfortran-${GCC}
+        - cmake --version
 sudo: false
 addons:
   apt:
@@ -19,6 +25,7 @@ addons:
       - ubuntu-toolchain-r-test
       - dluxen-cmake-backports
     packages:
+      - gfortran-7
       - gfortran-8
       - cmake-data
       - cmake
