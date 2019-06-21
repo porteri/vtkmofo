@@ -9,8 +9,7 @@ matrix:
         - sudo apt-get update
         - sudo apt autoremove
         - cmake --version
-        - sudo apt-get install cmake3-data
-        - sudo apt-get install cmake3
+        - sudo apt-get install cmake3 -y
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: linux
@@ -21,7 +20,7 @@ matrix:
         - sudo apt-get update -q
         - sudo apt autoremove
         - cmake --version
-        - sudo apt-get install cmake3
+        - sudo apt-get install cmake3 -y
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: osx
