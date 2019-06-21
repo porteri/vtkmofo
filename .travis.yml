@@ -20,6 +20,7 @@ matrix:
         - sudo apt-get update -q
         - sudo apt autoremove
         - sudo apt-get install cmake3 -y
+        - ls /usr/bin/
         - sudo update-alternatives --install /usr/bin/cmake cmake /usr/bin/cmake-3.14.4 10
         - sudo update-alternatives --set cmake usr/bin/cmake-3.14.4
         - export FC=gfortran-${GCC}
