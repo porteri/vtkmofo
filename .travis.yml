@@ -1,7 +1,11 @@
 language: generic
-os: linux
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+    - os: osx
+      osx_image: xcode10
 sudo: false
-dist: trusty
 addons:
   apt:
     sources:
@@ -13,9 +17,11 @@ addons:
       - cmake
 env:
   global:
+    - if [ $TRAVIS_OS_NAME = linux ]; then GCC=7; else GCC=8; fi
     - GCC=7
 
 before_install:
+  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc@8
   - export FC=gfortran-${GCC}
 script:
   - mkdir build && cd build && cmake ../ && make -j $(nproc) && ctest -j $(nproc)
