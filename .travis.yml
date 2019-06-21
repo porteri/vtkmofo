@@ -5,12 +5,16 @@ matrix:
       dist: trusty
       env: GCC=7
       before_install:
+        - sudo add-apt-repository ppa:dluxen/cmake-backports
+        - sudo apt-get update
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: linux
       dist: trusty
       env: GCC=8
       before_install:
+        - add-apt-repository ppa:dluxen/cmake-backports
+        - apt-get update
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: osx
