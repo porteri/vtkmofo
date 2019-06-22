@@ -25,6 +25,15 @@ matrix:
         - sudo update-alternatives --set cmake usr/bin/cmake-3.14.4
         - export FC=gfortran-${GCC}
         - cmake --version
+    - os: linux
+      dist: trusty
+      env: GCC=9
+      before_install:
+        - sudo apt update -q
+        - sudo apt install cmake
+        - ls /usr/bin/
+        - export FC=gfortran-${GCC}
+        - cmake --version
     - os: osx
       osx_image: xcode10
       env: GCC=8
