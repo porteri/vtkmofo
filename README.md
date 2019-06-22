@@ -20,7 +20,7 @@ Operating Systems:
  - MacOS
 
 Build System:
- - [CMake][CMake link] 3.13.4 or newer
+ - [CMake][CMake link] 3.12.2 or newer
 
 Examples:
 # 2D example
