@@ -1,5 +1,5 @@
 # CMAKE minimum version
-cmake_minimum_required(VERSION 3.12.2)
+cmake_minimum_required(VERSION 3.13.4)
 
 option(VTKmofo_USE_OpenCoarrays
   "Build VTKmofo with support for linking against OpenCoarray programs" OFF)
