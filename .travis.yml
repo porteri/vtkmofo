@@ -29,8 +29,9 @@ matrix:
       dist: trusty
       env: GCC=9
       before_install:
-        - sudo apt-get update
-        - sudo apt-get install cmake
+        - curl -L https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.tar.gz -o cmake-3.13.4-Linux-x86_64.tar.gz
+        - tar xf cmake-3.13.4-Linux-x86_64.tar.gz
+        - export PATH=${PWD}/cmake-3.13.4-Linux-x86_64/bin:${PATH}
         - ls /usr/bin/
         - export FC=gfortran-${GCC}
         - cmake --version
