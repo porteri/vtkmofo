@@ -29,8 +29,8 @@ matrix:
       dist: trusty
       env: GCC=9
       before_install:
-        - sudo apt update
-        - sudo apt install cmake
+        - sudo apt-get update
+        - sudo apt-get install cmake
         - ls /usr/bin/
         - export FC=gfortran-${GCC}
         - cmake --version
