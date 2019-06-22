@@ -1,22 +1,68 @@
 language: generic
-os: linux
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      env: GCC=7
+      before_install:
+        - curl -L https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.tar.gz -o cmake-3.13.4-Linux-x86_64.tar.gz
+        - tar xf cmake-3.13.4-Linux-x86_64.tar.gz
+        - export PATH=${PWD}/cmake-3.13.4-Linux-x86_64/bin:${PATH}
+        - export FC=gfortran-${GCC}
+        - cmake --version
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gfortran-7
+    - os: linux
+      dist: trusty
+      env: GCC=8
+      before_install:
+        - curl -L https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.tar.gz -o cmake-3.13.4-Linux-x86_64.tar.gz
+        - tar xf cmake-3.13.4-Linux-x86_64.tar.gz
+        - export PATH=${PWD}/cmake-3.13.4-Linux-x86_64/bin:${PATH}
+        - export FC=gfortran-${GCC}
+        - cmake --version
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gfortran-8
+    - os: linux
+      dist: trusty
+      env: GCC=9
+      before_install:
+        - curl -L https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.tar.gz -o cmake-3.13.4-Linux-x86_64.tar.gz
+        - tar xf cmake-3.13.4-Linux-x86_64.tar.gz
+        - export PATH=${PWD}/cmake-3.13.4-Linux-x86_64/bin:${PATH}
+        - export FC=gfortran-${GCC}
+        - cmake --version
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gfortran-9
+    - os: osx
+      osx_image: xcode10
+      env: GCC=8
+      before_install:
+        - brew install gcc@8
+        - brew upgrade cmake
+        - export FC=gfortran-${GCC}
+        - cmake --version
+    - os: osx
+      osx_image: xcode10
+      env: GCC=9
+      before_install:
+        - brew install gcc@9
+        - brew upgrade cmake
+        - export FC=gfortran-${GCC}
+        - cmake --version
 sudo: false
-dist: trusty
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - george-edison55-precise-backports
-    packages:
-      - gfortran-7
-      - cmake-data
-      - cmake
-env:
-  global:
-    - GCC=7
-
-before_install:
-  - export FC=gfortran-${GCC}
 script:
   - mkdir build && cd build && cmake ../ && make -j $(nproc) && ctest -j $(nproc)
 after_success:

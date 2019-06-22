@@ -1,5 +1,5 @@
 # CMAKE minimum version
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.13.4)
 
 option(VTKmofo_USE_OpenCoarrays
   "Build VTKmofo with support for linking against OpenCoarray programs" OFF)
@@ -9,7 +9,7 @@ project(vtkmofo LANGUAGES Fortran)
 
 # vtkmofo project version
 set (VTKMOFO_VERSION_MAJOR 1)
-set (VTKMOFO_VERSION_MINOR 0)
+set (VTKMOFO_VERSION_MINOR 001)
 
 # Print project logo, version and tag line
 file(READ ${CMAKE_CURRENT_LIST_DIR}/cmake/VTKMOFO-logo.txt VTKMOFO_LOGO)
