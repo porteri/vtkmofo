@@ -14,11 +14,8 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb https://apt.kitware.com/ubuntu/ xenial main'
-              key_url: 'https://apt.kitware.com/keys/kitware-archive-latest.asc'
           packages:
             - gfortran-7
-            - cmake
     - os: linux
       dist: trusty
       env: GCC=8
@@ -54,6 +51,7 @@ matrix:
       env: GCC=8
       before_install:
         - brew install gcc@8
+        - brew install cmake
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: osx
@@ -61,6 +59,7 @@ matrix:
       env: GCC=9
       before_install:
         - brew install gcc@9
+        - brew install cmake
         - export FC=gfortran-${GCC}
         - cmake --version
 sudo: false
