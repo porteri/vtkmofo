@@ -5,24 +5,18 @@ matrix:
       dist: trusty
       env: GCC=7
       before_install:
-        - sudo add-apt-repository ppa:dluxen/cmake-backports -y
-        - sudo apt-get update
-        - sudo apt autoremove
-        - cmake --version
-        - sudo apt-get install cmake3 -y
+        - curl -L https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.tar.gz -o cmake-3.13.4-Linux-x86_64.tar.gz
+        - tar xf cmake-3.13.4-Linux-x86_64.tar.gz
+        - export PATH=${PWD}/cmake-3.13.4-Linux-x86_64/bin:${PATH}
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: linux
       dist: trusty
       env: GCC=8
       before_install:
-        - sudo add-apt-repository ppa:dluxen/cmake-backports -y
-        - sudo apt-get update -q
-        - sudo apt autoremove
-        - sudo apt-get install cmake3 -y
-        - ls /usr/bin/
-        - sudo update-alternatives --install /usr/bin/cmake cmake /usr/bin/cmake-3.14.4 10
-        - sudo update-alternatives --set cmake usr/bin/cmake-3.14.4
+        - curl -L https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.tar.gz -o cmake-3.13.4-Linux-x86_64.tar.gz
+        - tar xf cmake-3.13.4-Linux-x86_64.tar.gz
+        - export PATH=${PWD}/cmake-3.13.4-Linux-x86_64/bin:${PATH}
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: linux
@@ -32,7 +26,6 @@ matrix:
         - curl -L https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.tar.gz -o cmake-3.13.4-Linux-x86_64.tar.gz
         - tar xf cmake-3.13.4-Linux-x86_64.tar.gz
         - export PATH=${PWD}/cmake-3.13.4-Linux-x86_64/bin:${PATH}
-        - ls /usr/bin/
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: osx
@@ -57,6 +50,7 @@ addons:
     packages:
       - gfortran-7
       - gfortran-8
+      - gfortran-9
 script:
   - mkdir build && cd build && cmake ../ && make -j $(nproc) && ctest -j $(nproc)
 after_success:
