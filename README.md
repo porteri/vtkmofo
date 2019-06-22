@@ -11,16 +11,16 @@ This is a generic modern Fortran interface to write a .vtk file using the legacy
 This code is built and tested with the following:
 
 Compilers: (may work for older ones as well)
- - [gfortran][gcc link] 8.2, 8.3, 9.0
+ - [gfortran][gcc link] 7.4, 8.1, 8.2, 8.3, 9.0
  - [Intel][Intel link] 2018
 
 Operating Systems:
- - Linnux (Tested on Ubuntu 18)
+ - Linnux (Tested on Ubuntu 16, 18)
  - Windows (Tested on Windows 8, 10)
  - MacOS
 
 Build System:
- - [CMake][CMake link] 3.9 or newer
+ - [CMake][CMake link] 3.13.4 or newer
 
 Examples:
 # 2D example
