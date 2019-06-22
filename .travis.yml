@@ -16,6 +16,7 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - gfortran-7
+            - cmake
     - os: linux
       dist: trusty
       env: GCC=8
