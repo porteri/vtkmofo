@@ -23,6 +23,7 @@ MODULE VTK_Serial_file
         CHARACTER(LEN=:), ALLOCATABLE :: byte_order
         CHARACTER(LEN=:), ALLOCATABLE :: compression
         CHARACTER(LEN=:), ALLOCATABLE :: file_extension
+        CHARACTER(LEN=:), ALLOCATABLE, PUBLIC :: filename
     CONTAINS
         PROCEDURE, NON_OVERRIDABLE :: vtk_element_setup
         PROCEDURE, NON_OVERRIDABLE, PUBLIC :: initialize

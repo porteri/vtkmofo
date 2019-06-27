@@ -21,6 +21,8 @@ MODULE vtk_io
 
     INTERFACE vtk_serial_write
         PROCEDURE :: vtk_serial_full_write
+        PROCEDURE :: vtk_serial_append
+        PROCEDURE :: vtk_serial_finalize
     END INTERFACE vtk_serial_write
 
     INTERFACE
@@ -54,10 +56,10 @@ MODULE vtk_io
         !!
         !! This subroutines appends data to the legacy vtk output file
         !!
-        CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !! 
-        CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !! 
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !! 
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !! 
+        CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
+        CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !!
+        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
+        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
 
         END SUBROUTINE vtk_legacy_append
 
@@ -113,6 +115,31 @@ MODULE vtk_io
         CHARACTER(LEN=*),  INTENT(IN), OPTIONAL :: title       !! Title to be written on title line (#2) in output file
 
         END SUBROUTINE vtk_serial_full_write
+
+        MODULE SUBROUTINE vtk_serial_append (celldata, pointdata, celldatasets, pointdatasets)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/24/2019
+        !!
+        !! This subroutines appends data to the legacy vtk output file
+        !!
+        CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
+        CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !!
+        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
+        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
+
+        END SUBROUTINE vtk_serial_append
+
+        MODULE SUBROUTINE vtk_serial_finalize (finished)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/24/2019
+        !!
+        !! This subroutines is a finalizer for the legacy vtk file write
+        !!
+        LOGICAL, INTENT(IN) :: finished  !! Finished flag
+
+        END SUBROUTINE vtk_serial_finalize
 
     END INTERFACE
 

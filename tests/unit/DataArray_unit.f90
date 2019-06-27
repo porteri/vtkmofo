@@ -1,4 +1,5 @@
 PROGRAM DataArray_test
+    USE Precision,         ONLY : i4k
     USE VTKmofoPassFail,   ONLY : all_tests_pass
     USE VTK_piece_element, ONLY : DataArray_dt
     IMPLICIT NONE

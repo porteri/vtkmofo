@@ -153,7 +153,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         !!
         INTEGER(i4k) :: i, inputstat
         LOGICAL :: file_is_still_open
-        
+
         INQUIRE(unit=newunit,opened=file_is_still_open)
         IF (.NOT. file_is_still_open) THEN
             !! For some reason, file was closed. Re-open the file to a new unit
@@ -187,7 +187,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
                 WRITE(newunit,102) pointdata%nvals
                 printed_point_data_header = .TRUE.
             END IF
-            
+
             CALL pointdata%write(newunit)                       !! Write the point data values
         END IF
 
@@ -297,14 +297,64 @@ SUBMODULE (vtk_io) vtk_io_implementation
         END PROCEDURE vtk_legacy_read
 
         MODULE PROCEDURE vtk_serial_full_write
+        USE vtk_datasets,    ONLY : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
+        USE VTK_serial_file, ONLY : serial_file, VTK_element_dt
+        USE VTK_serial_RectilinearGrid, ONLY : VTK_serial_RectilinearGrid_dt
         !! author: Ian Porter
         !! date: 5/08/2019
         !!
         !! This subroutines writes the modern serial vtk output file
         !!
+        CLASS(VTK_element_dt), ALLOCATABLE :: vtk_data
 
-        ERROR STOP 'vtk_serial_full_write not yet implemented'
+        IF (ALLOCATED(vtk_data)) THEN
+            ERROR STOP 'Error: data should not be allocated in call to vtk_serial_full_write.'
+        END IF
+
+        SELECT TYPE (geometry)
+        CLASS IS (struct_pts)
+            ERROR STOP 'Procedure not yet implemented for: STRUCTURED POINTS. Termination in subroutine: vtk_serial_full_write'
+        CLASS IS (struct_grid)
+            ERROR STOP 'Procedure not yet implemented for: STRUCTURED GRID. Termination in subroutine: vtk_serial_full_write'
+        CLASS IS (rectlnr_grid)
+!            ALLOCATE(vtk_data, mold=VTK_serial_RectilinearGrid_dt)
+        CLASS IS (polygonal_data)
+            ERROR STOP 'Procedure not yet implemented for: POLYGONAL GRID. Termination in subroutine: vtk_serial_full_write'
+        CLASS IS (unstruct_grid)
+            ERROR STOP 'Procedure not yet implemented for: UNSTRUCTURED GRID. Termination in subroutine: vtk_serial_full_write'
+        CLASS DEFAULT
+            ERROR STOP 'Unsupported geometry type. Termination in subroutine: vtk_serial_full_write'
+        END SELECT
+
+        CALL vtk_data%set_grid_data()
+        CALL serial_file%setup(filename=TRIM(vtk_data%filename))
+        CALL serial_file%add(vtk_data)
+        CALL serial_file%write()
 
         END PROCEDURE vtk_serial_full_write
+
+        MODULE PROCEDURE vtk_serial_append
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/24/2019
+        !!
+        !! This subroutines appends data to the legacy vtk output file
+        !!
+
+        ERROR STOP 'vtk_serial_append not yet implemented'
+
+        END PROCEDURE vtk_serial_append
+
+        MODULE PROCEDURE vtk_serial_finalize
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/24/2019
+        !!
+        !! This subroutines is a finalizer for the legacy vtk file write
+        !!
+
+        ERROR STOP 'vtk_serial_finalize not yet implemented'
+
+        END PROCEDURE vtk_serial_finalize
 
 END SUBMODULE vtk_io_implementation
