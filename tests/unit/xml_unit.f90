@@ -46,9 +46,13 @@ PROGRAM xml_test
     CALL foo2%add('more blah')
 
     CALL foo%add(foo2)
+    write(0,*) 'before xml_file%setup'
     CALL xml_file%setup(filename='xml_test.xml')
+    write(0,*) 'before xml_file%add(foo)'
     CALL xml_file%add(foo)
+    write(0,*) 'before xml_file%add(foo2)'
     CALL xml_file%add(foo2)
+    write(0,*) 'before xml_file%write'
     CALL xml_file%write()
 
     CALL all_tests_pass()

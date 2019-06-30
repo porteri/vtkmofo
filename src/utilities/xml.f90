@@ -35,6 +35,7 @@ MODULE XML
     END TYPE xml_element_dt
 
     TYPE, EXTENDS(file_data_structure) :: xml_file_dt
+        PRIVATE
         !! Full XML file DT
         TYPE(xml_element_dt), DIMENSION(:), ALLOCATABLE :: element
     CONTAINS
@@ -74,7 +75,7 @@ MODULE XML
         IMPLICIT NONE
         !! This adds an element inside of an xml element block
         CLASS(xml_element_dt), INTENT(INOUT) :: me       !! XML element derived type
-        TYPE(xml_element_dt),  INTENT(IN)    :: element  !! Inner XML element
+        CLASS(xml_element_dt), INTENT(IN)    :: element  !! Inner XML element
         END SUBROUTINE element_add_element
 
         MODULE SUBROUTINE element_end (me, unit)

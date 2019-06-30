@@ -38,6 +38,7 @@ MODULE VTK_piece_element
         PROCEDURE, NON_OVERRIDABLE :: DataArray_setup
         PROCEDURE, NON_OVERRIDABLE :: DataArray_initialize
         GENERIC, PUBLIC :: initialize => DataArray_initialize
+        PROCEDURE :: element_add_element => DataArray_add_DataArray
     END TYPE DataArray_dt
 
     TYPE, EXTENDS(xml_element_dt) :: PointData_dt
@@ -97,6 +98,14 @@ MODULE VTK_piece_element
                                                                      !! beginning of the appended data
 
         END SUBROUTINE DataArray_initialize
+
+        MODULE SUBROUTINE DataArray_add_DataArray (me, element)
+        IMPLICIT NONE
+        !! This adds a DataArray inside of a xml DataArray block
+        CLASS(DataArray_dt),   INTENT(INOUT) :: me       !! XML element derived type
+        CLASS(xml_element_dt), INTENT(IN)    :: element  !! Inner XML element
+
+        END SUBROUTINE DataArray_add_DataArray
 
     END INTERFACE
 

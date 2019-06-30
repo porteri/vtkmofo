@@ -60,6 +60,8 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
         IF (PRESENT(compression))    ALLOCATE(me%compression,source=compression)
         IF (PRESENT(file_extension)) ALLOCATE(me%file_extension,source=file_extension)
 
+        CALL me%vtk_element_setup()
+        
         END PROCEDURE initialize
 
         MODULE PROCEDURE finalize

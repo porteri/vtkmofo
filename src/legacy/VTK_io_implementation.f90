@@ -197,6 +197,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         END PROCEDURE vtk_legacy_append
 
         MODULE PROCEDURE vtk_legacy_finalize
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/03/2019
         !!
@@ -300,6 +301,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         USE vtk_datasets,    ONLY : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         USE VTK_serial_file, ONLY : serial_file, VTK_element_dt
         USE VTK_serial_RectilinearGrid, ONLY : VTK_serial_RectilinearGrid_dt
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 5/08/2019
         !!
@@ -317,7 +319,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         CLASS IS (struct_grid)
             ERROR STOP 'Procedure not yet implemented for: STRUCTURED GRID. Termination in subroutine: vtk_serial_full_write'
         CLASS IS (rectlnr_grid)
-!            ALLOCATE(vtk_data, mold=VTK_serial_RectilinearGrid_dt)
+            ALLOCATE(VTK_serial_RectilinearGrid_dt::VTK_data)
         CLASS IS (polygonal_data)
             ERROR STOP 'Procedure not yet implemented for: POLYGONAL GRID. Termination in subroutine: vtk_serial_full_write'
         CLASS IS (unstruct_grid)
@@ -325,12 +327,15 @@ SUBMODULE (vtk_io) vtk_io_implementation
         CLASS DEFAULT
             ERROR STOP 'Unsupported geometry type. Termination in subroutine: vtk_serial_full_write'
         END SELECT
-
+write(0,*) 'before set_grid_data'
         CALL vtk_data%set_grid_data()
-        CALL serial_file%setup(filename=TRIM(vtk_data%filename))
+write(0,*) 'before setup'
+        CALL serial_file%setup(filename=filename // TRIM(vtk_data%file_extension))
+write(0,*) 'before add'
         CALL serial_file%add(vtk_data)
+write(0,*) 'before write'
         CALL serial_file%write()
-
+write(0,*) 'before end'
         END PROCEDURE vtk_serial_full_write
 
         MODULE PROCEDURE vtk_serial_append

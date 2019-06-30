@@ -13,8 +13,8 @@ MODULE VTK_Serial_file
     CHARACTER(LEN=*), PARAMETER :: def_version = "0.1"
     CHARACTER(LEN=*), PARAMETER :: def_byte_order = "LittleEndian"
 
-    TYPE(xml_file_dt) :: serial_file    !! Serial VTK file
-    TYPE(xml_file_dt) :: parallel_file  !! Parallel VTK file
+    TYPE(xml_file_dt), ALLOCATABLE :: serial_file    !! Serial VTK file
+    TYPE(xml_file_dt), ALLOCATABLE :: parallel_file  !! Parallel VTK file
 
     TYPE, EXTENDS(xml_element_dt), ABSTRACT :: VTK_element_dt
         PRIVATE
@@ -22,7 +22,7 @@ MODULE VTK_Serial_file
         CHARACTER(LEN=:), ALLOCATABLE :: version
         CHARACTER(LEN=:), ALLOCATABLE :: byte_order
         CHARACTER(LEN=:), ALLOCATABLE :: compression
-        CHARACTER(LEN=:), ALLOCATABLE :: file_extension
+        CHARACTER(LEN=:), ALLOCATABLE, PUBLIC :: file_extension
         CHARACTER(LEN=:), ALLOCATABLE, PUBLIC :: filename
     CONTAINS
         PROCEDURE, NON_OVERRIDABLE :: vtk_element_setup

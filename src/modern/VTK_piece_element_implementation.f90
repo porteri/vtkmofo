@@ -85,11 +85,27 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         IF (PRESENT(NumberofComponents)) THEN
             ALLOCATE(NofC,source='          ')
             WRITE(NofC,'(i10)') NumberOfComponents
-            ALLOCATE(me%NumberOfComponents,source=TRIM(NofC))
+            ALLOCATE(me%NumberOfComponents,source=TRIM(ADJUSTL(NofC)))
         END IF
         IF (PRESENT(format))             ALLOCATE(me%format,source=format)
         IF (PRESENT(offset))             ALLOCATE(me%array_offset,source=offset)
 
+        CALL me%DataArray_setup()
+
         END PROCEDURE DataArray_initialize
+
+        MODULE PROCEDURE DataArray_add_DataArray
+        IMPLICIT NONE
+        !! This adds an element inside of an xml element block
+        TYPE(xml_element_dt), DIMENSION(:), ALLOCATABLE :: tmp_element_dt
+! Currently commented out b/c element is not public
+!        IF (.NOT. ALLOCATED(me%element)) THEN
+!            ALLOCATE(me%element(1),source=element)
+!        ELSE
+!            ALLOCATE(tmp_element_dt,source=[ me%element, element ])
+!            CALL MOVE_ALLOC(tmp_element_dt, me%element)
+!        END IF
+
+        END PROCEDURE DataArray_add_DataArray
 
 END SUBMODULE VTK_piece_element_implementation

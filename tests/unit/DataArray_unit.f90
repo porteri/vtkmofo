@@ -10,10 +10,13 @@ PROGRAM DataArray_test
     !!
     !! This test will produce the following output:
     !!
-    !!<DataArray type="">
+    !!<DataArray  offset="0">
+    !!    <DataArray type="Float32" Name="foo_data" NumberOfComponents="1" format="ascii" offset="0">
+    !!    </DataArray>
     !!</DataArray>
     !!
-    TYPE(DataArray_dt) :: foo
+    TYPE(DataArray_dt) :: foo, foo2
+    INTEGER(i4k) :: unit
     CHARACTER(LEN=*), PARAMETER :: type = 'Float32'
     CHARACTER(LEN=*), PARAMETER :: name = 'foo_data'
     INTEGER(i4k), PARAMETER :: NumberOfComponents = 1
@@ -25,7 +28,12 @@ PROGRAM DataArray_test
     CALL foo%initialize(NumberOfComponents=NumberOfComponents)
     CALL foo%initialize(format=format)
     CALL foo%initialize(offset=offset)
-    CALL foo%initialize(type, name, NumberOfComponents, format, offset)
+    CALL foo2%initialize(type, name, NumberOfComponents, format, offset)
+
+    CALL foo%add(foo2)
+
+    OPEN (newunit=unit,file="DataArray_test.xml",status="replace")
+    CALL foo%write(unit)
 
     CALL all_tests_pass()
 
