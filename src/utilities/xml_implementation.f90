@@ -1,6 +1,11 @@
 SUBMODULE (XML) XML_implementation
+    USE Precision, ONLY : i4k
     IMPLICIT NONE
-
+    !! author: Ian Porter
+    !! date: 04/02/2019
+    !!
+    !! This implements the simple xml format writer
+    !!
     INTEGER, PARAMETER :: def_offset = 4          !! Default # of leading spaces
     CHARACTER(LEN=:), ALLOCATABLE :: prior_offset !! Number of leading spaces for prior XML block
     CHARACTER(LEN=*), PARAMETER :: version = '<?xml version="1.0" encoding="UTF-8"?>'
@@ -11,7 +16,7 @@ SUBMODULE (XML) XML_implementation
         MODULE PROCEDURE element_setup
         IMPLICIT NONE
         !! This sets up the information needed to define the XML element block
-        INTEGER :: i, my_offset
+        INTEGER(i4k) :: i, my_offset
 
         me%name = name
         IF (LEN_TRIM(string) == 0) THEN
@@ -102,7 +107,7 @@ SUBMODULE (XML) XML_implementation
         !!
         !! Writes the element to the file
         !!
-        INTEGER :: i
+        INTEGER(i4k) :: i
 
         CALL me%begin(unit)
 
@@ -129,7 +134,7 @@ SUBMODULE (XML) XML_implementation
         !!
         !! Establishes the XML file information
         !!
-write(0,*) 'in xml_file_setup'
+
         me%filename = TRIM(filename)
         IF (PRESENT(open_status)) THEN
             me%open_status = open_status
@@ -143,9 +148,9 @@ write(0,*) 'in xml_file_setup'
         END IF
         me%form   = 'FORMATTED'  !! Ignore the user-defined form, even if present
         me%access = 'SEQUENTIAL' !! Ignore the user-defined access, even if present
-write(0,*) 'before allocation of prior_offset'
+
         IF (.NOT. ALLOCATED(prior_offset)) ALLOCATE(prior_offset,source='')
-write(0,*) 'after allocation of prior_offset'
+
         END PROCEDURE XML_file_setup
 
         MODULE PROCEDURE XML_begin
@@ -180,54 +185,17 @@ write(0,*) 'after allocation of prior_offset'
 !            CALL MOVE_ALLOC(tmp_element_dt, me%element)
 !        END IF
 !! This is a temporary work around
-write(0,*) 'start of xml_add'
         IF (.NOT. ALLOCATED(gcc_bug_tmp_element_dt)) THEN
             SELECT TYPE (element)
             CLASS IS (xml_element_dt)
-                write(0,*) 'before initial gcc_bug_tmp_element_dt allocation'
-                ALLOCATE (gcc_bug_tmp_element_dt(1))
-                IF (ALLOCATED(element%name)) gcc_bug_tmp_element_dt(1)%name = element%name
-                gcc_bug_tmp_element_dt(1)%unit = element%unit
-                IF (ALLOCATED(element%offset)) gcc_bug_tmp_element_dt(1)%offset = element%offset
-                IF (ALLOCATED(element%additional_data)) gcc_bug_tmp_element_dt(1)%additional_data = element%additional_data
-                IF (ALLOCATED(element%string)) gcc_bug_tmp_element_dt(1)%string = element%string
-                IF (ALLOCATED(element%element)) gcc_bug_tmp_element_dt(1)%element = element%element
-                write(0,*) 'after initial gcc_bug_tmp_element_dt allocation'
+                CALL gcc_bug_workaround_allocate(gcc_bug_tmp_element_dt, element)
             END SELECT
         ELSE
-            write(0,*) 'before ALLOCATE tmp_element_dt when > 1'
-            ALLOCATE (tmp_element_dt(SIZE(gcc_bug_tmp_element_dt)+1))
-            DO i = 1, SIZE(gcc_bug_tmp_element_dt)
-                IF (ALLOCATED(gcc_bug_tmp_element_dt(i)%name)) tmp_element_dt(i)%name = gcc_bug_tmp_element_dt(i)%name
-                tmp_element_dt(i)%unit = gcc_bug_tmp_element_dt(i)%unit
-                IF (ALLOCATED(gcc_bug_tmp_element_dt(i)%offset)) tmp_element_dt(i)%offset = gcc_bug_tmp_element_dt(i)%offset
-                IF (ALLOCATED(gcc_bug_tmp_element_dt(i)%additional_data)) &
-                  &  tmp_element_dt(i)%additional_data = gcc_bug_tmp_element_dt(i)%additional_data
-                IF (ALLOCATED(gcc_bug_tmp_element_dt(i)%string)) tmp_element_dt(i)%string = gcc_bug_tmp_element_dt(i)%string
-                IF (ALLOCATED(gcc_bug_tmp_element_dt(i)%element)) tmp_element_dt(i)%element = gcc_bug_tmp_element_dt(i)%element
-                write(0,*) 'before MOVE_ALLOC on tmp_element_dt when > 1'
-            END DO
-            IF (ALLOCATED(element%name)) tmp_element_dt(i)%name = element%name
-            tmp_element_dt(i)%unit = element%unit
-            IF (ALLOCATED(element%offset)) tmp_element_dt(i)%offset = element%offset
-            IF (ALLOCATED(element%additional_data)) &
-              &  tmp_element_dt(i)%additional_data = element%additional_data
-            IF (ALLOCATED(element%string)) tmp_element_dt(i)%string = element%string
-            IF (ALLOCATED(element%element)) tmp_element_dt(i)%element = element%element
-            write(0,*) 'before re-allocation of gcc_bug_tmp_element_dt'
-            CALL gcc_bug_workaround_deallocate (gcc_bug_tmp_element_dt)
-            write(0,*) 'afte re-allocation of gcc_bug_tmp_element_dt'
-            ALLOCATE(gcc_bug_tmp_element_dt(1:SIZE(tmp_element_dt)))
-            DO i = 1, SIZE(gcc_bug_tmp_element_dt)
-                IF (ALLOCATED(tmp_element_dt(i)%name)) gcc_bug_tmp_element_dt(i)%name = tmp_element_dt(i)%name
-                gcc_bug_tmp_element_dt(i)%unit = tmp_element_dt(i)%unit
-                IF (ALLOCATED(tmp_element_dt(i)%offset)) gcc_bug_tmp_element_dt(i)%offset = tmp_element_dt(i)%offset
-                IF (ALLOCATED(tmp_element_dt(i)%additional_data)) &
-                  &  gcc_bug_tmp_element_dt(i)%additional_data = tmp_element_dt(i)%additional_data
-                IF (ALLOCATED(tmp_element_dt(i)%string)) gcc_bug_tmp_element_dt(i)%string = tmp_element_dt(i)%string
-                IF (ALLOCATED(tmp_element_dt(i)%element)) gcc_bug_tmp_element_dt(i)%element = tmp_element_dt(i)%element
-                write(0,*) 'before MOVE_ALLOC on tmp_element_dt when > 1'
-            END DO
+            SELECT TYPE (element)
+            CLASS IS (xml_element_dt)
+                CALL gcc_bug_workaround_allocate(tmp_element_dt, oldfoo=gcc_bug_tmp_element_dt)
+                CALL gcc_bug_workaround_allocate(gcc_bug_tmp_element_dt, element, tmp_element_dt)
+            END SELECT
         END IF
         CALL gcc_bug_workaround_deallocate (tmp_element_dt)
 
@@ -253,24 +221,53 @@ write(0,*) 'start of xml_add'
         !! Writes the XMl file
         !!
         INTEGER(i4k) :: i
-write(0,*) 'start of xml_write'
+
         CALL me%begin()
-write(0,*) 'before allocate in xml_write'
+
         ALLOCATE(me%element, source=gcc_bug_tmp_element_dt)
-write(0,*) 'after allocate in xml_write'
+
         DO i = 1, SIZE(me%element)
             CALL me%element(i)%write(me%unit)
         END DO
-write(0,*) 'before me%end'
+
         CALL me%end()
 
         END PROCEDURE xml_write
 
-        SUBROUTINE gcc_bug_workaround_allocate (foo)
+        SUBROUTINE gcc_bug_workaround_allocate (foo, addfoo, oldfoo)
         IMPLICIT NONE
         !! gcc Work-around for allocating a multi-dimension derived type w/ allocatable character strings
-        TYPE(xml_element_dt), DIMENSION(:), INTENT(INOUT), ALLOCATABLE :: foo
-        INTEGER :: i
+        !! when trying to increase the size of the foo array by 1
+        TYPE(xml_element_dt), DIMENSION(:), INTENT(INOUT), ALLOCATABLE :: foo     !! DT to be resized to [oldfoo, addfoo]
+        TYPE(xml_element_dt), DIMENSION(:), INTENT(IN), OPTIONAL       :: oldfoo  !! Old array of DTs
+        TYPE(xml_element_dt),               INTENT(IN), OPTIONAL       :: addfoo  !! New DT to add to array
+        INTEGER(i4k) :: i
+
+        IF (ALLOCATED(foo)) CALL gcc_bug_workaround_deallocate(foo)
+        IF (PRESENT(oldfoo)) THEN
+            ALLOCATE (foo(SIZE(oldfoo)+1))
+            DO i = 1, SIZE(oldfoo)
+                IF (ALLOCATED(oldfoo(i)%name)) foo(i)%name = oldfoo(i)%name
+                foo(i)%unit = oldfoo(i)%unit
+                IF (ALLOCATED(oldfoo(i)%offset)) foo(i)%offset = oldfoo(i)%offset
+                IF (ALLOCATED(oldfoo(i)%additional_data)) &
+                  &  foo(i)%additional_data = oldfoo(i)%additional_data
+                IF (ALLOCATED(oldfoo(i)%string)) foo(i)%string = oldfoo(i)%string
+                IF (ALLOCATED(oldfoo(i)%element)) foo(i)%element = oldfoo(i)%element
+            END DO
+        ELSE
+            ALLOCATE(foo(1))
+        END IF
+        IF (PRESENT(addfoo)) THEN
+            i = UBOUND(foo,DIM=1)
+            IF (ALLOCATED(addfoo%name)) foo(i)%name = addfoo%name
+            foo(i)%unit = addfoo%unit
+            IF (ALLOCATED(addfoo%offset)) foo(i)%offset = addfoo%offset
+            IF (ALLOCATED(addfoo%additional_data)) &
+              &  foo(i)%additional_data = addfoo%additional_data
+            IF (ALLOCATED(addfoo%string)) foo(i)%string = addfoo%string
+            IF (ALLOCATED(addfoo%element)) foo(i)%element = addfoo%element
+        END IF
 
         END SUBROUTINE gcc_bug_workaround_allocate
 
@@ -278,7 +275,7 @@ write(0,*) 'before me%end'
         IMPLICIT NONE
         !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         TYPE(xml_element_dt), DIMENSION(:), INTENT(INOUT), ALLOCATABLE :: foo
-        INTEGER :: i
+        INTEGER(i4k) :: i
 
         IF (ALLOCATED(foo)) THEN
             DO i = 1, SIZE(foo)
