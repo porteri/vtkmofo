@@ -50,6 +50,8 @@ MODULE XML
         PROCEDURE, PUBLIC  :: add   => xml_add
         PROCEDURE, PRIVATE :: end   => xml_end
         PROCEDURE, PUBLIC  :: write => xml_write
+        PROCEDURE, PRIVATE :: gcc_bug_workaround_deallocate_xml_file_dt
+        GENERIC,   PUBLIC  :: deallocate => gcc_bug_workaround_deallocate_xml_file_dt
     END TYPE xml_file_dt
 
     INTERFACE gcc_bug_workaround_deallocate
@@ -185,6 +187,12 @@ MODULE XML
         !! gcc Work-around
         CLASS(string_dt), INTENT(INOUT) :: me
         END SUBROUTINE gcc_bug_deallocate_string_dt
+
+        MODULE SUBROUTINE gcc_bug_workaround_deallocate_xml_file_dt (me)
+        IMPLICIT NONE
+        !! gcc Work-around
+        CLASS(xml_file_dt), INTENT(INOUT) :: me
+        END SUBROUTINE gcc_bug_workaround_deallocate_xml_file_dt
 
     END INTERFACE
 

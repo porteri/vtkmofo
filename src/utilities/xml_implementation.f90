@@ -349,4 +349,13 @@ write(0,*) 'end of gcc_bug_workaround_deallocate_single'
 
         END PROCEDURE gcc_bug_deallocate_string_dt
 
+
+        MODULE PROCEDURE gcc_bug_workaround_deallocate_xml_file_dt
+        IMPLICIT NONE
+        !! gcc Work-around to de-allocate the string derived type
+
+        IF (ALLOCATED(me%element)) CALL gcc_bug_workaround_deallocate (me%element)
+
+        END PROCEDURE gcc_bug_workaround_deallocate_xml_file_dt
+
 END SUBMODULE XML_implementation

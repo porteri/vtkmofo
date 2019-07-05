@@ -301,6 +301,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         USE vtk_datasets,    ONLY : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         USE VTK_serial_file, ONLY : serial_file, VTK_element_dt
         USE VTK_serial_RectilinearGrid, ONLY : VTK_serial_RectilinearGrid_dt
+        USE XML, ONLY : gcc_bug_workaround_deallocate
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 5/08/2019
@@ -338,8 +339,10 @@ write(0,*) 'before serial_file add'
 write(0,*) 'before serial_file write'
         CALL serial_file%write()
 write(0,*) 'before de-allocation of serial_file'
+        CALL serial_file%deallocate()
         IF (ALLOCATED(serial_file)) DEALLOCATE(serial_file)
 write(0,*) 'before vtk_serial_full_write end'
+        CALL vtk_data%deallocate()
         END PROCEDURE vtk_serial_full_write
 
         MODULE PROCEDURE vtk_serial_append
