@@ -48,10 +48,10 @@ PROGRAM modern_Rectilinear_test
         END IF
         CALL vals_to_write(i)%attribute%init (dataname(i), numcomp=1, real1d=vals(:,i))
     END DO
-
+write(0,*) 'before vtk_serial_write for full file'
     CALL vtk_serial_write (cube, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)
                                                            !! This tests a full 1-time write
-
+write(0,*) 'before vtk_serial_write for geometry information'
     CALL vtk_serial_write (cube)
 
     CALL vtk_serial_write (pointdata=vals_to_write(1)%attribute)

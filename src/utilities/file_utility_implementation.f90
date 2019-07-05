@@ -15,28 +15,27 @@ SUBMODULE (file_utility) file_utility_implementation
         !!
         !! Establishes the file information
         !!
-        LOGICAL :: unit_is_open
 
-        me%filename   = TRIM(filename)
+        ALLOCATE(me%filename, source=TRIM(filename))
         IF (PRESENT(open_status)) THEN
-            me%open_status = open_status
+            ALLOCATE(me%open_status, source=open_status)
         ELSE
-            me%open_status = 'UNKNOWN'
+            ALLOCATE(me%open_status, source='UNKNOWN')
         END IF
         IF (PRESENT(close_status)) THEN
-            me%close_status = close_status
+            ALLOCATE(me%close_status, source=close_status)
         ELSE
-            me%close_status = 'KEEP'
+            ALLOCATE(me%close_status, source='KEEP')
         END IF
         IF (PRESENT(form)) THEN
-            me%form   = form
+            ALLOCATE(me%form, source=form)
         ELSE
-            me%form   = 'UNKNOWN'
+            ALLOCATE(me%form, source='UNKNOWN')
         END IF
         IF (PRESENT(access)) THEN
-            me%access = access
+            ALLOCATE(me%access, source=access)
         ELSE
-            me%access = 'UNKNOWN'
+            ALLOCATE(me%access, source='UNKNOWN')
         END IF
 
         END PROCEDURE setup_file_information
@@ -64,9 +63,9 @@ SUBMODULE (file_utility) file_utility_implementation
         CHARACTER(LEN=:), ALLOCATABLE :: check_by_type
 
         IF (PRESENT(check)) THEN
-            check_by_type = TO_UPPERCASE(check)
+            ALLOCATE(check_by_type, source=TO_UPPERCASE(check))
         ELSE
-            check_by_type = 'FILENAME'
+            ALLOCATE(check_by_type, source='FILENAME')
         END IF
 
         SELECT CASE (check_by_type)

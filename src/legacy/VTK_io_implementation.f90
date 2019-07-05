@@ -327,15 +327,19 @@ SUBMODULE (vtk_io) vtk_io_implementation
         CLASS DEFAULT
             ERROR STOP 'Unsupported geometry type. Termination in subroutine: vtk_serial_full_write'
         END SELECT
-write(0,*) 'before set_grid_data'
-        CALL vtk_data%set_grid_data()
-write(0,*) 'before setup'
-        CALL serial_file%setup(filename=filename // TRIM(vtk_data%file_extension))
-write(0,*) 'before add'
+write(0,*) 'before vtk_data set_grid_data'
+        CALL vtk_data%set_grid_data(geometry)
+write(0,*) 'before serial_file setup'
+write(0,*) 'filename = ',filename // TRIM(vtk_data%file_extension)
+ALLOCATE(serial_file)
+        CALL serial_file%setup(filename=filename // TRIM(vtk_data%file_extension),form='formatted')
+write(0,*) 'before serial_file add'
         CALL serial_file%add(vtk_data)
-write(0,*) 'before write'
+write(0,*) 'before serial_file write'
         CALL serial_file%write()
-write(0,*) 'before end'
+write(0,*) 'before de-allocation of serial_file'
+        IF (ALLOCATED(serial_file)) DEALLOCATE(serial_file)
+write(0,*) 'before vtk_serial_full_write end'
         END PROCEDURE vtk_serial_full_write
 
         MODULE PROCEDURE vtk_serial_append

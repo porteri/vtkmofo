@@ -1,5 +1,7 @@
 MODULE VTK_Serial_file
-    USE XML, ONLY : xml_file_dt, xml_element_dt
+    USE XML,            ONLY : xml_file_dt, xml_element_dt
+    USE vtk_attributes, ONLY : attribute, attributes
+    USE vtk_datasets,   ONLY : dataset
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 05/06/2019
@@ -14,7 +16,8 @@ MODULE VTK_Serial_file
     CHARACTER(LEN=*), PARAMETER :: def_byte_order = "LittleEndian"
 
     TYPE(xml_file_dt), ALLOCATABLE :: serial_file    !! Serial VTK file
-    TYPE(xml_file_dt), ALLOCATABLE :: parallel_file  !! Parallel VTK file
+!    TYPE(xml_file_dt) :: parallel_file  !! Parallel VTK file
+    !! Parallel file is a TODO for future work
 
     TYPE, EXTENDS(xml_element_dt), ABSTRACT :: VTK_element_dt
         PRIVATE
@@ -30,6 +33,8 @@ MODULE VTK_Serial_file
         PROCEDURE(abs_set_grid_data), DEFERRED :: set_grid_data
         GENERIC, PUBLIC :: set => set_grid_data
         PROCEDURE, NON_OVERRIDABLE, PUBLIC :: finalize
+        PROCEDURE :: deallocate_vtk => gcc_bug_workaround_deallocate_vtk_element_single
+!        PROCEDURE :: gcc_bug_workaround_deallocate_single => gcc_bug_workaround_deallocate_vtk_element_single
     END TYPE VTK_element_dt
 
     INTERFACE
@@ -60,7 +65,7 @@ MODULE VTK_Serial_file
 
         END SUBROUTINE initialize
 
-        MODULE SUBROUTINE abs_set_grid_data (me)
+        MODULE SUBROUTINE abs_set_grid_data (me, geometry, celldata, pointdata, celldatasets, pointdatasets)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 05/07/2019
@@ -68,6 +73,11 @@ MODULE VTK_Serial_file
         !! This is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
         !!
         CLASS(VTK_element_dt), INTENT(INOUT) :: me
+        CLASS(dataset),    INTENT(IN)           :: geometry   !! DT of geometry to be printed
+        CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
+        CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !!
+        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
+        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
 
         END SUBROUTINE abs_set_grid_data
 
@@ -81,6 +91,12 @@ MODULE VTK_Serial_file
         CLASS(VTK_element_dt), INTENT(IN) :: me              !!
 
         END SUBROUTINE finalize
+
+        RECURSIVE MODULE SUBROUTINE gcc_bug_workaround_deallocate_vtk_element_single (foo)
+        IMPLICIT NONE
+        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+        CLASS(VTK_element_dt), INTENT(INOUT) :: foo
+        END SUBROUTINE gcc_bug_workaround_deallocate_vtk_element_single
 
     END INTERFACE
 

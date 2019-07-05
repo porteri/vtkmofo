@@ -9,7 +9,7 @@ MODULE VTK_piece_element
     !!
 
     PRIVATE
-    PUBLIC :: DataArray_dt
+    PUBLIC :: DataArray_dt, Coordinates_dt, CellData_dt, PointData_dt
 
     TYPE, EXTENDS(xml_element_dt) :: Piece_dt
         PRIVATE

@@ -21,7 +21,7 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
         CHARACTER(LEN=*), PARAMETER   :: name = 'VTKFile'
         CHARACTER(LEN=:), ALLOCATABLE :: string
         CHARACTER(LEN=:), ALLOCATABLE :: type_string
-        CHARACTER(LEN=*), PARAMETER   :: version_string = 'version="' // def_version // '"'
+        CHARACTER(LEN=*), PARAMETER   :: version_string = ' version="' // def_version // '"'
         CHARACTER(LEN=:), ALLOCATABLE :: byte_order_string
         CHARACTER(LEN=:), ALLOCATABLE :: compression_string
 
@@ -33,7 +33,7 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
         IF (ALLOCATED(me%byte_order)) THEN
             ALLOCATE(byte_order_string,source=' byte_order="' // me%byte_order // '"')
         ELSE
-            ALLOCATE(byte_order_string,source='')
+            ALLOCATE(byte_order_string,source=' byte_order="' // def_byte_order // '"')
         END IF
         IF (ALLOCATED(me%compression)) THEN
             ALLOCATE(compression_string,source=' compression="' // me%compression // '"')
@@ -43,7 +43,7 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
 
         ALLOCATE(string, source=type_string // version_string // byte_order_string // compression_string)
 
-        CALL me%setup(name=name,string=string)
+        CALL me%setup(name=name,string=string,offset=4)
 
         END PROCEDURE vtk_element_setup
 
@@ -61,7 +61,7 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
         IF (PRESENT(file_extension)) ALLOCATE(me%file_extension,source=file_extension)
 
         CALL me%vtk_element_setup()
-        
+
         END PROCEDURE initialize
 
         MODULE PROCEDURE finalize
@@ -75,5 +75,23 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
 !        WRITE(me%unit,'(a)') '</VTKFile>'
 
         END PROCEDURE finalize
+
+        MODULE PROCEDURE gcc_bug_workaround_deallocate_vtk_element_single
+!        USE XML, ONLY : xml_element_dt
+        IMPLICIT NONE
+        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+!        SELECT TYPE(foo)
+!        CLASS IS (xml_element_dt)
+!            CALL foo%deallocate()
+!        END SELECT
+write(0,*) 'start of gcc_bug_workaround_deallocate_vtk_element_single'
+        IF (ALLOCATED(foo%type))           DEALLOCATE(foo%type)
+        IF (ALLOCATED(foo%version))        DEALLOCATE(foo%version)
+        IF (ALLOCATED(foo%byte_order))     DEALLOCATE(foo%byte_order)
+        IF (ALLOCATED(foo%compression))    DEALLOCATE(foo%compression)
+        IF (ALLOCATED(foo%file_extension)) DEALLOCATE(foo%file_extension)
+        IF (ALLOCATED(foo%filename))       DEALLOCATE(foo%filename)
+write(0,*) 'end of gcc_bug_workaround_deallocate_vtk_element_single'
+        END PROCEDURE gcc_bug_workaround_deallocate_vtk_element_single
 
 END SUBMODULE VTK_Serial_file_implementation
