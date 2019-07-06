@@ -332,32 +332,65 @@ write(0,*) 'before vtk_data set_grid_data'
         CALL vtk_data%set_grid_data(geometry)
 write(0,*) 'before serial_file setup'
 write(0,*) 'filename = ',filename // TRIM(vtk_data%file_extension)
-ALLOCATE(serial_file)
+        ALLOCATE(serial_file)
         CALL serial_file%setup(filename=filename // TRIM(vtk_data%file_extension),form='formatted')
 write(0,*) 'before serial_file add'
         CALL serial_file%add(vtk_data)
-write(0,*) 'before serial_file write'
-        CALL serial_file%write()
-write(0,*) 'before de-allocation of serial_file'
-        CALL serial_file%deallocate()
-        IF (ALLOCATED(serial_file)) DEALLOCATE(serial_file)
-write(0,*) 'before vtk_serial_full_write end'
+
+        IF (ANY([ PRESENT(celldatasets), PRESENT(celldata), PRESENT(pointdatasets), PRESENT(pointdata) ])) THEN
+            CALL vtk_serial_finalize (finished=.TRUE.)          !! Full legacy write w/ data. Close file.
+        ELSE
+            CALL vtk_serial_finalize (finished=.FALSE.)         !! No data was provided, only geometry info. Do not close file.
+        END IF
+
         CALL vtk_data%deallocate()
+
         END PROCEDURE vtk_serial_full_write
 
         MODULE PROCEDURE vtk_serial_append
+        USE VTK_serial_file, ONLY : serial_file
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/24/2019
         !!
         !! This subroutines appends data to the legacy vtk output file
         !!
+!        CLASS(VTK_element_dt), ALLOCATABLE :: vtk_data
+        INTEGER(i4k) :: i
 
-        ERROR STOP 'vtk_serial_append not yet implemented'
+        IF (.NOT. ALLOCATED(serial_file)) THEN
+            ERROR STOP 'Error: calling vtk_serial_append when not yet initialized.'
+        ELSE IF (.NOT. ALLOCATED(serial_file%element)) THEN
+!        ELSE IF (.NOT. ALLOCATED(vtk_data)) THEN
+            ERROR STOP 'Error: data should not be allocated in call to vtk_serial_full_write.'
+        END IF
+
+        !! vtk_data is now me%element(1)
+        IF (PRESENT(celldatasets)) THEN
+            DO i = 1, SIZE(celldatasets)
+                CALL celldatasets(i)%attribute%write(newunit)   !! Write the cell data values
+            END DO
+        ELSE IF (PRESENT(celldata)) THEN
+            CALL celldata%write(newunit)                        !! Write the cell data values
+        END IF
+
+        IF (PRESENT(pointdatasets)) THEN
+            DO I = 1, SIZE(pointdatasets)
+                CALL pointdatasets(i)%attribute%write(newunit)
+            END DO
+        ELSE IF (PRESENT(pointdata)) THEN
+            CALL pointdata%write(newunit)                       !! Write the point data values
+        END IF
+
+write(0,*) 'before serial_file add'
+!        CALL serial_file%element(1)%add()
+
+!        CALL vtk_data%deallocate()
 
         END PROCEDURE vtk_serial_append
 
         MODULE PROCEDURE vtk_serial_finalize
+        USE VTK_serial_file, ONLY : serial_file
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/24/2019
@@ -365,7 +398,15 @@ write(0,*) 'before vtk_serial_full_write end'
         !! This subroutines is a finalizer for the legacy vtk file write
         !!
 
-        ERROR STOP 'vtk_serial_finalize not yet implemented'
+        IF (finished) THEN
+write(0,*) 'before serial_file%write()'
+            CALL serial_file%write()
+write(0,*) 'before serial_file%deallocate()'
+            CALL serial_file%deallocate()
+write(0,*) 'before de-allocation of serial_file'
+            IF (ALLOCATED(serial_file)) DEALLOCATE(serial_file)
+        END IF
+write(0,*) 'before vtk_serial_full_write end'
 
         END PROCEDURE vtk_serial_finalize
 

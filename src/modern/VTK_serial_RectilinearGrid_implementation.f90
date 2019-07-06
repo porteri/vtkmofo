@@ -50,17 +50,9 @@ write(0,*) 'before call Coordinates%deallocate()'
             CALL Coordinates%deallocate()
 write(0,*) 'before call piece%deallocate()'
             CALL piece%deallocate()
-            write(0,*) 'before grid%deallocate'
+write(0,*) 'before grid%deallocate'
             CALL grid%deallocate()
-            write(0,*) 'after grid%deallocate'
-!write(0,*) 'before gcc_bug_workaround_deallocate(PointData_xml)'
-!            CALL gcc_bug_workaround_deallocate(PointData_xml)
-!write(0,*) 'before gcc_bug_workaround_deallocate(Coordinates)'
-!            CALL gcc_bug_workaround_deallocate(Coordinates)
-!write(0,*) 'before gcc_bug_workaround_deallocate(piece)'
-!            CALL gcc_bug_workaround_deallocate(piece)
-!write(0,*) 'before gcc_bug_workaround_deallocate(grid)'
-!            CALL gcc_bug_workaround_deallocate(grid)
+write(0,*) 'after grid%deallocate'
 
 write(0,*) 'end of set_grid_data'
         END PROCEDURE set_grid_data

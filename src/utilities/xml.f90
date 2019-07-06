@@ -43,7 +43,7 @@ MODULE XML
     TYPE, EXTENDS(file_data_structure) :: xml_file_dt
         PRIVATE
         !! Full XML file DT
-        TYPE(xml_element_dt), DIMENSION(:), ALLOCATABLE :: element
+        TYPE(xml_element_dt), DIMENSION(:), ALLOCATABLE, PUBLIC :: element
     CONTAINS
         PROCEDURE :: setup_file_information => xml_file_setup
         PROCEDURE, PRIVATE :: begin => xml_begin
