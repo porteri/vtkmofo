@@ -46,7 +46,7 @@ write(0,*) 'before me%get_range()'
 
         CALL grid%setup(name=grid_type,string= "WholeExtent=" // '"' // range_string // '"')
         !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-        CALL piece%setup(name="Piece Extent=" // '"' // range_string // '"')
+        CALL piece%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
 
         CALL PointData_xml%setup(name="PointData")
 
