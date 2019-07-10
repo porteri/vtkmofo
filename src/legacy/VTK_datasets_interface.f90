@@ -35,6 +35,7 @@ MODULE vtk_datasets
         PROCEDURE, NON_OVERRIDABLE, PUBLIC :: init
         PROCEDURE, PRIVATE :: check_for_diffs
         GENERIC, PUBLIC :: OPERATOR(.diff.) => check_for_diffs
+        PROCEDURE, PUBLIC :: get_range
     END TYPE dataset
 
     TYPE, EXTENDS(dataset) :: struct_pts
@@ -46,7 +47,8 @@ MODULE vtk_datasets
         PROCEDURE :: read  => struct_pts_read
         PROCEDURE :: write => struct_pts_write
         PROCEDURE, PRIVATE :: setup => struct_pts_setup
-        PROCEDURE :: check_for_diffs => check_for_diffs_struct_pts
+        PROCEDURE :: check_for_diffs => struct_pts_check_for_diffs
+!        PROCEDURE :: get_range => struct_pts_get_range
     END TYPE struct_pts
 
     TYPE, EXTENDS(dataset) :: struct_grid
@@ -58,7 +60,8 @@ MODULE vtk_datasets
         PROCEDURE :: read  => struct_grid_read
         PROCEDURE :: write => struct_grid_write
         PROCEDURE, PRIVATE :: setup => struct_grid_setup
-        PROCEDURE :: check_for_diffs => check_for_diffs_struct_grid
+        PROCEDURE :: check_for_diffs => struct_grid_check_for_diffs
+!        PROCEDURE :: get_range => struct_grid_get_range
     END TYPE struct_grid
 
     TYPE, EXTENDS(dataset) :: rectlnr_grid
@@ -71,7 +74,8 @@ MODULE vtk_datasets
         PROCEDURE :: read  => rectlnr_grid_read
         PROCEDURE :: write => rectlnr_grid_write
         PROCEDURE, PRIVATE :: setup => rectlnr_grid_setup
-        PROCEDURE :: check_for_diffs => check_for_diffs_rectlnr_grid
+        PROCEDURE :: check_for_diffs => rectlnr_grid_check_for_diffs
+!        PROCEDURE :: get_range => rectlnr_grid_get_range
     END TYPE rectlnr_grid
 
     TYPE, EXTENDS(dataset) :: polygonal_data
@@ -87,6 +91,7 @@ MODULE vtk_datasets
         PROCEDURE :: read  => polygonal_data_read
         PROCEDURE :: write => polygonal_data_write
         PROCEDURE, PRIVATE :: setup => polygonal_data_setup
+!        PROCEDURE :: get_range => polygonal_data_get_range
     END TYPE polygonal_data
 
     TYPE, EXTENDS(dataset) :: unstruct_grid
@@ -104,6 +109,7 @@ MODULE vtk_datasets
         PROCEDURE :: unstruct_grid_setup
         PROCEDURE :: unstruct_grid_setup_multiclass
         GENERIC, PRIVATE :: setup => unstruct_grid_setup, unstruct_grid_setup_multiclass
+!        PROCEDURE :: get_range => unstruct_grid_get_range
     END TYPE unstruct_grid
 
     INTERFACE
@@ -155,6 +161,14 @@ MODULE vtk_datasets
         LOGICAL :: diffs
 
         END FUNCTION check_for_diffs
+
+        MODULE FUNCTION get_range (me) RESULT (range)
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+        CLASS(dataset), INTENT(IN)   :: me
+        INTEGER(i4k), DIMENSION(2,3) :: range
+
+        END FUNCTION get_range
 ! *****************
 ! Structured Points
 ! *****************
@@ -183,14 +197,22 @@ MODULE vtk_datasets
 
         END SUBROUTINE struct_pts_setup
 
-        MODULE FUNCTION check_for_diffs_struct_pts (me, you) RESULT (diffs)
+        MODULE FUNCTION struct_pts_check_for_diffs (me, you) RESULT (diffs)
         IMPLICIT NONE
         !! Function checks for differences in a structured points dataset
         CLASS(struct_pts), INTENT(IN) :: me
         CLASS(dataset),    INTENT(IN) :: you
         LOGICAL                       :: diffs
 
-        END FUNCTION check_for_diffs_struct_pts
+        END FUNCTION struct_pts_check_for_diffs
+
+        MODULE FUNCTION struct_pts_get_range (me) RESULT (range)
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+        CLASS(struct_pts), INTENT(IN) :: me
+        INTEGER(i4k), DIMENSION(2,3)  :: range
+
+        END FUNCTION struct_pts_get_range
 ! ***************
 ! Structured Grid
 ! ***************
@@ -219,14 +241,22 @@ MODULE vtk_datasets
 
         END SUBROUTINE struct_grid_setup
 
-        MODULE FUNCTION check_for_diffs_struct_grid (me, you) RESULT (diffs)
+        MODULE FUNCTION struct_grid_check_for_diffs (me, you) RESULT (diffs)
         IMPLICIT NONE
         !! Function checks for differences in a structured grid dataset
         CLASS(struct_grid), INTENT(IN) :: me
         CLASS(dataset),     INTENT(IN) :: you
         LOGICAL                        :: diffs
 
-        END FUNCTION check_for_diffs_struct_grid
+        END FUNCTION struct_grid_check_for_diffs
+
+        MODULE FUNCTION struct_grid_get_range (me) RESULT (range)
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+        CLASS(struct_grid), INTENT(IN) :: me
+        INTEGER(i4k), DIMENSION(2,3)   :: range
+
+        END FUNCTION struct_grid_get_range
 ! ****************
 ! Rectilinear Grid
 ! ****************
@@ -258,14 +288,22 @@ MODULE vtk_datasets
 
         END SUBROUTINE rectlnr_grid_setup
 
-        MODULE FUNCTION check_for_diffs_rectlnr_grid (me, you) RESULT (diffs)
+        MODULE FUNCTION rectlnr_grid_check_for_diffs (me, you) RESULT (diffs)
         IMPLICIT NONE
         !! Function checks for differences in a rectilinear grid dataset
         CLASS(rectlnr_grid), INTENT(IN) :: me
         CLASS(dataset),      INTENT(IN) :: you
         LOGICAL                         :: diffs
 
-        END FUNCTION check_for_diffs_rectlnr_grid
+        END FUNCTION rectlnr_grid_check_for_diffs
+
+        MODULE FUNCTION rectlnr_grid_get_range (me) RESULT (range)
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+        CLASS(rectlnr_grid), INTENT(IN) :: me
+        INTEGER(i4k), DIMENSION(2,3)    :: range
+
+        END FUNCTION rectlnr_grid_get_range
 ! **************
 ! Polygonal Data
 ! **************
@@ -296,6 +334,14 @@ MODULE vtk_datasets
         CLASS(vtkcell), DIMENSION(:), INTENT(IN), OPTIONAL :: triangles
 
         END SUBROUTINE polygonal_data_setup
+
+        MODULE FUNCTION polygonal_data_get_range (me) RESULT (range)
+        IMPLICIT NONE
+        !! Function returns the polygonal data min / max range of values in x,y,z coordinates
+        CLASS(polygonal_data), INTENT(IN) :: me
+        INTEGER(i4k), DIMENSION(2,3)      :: range
+
+        END FUNCTION polygonal_data_get_range
 ! *****************
 ! Unstructured Grid
 ! *****************
@@ -332,6 +378,14 @@ MODULE vtk_datasets
         TYPE(vtkcell_list), DIMENSION(:),   INTENT(IN)  :: cell_list  !! DT of different cell types
 
         END SUBROUTINE unstruct_grid_setup_multiclass
+
+        MODULE FUNCTION unstruct_grid_get_range (me) RESULT (range)
+        IMPLICIT NONE
+        !! Function returns the unstructured grid min / max range of values in x,y,z coordinates
+        CLASS(unstruct_grid), INTENT(IN) :: me
+        INTEGER(i4k), DIMENSION(2,3)     :: range
+
+        END FUNCTION unstruct_grid_get_range
 
     END INTERFACE
 

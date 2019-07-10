@@ -1,4 +1,5 @@
 SUBMODULE (VTK_serial_RectilinearGrid) RectilinearGrid_sub
+    USE Precision, ONLY : i4k
     !! author: Ian Porter
     !! date: 05/06/2019
     !!
@@ -19,7 +20,10 @@ SUBMODULE (VTK_serial_RectilinearGrid) RectilinearGrid_sub
         !!
         !! This sets parameters specific to the DT
         !!
-        CHARACTER(LEN=:), ALLOCATABLE :: string
+        CHARACTER(LEN=10) :: tmp_string = '          '
+        CHARACTER(LEN=:), ALLOCATABLE :: range_string
+        INTEGER(i4k) :: i, j
+        INTEGER(i4k), DIMENSION(2,3)  :: range
         TYPE(xml_element_dt) :: grid, piece
         TYPE(Coordinates_dt) :: Coordinates
 !        TYPE(CellData_dt) :: CellData_xml
@@ -27,15 +31,30 @@ SUBMODULE (VTK_serial_RectilinearGrid) RectilinearGrid_sub
 
 write(0,*) 'start of set_grid_data'
         CALL me%initialize(type=grid_type,file_extension=file_extension)
-write(0,*) 'end of set_grid_data'
+write(0,*) 'before me%get_range()'
+        range = geometry%get_range()
+        DO i = 1, 3
+            DO j = 1, 2
+                WRITE(tmp_string,'(i10)') range(j,i)
+                IF (.NOT. ALLOCATED(range_string)) THEN
+                    ALLOCATE(range_string,source=TRIM(ADJUSTL(tmp_string)))
+                ELSE
+                    range_string = range_string // ' ' // TRIM(ADJUSTL(tmp_string))
+                END IF
+            END DO
+        END DO
 
-            CALL grid%setup(name=grid_type,string='"' // "WholeExtent=" // '"')
-!            DEALLOCATE(string)
-!            ALLOCATE(string, source='"' // "WholeExtent=" // '"')
-            CALL piece%setup(name="Piece Extent=" // '"' // '"')
+        CALL grid%setup(name=grid_type,string= "WholeExtent=" // '"' // range_string // '"')
+        !! For now, don't allow "pieces" but instead force the piece to be the whole extent
+        CALL piece%setup(name="Piece Extent=" // '"' // range_string // '"')
 
-            CALL PointData_xml%setup(name="PointData")
-            CALL Coordinates%setup(name="Coordinates")
+        CALL PointData_xml%setup(name="PointData")
+
+        !! Add any data
+        !CALL PointData_xml%add()
+        CALL Coordinates%setup(name="Coordinates")
+        !! Add coordinate information
+        !CALL Coordinates%add()
 write(0,*) 'before call piece%add(pointdata)'
             CALL piece%add(pointdata_xml)
 write(0,*) 'before call piece%add(coordinates)'

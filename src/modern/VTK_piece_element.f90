@@ -43,6 +43,7 @@ MODULE VTK_piece_element
 
     TYPE, EXTENDS(xml_element_dt) :: PointData_dt
         !! PointData derived type
+        PRIVATE
         CHARACTER(LEN=:), ALLOCATABLE :: Scalars
         CHARACTER(LEN=:), ALLOCATABLE :: Vectors
         CHARACTER(LEN=:), ALLOCATABLE :: Normals
@@ -52,15 +53,18 @@ MODULE VTK_piece_element
 
     TYPE, EXTENDS(xml_element_dt) :: CellData_dt
         !! CellData derived type
+        PRIVATE
     END TYPE CellData_dt
 
     TYPE, EXTENDS(xml_element_dt) :: Points_dt
         !! Points derived type
+        PRIVATE
         TYPE(DataArray_dt) :: DataArray
     END TYPE Points_dt
 
     TYPE, EXTENDS(xml_element_dt) :: Coordinates_dt
         !! Coordinates derived type
+        PRIVATE
         TYPE(DataArray_dt) :: DataArray_x
         TYPE(DataArray_dt) :: DataArray_y
         TYPE(DataArray_dt) :: DataArray_z

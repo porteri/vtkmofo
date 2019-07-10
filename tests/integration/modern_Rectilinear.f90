@@ -18,7 +18,7 @@ PROGRAM modern_Rectilinear_test
     REAL(r8k),        PARAMETER :: temp_val = 555.0_r8k
     CHARACTER(LEN=*), PARAMETER :: filename = 'cube.vtr'
     CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of cube geometry'
-    INTEGER(i4k), DIMENSION(3)  :: dims
+    INTEGER(i4k), DIMENSION(3)  :: dims = [ n_x, n_y, n_z ]
     REAL(r8k), DIMENSION(n_x), PARAMETER :: x_coords = &
       & [ 0.1_r8k, 0.2_r8k, 0.3_r8k, 0.4_r8k, 0.5_r8k, 0.6_r8k, 0.7_r8k, 0.8_r8k, 0.9_r8k, 1.0_r8k, 1.1_r8k ]
     REAL(r8k), DIMENSION(n_y), PARAMETER :: y_coords = &
@@ -40,7 +40,6 @@ PROGRAM modern_Rectilinear_test
         vals(i,2) = vals(i-1,2) + MAX(50.0_r8k, j)         !! Pressure
         vals(i,3) = vals(i-1,3) + SQRT(REAL(i))            !! Stress
     END DO
-    dims = [ n_x, n_y, n_z ]
     CALL cube%init (dims=dims, x_coords=x_coords, y_coords=y_coords, z_coords=z_coords)
     DO i = 1, n_params_to_write
         IF (.NOT. ALLOCATED(vals_to_write(i)%attribute))THEN

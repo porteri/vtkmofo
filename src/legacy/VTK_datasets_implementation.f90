@@ -73,6 +73,19 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END IF
 
         END PROCEDURE check_for_diffs
+
+        MODULE PROCEDURE get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        range(1,1) = 1
+        range(2,1) = MAX(me%dimensions(1),1)
+        range(1,2) = 1
+        range(2,2) = MAX(me%dimensions(2),1)
+        range(1,3) = 1
+        range(2,3) = MAX(me%dimensions(3),1)
+
+        END PROCEDURE get_range
 ! *****************
 ! Structured Points
 ! *****************
@@ -133,7 +146,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         END PROCEDURE struct_pts_setup
 
-        MODULE PROCEDURE check_for_diffs_struct_pts
+        MODULE PROCEDURE struct_pts_check_for_diffs
         IMPLICIT NONE
         !! Function checks for differences in a structured points dataset
 
@@ -161,7 +174,13 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_struct_pts
+        END PROCEDURE struct_pts_check_for_diffs
+
+        MODULE PROCEDURE struct_pts_get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        END PROCEDURE struct_pts_get_range
 ! ***************
 ! Structured Grid
 ! ***************
@@ -239,7 +258,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         END PROCEDURE struct_grid_setup
 
-        MODULE PROCEDURE check_for_diffs_struct_grid
+        MODULE PROCEDURE struct_grid_check_for_diffs
         IMPLICIT NONE
         !! Function checks for differences in a structured grid dataset
 
@@ -276,7 +295,13 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_struct_grid
+        END PROCEDURE struct_grid_check_for_diffs
+
+        MODULE PROCEDURE struct_grid_get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        END PROCEDURE struct_grid_get_range
 ! ****************
 ! Rectilinear Grid
 ! ****************
@@ -389,7 +414,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         END PROCEDURE rectlnr_grid_setup
 
-        MODULE PROCEDURE check_for_diffs_rectlnr_grid
+        MODULE PROCEDURE rectlnr_grid_check_for_diffs
         IMPLICIT NONE
         !! Function checks for differences in a rectilinear grid dataset
         INTEGER(i4k) :: i
@@ -434,7 +459,13 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_rectlnr_grid
+        END PROCEDURE rectlnr_grid_check_for_diffs
+
+        MODULE PROCEDURE rectlnr_grid_get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        END PROCEDURE rectlnr_grid_get_range
 ! **************
 ! Polygonal Data
 ! **************
@@ -647,6 +678,12 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         IF (PRESENT(triangles)) ALLOCATE(me%triangles,source=triangles)
 
         END PROCEDURE polygonal_data_setup
+
+        MODULE PROCEDURE polygonal_data_get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        END PROCEDURE polygonal_data_get_range
 ! *****************
 ! Unstructured Grid
 ! *****************
@@ -803,5 +840,11 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         me%firstcall    = .FALSE.
 
         END PROCEDURE unstruct_grid_setup_multiclass
+
+        MODULE PROCEDURE unstruct_grid_get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        END PROCEDURE unstruct_grid_get_range
 
 END SUBMODULE vtk_datasets_implementation
