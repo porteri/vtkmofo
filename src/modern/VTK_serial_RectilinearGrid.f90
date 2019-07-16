@@ -35,16 +35,6 @@ MODULE VTK_serial_RectilinearGrid
         CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
         END SUBROUTINE set_grid_data
 
-        MODULE SUBROUTINE rectilinear_grid_write (me)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 05/06/2019
-        !!
-        !! This writes the body of a rectilinear grid into its data structure
-        !!
-        CLASS(VTK_serial_RectilinearGrid_dt), INTENT(INOUT) :: me
-        END SUBROUTINE rectilinear_grid_write
-
     END INTERFACE
 
 END MODULE VTK_serial_RectilinearGrid

@@ -35,7 +35,9 @@ MODULE vtk_datasets
         PROCEDURE, NON_OVERRIDABLE, PUBLIC :: init
         PROCEDURE, PRIVATE :: check_for_diffs
         GENERIC, PUBLIC :: OPERATOR(.diff.) => check_for_diffs
+        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: get_range_cnt
         PROCEDURE, PUBLIC :: get_range
+        PROCEDURE, PUBLIC :: get_coord
     END TYPE dataset
 
     TYPE, EXTENDS(dataset) :: struct_pts
@@ -48,7 +50,6 @@ MODULE vtk_datasets
         PROCEDURE :: write => struct_pts_write
         PROCEDURE, PRIVATE :: setup => struct_pts_setup
         PROCEDURE :: check_for_diffs => struct_pts_check_for_diffs
-!        PROCEDURE :: get_range => struct_pts_get_range
     END TYPE struct_pts
 
     TYPE, EXTENDS(dataset) :: struct_grid
@@ -61,7 +62,6 @@ MODULE vtk_datasets
         PROCEDURE :: write => struct_grid_write
         PROCEDURE, PRIVATE :: setup => struct_grid_setup
         PROCEDURE :: check_for_diffs => struct_grid_check_for_diffs
-!        PROCEDURE :: get_range => struct_grid_get_range
     END TYPE struct_grid
 
     TYPE, EXTENDS(dataset) :: rectlnr_grid
@@ -75,7 +75,8 @@ MODULE vtk_datasets
         PROCEDURE :: write => rectlnr_grid_write
         PROCEDURE, PRIVATE :: setup => rectlnr_grid_setup
         PROCEDURE :: check_for_diffs => rectlnr_grid_check_for_diffs
-!        PROCEDURE :: get_range => rectlnr_grid_get_range
+        PROCEDURE :: get_range => rectlnr_grid_get_range
+        PROCEDURE :: get_coord => rectlnr_grid_get_coord
     END TYPE rectlnr_grid
 
     TYPE, EXTENDS(dataset) :: polygonal_data
@@ -91,7 +92,6 @@ MODULE vtk_datasets
         PROCEDURE :: read  => polygonal_data_read
         PROCEDURE :: write => polygonal_data_write
         PROCEDURE, PRIVATE :: setup => polygonal_data_setup
-!        PROCEDURE :: get_range => polygonal_data_get_range
     END TYPE polygonal_data
 
     TYPE, EXTENDS(dataset) :: unstruct_grid
@@ -109,7 +109,6 @@ MODULE vtk_datasets
         PROCEDURE :: unstruct_grid_setup
         PROCEDURE :: unstruct_grid_setup_multiclass
         GENERIC, PRIVATE :: setup => unstruct_grid_setup, unstruct_grid_setup_multiclass
-!        PROCEDURE :: get_range => unstruct_grid_get_range
     END TYPE unstruct_grid
 
     INTERFACE
@@ -162,13 +161,30 @@ MODULE vtk_datasets
 
         END FUNCTION check_for_diffs
 
-        MODULE FUNCTION get_range (me) RESULT (range)
+        MODULE FUNCTION get_range_cnt (me) RESULT (range)
         IMPLICIT NONE
-        !! Function returns the min / max range of values in x,y,z coordinates
+        !! Function returns the number of variables in x,y,z coordinates
         CLASS(dataset), INTENT(IN)   :: me
         INTEGER(i4k), DIMENSION(2,3) :: range
 
+        END FUNCTION get_range_cnt
+
+        MODULE FUNCTION get_range (me) RESULT (range)
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+        CLASS(dataset), INTENT(IN) :: me
+        REAL(r8k),  DIMENSION(2,3) :: range
+
         END FUNCTION get_range
+
+        MODULE FUNCTION get_coord (me, dim) RESULT (coord)
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+        CLASS(dataset), INTENT(IN) :: me
+        INTEGER(i4k),   INTENT(IN) :: dim
+        REAL(r8k), DIMENSION(:), ALLOCATABLE :: coord
+
+        END FUNCTION get_coord
 ! *****************
 ! Structured Points
 ! *****************
@@ -301,9 +317,18 @@ MODULE vtk_datasets
         IMPLICIT NONE
         !! Function returns the min / max range of values in x,y,z coordinates
         CLASS(rectlnr_grid), INTENT(IN) :: me
-        INTEGER(i4k), DIMENSION(2,3)    :: range
+        REAL(r8k), DIMENSION(2,3)       :: range
 
         END FUNCTION rectlnr_grid_get_range
+
+        MODULE FUNCTION rectlnr_grid_get_coord (me, dim) RESULT (coord)
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+        CLASS(rectlnr_grid), INTENT(IN) :: me
+        INTEGER(i4k),        INTENT(IN) :: dim
+        REAL(r8k), DIMENSION(:), ALLOCATABLE :: coord
+
+        END FUNCTION rectlnr_grid_get_coord
 ! **************
 ! Polygonal Data
 ! **************

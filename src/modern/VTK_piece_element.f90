@@ -1,6 +1,7 @@
 MODULE VTK_piece_element
-    USE XML,       ONLY : xml_file_dt, xml_element_dt
-    USE Precision, ONLY : i4k
+    USE XML,          ONLY : xml_file_dt, xml_element_dt
+    USE Precision,    ONLY : i4k, r8k
+    USE vtk_datasets, ONLY : dataset
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 06/07/2019
@@ -9,7 +10,7 @@ MODULE VTK_piece_element
     !!
 
     PRIVATE
-    PUBLIC :: DataArray_dt, Coordinates_dt, CellData_dt, PointData_dt
+    PUBLIC :: DataArray_dt, Coordinates_dt, CellData_dt, PointData_dt, Piece_dt
 
     TYPE, EXTENDS(xml_element_dt) :: Piece_dt
         PRIVATE
@@ -18,9 +19,9 @@ MODULE VTK_piece_element
         CHARACTER(LEN=:), ALLOCATABLE :: byte_order
         CHARACTER(LEN=:), ALLOCATABLE :: compression
         CHARACTER(LEN=:), ALLOCATABLE :: file_extension
-!    CONTAINS
+    CONTAINS
 !        PROCEDURE, NON_OVERRIDABLE :: vtk_element_setup
-!        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: initialize
+        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: initialize => piece_initialize
 !        PROCEDURE(abs_set_grid_data), DEFERRED :: set_grid_data
 !        GENERIC, PUBLIC :: set => set_grid_data
 !        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: finalize
@@ -34,6 +35,8 @@ MODULE VTK_piece_element
         CHARACTER(LEN=:), ALLOCATABLE :: NumberofComponents
         CHARACTER(LEN=:), ALLOCATABLE :: format
         CHARACTER(LEN=:), ALLOCATABLE :: array_offset
+        CHARACTER(LEN=:), ALLOCATABLE :: range_min
+        CHARACTER(LEN=:), ALLOCATABLE :: range_max
     CONTAINS
         PROCEDURE, NON_OVERRIDABLE :: DataArray_setup
         PROCEDURE, NON_OVERRIDABLE :: DataArray_initialize
@@ -68,12 +71,25 @@ MODULE VTK_piece_element
         TYPE(DataArray_dt) :: DataArray_x
         TYPE(DataArray_dt) :: DataArray_y
         TYPE(DataArray_dt) :: DataArray_z
-!    CONTAINS
-!        PROCEDURE, NON_OVERRIDABLE :: Coordinates_setup
-!        PROCEDURE, NON_OVERRIDABLE :: Coordinates_initialize
+    CONTAINS
+        PROCEDURE, NON_OVERRIDABLE :: Coordinates_initialize
+        GENERIC, PUBLIC :: initialize => Coordinates_initialize
     END TYPE Coordinates_dt
 
     INTERFACE
+
+        MODULE SUBROUTINE piece_initialize (me, geometry)
+        USE vtk_datasets, ONLY : dataset
+        IMPLICIT NONE
+        !1 author: Ian Porter
+        !! date: 07/09/2019
+        !!
+        !! Initializes a piece dt with the geometry information
+        !!
+        CLASS(Piece_dt), INTENT(INOUT) :: me
+        CLASS(dataset),  INTENT(IN)    :: geometry
+
+        END SUBROUTINE piece_initialize
 
         MODULE SUBROUTINE DataArray_setup (me)
         IMPLICIT NONE
@@ -86,7 +102,7 @@ MODULE VTK_piece_element
 
         END SUBROUTINE DataArray_setup
 
-        MODULE SUBROUTINE DataArray_initialize (me, type, name, NumberOfComponents, format, offset)
+        MODULE SUBROUTINE DataArray_initialize (me, type, name, NumberOfComponents, format, offset, range_min, range_max)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/07/2019
@@ -100,6 +116,8 @@ MODULE VTK_piece_element
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: format             !! The means by whih the data is stored in the file
         CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: offset             !! If format='appended', this specifies the offset from the
                                                                      !! beginning of the appended data
+        REAL(r8k),        INTENT(IN), OPTIONAL :: range_min          !! Min value in array of numbers
+        REAL(r8k),        INTENT(IN), OPTIONAL :: range_max          !! Max value in array of numbers
 
         END SUBROUTINE DataArray_initialize
 
@@ -110,6 +128,19 @@ MODULE VTK_piece_element
         CLASS(xml_element_dt), INTENT(IN)    :: element  !! Inner XML element
 
         END SUBROUTINE DataArray_add_DataArray
+
+        MODULE SUBROUTINE Coordinates_initialize (me, geometry)
+        USE vtk_datasets, ONLY : dataset
+        IMPLICIT NONE
+        !1 author: Ian Porter
+        !! date: 07/09/2019
+        !!
+        !! Initializes a piece dt with the geometry information
+        !!
+        CLASS(Coordinates_dt), INTENT(INOUT) :: me
+        CLASS(dataset),        INTENT(IN)    :: geometry
+
+        END SUBROUTINE Coordinates_initialize
 
     END INTERFACE
 

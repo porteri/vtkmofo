@@ -57,6 +57,36 @@ SUBMODULE (XML) XML_implementation
 
         END PROCEDURE element_begin
 
+        MODULE PROCEDURE element_add_reals
+        USE Misc, ONLY : convert_to_string
+        IMPLICIT NONE
+        !! This adds data inside of an xml element block
+        INTEGER(i4k) :: i
+        TYPE(string_dt), DIMENSION(:), ALLOCATABLE :: tmp_string_dt
+        CHARACTER(LEN=:), ALLOCATABLE :: string
+
+        IF (.NOT. ALLOCATED(me%string)) THEN
+            ALLOCATE(me%string(0))
+        END IF
+
+        ALLOCATE(tmp_string_dt(1:SIZE(me%string)+1))
+        tmp_string_dt(1:SIZE(me%string)) = me%string
+        CALL MOVE_ALLOC(tmp_string_dt, me%string)
+
+        DO i = 1, SIZE(var)
+            IF (i == 1) THEN
+                ALLOCATE(string, source=convert_to_string(var(i)))
+            ELSE
+                string = string // " " // convert_to_string(var(i))
+            END IF
+        END DO
+
+        ASSOCIATE (my_entry => UBOUND(me%string,DIM=1))
+            ALLOCATE(me%string(my_entry)%text,source='"' // string // '"' // new_line('a'))
+        END ASSOCIATE
+
+        END PROCEDURE element_add_reals
+
         MODULE PROCEDURE element_add_data
         IMPLICIT NONE
         !! This adds data inside of an xml element block

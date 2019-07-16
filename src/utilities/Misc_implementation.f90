@@ -110,6 +110,25 @@ SUBMODULE (Misc) Misc_implementation
 
         END PROCEDURE get_string_real
 
+        MODULE PROCEDURE convert_int_to_string
+        IMPLICIT NONE
+        CHARACTER(LEN=10) :: tmp_string = '          '
+
+        WRITE(tmp_string,'(i10)') var
+        ALLOCATE(string,source=TRIM(ADJUSTL(tmp_string)))
+
+        END PROCEDURE convert_int_to_string
+
+        MODULE PROCEDURE convert_real_to_string
+        IMPLICIT NONE
+        !! Converts a real to a character string
+        CHARACTER(LEN=30) :: tmp_string = '                    '
+
+        WRITE(tmp_string,*) var
+        ALLOCATE(string,source=TRIM(ADJUSTL(tmp_string)))
+
+        END PROCEDURE convert_real_to_string
+
         MODULE PROCEDURE to_uppercase
         IMPLICIT NONE
         !! author: Ian Porter

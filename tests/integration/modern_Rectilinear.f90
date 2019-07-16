@@ -50,6 +50,7 @@ PROGRAM modern_Rectilinear_test
 write(0,*) 'before vtk_serial_write for full file'
     CALL vtk_serial_write (cube, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)
                                                            !! This tests a full 1-time write
+    go to 10
 write(0,*) 'before vtk_serial_write for geometry information'
     CALL vtk_serial_write (cube)
 
@@ -59,6 +60,6 @@ write(0,*) 'before vtk_serial_write for geometry information'
 
     CALL vtk_serial_write (finished=.TRUE.)
 
-    WRITE(*,*) 'Finished'
+10    WRITE(*,*) 'Finished'
 
 END PROGRAM modern_Rectilinear_test

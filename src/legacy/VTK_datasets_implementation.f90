@@ -74,9 +74,9 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         END PROCEDURE check_for_diffs
 
-        MODULE PROCEDURE get_range
+        MODULE PROCEDURE get_range_cnt
         IMPLICIT NONE
-        !! Function returns the min / max range of values in x,y,z coordinates
+        !! Function returns the number of variables in x,y,z coordinates
 
         range(1,1) = 1
         range(2,1) = MAX(me%dimensions(1),1)
@@ -85,7 +85,23 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         range(1,3) = 1
         range(2,3) = MAX(me%dimensions(3),1)
 
+        END PROCEDURE get_range_cnt
+
+        MODULE PROCEDURE get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        ERROR STOP 'Generic get_range should not be called. Will be moved to abstract.'
+
         END PROCEDURE get_range
+
+        MODULE PROCEDURE get_coord
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        ERROR STOP 'Generic get_coord should not be called. Will be moved to abstract.'
+
+        END PROCEDURE get_coord
 ! *****************
 ! Structured Points
 ! *****************
@@ -464,8 +480,31 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         MODULE PROCEDURE rectlnr_grid_get_range
         IMPLICIT NONE
         !! Function returns the min / max range of values in x,y,z coordinates
+        ASSOCIATE (x_min => range(1,1), x_max => range(2,1), &
+            &      y_min => range(1,2), y_max => range(2,2), &
+            &      z_min => range(1,3), z_max => range(2,3))
+            x_min = MINVAL(me%x%coord,DIM=1); x_max = MAXVAL(me%x%coord,DIM=1)
+            y_min = MINVAL(me%y%coord,DIM=1); y_max = MAXVAL(me%y%coord,DIM=1)
+            z_min = MINVAL(me%z%coord,DIM=1); z_max = MAXVAL(me%z%coord,DIM=1)
+        END ASSOCIATE
 
         END PROCEDURE rectlnr_grid_get_range
+
+        MODULE PROCEDURE rectlnr_grid_get_coord
+        IMPLICIT NONE
+
+        SELECT CASE (dim)
+        CASE (1)
+            ALLOCATE(coord,source=me%x%coord)
+        CASE (2)
+            ALLOCATE(coord,source=me%y%coord)
+        CASE (3)
+            ALLOCATE(coord,source=me%z%coord)
+        CASE DEFAULT
+            ERROR STOP 'Error: Invalid dimension (dim) requested in rectlnr_grid_get_coord'
+        END SELECT
+
+        END PROCEDURE rectlnr_grid_get_coord
 ! **************
 ! Polygonal Data
 ! **************

@@ -1,5 +1,5 @@
 MODULE XML
-    USE Precision,       ONLY : i4k
+    USE Precision,       ONLY : i4k, r8k
     USE File_utility,    ONLY : file_data_structure
     USE ISO_FORTRAN_ENV, ONLY : output_unit
     IMPLICIT NONE
@@ -33,7 +33,8 @@ MODULE XML
         PROCEDURE, PRIVATE :: begin => element_begin   !! Write open of element block
         PROCEDURE, PRIVATE :: element_add_data         !! Write raw data inside of element block
         PROCEDURE, PRIVATE :: element_add_element      !! Write another element inside element block
-        GENERIC, PUBLIC    :: add   => element_add_data, element_add_element
+        PROCEDURE, PRIVATE :: element_add_reals        !! Write reals into a string inside of element block
+        GENERIC, PUBLIC    :: add   => element_add_data, element_add_element, element_add_reals
         PROCEDURE, PRIVATE :: end   => element_end     !! Write closure of element block
         PROCEDURE, PUBLIC  :: write => element_write   !! Writes the element block
         PROCEDURE, PRIVATE :: gcc_bug_workaround_deallocate_single
@@ -66,7 +67,7 @@ MODULE XML
         !! This sets up the information needed to define the XML element block
         CLASS(xml_element_dt), INTENT(OUT) :: me     !! XML element derived type
         CHARACTER(LEN=*),      INTENT(IN)  :: name   !! Name of the XML block
-        CHARACTER(LEN=*),      INTENT(IN), OPTIONAL  :: string !! String of additional data to write
+        CHARACTER(LEN=*),      INTENT(IN), OPTIONAL :: string !! String of additional data to write
         INTEGER(i4k),          INTENT(IN), OPTIONAL :: offset !! # of leading spaces inside XML block
         END SUBROUTINE element_setup
 
@@ -76,6 +77,13 @@ MODULE XML
         CLASS(xml_element_dt), INTENT(IN) :: me      !! XML element derived type
         INTEGER(i4k),          INTENT(IN) :: unit    !! File unit # to write to
         END SUBROUTINE element_begin
+
+        RECURSIVE MODULE SUBROUTINE element_add_reals (me, var)
+        IMPLICIT NONE
+        !! This adds data inside of an xml element block
+        CLASS(xml_element_dt),   INTENT(INOUT) :: me    !! XML element derived type
+        REAL(r8k), DIMENSION(:), INTENT(IN)    :: var   !! String of data to write
+        END SUBROUTINE element_add_reals
 
         RECURSIVE MODULE SUBROUTINE element_add_data (me, string)
         IMPLICIT NONE

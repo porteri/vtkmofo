@@ -337,11 +337,11 @@ write(0,*) 'filename = ',filename // TRIM(vtk_data%file_extension)
 write(0,*) 'before serial_file add'
         CALL serial_file%add(vtk_data)
 
-        IF (ANY([ PRESENT(celldatasets), PRESENT(celldata), PRESENT(pointdatasets), PRESENT(pointdata) ])) THEN
+!        IF (ANY([ PRESENT(celldatasets), PRESENT(celldata), PRESENT(pointdatasets), PRESENT(pointdata) ])) THEN
             CALL vtk_serial_finalize (finished=.TRUE.)          !! Full legacy write w/ data. Close file.
-        ELSE
-            CALL vtk_serial_finalize (finished=.FALSE.)         !! No data was provided, only geometry info. Do not close file.
-        END IF
+!        ELSE
+!            CALL vtk_serial_finalize (finished=.FALSE.)         !! No data was provided, only geometry info. Do not close file.
+!        END IF
 
         CALL vtk_data%deallocate()
 
@@ -361,7 +361,6 @@ write(0,*) 'before serial_file add'
         IF (.NOT. ALLOCATED(serial_file)) THEN
             ERROR STOP 'Error: calling vtk_serial_append when not yet initialized.'
         ELSE IF (.NOT. ALLOCATED(serial_file%element)) THEN
-!        ELSE IF (.NOT. ALLOCATED(vtk_data)) THEN
             ERROR STOP 'Error: data should not be allocated in call to vtk_serial_full_write.'
         END IF
 
