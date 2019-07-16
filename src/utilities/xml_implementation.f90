@@ -82,7 +82,7 @@ SUBMODULE (XML) XML_implementation
         END DO
 
         ASSOCIATE (my_entry => UBOUND(me%string,DIM=1))
-            ALLOCATE(me%string(my_entry)%text,source='"' // string // '"' // new_line('a'))
+            ALLOCATE(me%string(my_entry)%text,source= string // new_line('a'))
         END ASSOCIATE
 
         END PROCEDURE element_add_reals
