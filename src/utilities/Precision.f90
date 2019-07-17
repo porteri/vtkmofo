@@ -7,6 +7,6 @@ MODULE Precision
     !! This module contains the Precision used for specifying the precision of variables
     !!
     PRIVATE
-    PUBLIC :: i4k, i8k, r8k
+    PUBLIC :: i4k, i8k, r4k, r8k
 
 END MODULE Precision

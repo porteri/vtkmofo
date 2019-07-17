@@ -1,5 +1,5 @@
 MODULE XML
-    USE Precision,       ONLY : i4k, r8k
+    USE Precision,       ONLY : i4k, i8k, r4k, r8k
     USE File_utility,    ONLY : file_data_structure
     USE ISO_FORTRAN_ENV, ONLY : output_unit
     IMPLICIT NONE
@@ -33,8 +33,16 @@ MODULE XML
         PROCEDURE, PRIVATE :: begin => element_begin   !! Write open of element block
         PROCEDURE, PRIVATE :: element_add_data         !! Write raw data inside of element block
         PROCEDURE, PRIVATE :: element_add_element      !! Write another element inside element block
-        PROCEDURE, PRIVATE :: element_add_reals        !! Write reals into a string inside of element block
-        GENERIC, PUBLIC    :: add   => element_add_data, element_add_element, element_add_reals
+        PROCEDURE, PRIVATE :: element_add_real32       !! Write real32 into a string inside of element block
+        PROCEDURE, PRIVATE :: element_add_real64       !! Write real64 into a string inside of element block
+        PROCEDURE, PRIVATE :: element_add_int32        !! Write ints32 into a string inside of element block
+        PROCEDURE, PRIVATE :: element_add_int64        !! Write ints64 into a string inside of element block
+        GENERIC, PUBLIC    :: add   => element_add_data
+        GENERIC, PUBLIC    :: add   => element_add_element
+        GENERIC, PUBLIC    :: add   => element_add_real64
+        GENERIC, PUBLIC    :: add   => element_add_real32
+        GENERIC, PUBLIC    :: add   => element_add_int64
+        GENERIC, PUBLIC    :: add   => element_add_int32
         PROCEDURE, PRIVATE :: end   => element_end     !! Write closure of element block
         PROCEDURE, PUBLIC  :: write => element_write   !! Writes the element block
         PROCEDURE, PRIVATE :: gcc_bug_workaround_deallocate_single
@@ -78,12 +86,33 @@ MODULE XML
         INTEGER(i4k),          INTENT(IN) :: unit    !! File unit # to write to
         END SUBROUTINE element_begin
 
-        RECURSIVE MODULE SUBROUTINE element_add_reals (me, var)
+        RECURSIVE MODULE SUBROUTINE element_add_real32 (me, var)
         IMPLICIT NONE
-        !! This adds data inside of an xml element block
+        !! This adds real double precision data inside of an xml element block
         CLASS(xml_element_dt),   INTENT(INOUT) :: me    !! XML element derived type
-        REAL(r8k), DIMENSION(:), INTENT(IN)    :: var   !! String of data to write
-        END SUBROUTINE element_add_reals
+        REAL(r4k), DIMENSION(:), INTENT(IN)    :: var   !! Data to write
+        END SUBROUTINE element_add_real32
+
+        RECURSIVE MODULE SUBROUTINE element_add_real64 (me, var)
+        IMPLICIT NONE
+        !! This adds real double precision data inside of an xml element block
+        CLASS(xml_element_dt),   INTENT(INOUT) :: me    !! XML element derived type
+        REAL(r8k), DIMENSION(:), INTENT(IN)    :: var   !! Data to write
+        END SUBROUTINE element_add_real64
+
+        RECURSIVE MODULE SUBROUTINE element_add_int32 (me, var)
+        IMPLICIT NONE
+        !! This adds real double precision data inside of an xml element block
+        CLASS(xml_element_dt),      INTENT(INOUT) :: me    !! XML element derived type
+        INTEGER(i4k), DIMENSION(:), INTENT(IN)    :: var   !! Data to write
+        END SUBROUTINE element_add_int32
+
+        RECURSIVE MODULE SUBROUTINE element_add_int64 (me, var)
+        IMPLICIT NONE
+        !! This adds real double precision data inside of an xml element block
+        CLASS(xml_element_dt),      INTENT(INOUT) :: me    !! XML element derived type
+        INTEGER(i8k), DIMENSION(:), INTENT(IN)    :: var   !! Data to write
+        END SUBROUTINE element_add_int64
 
         RECURSIVE MODULE SUBROUTINE element_add_data (me, string)
         IMPLICIT NONE

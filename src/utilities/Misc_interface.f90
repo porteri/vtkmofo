@@ -1,5 +1,5 @@
 MODULE Misc
-    USE Precision, ONLY : i4k, r8k
+    USE Precision, ONLY : i4k, i8k, r4k, r8k
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/13/2017
@@ -16,8 +16,10 @@ MODULE Misc
     END INTERFACE
 
     INTERFACE convert_to_string
-        PROCEDURE :: convert_real_to_string
-        PROCEDURE :: convert_int_to_string
+        PROCEDURE :: convert_real32_to_string
+        PROCEDURE :: convert_real64_to_string
+        PROCEDURE :: convert_int32_to_string
+        PROCEDURE :: convert_int64_to_string
     END INTERFACE convert_to_string
 
     INTEGER(i4k), PARAMETER :: def_len = 1024          !! Default character length for each line in file
@@ -69,19 +71,33 @@ MODULE Misc
 
         END SUBROUTINE get_string_real
 
-        MODULE FUNCTION convert_int_to_string (var) RESULT (string)
+        MODULE FUNCTION convert_real32_to_string (var) RESULT (string)
         IMPLICIT NONE
-        !! Converts an integer to a character string
-        INTEGER(i4k),     INTENT(IN)  :: var      !! Integer variable
+        !! Converts a real32 to a character string
+        REAL(r4k),        INTENT(IN)  :: var      !! Real variable
         CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
-        END FUNCTION convert_int_to_string
+        END FUNCTION convert_real32_to_string
 
-        MODULE FUNCTION convert_real_to_string (var) RESULT (string)
+        MODULE FUNCTION convert_real64_to_string (var) RESULT (string)
         IMPLICIT NONE
-        !! Converts a real to a character string
+        !! Converts a real64 to a character string
         REAL(r8k),        INTENT(IN)  :: var      !! Real variable
         CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
-        END FUNCTION convert_real_to_string
+        END FUNCTION convert_real64_to_string
+
+        MODULE FUNCTION convert_int32_to_string (var) RESULT (string)
+        IMPLICIT NONE
+        !! Converts a real32 to a character string
+        INTEGER(i4k),     INTENT(IN)  :: var      !! Integer variable
+        CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
+        END FUNCTION convert_int32_to_string
+
+        MODULE FUNCTION convert_int64_to_string (var) RESULT (string)
+        IMPLICIT NONE
+        !! Converts a real64 to a character string
+        INTEGER(i8k),     INTENT(IN)  :: var      !! Integer variable
+        CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
+        END FUNCTION convert_int64_to_string
 
         PURE MODULE FUNCTION to_uppercase (string) RESULT (new_string)
         IMPLICIT NONE

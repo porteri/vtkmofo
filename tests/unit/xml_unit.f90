@@ -1,6 +1,7 @@
 PROGRAM xml_test
     USE VTKmofoPassFail, ONLY : all_tests_pass
     USE XML,             ONLY : xml_element_dt, xml_file_dt
+    USE Precision,       ONLY : i4k, i8k, r4k, r8k
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 05/02/2019
@@ -66,6 +67,10 @@ write(0,*) 'before foo2%setup'
 
 write(0,*) 'before foo3%setup'
     CALL foo3%setup('xml_FOO3')
+    CALL foo3%add([ 4_i4k ])
+    CALL foo3%add([ 8_i8k, 8_i8k ])
+    CALL foo3%add([ 4.0_r8k ])
+    CALL foo3%add([ 8.0_r8k, 8.0_r8k ])
     CALL foo2%add(foo3)
 write(0,*) 'before foo%add(foo2)'
     CALL foo%add(foo2)
