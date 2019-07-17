@@ -79,7 +79,6 @@ MODULE VTK_piece_element
     INTERFACE
 
         MODULE SUBROUTINE piece_initialize (me, geometry)
-        USE vtk_datasets, ONLY : dataset
         IMPLICIT NONE
         !1 author: Ian Porter
         !! date: 07/09/2019
@@ -130,7 +129,6 @@ MODULE VTK_piece_element
         END SUBROUTINE DataArray_add_DataArray
 
         MODULE SUBROUTINE Coordinates_initialize (me, geometry)
-        USE vtk_datasets, ONLY : dataset
         IMPLICIT NONE
         !1 author: Ian Porter
         !! date: 07/09/2019
