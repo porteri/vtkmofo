@@ -20,6 +20,7 @@ MODULE Misc
         PROCEDURE :: convert_real64_to_string
         PROCEDURE :: convert_int32_to_string
         PROCEDURE :: convert_int64_to_string
+        PROCEDURE :: convert_logical_to_string
     END INTERFACE convert_to_string
 
     INTEGER(i4k), PARAMETER :: def_len = 1024          !! Default character length for each line in file
@@ -87,17 +88,24 @@ MODULE Misc
 
         MODULE FUNCTION convert_int32_to_string (var) RESULT (string)
         IMPLICIT NONE
-        !! Converts a real32 to a character string
+        !! Converts an int32 to a character string
         INTEGER(i4k),     INTENT(IN)  :: var      !! Integer variable
         CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
         END FUNCTION convert_int32_to_string
 
         MODULE FUNCTION convert_int64_to_string (var) RESULT (string)
         IMPLICIT NONE
-        !! Converts a real64 to a character string
+        !! Converts an int64 to a character string
         INTEGER(i8k),     INTENT(IN)  :: var      !! Integer variable
         CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
         END FUNCTION convert_int64_to_string
+
+        MODULE FUNCTION convert_logical_to_string (var) RESULT (string)
+        IMPLICIT NONE
+        !! Converts a logical to a character string
+        LOGICAL,          INTENT(IN)  :: var      !! Logical variable
+        CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
+        END FUNCTION convert_logical_to_string
 
         PURE MODULE FUNCTION to_uppercase (string) RESULT (new_string)
         IMPLICIT NONE

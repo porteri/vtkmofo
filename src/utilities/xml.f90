@@ -37,12 +37,14 @@ MODULE XML
         PROCEDURE, PRIVATE :: element_add_real64       !! Write real64 into a string inside of element block
         PROCEDURE, PRIVATE :: element_add_int32        !! Write ints32 into a string inside of element block
         PROCEDURE, PRIVATE :: element_add_int64        !! Write ints64 into a string inside of element block
+        PROCEDURE, PRIVATE :: element_add_logical      !! Write logical into a string inside of element block
         GENERIC, PUBLIC    :: add   => element_add_data
         GENERIC, PUBLIC    :: add   => element_add_element
         GENERIC, PUBLIC    :: add   => element_add_real64
         GENERIC, PUBLIC    :: add   => element_add_real32
         GENERIC, PUBLIC    :: add   => element_add_int64
         GENERIC, PUBLIC    :: add   => element_add_int32
+        GENERIC, PUBLIC    :: add   => element_add_logical
         PROCEDURE, PRIVATE :: end   => element_end     !! Write closure of element block
         PROCEDURE, PUBLIC  :: write => element_write   !! Writes the element block
         PROCEDURE, PRIVATE :: gcc_bug_workaround_deallocate_single
@@ -113,6 +115,13 @@ MODULE XML
         CLASS(xml_element_dt),      INTENT(INOUT) :: me    !! XML element derived type
         INTEGER(i8k), DIMENSION(:), INTENT(IN)    :: var   !! Data to write
         END SUBROUTINE element_add_int64
+
+        RECURSIVE MODULE SUBROUTINE element_add_logical (me, var)
+        IMPLICIT NONE
+        !! This adds real double precision data inside of an xml element block
+        CLASS(xml_element_dt), INTENT(INOUT) :: me    !! XML element derived type
+        LOGICAL, DIMENSION(:), INTENT(IN)    :: var   !! Data to write
+        END SUBROUTINE element_add_logical
 
         RECURSIVE MODULE SUBROUTINE element_add_data (me, string)
         IMPLICIT NONE

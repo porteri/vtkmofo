@@ -148,6 +148,17 @@ SUBMODULE (Misc) Misc_implementation
 
         END PROCEDURE convert_int64_to_string
 
+        MODULE PROCEDURE convert_logical_to_string
+        IMPLICIT NONE
+        
+        IF (var) THEN
+            ALLOCATE(string,source='True')
+        ELSE
+            ALLOCATE(string,source='False')
+        END IF
+
+        END PROCEDURE convert_logical_to_string
+
         MODULE PROCEDURE to_uppercase
         IMPLICIT NONE
         !! author: Ian Porter
