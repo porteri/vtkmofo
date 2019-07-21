@@ -64,68 +64,32 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
 
         END PROCEDURE piece_initialize
 
-        MODULE PROCEDURE DataArray_setup
+        MODULE PROCEDURE PointData_setup
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/06/2019
         !!
-        !! This writes the header for a DataArray
+        !! This writes the header for a PointData
         !!
-        CHARACTER(LEN=*), PARAMETER   :: DataArray_name = 'DataArray'
+        CHARACTER(LEN=*), PARAMETER   :: PointData_name = 'PointData'
         CHARACTER(LEN=:), ALLOCATABLE :: string
-        CHARACTER(LEN=:), ALLOCATABLE :: type_string
-        CHARACTER(LEN=:), ALLOCATABLE :: name_string
-        CHARACTER(LEN=:), ALLOCATABLE :: NofC_string
-        CHARACTER(LEN=:), ALLOCATABLE :: format_string
-        CHARACTER(LEN=:), ALLOCATABLE :: offset_string
-        CHARACTER(LEN=:), ALLOCATABLE :: range_min_string
-        CHARACTER(LEN=:), ALLOCATABLE :: range_max_string
+        CHARACTER(LEN=:), ALLOCATABLE :: scalar_string
+
 !        type=”Float32” Name=”vectors” NumberOfComponents=”3”
 !                       format=”appended” offset=”0”/
-        IF (ALLOCATED(me%type)) THEN
-            ALLOCATE(type_string,source=' type="' // me%type // '"')
+        IF (ALLOCATED(me%Scalars)) THEN
+            ALLOCATE(scalar_string,source=' Scalars="' // me%Scalars // '"')
         ELSE
-            ALLOCATE(type_string,source='')
-        END IF
-        IF (ALLOCATED(me%array_name)) THEN
-            ALLOCATE(name_string,source=' Name="' // me%array_name // '"')
-        ELSE
-            ALLOCATE(name_string,source='')
-        END IF
-        IF (ALLOCATED(me%NumberofComponents)) THEN
-            ALLOCATE(NofC_string,source=' NumberOfComponents="' // me%NumberOfComponents // '"')
-        ELSE
-            ALLOCATE(NofC_string,source='')
-        END IF
-        IF (ALLOCATED(me%format)) THEN
-            ALLOCATE(format_string,source=' format="' // me%format // '"')
-        ELSE
-            ALLOCATE(format_string,source='')
-        END IF
-        IF (ALLOCATED(me%array_offset)) THEN
-            ALLOCATE(offset_string,source=' offset="' // me%array_offset // '"')
-        ELSE
-            ALLOCATE(offset_string,source='')
-        END IF
-        IF (ALLOCATED(me%range_min)) THEN
-            ALLOCATE(range_min_string,source=' RangeMin="' // me%range_min // '"')
-        ELSE
-            ALLOCATE(range_min_string,source='')
-        END IF
-        IF (ALLOCATED(me%range_max)) THEN
-            ALLOCATE(range_max_string,source=' RangeMax="' // me%range_max // '"')
-        ELSE
-            ALLOCATE(range_max_string,source='')
+            ALLOCATE(scalar_string,source='')
         END IF
 
-        ALLOCATE(string, source=type_string // name_string // NofC_string // format_string // &
-            &                   offset_string // range_min_string // range_max_string)
+        ALLOCATE(string, source=scalar_string)
 
-        CALL me%setup(name=DataArray_name, string=string)
+        CALL me%setup(name=PointData_name, string=string)
 
-        END PROCEDURE DataArray_setup
+        END PROCEDURE PointData_setup
 
-        MODULE PROCEDURE DataArray_initialize
+        MODULE PROCEDURE PointData_initialize
         USE Misc, ONLY : convert_to_string
         IMPLICIT NONE
         !! author: Ian Porter
@@ -134,37 +98,79 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         !! This converts the VTK_element_dt header into XML format
         !!
 
-        IF (PRESENT(type))               ALLOCATE(me%type,source=type)
-        IF (PRESENT(name))               ALLOCATE(me%array_name,source=name)
-        IF (PRESENT(NumberofComponents)) THEN
-            ALLOCATE(me%NumberOfComponents,source=convert_to_string(NumberOfComponents))
-        END IF
-        IF (PRESENT(format))             ALLOCATE(me%format,source=format)
-        IF (PRESENT(offset))             ALLOCATE(me%array_offset,source=offset)
-        IF (PRESENT(range_min)) THEN
-            ALLOCATE(me%range_min,source=convert_to_string(range_min))
-        END IF
-        IF (PRESENT(range_max)) THEN
-            ALLOCATE(me%range_max,source=convert_to_string(range_max))
-        END IF
+        IF (PRESENT(Scalar))             ALLOCATE(me%Scalars,source=Scalar)
 
-        CALL me%DataArray_setup()
+        CALL me%PointData_setup()
 
-        END PROCEDURE DataArray_initialize
+        END PROCEDURE PointData_initialize
 
-        MODULE PROCEDURE DataArray_add_DataArray
+        MODULE PROCEDURE PointData_add_attribute
         IMPLICIT NONE
-        !! This adds an element inside of an xml element block
-        TYPE(xml_element_dt), DIMENSION(:), ALLOCATABLE :: tmp_element_dt
-! Currently commented out b/c element is not public
-!        IF (.NOT. ALLOCATED(me%element)) THEN
-!            ALLOCATE(me%element(1),source=element)
-!        ELSE
-!            ALLOCATE(tmp_element_dt,source=[ me%element, element ])
-!            CALL MOVE_ALLOC(tmp_element_dt, me%element)
-!        END IF
 
-        END PROCEDURE DataArray_add_DataArray
+        ERROR STOP 'Error: PointData_add_attribute is not yet implemented.'
+
+        END PROCEDURE PointData_add_attribute
+
+        MODULE PROCEDURE PointData_add_attributes
+        IMPLICIT NONE
+
+        ERROR STOP 'Error: PointData_add_attributes is not yet implemented.'
+
+        END PROCEDURE PointData_add_attributes
+        
+        MODULE PROCEDURE CellData_setup
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/06/2019
+        !!
+        !! This writes the header for a CellData
+        !!
+        CHARACTER(LEN=*), PARAMETER   :: CellData_name = 'CellData'
+        CHARACTER(LEN=:), ALLOCATABLE :: string
+        CHARACTER(LEN=:), ALLOCATABLE :: scalar_string
+
+!        type=”Float32” Name=”vectors” NumberOfComponents=”3”
+!                       format=”appended” offset=”0”/
+        IF (ALLOCATED(me%Scalars)) THEN
+            ALLOCATE(scalar_string,source=' Scalars="' // me%Scalars // '"')
+        ELSE
+            ALLOCATE(scalar_string,source='')
+        END IF
+
+        ALLOCATE(string, source=scalar_string)
+
+        CALL me%setup(name=CellData_name, string=string)
+
+        END PROCEDURE CellData_setup
+
+        MODULE PROCEDURE CellData_initialize
+        USE Misc, ONLY : convert_to_string
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! This converts the VTK_element_dt header into XML format
+        !!
+
+        IF (PRESENT(Scalar))             ALLOCATE(me%Scalars,source=Scalar)
+
+        CALL me%CellData_setup()
+
+        END PROCEDURE CellData_initialize
+
+        MODULE PROCEDURE CellData_add_attribute
+        IMPLICIT NONE
+
+        ERROR STOP 'Error: CellData_add_attribute is not yet implemented.'
+
+        END PROCEDURE CellData_add_attribute
+
+        MODULE PROCEDURE CellData_add_attributes
+        IMPLICIT NONE
+
+        ERROR STOP 'Error: CellData_add_attributes is not yet implemented.'
+
+        END PROCEDURE CellData_add_attributes
 
         MODULE PROCEDURE Coordinates_initialize
         USE Precision,    ONLY : i4k, r8k

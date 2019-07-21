@@ -76,8 +76,8 @@ MODULE VTK_Serial_file
         CLASS(dataset),    INTENT(IN)           :: geometry   !! DT of geometry to be printed
         CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !!
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
 
         END SUBROUTINE abs_set_grid_data
 

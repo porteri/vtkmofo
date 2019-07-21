@@ -27,7 +27,7 @@ SUBMODULE (VTK_serial_RectilinearGrid) RectilinearGrid_sub
         TYPE(xml_element_dt) :: grid
         TYPE(Piece_dt) :: piece
 !        TYPE(Coordinates_dt) :: Coordinates
-!        TYPE(CellData_dt) :: CellData_xml
+        TYPE(CellData_dt) :: CellData_xml
         TYPE(PointData_dt) :: PointData_xml
 
 write(0,*) 'start of set_grid_data'
@@ -49,7 +49,22 @@ write(0,*) 'before me%get_range()'
         !! For now, don't allow "pieces" but instead force the piece to be the whole extent
         CALL piece%initialize(geometry)
 
-        CALL PointData_xml%setup(name="PointData")
+        CALL PointData_xml%initialize()
+        CALL CellData_xml%initialize()
+
+!! Something to initialize a DataArray with one of the following:
+
+        IF (PRESENT(celldatasets)) THEN
+            CALL CellData_xml%add_cell(celldatasets)
+        ELSE IF (PRESENT(celldata)) THEN
+            CALL CellData_xml%add_cell(celldata)
+        END IF
+        IF (PRESENT(pointdatasets)) THEN
+            CALL PointData_xml%add_cell(pointdatasets)
+        ELSE IF (PRESENT(pointdata)) THEN
+            CALL PointData_xml%add_cell(pointdata)
+        END IF
+
 
         !! Add any data
         !CALL PointData_xml%add()

@@ -90,6 +90,19 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         END IF
 
         END PROCEDURE check_for_diffs
+
+        MODULE PROCEDURE convert_to_dataarray
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 07/20/2019
+        !!
+        !! Function converts an attribute to a dataarray
+        !!
+        !! array, me
+        CALL array%initialize(name=me%dataname, type=me%datatype)
+
+        END PROCEDURE convert_to_dataarray
+
 !********
 ! Scalars
 !********
@@ -238,7 +251,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         END PROCEDURE scalar_setup
 
-        MODULE PROCEDURE check_for_diffs_scalar
+        MODULE PROCEDURE scalar_check_for_diffs
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
@@ -279,7 +292,28 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_scalar
+        END PROCEDURE scalar_check_for_diffs
+
+        MODULE PROCEDURE scalar_convert_to_dataarray
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 07/20/2019
+        !!
+        !! Function converts an attribute to a dataarray
+        !!
+        INTEGER(i4k) :: i
+        CALL array%initialize(name=me%dataname, type=me%datatype)
+
+        DO i = 1, me%nvals
+            IF (ALLOCATED(me%ints)) THEN
+                CALL array%add([me%ints(i)])
+            ELSE IF (ALLOCATED(me%reals)) THEN
+                CALL array%add([me%reals(i)])
+            END IF
+        END DO
+
+        END PROCEDURE scalar_convert_to_dataarray
+
 !********
 ! Vectors
 !********
@@ -405,7 +439,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         END PROCEDURE vector_setup
 
-        MODULE PROCEDURE check_for_diffs_vector
+        MODULE PROCEDURE vector_check_for_diffs
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
@@ -448,7 +482,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_vector
+        END PROCEDURE vector_check_for_diffs
 !********
 ! Normals
 !********
@@ -574,7 +608,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         END PROCEDURE normal_setup
 
-        MODULE PROCEDURE check_for_diffs_normal
+        MODULE PROCEDURE normal_check_for_diffs
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
@@ -617,7 +651,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_normal
+        END PROCEDURE normal_check_for_diffs
 !********
 ! Textures
 !********
@@ -753,7 +787,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         END PROCEDURE texture_setup
 
-        MODULE PROCEDURE check_for_diffs_texture
+        MODULE PROCEDURE texture_check_for_diffs
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
@@ -796,7 +830,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_texture
+        END PROCEDURE texture_check_for_diffs
 !********
 ! Tensors
 !********
@@ -954,7 +988,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         END PROCEDURE tensor_setup
 
-        MODULE PROCEDURE check_for_diffs_tensor
+        MODULE PROCEDURE tensor_check_for_diffs
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
@@ -1001,7 +1035,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_tensor
+        END PROCEDURE tensor_check_for_diffs
 !********
 ! Fields
 !********
@@ -1105,7 +1139,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
 
         END PROCEDURE field_setup
 
-        MODULE PROCEDURE check_for_diffs_field
+        MODULE PROCEDURE field_check_for_diffs
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
@@ -1148,6 +1182,6 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_field
+        END PROCEDURE field_check_for_diffs
 
 END SUBMODULE vtk_attributes_implementation

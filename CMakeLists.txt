@@ -101,6 +101,7 @@ set(VTKmofo_interfaces
   legacy/VTK_cells_interface.f90
   legacy/VTK_attributes_interface.f90
   legacy/VTK_vars.f90
+  modern/VTK_DataArray.f90
   modern/VTK_piece_element.f90
   modern/VTK_serial_file.f90
   modern/VTK_serial_RectilinearGrid.f90
@@ -117,6 +118,7 @@ set(VTKmofo_implementations
   legacy/VTK_datasets_implementation.f90
   legacy/VTK_interface.f90
   legacy/VTK_io_implementation.f90
+  modern/VTK_DataArray_implementation.f90
   modern/VTK_piece_element_implementation.f90
   modern/VTK_serial_file_implementation.f90
   modern/VTK_serial_RectilinearGrid_implementation.f90

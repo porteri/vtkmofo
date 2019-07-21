@@ -1,6 +1,7 @@
 MODULE vtk_attributes
     USE Precision, ONLY : i4k, r8k
     USE Misc,      ONLY : def_len
+    USE VTK_DataArray_element, ONLY : DataArray_dt
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/13/2017
@@ -31,6 +32,7 @@ MODULE vtk_attributes
         PROCEDURE, NON_OVERRIDABLE,     PUBLIC :: init => initialize  !! Initialize the attribute
         PROCEDURE, PRIVATE :: check_for_diffs
         GENERIC :: OPERATOR(.diff.) => check_for_diffs
+        PROCEDURE :: convert_to_dataarray
     END TYPE attribute
 
     TYPE, EXTENDS(attribute) :: scalar
@@ -43,7 +45,8 @@ MODULE vtk_attributes
         PROCEDURE :: read  => scalar_read
         PROCEDURE :: write => scalar_write
         PROCEDURE :: setup => scalar_setup
-        PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_scalar
+        PROCEDURE, PRIVATE :: check_for_diffs => scalar_check_for_diffs
+        PROCEDURE :: convert_to_dataarray => scalar_convert_to_dataarray
     END TYPE scalar
 
     TYPE, EXTENDS(attribute) :: vector
@@ -54,7 +57,7 @@ MODULE vtk_attributes
         PROCEDURE :: read  => vector_read
         PROCEDURE :: write => vector_write
         PROCEDURE :: setup => vector_setup
-        PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_vector
+        PROCEDURE, PRIVATE :: check_for_diffs => vector_check_for_diffs
     END TYPE vector
 
     TYPE, EXTENDS(attribute) :: normal
@@ -65,7 +68,7 @@ MODULE vtk_attributes
         PROCEDURE :: read  => normal_read
         PROCEDURE :: write => normal_write
         PROCEDURE :: setup => normal_setup
-        PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_normal
+        PROCEDURE, PRIVATE :: check_for_diffs => normal_check_for_diffs
     END TYPE normal
 
     TYPE, EXTENDS(attribute) :: texture
@@ -76,7 +79,7 @@ MODULE vtk_attributes
         PROCEDURE :: read  => texture_read
         PROCEDURE :: write => texture_write
         PROCEDURE :: setup => texture_setup
-        PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_texture
+        PROCEDURE, PRIVATE :: check_for_diffs => texture_check_for_diffs
     END TYPE texture
 
     TYPE :: i_tensor_array
@@ -97,7 +100,7 @@ MODULE vtk_attributes
         PROCEDURE :: read  => tensor_read
         PROCEDURE :: write => tensor_write
         PROCEDURE :: setup => tensor_setup
-        PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_tensor
+        PROCEDURE, PRIVATE :: check_for_diffs => tensor_check_for_diffs
     END TYPE tensor
 
     TYPE :: field_data_array
@@ -116,7 +119,7 @@ MODULE vtk_attributes
         PROCEDURE :: read  => field_read
         PROCEDURE :: write => field_write
         PROCEDURE :: setup => field_setup
-        PROCEDURE, PRIVATE :: check_for_diffs => check_for_diffs_field
+        PROCEDURE, PRIVATE :: check_for_diffs => field_check_for_diffs
     END TYPE field
 
     TYPE :: attributes
@@ -174,7 +177,7 @@ MODULE vtk_attributes
         MODULE FUNCTION check_for_diffs (me, you) RESULT (diffs)
         IMPLICIT NONE
         !! author: Ian Porter
-        !! date: 12/13/2017        
+        !! date: 12/13/2017
         !!
         !! Function checks for differences in an attribute
         !!
@@ -182,6 +185,18 @@ MODULE vtk_attributes
         LOGICAL                      :: diffs
 
         END FUNCTION check_for_diffs
+
+        MODULE FUNCTION convert_to_dataarray (me) RESULT (array)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 07/20/2019
+        !!
+        !! Function converts an attribute to a dataarray
+        !!
+        CLASS(attribute), INTENT(IN) :: me
+        TYPE(DataArray_dt)           :: array
+
+        END FUNCTION convert_to_dataarray
 !********
 ! Scalars
 !********
@@ -226,7 +241,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE scalar_setup
 
-        MODULE FUNCTION check_for_diffs_scalar (me, you) RESULT (diffs)
+        MODULE FUNCTION scalar_check_for_diffs (me, you) RESULT (diffs)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/13/2017
@@ -237,14 +252,26 @@ MODULE vtk_attributes
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs
 
-        END FUNCTION check_for_diffs_scalar
+        END FUNCTION scalar_check_for_diffs
+
+        MODULE FUNCTION scalar_convert_to_dataarray (me) RESULT (array)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 07/20/2019
+        !!
+        !! Function converts an attribute to a dataarray
+        !!
+        CLASS(scalar), INTENT(IN) :: me
+        TYPE(DataArray_dt)        :: array
+
+        END FUNCTION scalar_convert_to_dataarray
 !********
 ! Vectors
 !********
         MODULE SUBROUTINE vector_read (me, unit)
         IMPLICIT NONE
         !! author: Ian Porter
-        !! date: 12/14/2017        
+        !! date: 12/14/2017
         !!
         !! Subroutine performs the read for a vector attribute
         !!
@@ -256,7 +283,7 @@ MODULE vtk_attributes
         MODULE SUBROUTINE vector_write (me, unit)
         IMPLICIT NONE
         !! author: Ian Porter
-        !! date: 12/13/2017        
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a vector attribute
         !!
@@ -280,7 +307,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE vector_setup
 
-        MODULE FUNCTION check_for_diffs_vector (me, you) RESULT (diffs)
+        MODULE FUNCTION vector_check_for_diffs (me, you) RESULT (diffs)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
@@ -291,7 +318,7 @@ MODULE vtk_attributes
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs
 
-        END FUNCTION check_for_diffs_vector
+        END FUNCTION vector_check_for_diffs
 !********
 ! Normals
 !********
@@ -334,7 +361,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE normal_setup
 
-        MODULE FUNCTION check_for_diffs_normal (me, you) RESULT (diffs)
+        MODULE FUNCTION normal_check_for_diffs (me, you) RESULT (diffs)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
@@ -345,7 +372,7 @@ MODULE vtk_attributes
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs
 
-        END FUNCTION check_for_diffs_normal
+        END FUNCTION normal_check_for_diffs
 !********
 ! Textures
 !********
@@ -364,7 +391,7 @@ MODULE vtk_attributes
         MODULE SUBROUTINE texture_write (me, unit)
         IMPLICIT NONE
         !! author: Ian Porter
-        !! date: 12/13/2017        
+        !! date: 12/13/2017
         !!
         !! Subroutine performs the write for a texture attribute
         !!
@@ -388,10 +415,10 @@ MODULE vtk_attributes
 
         END SUBROUTINE texture_setup
 
-        MODULE FUNCTION check_for_diffs_texture (me, you) RESULT (diffs)
+        MODULE FUNCTION texture_check_for_diffs (me, you) RESULT (diffs)
         IMPLICIT NONE
         !! author: Ian Porter
-        !! date: 12/14/2017        
+        !! date: 12/14/2017
         !!
         !! Function checks for differences in a texture attribute
         !!
@@ -399,7 +426,7 @@ MODULE vtk_attributes
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs
 
-        END FUNCTION check_for_diffs_texture
+        END FUNCTION texture_check_for_diffs
 !********
 ! Tensors
 !********
@@ -442,7 +469,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE tensor_setup
 
-        MODULE FUNCTION check_for_diffs_tensor (me, you) RESULT (diffs)
+        MODULE FUNCTION tensor_check_for_diffs (me, you) RESULT (diffs)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
@@ -453,7 +480,7 @@ MODULE vtk_attributes
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs
 
-        END FUNCTION check_for_diffs_tensor
+        END FUNCTION tensor_check_for_diffs
 !********
 ! Fields
 !********
@@ -495,7 +522,7 @@ MODULE vtk_attributes
 
         END SUBROUTINE field_setup
 
-        MODULE FUNCTION check_for_diffs_field (me, you) RESULT (diffs)
+        MODULE FUNCTION field_check_for_diffs (me, you) RESULT (diffs)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/14/2017
@@ -506,7 +533,7 @@ MODULE vtk_attributes
         CLASS(attribute), INTENT(IN) :: you
         LOGICAL                      :: diffs
 
-        END FUNCTION check_for_diffs_field
+        END FUNCTION field_check_for_diffs
 
     END INTERFACE
 

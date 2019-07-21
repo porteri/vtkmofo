@@ -1,7 +1,9 @@
 MODULE VTK_piece_element
-    USE XML,          ONLY : xml_file_dt, xml_element_dt
-    USE Precision,    ONLY : i4k, r8k
-    USE vtk_datasets, ONLY : dataset
+    USE XML,            ONLY : xml_file_dt, xml_element_dt
+    USE Precision,      ONLY : i4k, r8k
+    USE vtk_datasets,   ONLY : dataset
+    USE vtk_attributes, ONLY : attribute, attributes
+    USE VTK_DataArray_element, ONLY : DataArray_dt
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 06/07/2019
@@ -10,7 +12,7 @@ MODULE VTK_piece_element
     !!
 
     PRIVATE
-    PUBLIC :: DataArray_dt, Coordinates_dt, CellData_dt, PointData_dt, Piece_dt
+    PUBLIC :: Coordinates_dt, CellData_dt, PointData_dt, Piece_dt
 
     TYPE, EXTENDS(xml_element_dt) :: Piece_dt
         PRIVATE
@@ -27,23 +29,6 @@ MODULE VTK_piece_element
 !        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: finalize
     END TYPE Piece_dt
 
-    TYPE, EXTENDS(xml_element_dt) :: DataArray_dt
-        !! DataArray derived type
-        PRIVATE
-        CHARACTER(LEN=:), ALLOCATABLE :: type
-        CHARACTER(LEN=:), ALLOCATABLE :: array_name
-        CHARACTER(LEN=:), ALLOCATABLE :: NumberofComponents
-        CHARACTER(LEN=:), ALLOCATABLE :: format
-        CHARACTER(LEN=:), ALLOCATABLE :: array_offset
-        CHARACTER(LEN=:), ALLOCATABLE :: range_min
-        CHARACTER(LEN=:), ALLOCATABLE :: range_max
-    CONTAINS
-        PROCEDURE, NON_OVERRIDABLE :: DataArray_setup
-        PROCEDURE, NON_OVERRIDABLE :: DataArray_initialize
-        GENERIC, PUBLIC :: initialize => DataArray_initialize
-        PROCEDURE :: element_add_element => DataArray_add_DataArray
-    END TYPE DataArray_dt
-
     TYPE, EXTENDS(xml_element_dt) :: PointData_dt
         !! PointData derived type
         PRIVATE
@@ -52,11 +37,32 @@ MODULE VTK_piece_element
         CHARACTER(LEN=:), ALLOCATABLE :: Normals
         CHARACTER(LEN=:), ALLOCATABLE :: Tensors
         CHARACTER(LEN=:), ALLOCATABLE :: TCoords
+    CONTAINS
+        PROCEDURE, NON_OVERRIDABLE :: PointData_setup
+        PROCEDURE, NON_OVERRIDABLE :: PointData_initialize
+        GENERIC, PUBLIC :: initialize => PointData_initialize
+        PROCEDURE, NON_OVERRIDABLE :: PointData_add_attribute
+        PROCEDURE, NON_OVERRIDABLE :: PointData_add_attributes
+        GENERIC, PUBLIC :: add_cell => PointData_add_attribute
+        GENERIC, PUBLIC :: add_cell => PointData_add_attributes
     END TYPE PointData_dt
 
     TYPE, EXTENDS(xml_element_dt) :: CellData_dt
         !! CellData derived type
         PRIVATE
+        CHARACTER(LEN=:), ALLOCATABLE :: Scalars
+        CHARACTER(LEN=:), ALLOCATABLE :: Vectors
+        CHARACTER(LEN=:), ALLOCATABLE :: Normals
+        CHARACTER(LEN=:), ALLOCATABLE :: Tensors
+        CHARACTER(LEN=:), ALLOCATABLE :: TCoords
+    CONTAINS
+        PROCEDURE, NON_OVERRIDABLE :: CellData_setup
+        PROCEDURE, NON_OVERRIDABLE :: CellData_initialize
+        GENERIC, PUBLIC :: initialize => CellData_initialize
+        PROCEDURE, NON_OVERRIDABLE :: CellData_add_attribute
+        PROCEDURE, NON_OVERRIDABLE :: CellData_add_attributes
+        GENERIC, PUBLIC :: add_cell => CellData_add_attribute
+        GENERIC, PUBLIC :: add_cell => CellData_add_attributes
     END TYPE CellData_dt
 
     TYPE, EXTENDS(xml_element_dt) :: Points_dt
@@ -90,43 +96,99 @@ MODULE VTK_piece_element
 
         END SUBROUTINE piece_initialize
 
-        MODULE SUBROUTINE DataArray_setup (me)
+        MODULE SUBROUTINE PointData_setup (me)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
-        !! This writes the header for the DataArray
+        !! This writes the header for the PointData
         !!
-        CLASS(DataArray_dt), INTENT(INOUT) :: me                     !! DataArray DT
+        CLASS(PointData_dt), INTENT(INOUT) :: me                     !! PointData DT
 
-        END SUBROUTINE DataArray_setup
+        END SUBROUTINE PointData_setup
 
-        MODULE SUBROUTINE DataArray_initialize (me, type, name, NumberOfComponents, format, offset, range_min, range_max)
+        MODULE SUBROUTINE PointData_initialize (me, scalar)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
         !! This converts the VTK_element_dt header into XML format
         !!
-        CLASS(DataArray_dt), INTENT(INOUT) :: me                     !! DataArray DT
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: type               !! type of data of a single component
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: name               !! Name of the array
-        INTEGER(i4k),     INTENT(IN), OPTIONAL :: NumberOfComponents !! The # of components per value in the array
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: format             !! The means by whih the data is stored in the file
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: offset             !! If format='appended', this specifies the offset from the
-                                                                     !! beginning of the appended data
-        REAL(r8k),        INTENT(IN), OPTIONAL :: range_min          !! Min value in array of numbers
-        REAL(r8k),        INTENT(IN), OPTIONAL :: range_max          !! Max value in array of numbers
+        CLASS(PointData_dt), INTENT(INOUT) :: me                     !! PointData DT
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: Scalar             !! Name of scalar component
 
-        END SUBROUTINE DataArray_initialize
+        END SUBROUTINE PointData_initialize
 
-        MODULE SUBROUTINE DataArray_add_DataArray (me, element)
+        RECURSIVE MODULE SUBROUTINE PointData_add_attribute (me, cell)
         IMPLICIT NONE
-        !! This adds a DataArray inside of a xml DataArray block
-        CLASS(DataArray_dt),   INTENT(INOUT) :: me       !! XML element derived type
-        CLASS(xml_element_dt), INTENT(IN)    :: element  !! Inner XML element
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! This converts the VTK_element_dt header into XML format
+        !!
+        CLASS(PointData_dt), INTENT(INOUT) :: me               !! PointData DT
+        CLASS(attribute),    INTENT(IN)    :: cell             !! Name of scalar component
 
-        END SUBROUTINE DataArray_add_DataArray
+        END SUBROUTINE PointData_add_attribute
+
+        RECURSIVE MODULE SUBROUTINE PointData_add_attributes (me, cell)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! This converts the VTK_element_dt header into XML format
+        !!
+        CLASS(PointData_dt),            INTENT(INOUT) :: me               !! PointData DT
+        TYPE(attributes), DIMENSION(:), INTENT(IN)    :: cell   !! Name of scalar component
+
+        END SUBROUTINE PointData_add_attributes
+
+        MODULE SUBROUTINE CellData_setup (me)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! This writes the header for the CellData
+        !!
+        CLASS(CellData_dt), INTENT(INOUT) :: me                     !! CellData DT
+
+        END SUBROUTINE CellData_setup
+
+        MODULE SUBROUTINE CellData_initialize (me, scalar)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! This converts the VTK_element_dt header into XML format
+        !!
+        CLASS(CellData_dt), INTENT(INOUT) :: me                     !! CellData DT
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: Scalar             !! Name of scalar component
+
+        END SUBROUTINE CellData_initialize
+
+        MODULE SUBROUTINE CellData_add_attribute (me, cell)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! This converts the VTK_element_dt header into XML format
+        !!
+        CLASS(CellData_dt), INTENT(INOUT) :: me               !! PointData DT
+        CLASS(attribute),   INTENT(IN)    :: cell             !! Name of scalar component
+
+        END SUBROUTINE CellData_add_attribute
+
+        MODULE SUBROUTINE CellData_add_attributes (me, cell)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! This converts the VTK_element_dt header into XML format
+        !!
+        CLASS(CellData_dt),             INTENT(INOUT) :: me     !! PointData DT
+        TYPE(attributes), DIMENSION(:), INTENT(IN)    :: cell   !! Name of scalar component
+
+        END SUBROUTINE CellData_add_attributes
 
         MODULE SUBROUTINE Coordinates_initialize (me, geometry)
         IMPLICIT NONE

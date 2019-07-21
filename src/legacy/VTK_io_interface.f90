@@ -38,8 +38,8 @@ MODULE vtk_io
         CLASS(dataset),    INTENT(IN)           :: geometry   !! DT of geometry to be printed
         CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !!
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
         INTEGER(i4k),      INTENT(IN), OPTIONAL :: unit        !! VTK file unit
         INTEGER(i4k),      INTENT(IN), OPTIONAL :: data_type   !! Identifier to write in ascii or Binary
         LOGICAL,           INTENT(IN), OPTIONAL :: multiple_io !! Identifier as to whether there will be multiple files written
@@ -58,8 +58,8 @@ MODULE vtk_io
         !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !!
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
 
         END SUBROUTINE vtk_legacy_append
 
@@ -85,8 +85,8 @@ MODULE vtk_io
         CLASS(dataset),    INTENT(INOUT)           :: geometry   !! DT of geometry to be printed
         CLASS(attribute),  INTENT(INOUT), OPTIONAL :: celldata   !!
         CLASS(attribute),  INTENT(INOUT), OPTIONAL :: pointdata  !!
-        CLASS(attributes), DIMENSION(:), INTENT(INOUT), OPTIONAL :: celldatasets  !!
-        CLASS(attributes), DIMENSION(:), INTENT(INOUT), OPTIONAL :: pointdatasets !!
+        TYPE(attributes), DIMENSION(:), INTENT(INOUT), OPTIONAL :: celldatasets  !!
+        TYPE(attributes), DIMENSION(:), INTENT(INOUT), OPTIONAL :: pointdatasets !!
         INTEGER(i4k),      INTENT(IN)           :: unit          !! VTK file unit
         INTEGER(i4k),      INTENT(OUT), OPTIONAL :: data_type    !! Identifier as to whether VTK file is ascii or Binary
         CHARACTER(LEN=*),  INTENT(IN),  OPTIONAL :: filename     !! VTK filename
@@ -105,8 +105,8 @@ MODULE vtk_io
         CLASS(dataset),    INTENT(IN)           :: geometry   !! DT of geometry to be printed
         CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !!
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
         INTEGER(i4k),      INTENT(IN), OPTIONAL :: unit        !! VTK file unit
         INTEGER(i4k),      INTENT(IN), OPTIONAL :: data_type   !! Identifier to write in ascii or Binary
         LOGICAL,           INTENT(IN), OPTIONAL :: multiple_io !! Identifier as to whether there will be multiple files written
@@ -125,8 +125,8 @@ MODULE vtk_io
         !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !!
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
-        CLASS(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
 
         END SUBROUTINE vtk_serial_append
 
