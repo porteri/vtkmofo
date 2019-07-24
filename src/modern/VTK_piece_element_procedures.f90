@@ -64,6 +64,21 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
 
         END PROCEDURE piece_initialize
 
+        MODULE PROCEDURE deallocate_piece_dt
+        IMPLICIT NONE
+        !1 author: Ian Porter
+        !! date: 07/23/2019
+        !!
+        !! GCC bug work around to explicitly deallocate the strings
+        !!
+        IF (ALLOCATED(me%type))           DEALLOCATE(me%type)
+        IF (ALLOCATED(me%version))        DEALLOCATE(me%version)
+        IF (ALLOCATED(me%byte_order))     DEALLOCATE(me%byte_order)
+        IF (ALLOCATED(me%compression))    DEALLOCATE(me%compression)
+        IF (ALLOCATED(me%file_extension)) DEALLOCATE(me%file_extension)
+
+        END PROCEDURE deallocate_piece_dt
+
         MODULE PROCEDURE PointData_setup
         IMPLICIT NONE
         !! author: Ian Porter
@@ -117,7 +132,7 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         ERROR STOP 'Error: PointData_add_attributes is not yet implemented.'
 
         END PROCEDURE PointData_add_attributes
-        
+
         MODULE PROCEDURE CellData_setup
         IMPLICIT NONE
         !! author: Ian Porter

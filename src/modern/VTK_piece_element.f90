@@ -24,9 +24,11 @@ MODULE VTK_piece_element
     CONTAINS
 !        PROCEDURE, NON_OVERRIDABLE :: vtk_element_setup
         PROCEDURE, NON_OVERRIDABLE, PUBLIC :: initialize => piece_initialize
-!        PROCEDURE(abs_set_grid_data), DEFERRED :: set_grid_data
-!        GENERIC, PUBLIC :: set => set_grid_data
+!        PROCEDURE(abs_set_grid), DEFERRED :: set_grid
+!        GENERIC, PUBLIC :: set => set_grid
 !        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: finalize
+        PROCEDURE, PUBLIC :: deallocate_piece_dt
+!        GENERIC, PUBLIC :: deallocate => deallocate_piece_dt
     END TYPE Piece_dt
 
     TYPE, EXTENDS(xml_element_dt) :: PointData_dt
@@ -95,6 +97,17 @@ MODULE VTK_piece_element
         CLASS(dataset),  INTENT(IN)    :: geometry
 
         END SUBROUTINE piece_initialize
+
+        MODULE SUBROUTINE deallocate_piece_dt (me)
+        IMPLICIT NONE
+        !1 author: Ian Porter
+        !! date: 07/23/2019
+        !!
+        !! GCC bug work around to explicitly deallocate the strings
+        !!
+        CLASS(Piece_dt), INTENT(INOUT) :: me
+
+        END SUBROUTINE deallocate_piece_dt
 
         MODULE SUBROUTINE PointData_setup (me)
         IMPLICIT NONE

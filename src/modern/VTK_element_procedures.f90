@@ -1,4 +1,4 @@
-SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
+SUBMODULE (VTK_element) VTK_element_procedures
     USE Precision, ONLY : i4k
     IMPLICIT NONE
     !! author: Ian Porter
@@ -64,6 +64,53 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
 
         END PROCEDURE initialize
 
+        MODULE PROCEDURE set_grid
+        IMPLICIT NONE
+        ERROR STOP 'Error in set_grid: Generic procedure is not defined.'
+        END PROCEDURE set_grid
+
+        MODULE PROCEDURE add_data
+        USE VTK_piece_element, ONLY : CellData_dt, PointData_dt
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 05/07/2019
+        !!
+        !! This is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
+        !!
+        TYPE(CellData_dt)  :: CellData_xml
+        TYPE(PointData_dt) :: PointData_xml
+
+        IF (PRESENT(celldatasets)) THEN
+            CALL CellData_xml%initialize()
+            CALL CellData_xml%add_cell(celldatasets)
+            write(0,*) 'before call piece%add(CellData_xml)'
+            CALL me%piece%add(CellData_xml)
+        ELSE IF (PRESENT(celldata)) THEN
+            CALL CellData_xml%initialize()
+            CALL CellData_xml%add_cell(celldata)
+            write(0,*) 'before call piece%add(CellData_xml)'
+            CALL me%piece%add(CellData_xml)
+        END IF
+        IF (PRESENT(pointdatasets)) THEN
+            write(0,*) 'pointdatasets is present. before call pointdata_xml%initialize'
+            CALL PointData_xml%initialize()
+            CALL PointData_xml%add_cell(pointdatasets)
+            write(0,*) 'before call piece%add(PointData_xml)'
+            CALL me%piece%add(PointData_xml)
+        ELSE IF (PRESENT(pointdata)) THEN
+            CALL PointData_xml%initialize()
+            CALL PointData_xml%add_cell(pointdata)
+            write(0,*) 'before call piece%add(PointData_xml)'
+            CALL me%piece%add(PointData_xml)
+        END IF
+
+        write(0,*) 'before call PointData_xml%deallocate()'
+        CALL PointData_xml%deallocate()
+        write(0,*) 'before call CellData_xml%deallocate()'
+        CALL CellData_xml%deallocate()
+
+        END PROCEDURE add_data
+
         MODULE PROCEDURE finalize
         IMPLICIT NONE
         !! author: Ian Porter
@@ -71,7 +118,7 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
         !!
         !! This writes the end of the file
         !!
-
+!        CALL me%add(me%piece)
 !        WRITE(me%unit,'(a)') '</VTKFile>'
 
         END PROCEDURE finalize
@@ -91,7 +138,11 @@ write(0,*) 'start of gcc_bug_workaround_deallocate_vtk_element_single'
         IF (ALLOCATED(foo%compression))    DEALLOCATE(foo%compression)
         IF (ALLOCATED(foo%file_extension)) DEALLOCATE(foo%file_extension)
         IF (ALLOCATED(foo%filename))       DEALLOCATE(foo%filename)
+        !CALL foo%piece%deallocate_piece_dt()
+        CALL foo%piece%deallocate_vtk()
+        CALL foo%piece%deallocate()
+        CALL foo%deallocate()
 write(0,*) 'end of gcc_bug_workaround_deallocate_vtk_element_single'
         END PROCEDURE gcc_bug_workaround_deallocate_vtk_element_single
 
-END SUBMODULE VTK_Serial_file_implementation
+END SUBMODULE VTK_element_procedures

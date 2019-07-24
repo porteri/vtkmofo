@@ -300,11 +300,9 @@ SUBMODULE (XML) XML_implementation
         !!
         !! Establishes the XML file information
         !!
-write(0,*) 'in xml_file_setup'
-write(0,*) 'filename = ',TRIM(filename)
-write(0,*) 'me%filename = ',me%filename
+
         ALLOCATE(me%filename, source=TRIM(filename))
-        write(0,*) 'before open_status'
+
         IF (PRESENT(open_status)) THEN
             ALLOCATE(me%open_status,source=open_status)
         ELSE
@@ -315,12 +313,12 @@ write(0,*) 'me%filename = ',me%filename
         ELSE
             ALLOCATE(me%close_status, source='KEEP')
         END IF
-write(0,*) 'before me%form'
+
         ALLOCATE(me%form, source='FORMATTED')    !! Ignore the user-defined form, even if present
         ALLOCATE(me%access, source='SEQUENTIAL') !! Ignore the user-defined access, even if present
-write(0,*) 'before allocation of prior_offset'
+
         IF (.NOT. ALLOCATED(prior_offset)) ALLOCATE(prior_offset,source='')
-write(0,*) 'end of xml_file_setup'
+
         END PROCEDURE XML_file_setup
 
         MODULE PROCEDURE XML_begin
@@ -358,21 +356,17 @@ write(0,*) 'end of xml_file_setup'
             SELECT TYPE (element)
             CLASS IS (xml_element_dt)
                 CALL gcc_bug_workaround_allocate(me%element, element)
-                write(0,*) 'after 1st allocation. size(me%element) = ', size(me%element)
             END SELECT
         ELSE
             SELECT TYPE (element)
             CLASS IS (xml_element_dt)
-write(0,*) 'BEFORE CALL gcc_bug_workaround_allocate(tmp_element_dt, oldfoo=gcc_bug_tmp_element_dt)'
                 CALL gcc_bug_workaround_allocate(tmp_element_dt, oldfoo=me%element)
-write(0,*) 'BEFORE CALL gcc_bug_workaround_allocate(gcc_bug_tmp_element_dt, element, tmp_element_dt)'
                 CALL gcc_bug_workaround_allocate(me%element, element, tmp_element_dt)
-write(0,*) 'AFTER CALL gcc_bug_workaround_allocate(gcc_bug_tmp_element_dt, element, tmp_element_dt)'
             END SELECT
         END IF
-write(0,*) 'BEFORE CALL gcc_bug_workaround_deallocate (tmp_element_dt). size= ',SIZE(tmp_element_dt)
+
         CALL gcc_bug_workaround_deallocate (tmp_element_dt)
-write(0,*) 'AFTER CALL gcc_bug_workaround_deallocate (tmp_element_dt)'
+
         END PROCEDURE XML_add
 
         MODULE PROCEDURE XML_end
@@ -395,18 +389,17 @@ write(0,*) 'AFTER CALL gcc_bug_workaround_deallocate (tmp_element_dt)'
         !! Writes the XMl file
         !!
         INTEGER(i4k) :: i
-write(0,*) 'start of procedure xml_write'
-write(0,*) 'before me%begin'
+
         CALL me%begin()
-write(0,*) 'before allocate me%element'
+
 !        ALLOCATE(me%element, source=gcc_bug_tmp_element_dt)
-write(0,*) 'before do i = 1, size(me%element). size = ',size(me%element)
+
         DO i = 1, SIZE(me%element)
             CALL me%element(i)%write(me%unit)
         END DO
-write(0,*) 'before call me%end'
+
         CALL me%end()
-write(0,*) 'end of procedure xml_write'
+
         END PROCEDURE xml_write
 
         MODULE PROCEDURE gcc_bug_workaround_allocate
@@ -451,29 +444,25 @@ write(0,*) 'end of procedure xml_write'
         IMPLICIT NONE
         !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         INTEGER(i4k) :: i
-write(0,*) 'start of gcc_bug_workaround_deallocate_array'
+
         IF (ALLOCATED(me)) THEN
             DO i = LBOUND(me,DIM=1), UBOUND(me,DIM=1)
-WRITE(0,*) 'DEALLOCATING ARRAY # ',i
+
                 CALL gcc_bug_workaround_deallocate(me(i))
             END DO
             IF (ALLOCATED(me)) DEALLOCATE(me)
         END IF
-write(0,*) 'end of gcc_bug_workaround_deallocate_array'
+
         END PROCEDURE gcc_bug_workaround_deallocate_array
 
         MODULE PROCEDURE gcc_bug_workaround_deallocate_single
         IMPLICIT NONE
         !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         INTEGER(i4k) :: i
-write(0,*) 'start of gcc_bug_workaround_deallocate_single'
-write(0,*) 'before me%name'
+
         IF (ALLOCATED(me%name))            DEALLOCATE(me%name)
-write(0,*) 'before me%offset'
         IF (ALLOCATED(me%offset))          DEALLOCATE(me%offset)
-write(0,*) 'before me%additional_data'
         IF (ALLOCATED(me%additional_data)) DEALLOCATE(me%additional_data)
-write(0,*) 'before me%string'
         IF (ALLOCATED(me%string)) THEN
             DO i = LBOUND(me%string,DIM=1), UBOUND(me%string,DIM=1)
                 CALL gcc_bug_deallocate_string_dt(me%string(i))
@@ -481,14 +470,14 @@ write(0,*) 'before me%string'
             END DO
             IF (ALLOCATED(me%string)) DEALLOCATE(me%string)
         END IF
-write(0,*) 'before me%element'
+
         IF (ALLOCATED(me%element)) THEN
             DO i = LBOUND(me%element,DIM=1), UBOUND(me%element,DIM=1)
                 CALL gcc_bug_workaround_deallocate (me%element(i))
             END DO
             IF (ALLOCATED(me%element)) DEALLOCATE(me%element)
         END IF
-write(0,*) 'end of gcc_bug_workaround_deallocate_single'
+
         END PROCEDURE gcc_bug_workaround_deallocate_single
 
         MODULE PROCEDURE gcc_bug_deallocate_string_dt

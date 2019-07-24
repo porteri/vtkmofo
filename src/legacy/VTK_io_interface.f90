@@ -33,7 +33,7 @@ MODULE vtk_io
         !! author: Ian Porter
         !! date: 12/1/2017
         !!
-        !! This subroutines writes the legacy vtk output file
+        !! This subroutine writes the legacy vtk output file
         !!
         CLASS(dataset),    INTENT(IN)           :: geometry   !! DT of geometry to be printed
         CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
@@ -54,7 +54,7 @@ MODULE vtk_io
         !! author: Ian Porter
         !! date: 12/1/2017
         !!
-        !! This subroutines appends data to the legacy vtk output file
+        !! This subroutine appends data to the legacy vtk output file
         !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !!
@@ -68,7 +68,7 @@ MODULE vtk_io
         !! author: Ian Porter
         !! date: 06/03/2019
         !!
-        !! This subroutines is a finalizer for the legacy vtk file write
+        !! This subroutine is a finalizer for the legacy vtk file write
         !!
         LOGICAL, INTENT(IN) :: finished  !! Finished flag
 
@@ -80,7 +80,7 @@ MODULE vtk_io
         !! author: Ian Porter
         !! date: 12/20/2017
         !!
-        !! This subroutines reads the legacy vtk output file
+        !! This subroutine reads the legacy vtk output file
         !!
         CLASS(dataset),    INTENT(INOUT)           :: geometry   !! DT of geometry to be printed
         CLASS(attribute),  INTENT(INOUT), OPTIONAL :: celldata   !!
@@ -100,7 +100,7 @@ MODULE vtk_io
         !! author: Ian Porter
         !! date: 5/08/2019
         !!
-        !! This subroutines writes the modern serial vtk output file
+        !! This subroutine writes the modern serial vtk output file
         !!
         CLASS(dataset),    INTENT(IN)           :: geometry   !! DT of geometry to be printed
         CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
@@ -121,7 +121,7 @@ MODULE vtk_io
         !! author: Ian Porter
         !! date: 06/24/2019
         !!
-        !! This subroutines appends data to the legacy vtk output file
+        !! This subroutine appends data to the legacy vtk output file
         !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
         CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !!
@@ -135,7 +135,7 @@ MODULE vtk_io
         !! author: Ian Porter
         !! date: 06/24/2019
         !!
-        !! This subroutines is a finalizer for the legacy vtk file write
+        !! This subroutine is a finalizer for the legacy vtk file write
         !!
         LOGICAL, INTENT(IN) :: finished  !! Finished flag
 
