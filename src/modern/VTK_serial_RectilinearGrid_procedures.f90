@@ -29,8 +29,9 @@ SUBMODULE (VTK_serial_RectilinearGrid) RectilinearGrid_sub
 
 write(0,*) 'start of set_grid'
         CALL me%initialize(type=grid_type,file_extension=file_extension)
-write(0,*) 'before me%get_range()'
+write(0,*) 'before me%get_range_cnt()'
         range = geometry%get_range_cnt()
+write(0,*) 'after me%get_range_cnt()'
         DO i = 1, 3
             DO j = 1, 2
                 WRITE(tmp_string,'(i10)') range(j,i)
@@ -41,11 +42,11 @@ write(0,*) 'before me%get_range()'
                 END IF
             END DO
         END DO
-
+write(0,*) 'before call grid%setup'
         CALL grid%setup(name=grid_type,string= "WholeExtent=" // '"' // range_string // '"')
+write(0,*) 'before piece%initialize(geometry)'
         !! For now, don't allow "pieces" but instead force the piece to be the whole extent
         CALL piece%initialize(geometry)
-
 write(0,*) 'before call grid%add(piece)'
         CALL grid%add(piece)
 write(0,*) 'before call me%add(grid)'

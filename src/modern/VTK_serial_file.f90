@@ -3,7 +3,7 @@ MODULE VTK_Serial_file
     USE vtk_attributes, ONLY : attribute, attributes
     USE vtk_datasets,   ONLY : dataset
     USE VTK_piece_element, ONLY : piece_dt
-    USE VTK_element, ONLY : VTK_element_dt
+    USE VTK_element,    ONLY : VTK_element_dt
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 05/06/2019
@@ -18,7 +18,7 @@ MODULE VTK_Serial_file
         CLASS(VTK_element_dt), ALLOCATABLE :: VTK_data
     CONTAINS
         PROCEDURE, PRIVATE :: deallocate_VTK_file_dt
-        GENERIC, PUBLIC :: deallocate_file => deallocate_VTK_file_dt
+        GENERIC, PUBLIC :: me_deallocate => deallocate_VTK_file_dt
     END TYPE VTK_file_dt
 
     TYPE(VTK_file_dt), ALLOCATABLE :: serial_file    !! Serial VTK file

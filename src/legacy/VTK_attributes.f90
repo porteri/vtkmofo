@@ -33,6 +33,7 @@ MODULE vtk_attributes
         PROCEDURE, PRIVATE :: check_for_diffs
         GENERIC :: OPERATOR(.diff.) => check_for_diffs
         PROCEDURE :: convert_to_dataarray
+        !PROCEDURE(abs_get_name), DEFERRED, PUBLIC :: get_name
     END TYPE attribute
 
     TYPE, EXTENDS(attribute) :: scalar

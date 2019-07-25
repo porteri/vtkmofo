@@ -125,4 +125,20 @@ SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
 
         END PROCEDURE DataArray_add_DataArray
 
+        MODULE PROCEDURE DataArray_deallocate
+        IMPLICIT NONE
+        !! This explicitly deallocates a DataArray
+
+        IF (ALLOCATED(me%type))               DEALLOCATE(me%type)
+        IF (ALLOCATED(me%array_name))         DEALLOCATE(me%array_name)
+        IF (ALLOCATED(me%NumberOfComponents)) DEALLOCATE(me%NumberofComponents)
+        IF (ALLOCATED(me%format))             DEALLOCATE(me%format)
+        IF (ALLOCATED(me%array_offset))       DEALLOCATE(me%array_offset)
+        IF (ALLOCATED(me%range_min))          DEALLOCATE(me%range_min)
+        IF (ALLOCATED(me%range_max))          DEALLOCATE(me%range_max)
+
+        CALL me%deallocate()
+
+        END PROCEDURE DataArray_deallocate
+
 END SUBMODULE VTK_DataArray_element_implementation

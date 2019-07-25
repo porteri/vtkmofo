@@ -57,11 +57,13 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
 
         !! For now, don't allow "pieces" but instead force the piece to be the whole extent
         CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
-
+write(0,*) 'before call coordinates%initialize(geometry)'
         CALL coordinates%initialize(geometry)
 
         CALL me%add(coordinates)
 
+        CALL coordinates%deallocate()
+write(0,*) 'before end procedure piece_initialize'
         END PROCEDURE piece_initialize
 
         MODULE PROCEDURE deallocate_piece_dt
@@ -76,6 +78,8 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         IF (ALLOCATED(me%byte_order))     DEALLOCATE(me%byte_order)
         IF (ALLOCATED(me%compression))    DEALLOCATE(me%compression)
         IF (ALLOCATED(me%file_extension)) DEALLOCATE(me%file_extension)
+
+        CALL me%deallocate() !! Deallocates the XML pieces
 
         END PROCEDURE deallocate_piece_dt
 
@@ -121,15 +125,30 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
 
         MODULE PROCEDURE PointData_add_attribute
         IMPLICIT NONE
+        !TYPE(DataArray) :: data
 
+        !! Need to get the name of the cell and type of the cell
+        !! name = cell%dataname
+        !! type = cell%datatype
+        !! and append this to the text line for the pointdata
+        !!
+        !! Then need to get the type, etc
+        !! Then need to get the data
+write(0,*) 'in PointData_add_attribute. Before call me%add'
+        CALL me%add(cell%convert_to_dataarray())
         ERROR STOP 'Error: PointData_add_attribute is not yet implemented.'
 
         END PROCEDURE PointData_add_attribute
 
         MODULE PROCEDURE PointData_add_attributes
         IMPLICIT NONE
+        INTEGER(i4k) :: i
+write(0,*) 'in PointData_add_attributes. Before call me%add'
+        DO i = 1, SIZE(cell)
+            CALL me%add(cell(i)%attribute%convert_to_dataarray())
+        END DO
 
-        ERROR STOP 'Error: PointData_add_attributes is not yet implemented.'
+!        ERROR STOP 'Error: PointData_add_attributes is not yet implemented.'
 
         END PROCEDURE PointData_add_attributes
 

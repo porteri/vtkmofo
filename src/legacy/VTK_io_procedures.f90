@@ -309,11 +309,11 @@ SUBMODULE (vtk_io) vtk_io_implementation
         !!
         !! This subroutine writes the modern serial vtk output file
         !!
-        CLASS(VTK_element_dt), ALLOCATABLE :: vtk_data
-
-        IF (ALLOCATED(vtk_data)) THEN
-            ERROR STOP 'Error: data should not be allocated in call to vtk_serial_full_write.'
-        END IF
+!        CLASS(VTK_element_dt), ALLOCATABLE :: vtk_data
+!
+!        IF (ALLOCATED(vtk_data)) THEN
+!            ERROR STOP 'Error: data should not be allocated in call to vtk_serial_full_write.'
+!        END IF
 
         ALLOCATE(serial_file)
 
@@ -346,7 +346,7 @@ write(0,*) 'before serial_file setup'
             CALL vtk_serial_finalize (finished=.FALSE.)         !! No data was provided, only geometry info. Do not close file.
         END IF
 
-        CALL vtk_data%deallocate()
+!        CALL vtk_data%deallocate()
 
         END PROCEDURE vtk_serial_full_write
 
@@ -378,7 +378,7 @@ write(0,*) 'before serial_file add'
 write(0,*) 'before serial_file%write()'
             CALL serial_file%write()
 write(0,*) 'before serial_file%deallocate()'
-            CALL serial_file%deallocate()
+            CALL serial_file%me_deallocate()
 write(0,*) 'before de-allocation of serial_file'
             IF (ALLOCATED(serial_file)) DEALLOCATE(serial_file)
         END IF

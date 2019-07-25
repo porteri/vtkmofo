@@ -83,27 +83,31 @@ SUBMODULE (VTK_element) VTK_element_procedures
         IF (PRESENT(celldatasets)) THEN
             CALL CellData_xml%initialize()
             CALL CellData_xml%add_cell(celldatasets)
-            write(0,*) 'before call piece%add(CellData_xml)'
+write(0,*) 'in procedure add_data, before call piece%add(CellData_xml)'
             CALL me%piece%add(CellData_xml)
         ELSE IF (PRESENT(celldata)) THEN
             CALL CellData_xml%initialize()
             CALL CellData_xml%add_cell(celldata)
-            write(0,*) 'before call piece%add(CellData_xml)'
+write(0,*) 'in procedure add_data, before call piece%add(CellData_xml)'
             CALL me%piece%add(CellData_xml)
         END IF
         IF (PRESENT(pointdatasets)) THEN
-            write(0,*) 'pointdatasets is present. before call pointdata_xml%initialize'
+write(0,*) 'pointdatasets is present. before call pointdata_xml%initialize'
             CALL PointData_xml%initialize()
             CALL PointData_xml%add_cell(pointdatasets)
-            write(0,*) 'before call piece%add(PointData_xml)'
+write(0,*) 'in procedure add_data, before call me%piece%add(PointData_xml)'
+            IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
             CALL me%piece%add(PointData_xml)
+write(0,*) 'after call me%piece%add(pointdata_xml)'
         ELSE IF (PRESENT(pointdata)) THEN
             CALL PointData_xml%initialize()
             CALL PointData_xml%add_cell(pointdata)
-            write(0,*) 'before call piece%add(PointData_xml)'
+write(0,*) 'in procedure add_data, before call piece%add(PointData_xml)'
+            IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
             CALL me%piece%add(PointData_xml)
         END IF
 
+        CALL me%add(me%piece)
         write(0,*) 'before call PointData_xml%deallocate()'
         CALL PointData_xml%deallocate()
         write(0,*) 'before call CellData_xml%deallocate()'
@@ -139,8 +143,10 @@ write(0,*) 'start of gcc_bug_workaround_deallocate_vtk_element_single'
         IF (ALLOCATED(foo%file_extension)) DEALLOCATE(foo%file_extension)
         IF (ALLOCATED(foo%filename))       DEALLOCATE(foo%filename)
         !CALL foo%piece%deallocate_piece_dt()
-        CALL foo%piece%deallocate_vtk()
-        CALL foo%piece%deallocate()
+        IF (ALLOCATED(foo%piece)) THEN
+            CALL foo%piece%deallocate_vtk()
+            CALL foo%piece%deallocate()
+        END IF
         CALL foo%deallocate()
 write(0,*) 'end of gcc_bug_workaround_deallocate_vtk_element_single'
         END PROCEDURE gcc_bug_workaround_deallocate_vtk_element_single
