@@ -1,9 +1,10 @@
 MODULE VTK_piece_element
-    USE XML,            ONLY : xml_file_dt, xml_element_dt
     USE Precision,      ONLY : i4k, r8k
+    USE XML,            ONLY : xml_element_dt
     USE vtk_datasets,   ONLY : dataset
     USE vtk_attributes, ONLY : attribute, attributes
     USE VTK_DataArray_element, ONLY : DataArray_dt
+    USE VTK_element,    ONLY : VTK_element_dt
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 06/07/2019
@@ -14,24 +15,7 @@ MODULE VTK_piece_element
     PRIVATE
     PUBLIC :: Coordinates_dt, CellData_dt, PointData_dt, Piece_dt
 
-    TYPE, EXTENDS(xml_element_dt) :: Piece_dt
-        PRIVATE
-        CHARACTER(LEN=:), ALLOCATABLE :: type
-        CHARACTER(LEN=:), ALLOCATABLE :: version
-        CHARACTER(LEN=:), ALLOCATABLE :: byte_order
-        CHARACTER(LEN=:), ALLOCATABLE :: compression
-        CHARACTER(LEN=:), ALLOCATABLE :: file_extension
-    CONTAINS
-!        PROCEDURE, NON_OVERRIDABLE :: vtk_element_setup
-        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: initialize => piece_initialize
-!        PROCEDURE(abs_set_grid), DEFERRED :: set_grid
-!        GENERIC, PUBLIC :: set => set_grid
-!        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: finalize
-        PROCEDURE, PUBLIC :: deallocate_piece_dt
-!        GENERIC, PUBLIC :: deallocate => deallocate_piece_dt
-    END TYPE Piece_dt
-
-    TYPE, EXTENDS(xml_element_dt) :: PointData_dt
+    TYPE, EXTENDS(xml_element_dt) :: Data_dt
         !! PointData derived type
         PRIVATE
         CHARACTER(LEN=:), ALLOCATABLE :: Scalars
@@ -40,31 +24,22 @@ MODULE VTK_piece_element
         CHARACTER(LEN=:), ALLOCATABLE :: Tensors
         CHARACTER(LEN=:), ALLOCATABLE :: TCoords
     CONTAINS
-        PROCEDURE, NON_OVERRIDABLE :: PointData_setup
-        PROCEDURE, NON_OVERRIDABLE :: PointData_initialize
-        GENERIC, PUBLIC :: initialize => PointData_initialize
-        PROCEDURE, NON_OVERRIDABLE :: PointData_add_attribute
-        PROCEDURE, NON_OVERRIDABLE :: PointData_add_attributes
-        GENERIC, PUBLIC :: add_cell => PointData_add_attribute
-        GENERIC, PUBLIC :: add_cell => PointData_add_attributes
+        PROCEDURE, NON_OVERRIDABLE :: Data_setup
+        PROCEDURE, NON_OVERRIDABLE :: Data_initialize
+        GENERIC, PUBLIC :: initialize => Data_initialize
+        PROCEDURE, NON_OVERRIDABLE :: Data_add_attribute
+        PROCEDURE, NON_OVERRIDABLE :: Data_add_attributes
+        GENERIC, PUBLIC :: add_cell => Data_add_attribute
+        GENERIC, PUBLIC :: add_cell => Data_add_attributes
+        PROCEDURE :: Data_deallocate
+    END TYPE Data_dt
+
+    TYPE, EXTENDS(Data_dt) :: PointData_dt
+        !! PointData derived type
     END TYPE PointData_dt
 
-    TYPE, EXTENDS(xml_element_dt) :: CellData_dt
+    TYPE, EXTENDS(Data_dt) :: CellData_dt
         !! CellData derived type
-        PRIVATE
-        CHARACTER(LEN=:), ALLOCATABLE :: Scalars
-        CHARACTER(LEN=:), ALLOCATABLE :: Vectors
-        CHARACTER(LEN=:), ALLOCATABLE :: Normals
-        CHARACTER(LEN=:), ALLOCATABLE :: Tensors
-        CHARACTER(LEN=:), ALLOCATABLE :: TCoords
-    CONTAINS
-        PROCEDURE, NON_OVERRIDABLE :: CellData_setup
-        PROCEDURE, NON_OVERRIDABLE :: CellData_initialize
-        GENERIC, PUBLIC :: initialize => CellData_initialize
-        PROCEDURE, NON_OVERRIDABLE :: CellData_add_attribute
-        PROCEDURE, NON_OVERRIDABLE :: CellData_add_attributes
-        GENERIC, PUBLIC :: add_cell => CellData_add_attribute
-        GENERIC, PUBLIC :: add_cell => CellData_add_attributes
     END TYPE CellData_dt
 
     TYPE, EXTENDS(xml_element_dt) :: Points_dt
@@ -84,124 +59,78 @@ MODULE VTK_piece_element
         GENERIC, PUBLIC :: initialize => Coordinates_initialize
     END TYPE Coordinates_dt
 
+    TYPE, EXTENDS(VTK_element_dt) :: Piece_dt
+        TYPE(Coordinates_dt), ALLOCATABLE :: coordinates
+        TYPE(PointData_dt),   ALLOCATABLE :: pointdata
+        TYPE(CellData_dt),    ALLOCATABLE :: celldata
+    CONTAINS
+!        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: initialize => piece_initialize
+        PROCEDURE, PRIVATE :: piece_set_grid
+        GENERIC, PUBLIC :: set => piece_set_grid
+        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: piece_add_data
+        GENERIC, PUBLIC :: add_data => piece_add_data
+        PROCEDURE, PUBLIC :: piece_deallocate
+    END TYPE Piece_dt
+
     INTERFACE
 
-        MODULE SUBROUTINE piece_initialize (me, geometry)
-        IMPLICIT NONE
-        !1 author: Ian Porter
-        !! date: 07/09/2019
-        !!
-        !! Initializes a piece dt with the geometry information
-        !!
-        CLASS(Piece_dt), INTENT(INOUT) :: me
-        CLASS(dataset),  INTENT(IN)    :: geometry
-
-        END SUBROUTINE piece_initialize
-
-        MODULE SUBROUTINE deallocate_piece_dt (me)
-        IMPLICIT NONE
-        !1 author: Ian Porter
-        !! date: 07/23/2019
-        !!
-        !! GCC bug work around to explicitly deallocate the strings
-        !!
-        CLASS(Piece_dt), INTENT(INOUT) :: me
-
-        END SUBROUTINE deallocate_piece_dt
-
-        MODULE SUBROUTINE PointData_setup (me)
+        MODULE SUBROUTINE Data_setup (me)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
-        !! This writes the header for the PointData
+        !! This writes the header for a Data_dt
         !!
-        CLASS(PointData_dt), INTENT(INOUT) :: me                     !! PointData DT
+        CLASS(Data_dt), INTENT(INOUT) :: me                     !! PointData DT
 
-        END SUBROUTINE PointData_setup
+        END SUBROUTINE Data_setup
 
-        MODULE SUBROUTINE PointData_initialize (me, scalar)
+        MODULE SUBROUTINE Data_initialize (me, scalar)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
-        !! This converts the VTK_element_dt header into XML format
+        !! This initializes the data within a Data_dt
         !!
-        CLASS(PointData_dt), INTENT(INOUT) :: me                     !! PointData DT
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: Scalar             !! Name of scalar component
+        CLASS(Data_dt),   INTENT(INOUT)        :: me            !! PointData DT
+        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: Scalar        !! Name of scalar component
 
-        END SUBROUTINE PointData_initialize
+        END SUBROUTINE Data_initialize
 
-        RECURSIVE MODULE SUBROUTINE PointData_add_attribute (me, cell)
+        RECURSIVE MODULE SUBROUTINE Data_deallocate (foo)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
-        !! This converts the VTK_element_dt header into XML format
+        !! Explicitly deallocate a Data_dt
         !!
-        CLASS(PointData_dt), INTENT(INOUT) :: me               !! PointData DT
-        CLASS(attribute),    INTENT(IN)    :: cell             !! Name of scalar component
+        CLASS(Data_dt), INTENT(INOUT) :: foo                    !! PointData DT
 
-        END SUBROUTINE PointData_add_attribute
+        END SUBROUTINE Data_deallocate
 
-        RECURSIVE MODULE SUBROUTINE PointData_add_attributes (me, cell)
+        RECURSIVE MODULE SUBROUTINE Data_add_attribute (me, cell)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
-        !! This converts the VTK_element_dt header into XML format
+        !! This adds data inside of a Data_dt
         !!
-        CLASS(PointData_dt),            INTENT(INOUT) :: me               !! PointData DT
+        CLASS(Data_dt),   INTENT(INOUT) :: me               !! Data DT
+        CLASS(attribute), INTENT(IN)    :: cell             !! Name of scalar component
+
+        END SUBROUTINE Data_add_attribute
+
+        RECURSIVE MODULE SUBROUTINE Data_add_attributes (me, cell)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! This adds a set of data inside of a Data_dt the VTK_element_dt header into XML format
+        !!
+        CLASS(Data_dt),                 INTENT(INOUT) :: me     !! Data DT
         TYPE(attributes), DIMENSION(:), INTENT(IN)    :: cell   !! Name of scalar component
 
-        END SUBROUTINE PointData_add_attributes
-
-        MODULE SUBROUTINE CellData_setup (me)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! This writes the header for the CellData
-        !!
-        CLASS(CellData_dt), INTENT(INOUT) :: me                     !! CellData DT
-
-        END SUBROUTINE CellData_setup
-
-        MODULE SUBROUTINE CellData_initialize (me, scalar)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! This converts the VTK_element_dt header into XML format
-        !!
-        CLASS(CellData_dt), INTENT(INOUT) :: me                     !! CellData DT
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: Scalar             !! Name of scalar component
-
-        END SUBROUTINE CellData_initialize
-
-        MODULE SUBROUTINE CellData_add_attribute (me, cell)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! This converts the VTK_element_dt header into XML format
-        !!
-        CLASS(CellData_dt), INTENT(INOUT) :: me               !! PointData DT
-        CLASS(attribute),   INTENT(IN)    :: cell             !! Name of scalar component
-
-        END SUBROUTINE CellData_add_attribute
-
-        MODULE SUBROUTINE CellData_add_attributes (me, cell)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! This converts the VTK_element_dt header into XML format
-        !!
-        CLASS(CellData_dt),             INTENT(INOUT) :: me     !! PointData DT
-        TYPE(attributes), DIMENSION(:), INTENT(IN)    :: cell   !! Name of scalar component
-
-        END SUBROUTINE CellData_add_attributes
+        END SUBROUTINE Data_add_attributes
 
         MODULE SUBROUTINE Coordinates_initialize (me, geometry)
         IMPLICIT NONE
@@ -214,6 +143,40 @@ MODULE VTK_piece_element
         CLASS(dataset),        INTENT(IN)    :: geometry
 
         END SUBROUTINE Coordinates_initialize
+
+        MODULE SUBROUTINE piece_set_grid (me, geometry)
+        IMPLICIT NONE
+        !1 author: Ian Porter
+        !! date: 07/09/2019
+        !!
+        !! Initializes a piece dt with the geometry information
+        !!
+        CLASS(Piece_dt), INTENT(INOUT) :: me
+        CLASS(dataset),  INTENT(IN)    :: geometry
+
+        END SUBROUTINE piece_set_grid
+
+        MODULE SUBROUTINE piece_add_data (me, celldata, pointdata, celldatasets, pointdatasets)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 05/07/2019
+        !!
+        !! This is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
+        !!
+        CLASS(Piece_dt),                INTENT(INOUT)        :: me
+        CLASS(attribute),               INTENT(IN), OPTIONAL :: celldata   !!
+        CLASS(attribute),               INTENT(IN), OPTIONAL :: pointdata  !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
+        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
+
+        END SUBROUTINE piece_add_data
+
+        RECURSIVE MODULE SUBROUTINE piece_deallocate (foo)
+        IMPLICIT NONE
+        !! Explicitly deallocate a piece dt
+        CLASS(Piece_dt), INTENT(INOUT) :: foo
+
+        END SUBROUTINE piece_deallocate
 
     END INTERFACE
 

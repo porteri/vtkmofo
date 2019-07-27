@@ -64,78 +64,24 @@ SUBMODULE (VTK_element) VTK_element_procedures
 
         END PROCEDURE initialize
 
-        MODULE PROCEDURE set_grid
-        IMPLICIT NONE
-        ERROR STOP 'Error in set_grid: Generic procedure is not defined.'
-        END PROCEDURE set_grid
-
-        MODULE PROCEDURE add_data
-        USE VTK_piece_element, ONLY : CellData_dt, PointData_dt
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 05/07/2019
-        !!
-        !! This is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
-        !!
-        TYPE(CellData_dt)  :: CellData_xml
-        TYPE(PointData_dt) :: PointData_xml
-
-        IF (PRESENT(celldatasets)) THEN
-            CALL CellData_xml%initialize()
-            CALL CellData_xml%add_cell(celldatasets)
-write(0,*) 'in procedure add_data, before call piece%add(CellData_xml)'
-            CALL me%piece%add(CellData_xml)
-        ELSE IF (PRESENT(celldata)) THEN
-            CALL CellData_xml%initialize()
-            CALL CellData_xml%add_cell(celldata)
-write(0,*) 'in procedure add_data, before call piece%add(CellData_xml)'
-            CALL me%piece%add(CellData_xml)
-        END IF
-        IF (PRESENT(pointdatasets)) THEN
-write(0,*) 'pointdatasets is present. before call pointdata_xml%initialize'
-            CALL PointData_xml%initialize()
-            CALL PointData_xml%add_cell(pointdatasets)
-write(0,*) 'in procedure add_data, before call me%piece%add(PointData_xml)'
-            IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
-            CALL me%piece%add(PointData_xml)
-write(0,*) 'after call me%piece%add(pointdata_xml)'
-        ELSE IF (PRESENT(pointdata)) THEN
-            CALL PointData_xml%initialize()
-            CALL PointData_xml%add_cell(pointdata)
-write(0,*) 'in procedure add_data, before call piece%add(PointData_xml)'
-            IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
-            CALL me%piece%add(PointData_xml)
-        END IF
-
-        CALL me%add(me%piece)
-        write(0,*) 'before call PointData_xml%deallocate()'
-        CALL PointData_xml%deallocate()
-        write(0,*) 'before call CellData_xml%deallocate()'
-        CALL CellData_xml%deallocate()
-
-        END PROCEDURE add_data
-
         MODULE PROCEDURE finalize
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 05/07/2019
         !!
-        !! This writes the end of the file
         !!
-!        CALL me%add(me%piece)
-!        WRITE(me%unit,'(a)') '</VTKFile>'
+        !!
+        IF (ALLOCATED(me%vtk_element)) THEN
+            CALL me%vtk_element%finalize()
+            CALL me%add(me%vtk_element)
+        END IF
 
         END PROCEDURE finalize
 
         MODULE PROCEDURE gcc_bug_workaround_deallocate_vtk_element_single
-!        USE XML, ONLY : xml_element_dt
         IMPLICIT NONE
         !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
-!        SELECT TYPE(foo)
-!        CLASS IS (xml_element_dt)
-!            CALL foo%deallocate()
-!        END SELECT
-write(0,*) 'start of gcc_bug_workaround_deallocate_vtk_element_single'
+
         IF (ALLOCATED(foo%type))           DEALLOCATE(foo%type)
         IF (ALLOCATED(foo%version))        DEALLOCATE(foo%version)
         IF (ALLOCATED(foo%byte_order))     DEALLOCATE(foo%byte_order)
@@ -143,12 +89,12 @@ write(0,*) 'start of gcc_bug_workaround_deallocate_vtk_element_single'
         IF (ALLOCATED(foo%file_extension)) DEALLOCATE(foo%file_extension)
         IF (ALLOCATED(foo%filename))       DEALLOCATE(foo%filename)
         !CALL foo%piece%deallocate_piece_dt()
-        IF (ALLOCATED(foo%piece)) THEN
-            CALL foo%piece%deallocate_vtk()
-            CALL foo%piece%deallocate()
+        IF (ALLOCATED(foo%vtk_element)) THEN
+            CALL foo%vtk_element%me_deallocate()
+            CALL foo%vtk_element%deallocate()
         END IF
         CALL foo%deallocate()
-write(0,*) 'end of gcc_bug_workaround_deallocate_vtk_element_single'
+
         END PROCEDURE gcc_bug_workaround_deallocate_vtk_element_single
 
 END SUBMODULE VTK_element_procedures

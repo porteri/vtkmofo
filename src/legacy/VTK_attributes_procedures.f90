@@ -302,6 +302,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !! Function converts an attribute to a dataarray
         !!
         INTEGER(i4k) :: i
+        
         CALL array%initialize(name=TRIM(ADJUSTL(me%dataname)), type=me%datatype)
 
         DO i = 1, me%nvals

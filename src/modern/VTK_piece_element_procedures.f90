@@ -23,7 +23,139 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
 
     CONTAINS
 
-        MODULE PROCEDURE piece_initialize
+        MODULE PROCEDURE Data_setup
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/06/2019
+        !!
+        !! This writes the header for a Data
+        !!
+        CHARACTER(LEN=*), PARAMETER   :: PointData_name = 'PointData'
+        CHARACTER(LEN=*), PARAMETER   :: CellData_name  = 'CellData'
+        CHARACTER(LEN=:), ALLOCATABLE :: string
+        CHARACTER(LEN=:), ALLOCATABLE :: my_name
+        CHARACTER(LEN=:), ALLOCATABLE :: scalar_string
+
+        IF (ALLOCATED(me%Scalars)) THEN
+            ALLOCATE(scalar_string,source=' Scalars="' // me%Scalars // '"')
+        ELSE
+            ALLOCATE(scalar_string,source='')
+        END IF
+
+        ALLOCATE(string, source=scalar_string)
+
+        SELECT TYPE (me)
+        CLASS IS (pointdata_dt)
+            ALLOCATE(my_name,source=PointData_name)
+        CLASS IS (celldata_dt)
+            ALLOCATE(my_name,source=CellData_name)
+        CLASS DEFAULT
+            ERROR STOP 'Error: Undefined type in Data_setup'
+        END SELECT
+
+        CALL me%setup(name=my_name, string=string)
+
+        END PROCEDURE Data_setup
+
+        MODULE PROCEDURE Data_initialize
+        USE Misc, ONLY : convert_to_string
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! This converts the VTK_element_dt header into XML format
+        !!
+
+        IF (PRESENT(Scalar)) ALLOCATE(me%Scalars,source=Scalar)
+
+        CALL me%Data_setup()
+
+        END PROCEDURE Data_initialize
+
+        MODULE PROCEDURE Data_deallocate
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! Explicitly deallocate a Data_dt
+        !!
+
+        IF (ALLOCATED(foo%scalars)) DEALLOCATE(foo%scalars)
+        IF (ALLOCATED(foo%Vectors)) DEALLOCATE(foo%Vectors)
+        IF (ALLOCATED(foo%Normals)) DEALLOCATE(foo%Normals)
+        IF (ALLOCATED(foo%Tensors)) DEALLOCATE(foo%Tensors)
+        IF (ALLOCATED(foo%TCoords)) DEALLOCATE(foo%TCoords)
+
+        CALL foo%deallocate()
+
+        END PROCEDURE Data_deallocate
+
+        MODULE PROCEDURE Data_add_attribute
+        IMPLICIT NONE
+
+        !! Need to get the name of the cell and type of the cell
+        !! name = cell%dataname
+        !! type = cell%datatype
+        !! and append this to the text line for the pointdata
+        !!
+        !! Then need to get the type, etc
+        !! Then need to get the data
+
+        CALL me%add(cell%convert_to_dataarray())
+
+        END PROCEDURE Data_add_attribute
+
+        MODULE PROCEDURE Data_add_attributes
+        IMPLICIT NONE
+        INTEGER(i4k) :: i
+
+        DO i = 1, SIZE(cell)
+            CALL me%add(cell(i)%attribute%convert_to_dataarray())
+        END DO
+
+        END PROCEDURE Data_add_attributes
+
+        MODULE PROCEDURE Coordinates_initialize
+        USE Precision,    ONLY : i4k, r8k
+        USE vtk_datasets, ONLY : dataset, rectlnr_grid
+        USE Misc,         ONLY : convert_to_string
+        IMPLICIT NONE
+        !1 author: Ian Porter
+        !! date: 07/09/2019
+        !!
+        !! Initializes a piece dt with the geometry information
+        !!
+        REAL(r8k),   DIMENSION(2,3) :: range
+        CHARACTER(LEN=*), PARAMETER :: Coordinate_name = 'Coordinates'
+
+        CALL me%setup(name=Coordinate_name)
+        !! TODO: Figure out why gfortran requires this
+        SELECT TYPE (geometry)
+        CLASS IS (dataset)
+            range = geometry%get_range()
+        END SELECT
+        !! end TODO
+
+        SELECT TYPE (geometry)
+        CLASS IS (rectlnr_grid)
+            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
+            CALL me%DataArray_x%initialize(type=type_float64,format=format_ascii,range_min=range(1,1),range_max=range(2,1))
+            CALL me%DataArray_x%add(geometry%get_coord(1_i4k)) !! New procedure under works to append an array of reals
+            CALL me%DataArray_y%initialize(type=type_float64,format=format_ascii,range_min=range(1,2),range_max=range(2,2))
+            CALL me%DataArray_y%add(geometry%get_coord(2))
+            CALL me%DataArray_z%initialize(type=type_float64,format=format_ascii,range_min=range(1,3),range_max=range(2,3))
+            CALL me%DataArray_z%add(geometry%get_coord(3))
+
+            CALL me%add(me%DataArray_x)
+            CALL me%add(me%DataArray_y)
+            CALL me%add(me%DataArray_z)
+        CLASS DEFAULT
+            ERROR STOP 'Error: In Coordinates_initialize, the geometry is not yet defined.'
+        END SELECT
+
+        END PROCEDURE Coordinates_initialize
+
+        MODULE PROCEDURE piece_set_grid
         USE Precision,    ONLY : i4k
         USE vtk_datasets, ONLY : dataset
         IMPLICIT NONE
@@ -57,193 +189,65 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
 
         !! For now, don't allow "pieces" but instead force the piece to be the whole extent
         CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
-write(0,*) 'before call coordinates%initialize(geometry)'
+
         CALL coordinates%initialize(geometry)
 
         CALL me%add(coordinates)
 
         CALL coordinates%deallocate()
-write(0,*) 'before end procedure piece_initialize'
-        END PROCEDURE piece_initialize
 
-        MODULE PROCEDURE deallocate_piece_dt
-        IMPLICIT NONE
-        !1 author: Ian Porter
-        !! date: 07/23/2019
-        !!
-        !! GCC bug work around to explicitly deallocate the strings
-        !!
-        IF (ALLOCATED(me%type))           DEALLOCATE(me%type)
-        IF (ALLOCATED(me%version))        DEALLOCATE(me%version)
-        IF (ALLOCATED(me%byte_order))     DEALLOCATE(me%byte_order)
-        IF (ALLOCATED(me%compression))    DEALLOCATE(me%compression)
-        IF (ALLOCATED(me%file_extension)) DEALLOCATE(me%file_extension)
+        END PROCEDURE piece_set_grid
 
-        CALL me%deallocate() !! Deallocates the XML pieces
-
-        END PROCEDURE deallocate_piece_dt
-
-        MODULE PROCEDURE PointData_setup
+        MODULE PROCEDURE piece_add_data
+        USE VTK_piece_element, ONLY : CellData_dt, PointData_dt
         IMPLICIT NONE
         !! author: Ian Porter
-        !! date: 06/06/2019
+        !! date: 05/07/2019
         !!
-        !! This writes the header for a PointData
+        !! This is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
         !!
-        CHARACTER(LEN=*), PARAMETER   :: PointData_name = 'PointData'
-        CHARACTER(LEN=:), ALLOCATABLE :: string
-        CHARACTER(LEN=:), ALLOCATABLE :: scalar_string
+        TYPE(CellData_dt)  :: CellData_xml
+        TYPE(PointData_dt) :: PointData_xml
 
-!        type=”Float32” Name=”vectors” NumberOfComponents=”3”
-!                       format=”appended” offset=”0”/
-        IF (ALLOCATED(me%Scalars)) THEN
-            ALLOCATE(scalar_string,source=' Scalars="' // me%Scalars // '"')
-        ELSE
-            ALLOCATE(scalar_string,source='')
+        IF (PRESENT(celldatasets)) THEN
+            CALL CellData_xml%initialize()
+            CALL CellData_xml%add_cell(celldatasets)
+write(0,*) 'in procedure add_data, before call piece%add(CellData_xml)'
+            CALL me%add(CellData_xml)
+        ELSE IF (PRESENT(celldata)) THEN
+            CALL CellData_xml%initialize()
+            CALL CellData_xml%add_cell(celldata)
+write(0,*) 'in procedure add_data, before call piece%add(CellData_xml)'
+            CALL me%add(CellData_xml)
+        END IF
+        IF (PRESENT(pointdatasets)) THEN
+            CALL PointData_xml%initialize()
+            CALL PointData_xml%add_cell(pointdatasets)
+write(0,*) 'in procedure add_data, before call me%piece%add(PointData_xml)'
+!            IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
+            CALL me%add(PointData_xml)
+        ELSE IF (PRESENT(pointdata)) THEN
+            CALL PointData_xml%initialize()
+            CALL PointData_xml%add_cell(pointdata)
+write(0,*) 'in procedure add_data, before call piece%add(PointData_xml)'
+!            IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
+            CALL me%add(PointData_xml)
         END IF
 
-        ALLOCATE(string, source=scalar_string)
+        CALL PointData_xml%deallocate()
+        CALL CellData_xml%deallocate()
 
-        CALL me%setup(name=PointData_name, string=string)
+        END PROCEDURE piece_add_data
 
-        END PROCEDURE PointData_setup
-
-        MODULE PROCEDURE PointData_initialize
-        USE Misc, ONLY : convert_to_string
+        MODULE PROCEDURE piece_deallocate
         IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! This converts the VTK_element_dt header into XML format
-        !!
+        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
 
-        IF (PRESENT(Scalar))             ALLOCATE(me%Scalars,source=Scalar)
+        IF (ALLOCATED(foo%pointdata)) CALL foo%pointdata%data_deallocate()
+        IF (ALLOCATED(foo%celldata)) CALL foo%celldata%data_deallocate()
 
-        CALL me%PointData_setup()
+        CALL foo%me_deallocate()
 
-        END PROCEDURE PointData_initialize
-
-        MODULE PROCEDURE PointData_add_attribute
-        IMPLICIT NONE
-        !TYPE(DataArray) :: data
-
-        !! Need to get the name of the cell and type of the cell
-        !! name = cell%dataname
-        !! type = cell%datatype
-        !! and append this to the text line for the pointdata
-        !!
-        !! Then need to get the type, etc
-        !! Then need to get the data
-write(0,*) 'in PointData_add_attribute. Before call me%add'
-        CALL me%add(cell%convert_to_dataarray())
-        ERROR STOP 'Error: PointData_add_attribute is not yet implemented.'
-
-        END PROCEDURE PointData_add_attribute
-
-        MODULE PROCEDURE PointData_add_attributes
-        IMPLICIT NONE
-        INTEGER(i4k) :: i
-write(0,*) 'in PointData_add_attributes. Before call me%add'
-        DO i = 1, SIZE(cell)
-            CALL me%add(cell(i)%attribute%convert_to_dataarray())
-        END DO
-
-!        ERROR STOP 'Error: PointData_add_attributes is not yet implemented.'
-
-        END PROCEDURE PointData_add_attributes
-
-        MODULE PROCEDURE CellData_setup
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/06/2019
-        !!
-        !! This writes the header for a CellData
-        !!
-        CHARACTER(LEN=*), PARAMETER   :: CellData_name = 'CellData'
-        CHARACTER(LEN=:), ALLOCATABLE :: string
-        CHARACTER(LEN=:), ALLOCATABLE :: scalar_string
-
-!        type=”Float32” Name=”vectors” NumberOfComponents=”3”
-!                       format=”appended” offset=”0”/
-        IF (ALLOCATED(me%Scalars)) THEN
-            ALLOCATE(scalar_string,source=' Scalars="' // me%Scalars // '"')
-        ELSE
-            ALLOCATE(scalar_string,source='')
-        END IF
-
-        ALLOCATE(string, source=scalar_string)
-
-        CALL me%setup(name=CellData_name, string=string)
-
-        END PROCEDURE CellData_setup
-
-        MODULE PROCEDURE CellData_initialize
-        USE Misc, ONLY : convert_to_string
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! This converts the VTK_element_dt header into XML format
-        !!
-
-        IF (PRESENT(Scalar))             ALLOCATE(me%Scalars,source=Scalar)
-
-        CALL me%CellData_setup()
-
-        END PROCEDURE CellData_initialize
-
-        MODULE PROCEDURE CellData_add_attribute
-        IMPLICIT NONE
-
-        ERROR STOP 'Error: CellData_add_attribute is not yet implemented.'
-
-        END PROCEDURE CellData_add_attribute
-
-        MODULE PROCEDURE CellData_add_attributes
-        IMPLICIT NONE
-
-        ERROR STOP 'Error: CellData_add_attributes is not yet implemented.'
-
-        END PROCEDURE CellData_add_attributes
-
-        MODULE PROCEDURE Coordinates_initialize
-        USE Precision,    ONLY : i4k, r8k
-        USE vtk_datasets, ONLY : dataset, rectlnr_grid
-        USE Misc,         ONLY : convert_to_string
-        IMPLICIT NONE
-        !1 author: Ian Porter
-        !! date: 07/09/2019
-        !!
-        !! Initializes a piece dt with the geometry information
-        !!
-        REAL(r8k),   DIMENSION(2,3) :: range
-        CHARACTER(LEN=*), PARAMETER :: Coordinate_name = 'Coordinates'
-
-        CALL me%setup(name=Coordinate_name)
-        !! TODO: Figure out why gfortran requires this
-        SELECT TYPE (geometry)
-        CLASS IS (dataset)
-            range = geometry%get_range()
-        END SELECT
-        !! end TODO
-
-        SELECT TYPE (geometry)
-        CLASS IS (rectlnr_grid)
-            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-            CALL me%DataArray_x%initialize(type=type_float32,format=format_ascii,range_min=range(1,1),range_max=range(2,1))
-            CALL me%DataArray_x%add(geometry%get_coord(1_i4k)) !! New procedure under works to append an array of reals
-            CALL me%DataArray_y%initialize(type=type_float32,format=format_ascii,range_min=range(1,2),range_max=range(2,2))
-            CALL me%DataArray_y%add(geometry%get_coord(2))
-            CALL me%DataArray_z%initialize(type=type_float32,format=format_ascii,range_min=range(1,3),range_max=range(2,3))
-            CALL me%DataArray_z%add(geometry%get_coord(3))
-
-            CALL me%add(me%DataArray_x)
-            CALL me%add(me%DataArray_y)
-            CALL me%add(me%DataArray_z)
-        CLASS DEFAULT
-            ERROR STOP 'Error: In Coordinates_initialize, the geometry is not yet defined.'
-        END SELECT
-
-        END PROCEDURE Coordinates_initialize
+        END PROCEDURE piece_deallocate
 
 END SUBMODULE VTK_piece_element_implementation

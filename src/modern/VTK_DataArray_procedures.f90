@@ -39,8 +39,7 @@ SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
         CHARACTER(LEN=:), ALLOCATABLE :: offset_string
         CHARACTER(LEN=:), ALLOCATABLE :: range_min_string
         CHARACTER(LEN=:), ALLOCATABLE :: range_max_string
-!        type=”Float32” Name=”vectors” NumberOfComponents=”3”
-!                       format=”appended” offset=”0”/
+
         IF (ALLOCATED(me%type)) THEN
             ALLOCATE(type_string,source=' type="' // me%type // '"')
         ELSE
@@ -85,7 +84,7 @@ SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
         END PROCEDURE DataArray_setup
 
         MODULE PROCEDURE DataArray_initialize
-        USE Misc, ONLY : convert_to_string
+        USE Misc, ONLY : convert_to_string, to_lowercase
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/07/2019
@@ -93,7 +92,19 @@ SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
         !! This converts the VTK_element_dt header into XML format
         !!
 
-        IF (PRESENT(type))               ALLOCATE(me%type,source=type)
+        IF (PRESENT(type)) THEN
+            !! May need to convert the legacy type names to the modern type names
+            SELECT CASE (to_lowercase(type))
+            CASE ('float')
+                ALLOCATE(me%type,source='Float32')
+            CASE ('double')
+                ALLOCATE(me%type,source='Float64')
+            CASE DEFAULT
+                !! Assume all other data types are ok
+!                ERROR STOP 'Error. Undefined data type in DataArray_initialize'
+                ALLOCATE(me%type,source=type)
+            END SELECT
+        END IF
         IF (PRESENT(name))               ALLOCATE(me%array_name,source=name)
         IF (PRESENT(NumberofComponents)) THEN
             ALLOCATE(me%NumberOfComponents,source=convert_to_string(NumberOfComponents))
@@ -114,14 +125,7 @@ SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
         MODULE PROCEDURE DataArray_add_DataArray
         IMPLICIT NONE
         !! This adds an element inside of an xml element block
-        TYPE(xml_element_dt), DIMENSION(:), ALLOCATABLE :: tmp_element_dt
-! Currently commented out b/c element is not public
-!        IF (.NOT. ALLOCATED(me%element)) THEN
-!            ALLOCATE(me%element(1),source=element)
-!        ELSE
-!            ALLOCATE(tmp_element_dt,source=[ me%element, element ])
-!            CALL MOVE_ALLOC(tmp_element_dt, me%element)
-!        END IF
+        !TYPE(xml_element_dt), DIMENSION(:), ALLOCATABLE :: tmp_element_dt
 
         END PROCEDURE DataArray_add_DataArray
 

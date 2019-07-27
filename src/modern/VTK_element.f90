@@ -2,7 +2,6 @@ MODULE VTK_element
     USE XML,            ONLY : xml_file_dt, xml_element_dt
     USE vtk_attributes, ONLY : attribute, attributes
     USE vtk_datasets,   ONLY : dataset
-    USE VTK_piece_element, ONLY : piece_dt
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 05/06/2019
@@ -24,17 +23,12 @@ MODULE VTK_element
         CHARACTER(LEN=:), ALLOCATABLE :: compression
         CHARACTER(LEN=:), ALLOCATABLE, PUBLIC :: file_extension
         CHARACTER(LEN=:), ALLOCATABLE, PUBLIC :: filename
-        TYPE(VTK_element_dt), ALLOCATABLE :: piece !! Currently handle only one piece
-        !TYPE(piece_dt) :: piece
+        TYPE(VTK_element_dt), ALLOCATABLE, PUBLIC :: vtk_element !! Currently handle only one piece
     CONTAINS
         PROCEDURE, NON_OVERRIDABLE :: vtk_element_setup
         PROCEDURE, NON_OVERRIDABLE, PUBLIC :: initialize
-!        PROCEDURE(abs_set_grid), DEFERRED :: set_grid
-        PROCEDURE, PRIVATE :: set_grid
-        GENERIC, PUBLIC :: set => set_grid
-        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: add_data
-        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: finalize
-        PROCEDURE :: deallocate_vtk => gcc_bug_workaround_deallocate_vtk_element_single
+        PROCEDURE, PUBLIC :: finalize
+        PROCEDURE :: me_deallocate => gcc_bug_workaround_deallocate_vtk_element_single
 !        PROCEDURE :: gcc_bug_workaround_deallocate_single => gcc_bug_workaround_deallocate_vtk_element_single
     END TYPE VTK_element_dt
 
@@ -66,41 +60,14 @@ MODULE VTK_element
 
         END SUBROUTINE initialize
 
-        MODULE SUBROUTINE set_grid (me, geometry)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 05/07/2019
-        !!
-        !! This is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
-        !!
-        CLASS(VTK_element_dt), INTENT(INOUT) :: me
-        CLASS(dataset),        INTENT(IN)    :: geometry   !! DT of geometry to be printed
-
-        END SUBROUTINE set_grid
-
-        MODULE SUBROUTINE add_data (me, celldata, pointdata, celldatasets, pointdatasets)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 05/07/2019
-        !!
-        !! This is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
-        !!
-        CLASS(VTK_element_dt), INTENT(INOUT) :: me
-        CLASS(attribute),  INTENT(IN), OPTIONAL :: celldata   !!
-        CLASS(attribute),  INTENT(IN), OPTIONAL :: pointdata  !!
-        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
-        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
-
-        END SUBROUTINE add_data
-
-        MODULE SUBROUTINE finalize (me)
+        RECURSIVE MODULE SUBROUTINE finalize (me)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
         !! This writes the end of the file
         !!
-        CLASS(VTK_element_dt), INTENT(IN) :: me              !!
+        CLASS(VTK_element_dt), INTENT(INOUT) :: me              !!
 
         END SUBROUTINE finalize
 

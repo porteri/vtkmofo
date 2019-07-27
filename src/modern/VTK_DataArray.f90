@@ -22,7 +22,7 @@ MODULE VTK_DataArray_element
         CHARACTER(LEN=:), ALLOCATABLE :: range_min
         CHARACTER(LEN=:), ALLOCATABLE :: range_max
     CONTAINS
-        PROCEDURE, NON_OVERRIDABLE, PRIVATE :: DataArray_setup
+        PROCEDURE, NON_OVERRIDABLE :: DataArray_setup
         PROCEDURE, NON_OVERRIDABLE :: DataArray_initialize
         GENERIC, PUBLIC :: initialize => DataArray_initialize
         PROCEDURE :: element_add_element => DataArray_add_DataArray

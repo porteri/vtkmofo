@@ -300,20 +300,13 @@ SUBMODULE (vtk_io) vtk_io_implementation
         MODULE PROCEDURE vtk_serial_full_write
         USE vtk_datasets,    ONLY : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         USE VTK_serial_file, ONLY : serial_file
-        USE VTK_element,     ONLY : VTK_element_dt
         USE VTK_serial_RectilinearGrid, ONLY : VTK_serial_RectilinearGrid_dt
-        USE XML, ONLY : gcc_bug_workaround_deallocate
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 5/08/2019
         !!
         !! This subroutine writes the modern serial vtk output file
         !!
-!        CLASS(VTK_element_dt), ALLOCATABLE :: vtk_data
-!
-!        IF (ALLOCATED(vtk_data)) THEN
-!            ERROR STOP 'Error: data should not be allocated in call to vtk_serial_full_write.'
-!        END IF
 
         ALLOCATE(serial_file)
 
@@ -323,7 +316,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         CLASS IS (struct_grid)
             ERROR STOP 'Procedure not yet implemented for: STRUCTURED GRID. Termination in subroutine: vtk_serial_full_write'
         CLASS IS (rectlnr_grid)
-            ALLOCATE(VTK_serial_RectilinearGrid_dt::serial_file%VTK_data)
+            ALLOCATE(VTK_serial_RectilinearGrid_dt::serial_file%vtk_dataset)
         CLASS IS (polygonal_data)
             ERROR STOP 'Procedure not yet implemented for: POLYGONAL GRID. Termination in subroutine: vtk_serial_full_write'
         CLASS IS (unstruct_grid)
@@ -331,12 +324,10 @@ SUBMODULE (vtk_io) vtk_io_implementation
         CLASS DEFAULT
             ERROR STOP 'Unsupported geometry type. Termination in subroutine: vtk_serial_full_write'
         END SELECT
-write(0,*) 'before vtk_data set_grid. Setting geometry information'
-        CALL serial_file%VTK_data%set(geometry)
 
-write(0,*) 'filename = ',filename // TRIM(serial_file%VTK_data%file_extension)
-write(0,*) 'before serial_file setup'
-        CALL serial_file%setup(filename=filename // TRIM(serial_file%VTK_data%file_extension),form='formatted')
+        CALL serial_file%vtk_dataset%set_grid(geometry)
+
+        CALL serial_file%setup(filename=filename // TRIM(serial_file%vtk_dataset%file_extension),form='formatted')
         !! Append data
         CALL vtk_serial_append (celldata, pointdata, celldatasets, pointdatasets)
         !! Finalize the write
@@ -359,7 +350,8 @@ write(0,*) 'before serial_file setup'
         !! This subroutine appends data to the legacy vtk output file
         !!
 
-        CALL serial_file%VTK_data%add_data(celldata, pointdata, celldatasets, pointdatasets)
+        IF (.NOT. ALLOCATED(serial_file%vtk_dataset%piece)) ALLOCATE(serial_file%vtk_dataset%piece)
+        CALL serial_file%vtk_dataset%piece%add_data(celldata, pointdata, celldatasets, pointdatasets)
 
         END PROCEDURE vtk_serial_append
 
@@ -373,16 +365,13 @@ write(0,*) 'before serial_file setup'
         !!
 
         IF (finished) THEN
-write(0,*) 'before serial_file add'
-            CALL serial_file%add(serial_file%vtk_data)
-write(0,*) 'before serial_file%write()'
+            CALL serial_file%vtk_dataset%finalize()
+                  !! This should write everything inside of the piece
+            CALL serial_file%add(serial_file%vtk_dataset)
             CALL serial_file%write()
-write(0,*) 'before serial_file%deallocate()'
             CALL serial_file%me_deallocate()
-write(0,*) 'before de-allocation of serial_file'
             IF (ALLOCATED(serial_file)) DEALLOCATE(serial_file)
         END IF
-write(0,*) 'before vtk_serial_full_write end'
 
         END PROCEDURE vtk_serial_finalize
 

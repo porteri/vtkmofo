@@ -2,6 +2,8 @@ MODULE VTK_serial_RectilinearGrid
     USE VTK_element,    ONLY : VTK_element_dt
     USE vtk_attributes, ONLY : attribute, attributes
     USE vtk_datasets,   ONLY : dataset
+    USE VTK_piece_element, ONLY : piece_dt
+    USE VTK_serial_file, ONLY : VTK_dataset_dt
     IMPLICIT NONE
     !!
     !!
@@ -12,8 +14,9 @@ MODULE VTK_serial_RectilinearGrid
     PRIVATE
     PUBLIC :: VTK_serial_RectilinearGrid_dt
 
-    TYPE, EXTENDS(VTK_element_dt) :: VTK_serial_RectilinearGrid_dt
-        CLASS(VTK_element_dt), ALLOCATABLE :: file_header
+    TYPE, EXTENDS(VTK_dataset_dt) :: VTK_serial_RectilinearGrid_dt
+        !! Serial file Rectilinear Grid
+        PRIVATE
     CONTAINS
         PROCEDURE :: set_grid
     END TYPE VTK_serial_RectilinearGrid_dt

@@ -228,13 +228,13 @@ MODULE XML
         CLASS(xml_element_dt), INTENT(INOUT) :: me
         END SUBROUTINE gcc_bug_workaround_deallocate_single
 
-        MODULE SUBROUTINE gcc_bug_deallocate_string_dt (me)
+        RECURSIVE MODULE SUBROUTINE gcc_bug_deallocate_string_dt (me)
         IMPLICIT NONE
         !! gcc Work-around
         CLASS(string_dt), INTENT(INOUT) :: me
         END SUBROUTINE gcc_bug_deallocate_string_dt
 
-        MODULE SUBROUTINE gcc_bug_workaround_deallocate_xml_file_dt (me)
+        RECURSIVE MODULE SUBROUTINE gcc_bug_workaround_deallocate_xml_file_dt (me)
         IMPLICIT NONE
         !! gcc Work-around
         CLASS(xml_file_dt), INTENT(INOUT) :: me
