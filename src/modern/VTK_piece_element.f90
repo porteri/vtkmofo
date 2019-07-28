@@ -32,6 +32,8 @@ MODULE VTK_piece_element
         GENERIC, PUBLIC :: add_cell => Data_add_attribute
         GENERIC, PUBLIC :: add_cell => Data_add_attributes
         PROCEDURE :: Data_deallocate
+        PROCEDURE, PRIVATE :: Data_finalize
+        GENERIC, PUBLIC :: finalize => Data_finalize
     END TYPE Data_dt
 
     TYPE, EXTENDS(Data_dt) :: PointData_dt
@@ -70,6 +72,7 @@ MODULE VTK_piece_element
         PROCEDURE, NON_OVERRIDABLE, PUBLIC :: piece_add_data
         GENERIC, PUBLIC :: add_data => piece_add_data
         PROCEDURE, PUBLIC :: piece_deallocate
+        PROCEDURE :: finalize => piece_finalize
     END TYPE Piece_dt
 
     INTERFACE
@@ -97,17 +100,6 @@ MODULE VTK_piece_element
 
         END SUBROUTINE Data_initialize
 
-        RECURSIVE MODULE SUBROUTINE Data_deallocate (foo)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! Explicitly deallocate a Data_dt
-        !!
-        CLASS(Data_dt), INTENT(INOUT) :: foo                    !! PointData DT
-
-        END SUBROUTINE Data_deallocate
-
         RECURSIVE MODULE SUBROUTINE Data_add_attribute (me, cell)
         IMPLICIT NONE
         !! author: Ian Porter
@@ -131,6 +123,24 @@ MODULE VTK_piece_element
         TYPE(attributes), DIMENSION(:), INTENT(IN)    :: cell   !! Name of scalar component
 
         END SUBROUTINE Data_add_attributes
+
+        MODULE SUBROUTINE Data_finalize (me)
+        IMPLICIT NONE
+        !! Finalize routine to write the proper data information
+        CLASS(Data_dt), INTENT(INOUT) :: me
+
+        END SUBROUTINE Data_finalize
+
+        RECURSIVE MODULE SUBROUTINE Data_deallocate (foo)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! Explicitly deallocate a Data_dt
+        !!
+        CLASS(Data_dt), INTENT(INOUT) :: foo                    !! PointData DT
+
+        END SUBROUTINE Data_deallocate
 
         MODULE SUBROUTINE Coordinates_initialize (me, geometry)
         IMPLICIT NONE
@@ -170,6 +180,13 @@ MODULE VTK_piece_element
         TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
 
         END SUBROUTINE piece_add_data
+
+        MODULE SUBROUTINE piece_finalize (me)
+        IMPLICIT NONE
+        !! Finalize routine to write the proper piece information
+        CLASS(Piece_dt), INTENT(INOUT) :: me
+
+        END SUBROUTINE piece_finalize
 
         RECURSIVE MODULE SUBROUTINE piece_deallocate (foo)
         IMPLICIT NONE

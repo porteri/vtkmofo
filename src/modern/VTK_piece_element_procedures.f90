@@ -72,24 +72,6 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
 
         END PROCEDURE Data_initialize
 
-        MODULE PROCEDURE Data_deallocate
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! Explicitly deallocate a Data_dt
-        !!
-
-        IF (ALLOCATED(foo%scalars)) DEALLOCATE(foo%scalars)
-        IF (ALLOCATED(foo%Vectors)) DEALLOCATE(foo%Vectors)
-        IF (ALLOCATED(foo%Normals)) DEALLOCATE(foo%Normals)
-        IF (ALLOCATED(foo%Tensors)) DEALLOCATE(foo%Tensors)
-        IF (ALLOCATED(foo%TCoords)) DEALLOCATE(foo%TCoords)
-
-        CALL foo%deallocate()
-
-        END PROCEDURE Data_deallocate
-
         MODULE PROCEDURE Data_add_attribute
         IMPLICIT NONE
 
@@ -114,6 +96,35 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         END DO
 
         END PROCEDURE Data_add_attributes
+
+        MODULE PROCEDURE Data_finalize
+        IMPLICIT NONE
+
+!! IDK if there's anything to do here
+        !IF (ALLOCATED(me%element)) THEN
+        !    CALL me%element%finalize()
+        !    CALL me%add(me%element)
+        !END IF
+
+        END PROCEDURE Data_finalize
+
+        MODULE PROCEDURE Data_deallocate
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! Explicitly deallocate a Data_dt
+        !!
+
+        IF (ALLOCATED(foo%scalars)) DEALLOCATE(foo%scalars)
+        IF (ALLOCATED(foo%Vectors)) DEALLOCATE(foo%Vectors)
+        IF (ALLOCATED(foo%Normals)) DEALLOCATE(foo%Normals)
+        IF (ALLOCATED(foo%Tensors)) DEALLOCATE(foo%Tensors)
+        IF (ALLOCATED(foo%TCoords)) DEALLOCATE(foo%TCoords)
+
+        CALL foo%deallocate()
+
+        END PROCEDURE Data_deallocate
 
         MODULE PROCEDURE Coordinates_initialize
         USE Precision,    ONLY : i4k, r8k
@@ -199,45 +210,55 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         END PROCEDURE piece_set_grid
 
         MODULE PROCEDURE piece_add_data
-        USE VTK_piece_element, ONLY : CellData_dt, PointData_dt
         IMPLICIT NONE
         !! author: Ian Porter
-        !! date: 05/07/2019
+        !! date: 07/28/2019
         !!
         !! This is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
         !!
-        TYPE(CellData_dt)  :: CellData_xml
-        TYPE(PointData_dt) :: PointData_xml
 
         IF (PRESENT(celldatasets)) THEN
-            CALL CellData_xml%initialize()
-            CALL CellData_xml%add_cell(celldatasets)
-write(0,*) 'in procedure add_data, before call piece%add(CellData_xml)'
-            CALL me%add(CellData_xml)
+            IF (.NOT. ALLOCATED(me%celldata)) THEN
+                ALLOCATE(me%celldata)
+                CALL me%celldata%initialize()
+            END IF
+            CALL me%celldata%add_cell(celldatasets)
         ELSE IF (PRESENT(celldata)) THEN
-            CALL CellData_xml%initialize()
-            CALL CellData_xml%add_cell(celldata)
-write(0,*) 'in procedure add_data, before call piece%add(CellData_xml)'
-            CALL me%add(CellData_xml)
+            IF (.NOT. ALLOCATED(me%celldata)) THEN
+                ALLOCATE(me%celldata)
+                CALL me%celldata%initialize()
+            END IF
+            CALL me%celldata%add_cell(celldata)
         END IF
         IF (PRESENT(pointdatasets)) THEN
-            CALL PointData_xml%initialize()
-            CALL PointData_xml%add_cell(pointdatasets)
-write(0,*) 'in procedure add_data, before call me%piece%add(PointData_xml)'
-!            IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
-            CALL me%add(PointData_xml)
+            IF (.NOT. ALLOCATED(me%pointdata)) THEN
+                ALLOCATE(me%pointdata)
+                CALL me%pointdata%initialize()
+            END IF
+            CALL me%pointdata%add_cell(pointdatasets)
         ELSE IF (PRESENT(pointdata)) THEN
-            CALL PointData_xml%initialize()
-            CALL PointData_xml%add_cell(pointdata)
-write(0,*) 'in procedure add_data, before call piece%add(PointData_xml)'
-!            IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
-            CALL me%add(PointData_xml)
+            IF (.NOT. ALLOCATED(me%pointdata)) THEN
+                ALLOCATE(me%pointdata)
+                CALL me%pointdata%initialize()
+            END IF
+            CALL me%pointdata%add_cell(pointdata)
         END IF
 
-        CALL PointData_xml%deallocate()
-        CALL CellData_xml%deallocate()
-
         END PROCEDURE piece_add_data
+
+        MODULE PROCEDURE piece_finalize
+        IMPLICIT NONE
+
+        IF (ALLOCATED(me%pointdata)) THEN
+            CALL me%pointdata%finalize()
+            CALL me%add(me%pointdata)
+        END IF
+        IF (ALLOCATED(me%celldata)) THEN
+          CALL me%celldata%finalize()
+          CALL me%add(me%celldata)
+        END IF
+
+        END PROCEDURE piece_finalize
 
         MODULE PROCEDURE piece_deallocate
         IMPLICIT NONE

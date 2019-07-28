@@ -304,7 +304,7 @@ SUBMODULE (XML) XML_implementation
         ALLOCATE(me%filename, source=TRIM(filename))
 
         IF (PRESENT(open_status)) THEN
-            ALLOCATE(me%open_status,source=open_status)
+            ALLOCATE(me%open_status, source=open_status)
         ELSE
             ALLOCATE(me%open_status, source='UNKNOWN')
         END IF
@@ -391,8 +391,6 @@ SUBMODULE (XML) XML_implementation
         INTEGER(i4k) :: i
 
         CALL me%begin()
-
-!        ALLOCATE(me%element, source=gcc_bug_tmp_element_dt)
 
         DO i = 1, SIZE(me%element)
             CALL me%element(i)%write(me%unit)

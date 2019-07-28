@@ -369,6 +369,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
                   !! This should write everything inside of the piece
             CALL serial_file%add(serial_file%vtk_dataset)
             CALL serial_file%write()
+            CALL serial_file%close_file()                    !! Close the VTK file
             CALL serial_file%me_deallocate()
             IF (ALLOCATED(serial_file)) DEALLOCATE(serial_file)
         END IF

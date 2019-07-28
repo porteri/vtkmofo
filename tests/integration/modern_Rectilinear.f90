@@ -50,9 +50,8 @@ PROGRAM modern_Rectilinear_test
 
     CALL vtk_serial_write (cube, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)
                                                            !! This tests a full 1-time write
-    go to 10
 
-    CALL vtk_serial_write (cube)
+    CALL vtk_serial_write (cube, unit=unit, filename='append_' // filename, title=title)
 
     CALL vtk_serial_write (pointdata=vals_to_write(1)%attribute)
 
@@ -60,6 +59,6 @@ PROGRAM modern_Rectilinear_test
 
     CALL vtk_serial_write (finished=.TRUE.)
 
-10    WRITE(*,*) 'Finished'
+    WRITE(*,*) 'Finished'
 
 END PROGRAM modern_Rectilinear_test
