@@ -11,19 +11,19 @@ This is a generic modern Fortran interface to write a VTK formatted file using t
 Format support:
  - [X] Legacy Format
   * This code fully supports the legacy .vtk file format in ASCII
- - [ ] XML Format
-  - [ ] Serial Formats
-   - [ ] Image Data (.vti)
-   - [ ] Poly Data (.vtp)
-   - [ ] Rectilinear Grid (.vtr) (Currently under development)
-   - [ ] Structured Grid (.vts)
-   - [ ] Unstructured Grid (.vtu)
-  - [ ] Parallel Formats
-   - [ ] Image Data (.pvti)
-   - [ ] Poly Data (.pvtp)
-   - [ ] Rectilinear Grid (.pvtr)
-   - [ ] Structured Grid (.pvts)
-   - [ ] Unstructured Grid (.pvtu)
+ - [X] XML Format
+   - [ ] Serial Formats
+     - [ ] Image Data (.vti)
+     - [ ] Poly Data (.vtp)
+     - [X] Rectilinear Grid (.vtr)
+     - [X] Structured Grid (.vts)
+     - [ ] Unstructured Grid (.vtu) (Currently under development)
+   - [ ] Parallel Formats
+     - [ ] Image Data (.pvti)
+     - [ ] Poly Data (.pvtp)
+     - [ ] Rectilinear Grid (.pvtr)
+     - [ ] Structured Grid (.pvts)
+     - [ ] Unstructured Grid (.pvtu)
 
 This code is built and tested with the following:
 
@@ -40,15 +40,15 @@ Build System:
  - [CMake][CMake link] 3.12.2 or newer
 
 Examples:
-# 2D example
+# Structured Grid (2D)
 ![Cylinder_2d](documents/files/cylinder_image_2d.png?raw=true "Cylinder 2D example")
-# 3D example
+# Rectilinear Grid
 ![Cube_3d](documents/files/cube_image.png?raw=true "Cube example")
-# Polygonal example
+# Polygonal Data
 ![Pyramid](documents/files/pyramid_image.png?raw=true "Pyramid example")
-# Prism example
+# Structured Points
 ![Prism](documents/files/rectangle_image.png?raw=true "Prism example")
-# Unstructured Grid example
+# Unstructured Grid
 ![T_shape](documents/files/t_shape.png?raw=true "T-shape example")
 
 [Hyperlinks]:#
