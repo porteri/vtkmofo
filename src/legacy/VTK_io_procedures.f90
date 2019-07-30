@@ -300,7 +300,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         MODULE PROCEDURE vtk_serial_full_write
         USE vtk_datasets,    ONLY : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         USE VTK_serial_file, ONLY : serial_file
-        USE VTK_serial_RectilinearGrid, ONLY : VTK_serial_RectilinearGrid_dt
+        USE VTK_serial_Grid, ONLY : VTK_serial_RectilinearGrid_dt, VTK_serial_StructuredGrid_dt
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 5/08/2019
@@ -308,13 +308,25 @@ SUBMODULE (vtk_io) vtk_io_implementation
         !! This subroutine writes the modern serial vtk output file
         !!
 
+        ! Clear out any pre-existing data
+        IF (ALLOCATED(vtkfilename)) DEALLOCATE(vtkfilename)
+        IF (ALLOCATED(form))        DEALLOCATE(form)
+
+        IF (PRESENT(data_type)) filetype = data_type            !! Calling program provided what file type to use for vtk file
+        IF (PRESENT(filename)) THEN
+            ALLOCATE(vtkfilename, source=filename)              !! Calling program provided a filename
+        ELSE
+            ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename. Use default
+        END IF
+
         ALLOCATE(serial_file)
 
         SELECT TYPE (geometry)
         CLASS IS (struct_pts)
             ERROR STOP 'Procedure not yet implemented for: STRUCTURED POINTS. Termination in subroutine: vtk_serial_full_write'
         CLASS IS (struct_grid)
-            ERROR STOP 'Procedure not yet implemented for: STRUCTURED GRID. Termination in subroutine: vtk_serial_full_write'
+!            ERROR STOP 'Procedure not yet implemented for: STRUCTURED GRID. Termination in subroutine: vtk_serial_full_write'
+            ALLOCATE(VTK_serial_StructuredGrid_dt::serial_file%vtk_dataset)
         CLASS IS (rectlnr_grid)
             ALLOCATE(VTK_serial_RectilinearGrid_dt::serial_file%vtk_dataset)
         CLASS IS (polygonal_data)
@@ -327,7 +339,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         CALL serial_file%vtk_dataset%set_grid(geometry)
 
-        CALL serial_file%setup(filename=filename // TRIM(serial_file%vtk_dataset%file_extension),form='formatted')
+        CALL serial_file%setup(filename=vtkfilename // TRIM(serial_file%vtk_dataset%file_extension),form='formatted')
         !! Append data
         CALL vtk_serial_append (celldata, pointdata, celldatasets, pointdatasets)
         !! Finalize the write
@@ -336,8 +348,6 @@ SUBMODULE (vtk_io) vtk_io_implementation
         ELSE
             CALL vtk_serial_finalize (finished=.FALSE.)         !! No data was provided, only geometry info. Do not close file.
         END IF
-
-!        CALL vtk_data%deallocate()
 
         END PROCEDURE vtk_serial_full_write
 

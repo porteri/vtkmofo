@@ -18,7 +18,9 @@ SUBMODULE (XML) XML_implementation
         !! This sets up the information needed to define the XML element block
         INTEGER(i4k) :: i, my_offset
 
-        me%name = name
+        CALL me%deallocate()
+
+        ALLOCATE(me%name,source=name)
         IF (PRESENT(string)) THEN
             IF (LEN_TRIM(string) == 0) THEN
                 ALLOCATE(me%additional_data,source='')

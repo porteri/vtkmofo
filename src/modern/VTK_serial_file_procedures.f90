@@ -8,14 +8,6 @@ SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
 
     CONTAINS
 
-        MODULE PROCEDURE set_grid
-        IMPLICIT NONE
-        !! This will become deferred. It is the VTK geometry routine for setting the grid
-
-        ERROR STOP 'Error: Should not be in set_grid as this needs to be defined for each type.'
-
-        END PROCEDURE set_grid
-
         MODULE PROCEDURE finalize
         USE XML, ONLY : xml_element_dt
         IMPLICIT NONE

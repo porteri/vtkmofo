@@ -48,6 +48,10 @@ MODULE VTK_piece_element
         !! Points derived type
         PRIVATE
         TYPE(DataArray_dt) :: DataArray
+    CONTAINS
+        PROCEDURE, NON_OVERRIDABLE :: Points_initialize
+        GENERIC, PUBLIC :: initialize => Points_initialize
+        PROCEDURE :: Points_deallocate
     END TYPE Points_dt
 
     TYPE, EXTENDS(xml_element_dt) :: Coordinates_dt
@@ -59,12 +63,14 @@ MODULE VTK_piece_element
     CONTAINS
         PROCEDURE, NON_OVERRIDABLE :: Coordinates_initialize
         GENERIC, PUBLIC :: initialize => Coordinates_initialize
+        PROCEDURE :: Coordinates_deallocate
     END TYPE Coordinates_dt
 
     TYPE, EXTENDS(VTK_element_dt) :: Piece_dt
-        TYPE(Coordinates_dt), ALLOCATABLE :: coordinates
         TYPE(PointData_dt),   ALLOCATABLE :: pointdata
         TYPE(CellData_dt),    ALLOCATABLE :: celldata
+        TYPE(Coordinates_dt), ALLOCATABLE :: coordinates
+        TYPE(Points_dt),      ALLOCATABLE :: points
     CONTAINS
 !        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: initialize => piece_initialize
         PROCEDURE, PRIVATE :: piece_set_grid
@@ -142,6 +148,25 @@ MODULE VTK_piece_element
 
         END SUBROUTINE Data_deallocate
 
+        MODULE SUBROUTINE Points_initialize (me, geometry)
+        IMPLICIT NONE
+        !1 author: Ian Porter
+        !! date: 07/29/2019
+        !!
+        !! Initializes a Points DT with the geometry information
+        !!
+        CLASS(Points_dt), INTENT(INOUT) :: me
+        CLASS(dataset),   INTENT(IN)    :: geometry
+
+        END SUBROUTINE Points_initialize
+
+        RECURSIVE MODULE SUBROUTINE Points_deallocate (foo)
+        IMPLICIT NONE
+        !! Explicitly deallocate a piece dt
+        CLASS(Points_dt), INTENT(INOUT) :: foo
+
+        END SUBROUTINE Points_deallocate
+
         MODULE SUBROUTINE Coordinates_initialize (me, geometry)
         IMPLICIT NONE
         !1 author: Ian Porter
@@ -153,6 +178,13 @@ MODULE VTK_piece_element
         CLASS(dataset),        INTENT(IN)    :: geometry
 
         END SUBROUTINE Coordinates_initialize
+
+        RECURSIVE MODULE SUBROUTINE Coordinates_deallocate (foo)
+        IMPLICIT NONE
+        !! Explicitly deallocate a piece dt
+        CLASS(Coordinates_dt), INTENT(INOUT) :: foo
+
+        END SUBROUTINE Coordinates_deallocate
 
         MODULE SUBROUTINE piece_set_grid (me, geometry)
         IMPLICIT NONE

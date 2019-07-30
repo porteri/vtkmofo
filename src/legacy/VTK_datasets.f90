@@ -1,4 +1,4 @@
-MODULE vtk_datasets
+MODULE VTK_datasets
     USE Precision, ONLY : i4k, r8k
     USE vtk_cells, ONLY : vtkcell, vtkcell_list
     IMPLICIT NONE
@@ -55,13 +55,14 @@ MODULE vtk_datasets
     TYPE, EXTENDS(dataset) :: struct_grid
         !! Structured grid
         PRIVATE
-        INTEGER(i4k)                           :: n_points = 0
+        INTEGER(i4k), PUBLIC                   :: n_points = 0
         REAL(r8k), DIMENSION(:,:), ALLOCATABLE :: points
     CONTAINS
         PROCEDURE :: read  => struct_grid_read
         PROCEDURE :: write => struct_grid_write
         PROCEDURE, PRIVATE :: setup => struct_grid_setup
         PROCEDURE :: check_for_diffs => struct_grid_check_for_diffs
+        PROCEDURE :: get_point => struct_grid_get_point
     END TYPE struct_grid
 
     TYPE, EXTENDS(dataset) :: rectlnr_grid
@@ -266,6 +267,15 @@ MODULE vtk_datasets
 
         END FUNCTION struct_grid_check_for_diffs
 
+        MODULE FUNCTION struct_grid_get_point (me, i) RESULT (coord)
+        IMPLICIT NONE
+        !! Function returns the (x,y,z) dimension coordinates for point (i)
+        CLASS(struct_grid), INTENT(IN) :: me
+        INTEGER(i4k),       INTENT(IN) :: i
+        REAL(r8k), DIMENSION(3)        :: coord
+
+        END FUNCTION struct_grid_get_point
+
         MODULE FUNCTION struct_grid_get_range (me) RESULT (range)
         IMPLICIT NONE
         !! Function returns the min / max range of values in x,y,z coordinates
@@ -414,4 +424,4 @@ MODULE vtk_datasets
 
     END INTERFACE
 
-END MODULE vtk_datasets
+END MODULE VTK_datasets

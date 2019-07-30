@@ -75,8 +75,8 @@ MODULE XML
         MODULE SUBROUTINE element_setup (me, name, string, offset)
         IMPLICIT NONE
         !! This sets up the information needed to define the XML element block
-        CLASS(xml_element_dt), INTENT(OUT) :: me     !! XML element derived type
-        CHARACTER(LEN=*),      INTENT(IN)  :: name   !! Name of the XML block
+        CLASS(xml_element_dt), INTENT(INOUT) :: me     !! XML element derived type
+        CHARACTER(LEN=*),      INTENT(IN)    :: name   !! Name of the XML block
         CHARACTER(LEN=*),      INTENT(IN), OPTIONAL :: string !! String of additional data to write
         INTEGER(i4k),          INTENT(IN), OPTIONAL :: offset !! # of leading spaces inside XML block
         END SUBROUTINE element_setup

@@ -99,6 +99,8 @@ SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
                 ALLOCATE(me%type,source='Float32')
             CASE ('double')
                 ALLOCATE(me%type,source='Float64')
+            CASE ('int')
+                ALLOCATE(me%type,source='Int32')
             CASE DEFAULT
                 !! Assume all other data types are ok
 !                ERROR STOP 'Error. Undefined data type in DataArray_initialize'

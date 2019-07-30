@@ -1,4 +1,5 @@
 SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
+    USE Precision, ONLY : i4k, r8k
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 06/07/2019
@@ -126,9 +127,48 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
 
         END PROCEDURE Data_deallocate
 
+        MODULE PROCEDURE Points_initialize
+        USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
+        USE Misc,         ONLY : convert_to_string
+        IMPLICIT NONE
+        !1 author: Ian Porter
+        !! date: 07/09/2019
+        !!
+        !! Initializes a piece dt with the geometry information
+        !!
+        INTEGER(i4k) :: i
+        REAL(r8k), DIMENSION(2,3) :: range
+        CHARACTER(LEN=*), PARAMETER :: Points_name = 'Points'
+
+        CALL me%setup(name=Points_name)
+
+        SELECT TYPE (geometry)
+        CLASS IS (struct_grid)
+            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
+            CALL me%DataArray%initialize(type=type_float64,format=format_ascii,NumberofComponents=3)
+            DO i = 1, geometry%n_points
+                CALL me%DataArray%add(geometry%get_point(i)) !! New procedure under works to append an array of reals
+            END DO
+            CALL me%add(me%DataArray)
+            CALL me%DataArray%me_deallocate()
+        CLASS DEFAULT
+            ERROR STOP 'Error: In Points_initialize, the geometry is not yet defined.'
+        END SELECT
+
+        END PROCEDURE Points_initialize
+
+        MODULE PROCEDURE Points_deallocate
+        IMPLICIT NONE
+        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+
+        CALL foo%DataArray%me_deallocate()
+
+        CALL foo%deallocate()
+
+        END PROCEDURE Points_deallocate
+
         MODULE PROCEDURE Coordinates_initialize
-        USE Precision,    ONLY : i4k, r8k
-        USE vtk_datasets, ONLY : dataset, rectlnr_grid
+        USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         USE Misc,         ONLY : convert_to_string
         IMPLICIT NONE
         !1 author: Ian Porter
@@ -166,9 +206,20 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
 
         END PROCEDURE Coordinates_initialize
 
+        MODULE PROCEDURE Coordinates_deallocate
+        IMPLICIT NONE
+        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+
+        CALL foo%DataArray_x%me_deallocate()
+        CALL foo%DataArray_y%me_deallocate()
+        CALL foo%DataArray_z%me_deallocate()
+
+        CALL foo%deallocate()
+
+        END PROCEDURE Coordinates_deallocate
+
         MODULE PROCEDURE piece_set_grid
-        USE Precision,    ONLY : i4k
-        USE vtk_datasets, ONLY : dataset
+        USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         IMPLICIT NONE
         !1 author: Ian Porter
         !! date: 07/09/2019
@@ -179,7 +230,6 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         CHARACTER(LEN=:), ALLOCATABLE :: range_string
         INTEGER(i4k) :: i, j
         INTEGER(i4k), DIMENSION(2,3)  :: range
-        TYPE(Coordinates_dt) :: Coordinates
 
         !! TODO: Figure out why gfortran requires this
         SELECT TYPE (geometry)
@@ -201,11 +251,24 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         !! For now, don't allow "pieces" but instead force the piece to be the whole extent
         CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
 
-        CALL coordinates%initialize(geometry)
+        SELECT TYPE (geometry)
+        CLASS IS (struct_pts)
+            ERROR STOP 'Error: struct_pts is not yet implemented in piece_set_grid'
+        CLASS IS (struct_grid)
+            ALLOCATE(me%points)
+            CALL me%points%initialize(geometry)
+            CALL me%add(me%points)
+!            ERROR STOP 'Error: struct_grid is not yet implemented in piece_set_grid'
+        CLASS IS (rectlnr_grid)
+            ALLOCATE(me%coordinates)
+            CALL me%coordinates%initialize(geometry)
 
-        CALL me%add(coordinates)
-
-        CALL coordinates%deallocate()
+            CALL me%add(me%coordinates)
+        CLASS IS (polygonal_data)
+            ERROR STOP 'Error: polygonal_data is not yet implemented in piece_set_grid'
+        CLASS IS (unstruct_grid)
+            ERROR STOP 'Error: unstruct_grid is not yet implemented in piece_set_grid'
+        END SELECT
 
         END PROCEDURE piece_set_grid
 
@@ -264,8 +327,10 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         IMPLICIT NONE
         !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
 
-        IF (ALLOCATED(foo%pointdata)) CALL foo%pointdata%data_deallocate()
-        IF (ALLOCATED(foo%celldata)) CALL foo%celldata%data_deallocate()
+        IF (ALLOCATED(foo%pointdata))   CALL foo%pointdata%data_deallocate()
+        IF (ALLOCATED(foo%celldata))    CALL foo%celldata%data_deallocate()
+        IF (ALLOCATED(foo%coordinates)) CALL foo%coordinates%coordinates_deallocate()
+        IF (ALLOCATED(foo%points))      CALL foo%points%points_deallocate()
 
         CALL foo%me_deallocate()
 

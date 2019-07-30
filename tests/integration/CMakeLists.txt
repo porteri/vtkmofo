@@ -18,7 +18,7 @@ endfunction(add_VTKmofo_integration_test)
 foreach(test
     Append
     Rectilinear
-    Cylinder
+    Structured_grid
     Rectangular_prism
     Pyramid
     T_shape
@@ -29,11 +29,11 @@ endforeach()
 
 # serial modern tests
 foreach(test
+    Structured_grid
     Rectilinear)
   add_VTKmofo_integration_test(${test} "serial")
   list(APPEND VTKmofo_integration_test_list "serial_${test}")
 endforeach()
-
 
 # Export integration test list so that we don't have to keep track if it twice
 set(VTKmofo_integration_test_list "${VTKmofo_integration_test_list}" PARENT_SCOPE)

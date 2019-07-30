@@ -313,6 +313,18 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         END PROCEDURE struct_grid_check_for_diffs
 
+        MODULE PROCEDURE struct_grid_get_point
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        IF (i < LBOUND(me%points,DIM=2) .OR. i > UBOUND(me%points,DIM=2)) THEN
+            ERROR STOP 'Error: Array bounds have been exceeded in struct_grid_get_range'
+        END IF
+
+        coord = me%points(1:3,i)
+
+        END PROCEDURE struct_grid_get_point
+
         MODULE PROCEDURE struct_grid_get_range
         IMPLICIT NONE
         !! Function returns the min / max range of values in x,y,z coordinates

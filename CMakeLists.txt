@@ -105,7 +105,7 @@ set(VTKmofo_interfaces
   modern/VTK_element.f90
   modern/VTK_piece_element.f90
   modern/VTK_serial_file.f90
-  modern/VTK_serial_RectilinearGrid.f90
+  modern/VTK_serial_Grid.f90
   )
 
 # Specify VTKmofo implementations
@@ -123,7 +123,7 @@ set(VTKmofo_procedures
   modern/VTK_element_procedures.f90
   modern/VTK_piece_element_procedures.f90
   modern/VTK_serial_file_procedures.f90
-  modern/VTK_serial_RectilinearGrid_procedures.f90
+  modern/VTK_serial_Grid_procedures.f90
   )
 
 # Compile all the interfaces first
