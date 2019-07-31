@@ -325,14 +325,12 @@ SUBMODULE (vtk_io) vtk_io_implementation
         CLASS IS (struct_pts)
             ERROR STOP 'Procedure not yet implemented for: STRUCTURED POINTS. Termination in subroutine: vtk_serial_full_write'
         CLASS IS (struct_grid)
-!            ERROR STOP 'Procedure not yet implemented for: STRUCTURED GRID. Termination in subroutine: vtk_serial_full_write'
             ALLOCATE(VTK_serial_StructuredGrid_dt::serial_file%vtk_dataset)
         CLASS IS (rectlnr_grid)
             ALLOCATE(VTK_serial_RectilinearGrid_dt::serial_file%vtk_dataset)
         CLASS IS (polygonal_data)
             ERROR STOP 'Procedure not yet implemented for: POLYGONAL GRID. Termination in subroutine: vtk_serial_full_write'
         CLASS IS (unstruct_grid)
-!            ERROR STOP 'Procedure not yet implemented for: UNSTRUCTURED GRID. Termination in subroutine: vtk_serial_full_write'
             ALLOCATE(VTK_serial_UnstructuredGrid_dt::serial_file%vtk_dataset)
         CLASS DEFAULT
             ERROR STOP 'Unsupported geometry type. Termination in subroutine: vtk_serial_full_write'

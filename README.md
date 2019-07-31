@@ -17,7 +17,7 @@ Format support:
      - [ ] Poly Data (.vtp)
      - [X] Rectilinear Grid (.vtr)
      - [X] Structured Grid (.vts)
-     - [ ] Unstructured Grid (.vtu) (Currently under development)
+     - [X] Unstructured Grid (.vtu) (Currently under development)
    - [ ] Parallel Formats
      - [ ] Image Data (.pvti)
      - [ ] Poly Data (.pvtp)

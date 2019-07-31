@@ -52,10 +52,12 @@ SUBMODULE (XML) XML_implementation
         MODULE PROCEDURE element_begin
         IMPLICIT NONE
         !! This begins an xml element block
+        CHARACTER(LEN=:), ALLOCATABLE :: tmp_offset
 
         WRITE(unit,'(a)',advance='no') prior_offset // '<' // me%name // me%additional_data // '>' // new_line('a')
 
-        prior_offset = prior_offset // me%offset  !! Set the new offset length
+        ALLOCATE(tmp_offset,source=prior_offset // me%offset)   !! Set the new offset length
+        CALL MOVE_ALLOC(tmp_offset,prior_offset)
 
         END PROCEDURE element_begin
 
@@ -259,9 +261,11 @@ SUBMODULE (XML) XML_implementation
         MODULE PROCEDURE element_end
         IMPLICIT NONE
         !! This ends an XML element block
+        CHARACTER(LEN=:), ALLOCATABLE :: tmp_offset
 
         ASSOCIATE (new_len => LEN(prior_offset) - LEN(me%offset))
-            prior_offset = prior_offset(1:new_len) !! Reset the offset length
+            ALLOCATE(tmp_offset,source=prior_offset(1:new_len))
+            CALL MOVE_ALLOC(tmp_offset,prior_offset) !! Reset the offset length
         END ASSOCIATE
 
         WRITE(unit,'(a)',advance='no') prior_offset // '</' // me%name // '>' // new_line('a')

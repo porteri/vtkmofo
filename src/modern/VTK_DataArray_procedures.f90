@@ -103,7 +103,6 @@ SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
                 ALLOCATE(me%type,source='Int32')
             CASE DEFAULT
                 !! Assume all other data types are ok
-!                ERROR STOP 'Error. Undefined data type in DataArray_initialize'
                 ALLOCATE(me%type,source=type)
             END SELECT
         END IF

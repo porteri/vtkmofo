@@ -76,14 +76,6 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         MODULE PROCEDURE Data_add_attribute
         IMPLICIT NONE
 
-        !! Need to get the name of the cell and type of the cell
-        !! name = cell%dataname
-        !! type = cell%datatype
-        !! and append this to the text line for the pointdata
-        !!
-        !! Then need to get the type, etc
-        !! Then need to get the data
-
         CALL me%add(cell%convert_to_dataarray())
 
         END PROCEDURE Data_add_attribute
@@ -102,10 +94,6 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         IMPLICIT NONE
 
 !! IDK if there's anything to do here
-        !IF (ALLOCATED(me%element)) THEN
-        !    CALL me%element%finalize()
-        !    CALL me%add(me%element)
-        !END IF
 
         END PROCEDURE Data_finalize
 
@@ -137,7 +125,6 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         !! Initializes a piece dt with the geometry information
         !!
         INTEGER(i4k) :: i
-        REAL(r8k), DIMENSION(2,3) :: range
         CHARACTER(LEN=*), PARAMETER :: Points_name = 'Points'
 
         CALL me%setup(name=Points_name)
@@ -185,7 +172,6 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         !! Initializes a piece dt with the geometry information
         !!
         INTEGER(i4k) :: i, cnt
-        REAL(r8k), DIMENSION(2,3) :: range
         CHARACTER(LEN=*), PARAMETER :: my_name = 'Cells'
 
         CALL me%setup(name=my_name)
@@ -193,7 +179,6 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         SELECT TYPE (geometry)
         CLASS IS (unstruct_grid)
             !! Set up cell connectivity
-!            ERROR STOP 'Error: In Cells_initialize, unstructured grid is not yet set up.'
             CALL me%connectivity%initialize(name='connectivity',type=type_float64,format=format_ascii)
             DO i = 1, geometry%n_cells
                 CALL me%connectivity%add(geometry%get_connectivity(i)) !! New procedure under works to append an array of reals

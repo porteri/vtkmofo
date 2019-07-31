@@ -1,4 +1,5 @@
 SUBMODULE (linked_list) linked_list_implementation
+    USE Precision, ONLY : i8k
     IMPLICIT NONE
     !! author: Taken from examples in Metcalf, Modern Fortran Explained, 2008
     !!         Modified by Ian Porter
@@ -167,7 +168,7 @@ SUBMODULE (linked_list) linked_list_implementation
 
         MODULE PROCEDURE PRINT
         !! Print an item.  This is overridable.
-        INTEGER :: length
+        INTEGER(i8k) :: length
 
         SELECT TYPE (v => this%value)
         TYPE IS (CHARACTER(LEN=*))

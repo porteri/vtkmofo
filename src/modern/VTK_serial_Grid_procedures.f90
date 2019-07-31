@@ -119,10 +119,6 @@ SUBMODULE (VTK_serial_Grid) VTK_serial_Grid_procedures
         !!
         !! This sets parameters specific to the DT
         !!
-        CHARACTER(LEN=10) :: tmp_string = '          '
-        CHARACTER(LEN=:), ALLOCATABLE :: range_string
-        INTEGER(i4k) :: i, j
-        INTEGER(i4k), DIMENSION(2,3)  :: range
         CHARACTER(LEN=*), PARAMETER :: file_extension = ".vtu"
         CHARACTER(LEN=*), PARAMETER :: grid_type = "UnstructuredGrid"
 

@@ -1,4 +1,5 @@
 MODULE linked_list
+    USE Precision, ONLY : i4k
     IMPLICIT NONE
     !! author: Taken from examples in Metcalf, Modern Fortran Explained, 2008
     !!         Modified by Ian Porter
@@ -51,10 +52,9 @@ MODULE linked_list
         END FUNCTION
 
         MODULE FUNCTION count_list(list)
-        USE ISO_FORTRAN_ENV, ONLY : ipk => int32
         !! Count how many items there are in a list.
         CLASS(anylist), INTENT(IN) :: list        !!
-        INTEGER(ipk)               :: count_list  !!
+        INTEGER(i4k)               :: count_list  !!
 
         END FUNCTION
 
