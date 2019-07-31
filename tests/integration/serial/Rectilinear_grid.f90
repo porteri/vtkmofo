@@ -16,7 +16,7 @@ PROGRAM modern_Rectilinear_test
     INTEGER(i4k),     PARAMETER :: n_x = 11, n_y = 6, n_z = 3, unit = 20
     REAL(r8k)                   :: j = 0.0_r8k
     REAL(r8k),        PARAMETER :: temp_val = 555.0_r8k
-    CHARACTER(LEN=*), PARAMETER :: filename = 'cube.vtr'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'cube'
     CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of cube geometry'
     INTEGER(i4k), DIMENSION(3)  :: dims = [ n_x, n_y, n_z ]
     REAL(r8k), DIMENSION(n_x), PARAMETER :: x_coords = &

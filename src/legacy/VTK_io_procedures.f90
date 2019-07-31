@@ -319,6 +319,20 @@ SUBMODULE (vtk_io) vtk_io_implementation
             ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename. Use default
         END IF
 
+        IF (PRESENT(multiple_io)) THEN
+            IF (multiple_io) THEN
+                mio_filename: BLOCK
+                    CHARACTER(LEN=8) :: fcnt_char = ''          !! File count character
+                    CHARACTER(LEN=:), ALLOCATABLE :: base_fn    !! Base file name
+                    WRITE (fcnt_char,FMT='(i8)') fcnt
+                    ALLOCATE(base_fn, source=vtkfilename)
+                    DEALLOCATE(vtkfilename)
+                    ALLOCATE(vtkfilename, source=base_fn // "_" // TRIM(ADJUSTL(fcnt_char)))
+                    fcnt = fcnt + 1                             !! Increase timestep file counter by 1
+                END BLOCK mio_filename
+            END IF
+        END IF
+
         ALLOCATE(serial_file)
 
         SELECT TYPE (geometry)
