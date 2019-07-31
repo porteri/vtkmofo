@@ -1,8 +1,8 @@
-PROGRAM Cylinder_test
-    USE Precision
+PROGRAM Structured_grid_test
+    USE Precision,      ONLY : i4k, r8k
     USE vtk_datasets,   ONLY : struct_grid
-    USE vtk_attributes, ONLY : scalar, attributes
-    USE vtk,            ONLY : vtk_legacy_write
+    USE vtk_attributes, ONLY : scalar, attribute, attributes
+    USE vtk,            ONLY : vtk_serial_write
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/20/2017
@@ -11,10 +11,11 @@ PROGRAM Cylinder_test
     !!
     INTEGER(i4k), PARAMETER     :: n_params_to_write = 1
     TYPE (struct_grid)          :: cylinder
-    TYPE (attributes), DIMENSION(n_params_to_write) :: vals_to_write
+    TYPE (attributes), DIMENSION(n_params_to_write) :: point_data
+    TYPE (scalar)               :: cell_data
     INTEGER(i4k)                :: i, j, k, cnt = 1
     INTEGER(i4k),     PARAMETER :: n_x = 19, n_y = 1, n_z = 4, unit = 20
-    CHARACTER(LEN=*), PARAMETER :: filename = 'cylinder.vtk'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'structured_grid'
     CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of cylindrical geometry'
     INTEGER(i4k), DIMENSION(3)  :: dims
     REAL(r8k), DIMENSION(n_x), PARAMETER :: x_vals = &
@@ -43,6 +44,10 @@ PROGRAM Cylinder_test
       &   8.69E+02_r8k, 8.28E+02_r8k, 7.97E+02_r8k, 7.75E+02_r8k, 7.60E+02_r8k, &
       &   7.52E+02_r8k, 7.47E+02_r8k, 7.45E+02_r8k, 7.45E+02_r8k, 5.68E+02_r8k, &
       &   5.28E+02_r8k ]
+    INTEGER(i4k), DIMENSION(MAX(n_x-1,1)*MAX(n_y-1,1)*MAX(n_z-1,1)), PARAMETER :: mat_id = &
+      &  [ 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, &
+      &    5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, &
+      &    5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3 ]
     REAL(r8k), DIMENSION(1:3,n_x*n_y*n_z)    :: points
     REAL(r8k), DIMENSION(n_x*n_y*n_z,1:n_params_to_write) :: vals
     CHARACTER(LEN=20), DIMENSION(n_params_to_write), PARAMETER :: dataname = &
@@ -66,14 +71,17 @@ PROGRAM Cylinder_test
     CALL cylinder%init (dims=dims, points=points)
 
     DO i = 1, n_params_to_write
-        IF (.NOT. ALLOCATED(vals_to_write(i)%attribute))THEN
-            ALLOCATE(scalar::vals_to_write(i)%attribute)
+        IF (.NOT. ALLOCATED(point_data(i)%attribute))THEN
+            ALLOCATE(scalar::point_data(i)%attribute)
         END IF
-        CALL vals_to_write(i)%attribute%init (dataname(i), numcomp=1, real1d=vals(:,i))
+        CALL point_data(i)%attribute%init (dataname(i), numcomp=1, real1d=vals(:,i))
     END DO
 
-    CALL vtk_legacy_write (cylinder, unit=unit, pointdatasets=vals_to_write)
+    !! Dummy "material" information
+    CALL cell_data%init ('material_id', numcomp=1, int1d=mat_id)
+
+    CALL vtk_serial_write (cylinder, filename=filename, unit=unit, pointdatasets=point_data, celldata=cell_data)
 
     WRITE(*,*) 'Finished'
 
-END PROGRAM Cylinder_test
+END PROGRAM Structured_grid_test

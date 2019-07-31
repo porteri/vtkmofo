@@ -1,6 +1,5 @@
 SUBMODULE (vtk_datasets) vtk_datasets_implementation
     USE Precision, ONLY : i4k, r8k
-    USE vtk_cells, ONLY : vtkcell
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/1/2017
@@ -22,7 +21,6 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         MODULE PROCEDURE init
         USE Misc, ONLY : to_lowercase
         IMPLICIT NONE
-        !!
         !! Initializes the dataset with information
         CHARACTER(LEN=:), ALLOCATABLE :: data_type  !! Internal variable for datatype
 
@@ -56,6 +54,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE init
 
         MODULE PROCEDURE check_for_diffs
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/18/2017
         !!
@@ -73,12 +72,41 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END IF
 
         END PROCEDURE check_for_diffs
+
+        MODULE PROCEDURE get_range_cnt
+        IMPLICIT NONE
+        !! Function returns the number of variables in x,y,z coordinates
+
+        range(1,1) = 1
+        range(2,1) = MAX(me%dimensions(1),1)
+        range(1,2) = 1
+        range(2,2) = MAX(me%dimensions(2),1)
+        range(1,3) = 1
+        range(2,3) = MAX(me%dimensions(3),1)
+
+        END PROCEDURE get_range_cnt
+
+        MODULE PROCEDURE get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        ERROR STOP 'Generic get_range should not be called. Will be moved to abstract.'
+
+        END PROCEDURE get_range
+
+        MODULE PROCEDURE get_coord
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        ERROR STOP 'Generic get_coord should not be called. Will be moved to abstract.'
+
+        END PROCEDURE get_coord
 ! *****************
 ! Structured Points
 ! *****************
         MODULE PROCEDURE struct_pts_read
         USE Misc, ONLY : interpret_string, def_len, char_dt
-        !!
+        IMPLICIT NONE
         !! Reads the structured points dataset information from the .vtk file
         INTEGER(i4k)                   :: iostat
         CHARACTER(LEN=def_len)         :: line
@@ -106,7 +134,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE struct_pts_read
 
         MODULE PROCEDURE struct_pts_write
-        !!
+        IMPLICIT NONE
         !! Writes the structured points dataset information to the .vtk file
 
         WRITE(unit,100) me%name
@@ -122,7 +150,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE struct_pts_write
 
         MODULE PROCEDURE struct_pts_setup
-        !!
+        IMPLICIT NONE
         !! Sets up the structured points dataset with information
 
         me%name       = 'STRUCTURED_POINTS'
@@ -133,8 +161,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         END PROCEDURE struct_pts_setup
 
-        MODULE PROCEDURE check_for_diffs_struct_pts
-        !!
+        MODULE PROCEDURE struct_pts_check_for_diffs
+        IMPLICIT NONE
         !! Function checks for differences in a structured points dataset
 
         diffs = .FALSE.
@@ -161,13 +189,19 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_struct_pts
+        END PROCEDURE struct_pts_check_for_diffs
+
+        MODULE PROCEDURE struct_pts_get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        END PROCEDURE struct_pts_get_range
 ! ***************
 ! Structured Grid
 ! ***************
         MODULE PROCEDURE struct_grid_read
         USE Misc, ONLY : interpret_string, def_len, char_dt
-        !!
+        IMPLICIT NONE
         !! Reads the structured grid dataset information from the .vtk file
         INTEGER(i4k)                    :: i, iostat
         INTEGER(i4k), PARAMETER         :: dim = 3
@@ -209,7 +243,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE struct_grid_read
 
         MODULE PROCEDURE struct_grid_write
-        !!
+        IMPLICIT NONE
         !! Writes the structured grid dataset information to the .vtk file
         INTEGER(i4k) :: i
 
@@ -228,7 +262,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE struct_grid_write
 
         MODULE PROCEDURE struct_grid_setup
-        !!
+        IMPLICIT NONE
         !! Sets up the structured grid dataset with information
 
         me%name       = 'STRUCTURED_GRID'
@@ -239,8 +273,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         END PROCEDURE struct_grid_setup
 
-        MODULE PROCEDURE check_for_diffs_struct_grid
-        !!
+        MODULE PROCEDURE struct_grid_check_for_diffs
+        IMPLICIT NONE
         !! Function checks for differences in a structured grid dataset
 
         INTEGER(i4k) :: i, j
@@ -276,13 +310,31 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_struct_grid
+        END PROCEDURE struct_grid_check_for_diffs
+
+        MODULE PROCEDURE struct_grid_get_point
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        IF (i < LBOUND(me%points,DIM=2) .OR. i > UBOUND(me%points,DIM=2)) THEN
+            ERROR STOP 'Error: Array bounds have been exceeded in struct_grid_get_range'
+        END IF
+
+        coord = me%points(1:3,i)
+
+        END PROCEDURE struct_grid_get_point
+
+        MODULE PROCEDURE struct_grid_get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        END PROCEDURE struct_grid_get_range
 ! ****************
 ! Rectilinear Grid
 ! ****************
         MODULE PROCEDURE rectlnr_grid_read
         USE Misc, ONLY : interpret_string, def_len, char_dt, to_lowercase
-        !!
+        IMPLICIT NONE
         !! Reads the rectilinear grid dataset information from the .vtk file
 
         INTEGER(i4k)            :: i, j, iostat
@@ -348,7 +400,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE rectlnr_grid_read
 
         MODULE PROCEDURE rectlnr_grid_write
-        !!
+        IMPLICIT NONE
         !! Writes the rectilinear grid dataset information to the .vtk file
 
         WRITE(unit,100) me%name
@@ -370,7 +422,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE rectlnr_grid_write
 
         MODULE PROCEDURE rectlnr_grid_setup
-        !!
+        IMPLICIT NONE
         !! Sets up the rectilinear grid dataset with information
 
         IF (dims(1) /= SIZE(x_coords) .OR. dims(2) /= SIZE(y_coords) .OR. dims(3) /= SIZE(z_coords)) THEN
@@ -389,8 +441,8 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         END PROCEDURE rectlnr_grid_setup
 
-        MODULE PROCEDURE check_for_diffs_rectlnr_grid
-        !!
+        MODULE PROCEDURE rectlnr_grid_check_for_diffs
+        IMPLICIT NONE
         !! Function checks for differences in a rectilinear grid dataset
         INTEGER(i4k) :: i
 
@@ -434,14 +486,43 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
             END SELECT
         END IF
 
-        END PROCEDURE check_for_diffs_rectlnr_grid
+        END PROCEDURE rectlnr_grid_check_for_diffs
+
+        MODULE PROCEDURE rectlnr_grid_get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+        ASSOCIATE (x_min => range(1,1), x_max => range(2,1), &
+            &      y_min => range(1,2), y_max => range(2,2), &
+            &      z_min => range(1,3), z_max => range(2,3))
+            x_min = MINVAL(me%x%coord,DIM=1); x_max = MAXVAL(me%x%coord,DIM=1)
+            y_min = MINVAL(me%y%coord,DIM=1); y_max = MAXVAL(me%y%coord,DIM=1)
+            z_min = MINVAL(me%z%coord,DIM=1); z_max = MAXVAL(me%z%coord,DIM=1)
+        END ASSOCIATE
+
+        END PROCEDURE rectlnr_grid_get_range
+
+        MODULE PROCEDURE rectlnr_grid_get_coord
+        IMPLICIT NONE
+
+        SELECT CASE (dim)
+        CASE (1)
+            ALLOCATE(coord,source=me%x%coord)
+        CASE (2)
+            ALLOCATE(coord,source=me%y%coord)
+        CASE (3)
+            ALLOCATE(coord,source=me%z%coord)
+        CASE DEFAULT
+            ERROR STOP 'Error: Invalid dimension (dim) requested in rectlnr_grid_get_coord'
+        END SELECT
+
+        END PROCEDURE rectlnr_grid_get_coord
 ! **************
 ! Polygonal Data
 ! **************
         MODULE PROCEDURE polygonal_data_read
         USE Misc,      ONLY : interpret_string, def_len, char_dt, to_lowercase
         USE vtk_cells, ONLY : poly_vertex, poly_line, polygon, triangle_strip
-        !!
+        IMPLICIT NONE
         !! Reads the polygonal data dataset information from the .vtk file
         INTEGER(i4k)                       :: i, j, iostat, n, descr_size, n_points
         INTEGER(i4k), PARAMETER            :: dim = 3
@@ -555,7 +636,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE polygonal_data_read
 
         MODULE PROCEDURE polygonal_data_write
-        !!
+        IMPLICIT NONE
         !! Writes the polygonal data dataset information to the .vtk file
         INTEGER(i4k) :: i, n, size_cnt
 
@@ -634,7 +715,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE polygonal_data_write
 
         MODULE PROCEDURE polygonal_data_setup
-        !!
+        IMPLICIT NONE
         !! Sets up the polygonal data dataset with information
 
         me%name       = 'POLYDATA'
@@ -647,13 +728,19 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         IF (PRESENT(triangles)) ALLOCATE(me%triangles,source=triangles)
 
         END PROCEDURE polygonal_data_setup
+
+        MODULE PROCEDURE polygonal_data_get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        END PROCEDURE polygonal_data_get_range
 ! *****************
 ! Unstructured Grid
 ! *****************
         MODULE PROCEDURE unstruct_grid_read
         USE Misc,      ONLY : interpret_string, def_len, char_dt, to_lowercase
         USE vtk_cells, ONLY : vtkcell, poly_vertex, set_cell_type
-        !!
+        IMPLICIT NONE
         !! Reads the unstructured grid dataset information from the .vtk file
         CLASS(vtkcell), ALLOCATABLE :: dummy_cell
         INTEGER(i4k)                :: i, iostat
@@ -733,7 +820,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE unstruct_grid_read
 
         MODULE PROCEDURE unstruct_grid_write
-        !!
+        IMPLICIT NONE
         !! Writes the unstructured grid dataset information from the .vtk file
         INTEGER(i4k) :: i
 
@@ -764,7 +851,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE unstruct_grid_write
 
         MODULE PROCEDURE unstruct_grid_setup
-        !!
+        IMPLICIT NONE
         !! Sets up the unstructured grid dataset with information
         INTEGER(i4k) :: i, size_cnt
 
@@ -785,7 +872,7 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         END PROCEDURE unstruct_grid_setup
 
         MODULE PROCEDURE unstruct_grid_setup_multiclass
-        !!
+        IMPLICIT NONE
         !! Sets up the unstructured grid dataset with information
         INTEGER(i4k) :: i, size_cnt
 
@@ -803,5 +890,60 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         me%firstcall    = .FALSE.
 
         END PROCEDURE unstruct_grid_setup_multiclass
+
+        MODULE PROCEDURE unstruct_grid_get_range
+        IMPLICIT NONE
+        !! Function returns the min / max range of values in x,y,z coordinates
+
+        END PROCEDURE unstruct_grid_get_range
+
+        MODULE PROCEDURE unstruct_grid_get_point
+        IMPLICIT NONE
+        !! Function returns the point (i)
+
+        IF (i < LBOUND(me%points,DIM=2) .OR. i > UBOUND(me%points,DIM=2)) THEN
+            ERROR STOP 'Error: Array bounds have been exceeded in unstruct_grid_get_range'
+        END IF
+
+        coord = me%points(1:3,i)
+
+        END PROCEDURE unstruct_grid_get_point
+
+        MODULE PROCEDURE unstruct_grid_get_connectivity
+        IMPLICIT NONE
+        !! Function returns the connectivity for cell (i)
+
+        IF (i < LBOUND(me%cell_list,DIM=1) .OR. i > UBOUND(me%cell_list,DIM=1)) THEN
+            ERROR STOP 'Error: Array bounds have been exceeded in unstruct_grid_get_connectivity'
+        END IF
+
+        ALLOCATE(connectivity, source=me%cell_list(i)%cell%points)
+
+        END PROCEDURE unstruct_grid_get_connectivity
+
+        MODULE PROCEDURE unstruct_grid_get_offset
+        IMPLICIT NONE
+        !! Function returns the offset for cell (i)
+        !! The offset is just the # of points
+
+        IF (i < LBOUND(me%cell_list,DIM=1) .OR. i > UBOUND(me%cell_list,DIM=1)) THEN
+            ERROR STOP 'Error: Array bounds have been exceeded in unstruct_grid_get_offset'
+        END IF
+
+        offset = me%cell_list(i)%cell%n_points
+
+        END PROCEDURE unstruct_grid_get_offset
+
+        MODULE PROCEDURE unstruct_grid_get_type
+        IMPLICIT NONE
+        !! Function returns the type for cell (i)
+
+        IF (i < LBOUND(me%cell_list,DIM=1) .OR. i > UBOUND(me%cell_list,DIM=1)) THEN
+            ERROR STOP 'Error: Array bounds have been exceeded in unstruct_grid_get_type'
+        END IF
+
+        type = me%cell_list(i)%cell%type
+
+        END PROCEDURE unstruct_grid_get_type
 
 END SUBMODULE vtk_datasets_implementation

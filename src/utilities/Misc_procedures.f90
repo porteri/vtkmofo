@@ -1,9 +1,11 @@
 SUBMODULE (Misc) Misc_implementation
+    USE Precision, ONLY : i4k, i8k, r8k
+    IMPLICIT NONE
 
     CONTAINS
 
         MODULE PROCEDURE interpret_string
-        !!
+        IMPLICIT NONE
         !! Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
         INTEGER(i4k) :: i
         CHARACTER(LEN=:), ALLOCATABLE :: string, sep, char
@@ -60,6 +62,7 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE interpret_string
 
         MODULE PROCEDURE reduce_string
+        IMPLICIT NONE
 
         IF (INDEX(string,sep) == 0) THEN
             string = ''
@@ -70,6 +73,7 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE reduce_string
 
         MODULE PROCEDURE get_string_char
+        IMPLICIT NONE
 
         IF (INDEX(string,sep) == 0) THEN
             name = string(1:)                    !! Read to end of string
@@ -80,6 +84,8 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE get_string_char
 
         MODULE PROCEDURE get_string_int
+        IMPLICIT NONE
+
         CHARACTER(LEN=:), ALLOCATABLE :: text
 
         IF (INDEX(string,sep) == 0) THEN
@@ -92,6 +98,7 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE get_string_int
 
         MODULE PROCEDURE get_string_real
+        IMPLICIT NONE
         CHARACTER(LEN=:), ALLOCATABLE :: text
 
         IF (INDEX(string,sep) == 0) THEN
@@ -103,7 +110,57 @@ SUBMODULE (Misc) Misc_implementation
 
         END PROCEDURE get_string_real
 
+        MODULE PROCEDURE convert_real32_to_string
+        IMPLICIT NONE
+        !! Converts a real to a character string
+        CHARACTER(LEN=30) :: tmp_string = '                    '
+
+        WRITE(tmp_string,*) var
+        ALLOCATE(string,source=TRIM(ADJUSTL(tmp_string)))
+
+        END PROCEDURE convert_real32_to_string
+
+        MODULE PROCEDURE convert_real64_to_string
+        IMPLICIT NONE
+        !! Converts a real to a character string
+        CHARACTER(LEN=30) :: tmp_string = '                    '
+
+        WRITE(tmp_string,*) var
+        ALLOCATE(string,source=TRIM(ADJUSTL(tmp_string)))
+
+        END PROCEDURE convert_real64_to_string
+
+        MODULE PROCEDURE convert_int32_to_string
+        IMPLICIT NONE
+        CHARACTER(LEN=10) :: tmp_string = '          '
+
+        WRITE(tmp_string,'(i10)') var
+        ALLOCATE(string,source=TRIM(ADJUSTL(tmp_string)))
+
+        END PROCEDURE convert_int32_to_string
+
+        MODULE PROCEDURE convert_int64_to_string
+        IMPLICIT NONE
+        CHARACTER(LEN=20) :: tmp_string = '                    '
+
+        WRITE(tmp_string,'(i20)') var
+        ALLOCATE(string,source=TRIM(ADJUSTL(tmp_string)))
+
+        END PROCEDURE convert_int64_to_string
+
+        MODULE PROCEDURE convert_logical_to_string
+        IMPLICIT NONE
+        
+        IF (var) THEN
+            ALLOCATE(string,source='True')
+        ELSE
+            ALLOCATE(string,source='False')
+        END IF
+
+        END PROCEDURE convert_logical_to_string
+
         MODULE PROCEDURE to_uppercase
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 01/23/2019
         !!
@@ -127,6 +184,7 @@ SUBMODULE (Misc) Misc_implementation
         END PROCEDURE to_uppercase
 
         MODULE PROCEDURE to_lowercase
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 01/23/2019
         !!
@@ -148,5 +206,28 @@ SUBMODULE (Misc) Misc_implementation
         END DO
 
         END PROCEDURE to_lowercase
+
+        MODULE PROCEDURE sleep_for
+        IMPLICIT NONE
+        !! author: Zaak Beekman, ParaTools
+        !! date: 8/8/2018
+        !!
+        !! This performs a 'sleep' for a specified amount of time
+        !!
+        INTEGER(i4k), DIMENSION(8) :: time
+        INTEGER(i8k) :: ms_t1, ms_t2, msecs_big
+
+        CALL DATE_AND_TIME(values=time)
+
+        ms_t1=(time(5)*3600+time(6)*60+time(7))*1000+time(8)
+        msecs_big = msecs
+
+        DO !! spin until elapsed time is greater than msecs
+            CALL DATE_AND_TIME(values=time)
+            ms_t2=(time(5)*3600+time(6)*60+time(7))*1000+time(8)
+            IF ( ms_t2 - ms_t1 >= msecs_big ) EXIT
+        END DO
+
+        END PROCEDURE
 
 END SUBMODULE Misc_implementation

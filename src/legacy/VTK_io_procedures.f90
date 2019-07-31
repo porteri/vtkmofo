@@ -21,7 +21,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         !! author: Ian Porter
         !! date: 12/1/2017
         !!
-        !! This subroutines writes the legacy vtk output file
+        !! This subroutine writes the legacy vtk output file
         !!
         INTEGER(i4k)  :: i, inputstat
         CHARACTER(LEN=:), ALLOCATABLE :: filetype_text
@@ -149,11 +149,11 @@ SUBMODULE (vtk_io) vtk_io_implementation
         !! author: Ian Porter
         !! date: 12/1/2017
         !!
-        !! This subroutines writes the legacy vtk output file
+        !! This subroutine writes the legacy vtk output file
         !!
         INTEGER(i4k) :: i, inputstat
         LOGICAL :: file_is_still_open
-        
+
         INQUIRE(unit=newunit,opened=file_is_still_open)
         IF (.NOT. file_is_still_open) THEN
             !! For some reason, file was closed. Re-open the file to a new unit
@@ -187,7 +187,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
                 WRITE(newunit,102) pointdata%nvals
                 printed_point_data_header = .TRUE.
             END IF
-            
+
             CALL pointdata%write(newunit)                       !! Write the point data values
         END IF
 
@@ -197,10 +197,11 @@ SUBMODULE (vtk_io) vtk_io_implementation
         END PROCEDURE vtk_legacy_append
 
         MODULE PROCEDURE vtk_legacy_finalize
+        IMPLICIT NONE
         !! author: Ian Porter
         !! date: 06/03/2019
         !!
-        !! This subroutines is a finalizer for the vtk file write
+        !! This subroutine is a finalizer for the vtk file write
         !!
 
         IF (finished) THEN
@@ -220,7 +221,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         !! author: Ian Porter
         !! date: 12/20/2017
         !!
-        !! This subroutines reads the legacy vtk output file
+        !! This subroutine reads the legacy vtk output file
         !!
         INTEGER(i4k) :: i, inputstat
         LOGICAL      :: file_is_open
@@ -295,5 +296,107 @@ SUBMODULE (vtk_io) vtk_io_implementation
 100     FORMAT(a)
 
         END PROCEDURE vtk_legacy_read
+
+        MODULE PROCEDURE vtk_serial_full_write
+        USE vtk_datasets,    ONLY : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
+        USE VTK_serial_file, ONLY : serial_file
+        USE VTK_serial_Grid, ONLY : VTK_serial_RectilinearGrid_dt, VTK_serial_StructuredGrid_dt, VTK_serial_UnstructuredGrid_dt
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 5/08/2019
+        !!
+        !! This subroutine writes the modern serial vtk output file
+        !!
+
+        ! Clear out any pre-existing data
+        IF (ALLOCATED(vtkfilename)) DEALLOCATE(vtkfilename)
+        IF (ALLOCATED(form))        DEALLOCATE(form)
+
+        IF (PRESENT(data_type)) filetype = data_type            !! Calling program provided what file type to use for vtk file
+        IF (PRESENT(filename)) THEN
+            ALLOCATE(vtkfilename, source=filename)              !! Calling program provided a filename
+        ELSE
+            ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename. Use default
+        END IF
+
+        IF (PRESENT(multiple_io)) THEN
+            IF (multiple_io) THEN
+                mio_filename: BLOCK
+                    CHARACTER(LEN=8) :: fcnt_char = ''          !! File count character
+                    CHARACTER(LEN=:), ALLOCATABLE :: base_fn    !! Base file name
+                    WRITE (fcnt_char,FMT='(i8)') fcnt
+                    ALLOCATE(base_fn, source=vtkfilename)
+                    DEALLOCATE(vtkfilename)
+                    ALLOCATE(vtkfilename, source=base_fn // "_" // TRIM(ADJUSTL(fcnt_char)))
+                    fcnt = fcnt + 1                             !! Increase timestep file counter by 1
+                END BLOCK mio_filename
+            END IF
+        END IF
+
+        ALLOCATE(serial_file)
+
+        SELECT TYPE (geometry)
+        CLASS IS (struct_pts)
+            ERROR STOP 'Procedure not yet implemented for: STRUCTURED POINTS. Termination in subroutine: vtk_serial_full_write'
+        CLASS IS (struct_grid)
+            ALLOCATE(VTK_serial_StructuredGrid_dt::serial_file%vtk_dataset)
+        CLASS IS (rectlnr_grid)
+            ALLOCATE(VTK_serial_RectilinearGrid_dt::serial_file%vtk_dataset)
+        CLASS IS (polygonal_data)
+            ERROR STOP 'Procedure not yet implemented for: POLYGONAL GRID. Termination in subroutine: vtk_serial_full_write'
+        CLASS IS (unstruct_grid)
+            ALLOCATE(VTK_serial_UnstructuredGrid_dt::serial_file%vtk_dataset)
+        CLASS DEFAULT
+            ERROR STOP 'Unsupported geometry type. Termination in subroutine: vtk_serial_full_write'
+        END SELECT
+
+        CALL serial_file%vtk_dataset%set_grid(geometry)
+
+        CALL serial_file%setup(filename=vtkfilename // TRIM(serial_file%vtk_dataset%file_extension),form='formatted')
+        !! Append data
+        CALL vtk_serial_append (celldata, pointdata, celldatasets, pointdatasets)
+        !! Finalize the write
+        IF (ANY([ PRESENT(celldatasets), PRESENT(celldata), PRESENT(pointdatasets), PRESENT(pointdata) ])) THEN
+            CALL vtk_serial_finalize (finished=.TRUE.)          !! Full legacy write w/ data. Close file.
+        ELSE
+            CALL vtk_serial_finalize (finished=.FALSE.)         !! No data was provided, only geometry info. Do not close file.
+        END IF
+
+        END PROCEDURE vtk_serial_full_write
+
+        MODULE PROCEDURE vtk_serial_append
+        USE VTK_serial_file, ONLY : serial_file
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/24/2019
+        !!
+        !! This subroutine appends data to the legacy vtk output file
+        !!
+
+        IF (.NOT. ALLOCATED(serial_file%vtk_dataset%piece)) ALLOCATE(serial_file%vtk_dataset%piece)
+        CALL serial_file%vtk_dataset%piece%add_data(celldata, pointdata, celldatasets, pointdatasets)
+
+        END PROCEDURE vtk_serial_append
+
+        MODULE PROCEDURE vtk_serial_finalize
+        USE VTK_serial_file, ONLY : serial_file
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 06/24/2019
+        !!
+        !! This subroutine is a finalizer for the legacy vtk file write
+        !!
+
+        IF (finished) THEN
+            CALL serial_file%vtk_dataset%finalize()
+                  !! This should write everything inside of the piece
+            CALL serial_file%add(serial_file%vtk_dataset)
+            CALL serial_file%write()
+            CALL serial_file%close_file()                    !! Close the VTK file
+            CALL serial_file%me_deallocate()
+            IF (ALLOCATED(serial_file)) DEALLOCATE(serial_file)
+        END IF
+
+        END PROCEDURE vtk_serial_finalize
 
 END SUBMODULE vtk_io_implementation

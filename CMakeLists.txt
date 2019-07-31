@@ -91,22 +91,39 @@ set(VTKmofo_mod_dir ${CMAKE_CURRENT_BINARY_DIR}/mod)
 #    put interfaces and submodules in separate libraries
 # Specify VTKmofo interfaces
 set(VTKmofo_interfaces
-  Precision.f90
-  Misc_interface.f90
-  VTK_io_interface.f90
-  VTK_datasets_interface.f90
-  VTK_cells_interface.f90
-  VTK_attributes_interface.f90
-  VTK_vars.f90)
+  utilities/file_utility.f90
+  utilities/linked_list.f90
+  utilities/Misc.f90
+  utilities/Precision.f90
+  utilities/xml.f90
+  legacy/VTK_io.f90
+  legacy/VTK_datasets.f90
+  legacy/VTK_cells.f90
+  legacy/VTK_attributes.f90
+  legacy/VTK_vars.f90
+  modern/VTK_DataArray.f90
+  modern/VTK_element.f90
+  modern/VTK_piece_element.f90
+  modern/VTK_serial_file.f90
+  modern/VTK_serial_Grid.f90
+  )
 
 # Specify VTKmofo implementations
-set(VTKmofo_implementations
-  Misc_implementation.f90
-  VTK_attributes_implementation.f90
-  VTK_cells_implementation.f90
-  VTK_datasets_implementation.f90
-  VTK_interface.f90
-  VTK_io_implementation.f90
+set(VTKmofo_procedures
+  utilities/file_utility_procedures.f90
+  utilities/linked_list_procedures.f90
+  utilities/Misc_procedures.f90
+  utilities/xml_procedures.f90
+  legacy/VTK_attributes_procedures.f90
+  legacy/VTK_cells_procedures.f90
+  legacy/VTK_datasets_procedures.f90
+  legacy/VTK.f90
+  legacy/VTK_io_procedures.f90
+  modern/VTK_DataArray_procedures.f90
+  modern/VTK_element_procedures.f90
+  modern/VTK_piece_element_procedures.f90
+  modern/VTK_serial_file_procedures.f90
+  modern/VTK_serial_Grid_procedures.f90
   )
 
 # Compile all the interfaces first
@@ -124,11 +141,11 @@ if(VTKmofo_USE_OpenCoarrays)
 endif()
 
 # Add any object files from the interfaces to the main library build
-foreach(item ${VTKmofo_implementations})
-  list(APPEND VTKmofo_implementation_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
+foreach(item ${VTKmofo_procedures})
+  list(APPEND VTKmofo_procedures_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
 endforeach()
 add_library(vtkmofo
-  STATIC ${VTKmofo_implementation_srcs} $<TARGET_OBJECTS:vtkmofo_interfaces>)
+  STATIC ${VTKmofo_procedures_srcs} $<TARGET_OBJECTS:vtkmofo_interfaces>)
 if(VTKmofo_USE_OpenCoarrays)
   target_link_libraries(vtkmofo
     PRIVATE OpenCoarrays::caf_mpi_static)
