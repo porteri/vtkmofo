@@ -54,6 +54,18 @@ MODULE VTK_piece_element
         PROCEDURE :: Points_deallocate
     END TYPE Points_dt
 
+    TYPE, EXTENDS(xml_element_dt) :: Cells_dt
+        !! Cells derived type
+        PRIVATE
+        TYPE(DataArray_dt) :: connectivity
+        TYPE(DataArray_dt) :: offsets
+        TYPE(DataArray_dt) :: types
+    CONTAINS
+        PROCEDURE, NON_OVERRIDABLE :: Cells_initialize
+        GENERIC, PUBLIC :: initialize => Cells_initialize
+        PROCEDURE :: Cells_deallocate
+    END TYPE Cells_dt
+
     TYPE, EXTENDS(xml_element_dt) :: Coordinates_dt
         !! Coordinates derived type
         PRIVATE
@@ -71,6 +83,7 @@ MODULE VTK_piece_element
         TYPE(CellData_dt),    ALLOCATABLE :: celldata
         TYPE(Coordinates_dt), ALLOCATABLE :: coordinates
         TYPE(Points_dt),      ALLOCATABLE :: points
+        TYPE(Cells_dt),       ALLOCATABLE :: cells
     CONTAINS
 !        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: initialize => piece_initialize
         PROCEDURE, PRIVATE :: piece_set_grid
@@ -144,7 +157,7 @@ MODULE VTK_piece_element
         !!
         !! Explicitly deallocate a Data_dt
         !!
-        CLASS(Data_dt), INTENT(INOUT) :: foo                    !! PointData DT
+        CLASS(Data_dt), INTENT(INOUT) :: foo                    !! Data DT
 
         END SUBROUTINE Data_deallocate
 
@@ -162,10 +175,29 @@ MODULE VTK_piece_element
 
         RECURSIVE MODULE SUBROUTINE Points_deallocate (foo)
         IMPLICIT NONE
-        !! Explicitly deallocate a piece dt
+        !! Explicitly deallocate a points dt
         CLASS(Points_dt), INTENT(INOUT) :: foo
 
         END SUBROUTINE Points_deallocate
+
+        MODULE SUBROUTINE Cells_initialize (me, geometry)
+        IMPLICIT NONE
+        !1 author: Ian Porter
+        !! date: 07/29/2019
+        !!
+        !! Initializes a Cells DT with the geometry information
+        !!
+        CLASS(Cells_dt), INTENT(INOUT) :: me
+        CLASS(dataset),  INTENT(IN)    :: geometry
+
+        END SUBROUTINE Cells_initialize
+
+        RECURSIVE MODULE SUBROUTINE Cells_deallocate (foo)
+        IMPLICIT NONE
+        !! Explicitly deallocate a cells dt
+        CLASS(Cells_dt), INTENT(INOUT) :: foo
+
+        END SUBROUTINE Cells_deallocate
 
         MODULE SUBROUTINE Coordinates_initialize (me, geometry)
         IMPLICIT NONE

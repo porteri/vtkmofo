@@ -300,7 +300,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         MODULE PROCEDURE vtk_serial_full_write
         USE vtk_datasets,    ONLY : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         USE VTK_serial_file, ONLY : serial_file
-        USE VTK_serial_Grid, ONLY : VTK_serial_RectilinearGrid_dt, VTK_serial_StructuredGrid_dt
+        USE VTK_serial_Grid, ONLY : VTK_serial_RectilinearGrid_dt, VTK_serial_StructuredGrid_dt, VTK_serial_UnstructuredGrid_dt
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 5/08/2019
@@ -332,7 +332,8 @@ SUBMODULE (vtk_io) vtk_io_implementation
         CLASS IS (polygonal_data)
             ERROR STOP 'Procedure not yet implemented for: POLYGONAL GRID. Termination in subroutine: vtk_serial_full_write'
         CLASS IS (unstruct_grid)
-            ERROR STOP 'Procedure not yet implemented for: UNSTRUCTURED GRID. Termination in subroutine: vtk_serial_full_write'
+!            ERROR STOP 'Procedure not yet implemented for: UNSTRUCTURED GRID. Termination in subroutine: vtk_serial_full_write'
+            ALLOCATE(VTK_serial_UnstructuredGrid_dt::serial_file%vtk_dataset)
         CLASS DEFAULT
             ERROR STOP 'Unsupported geometry type. Termination in subroutine: vtk_serial_full_write'
         END SELECT

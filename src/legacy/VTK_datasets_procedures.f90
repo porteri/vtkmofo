@@ -1,6 +1,5 @@
 SUBMODULE (vtk_datasets) vtk_datasets_implementation
     USE Precision, ONLY : i4k, r8k
-    USE vtk_cells, ONLY : vtkcell
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/1/2017
@@ -897,5 +896,54 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
         !! Function returns the min / max range of values in x,y,z coordinates
 
         END PROCEDURE unstruct_grid_get_range
+
+        MODULE PROCEDURE unstruct_grid_get_point
+        IMPLICIT NONE
+        !! Function returns the point (i)
+
+        IF (i < LBOUND(me%points,DIM=2) .OR. i > UBOUND(me%points,DIM=2)) THEN
+            ERROR STOP 'Error: Array bounds have been exceeded in unstruct_grid_get_range'
+        END IF
+
+        coord = me%points(1:3,i)
+
+        END PROCEDURE unstruct_grid_get_point
+
+        MODULE PROCEDURE unstruct_grid_get_connectivity
+        IMPLICIT NONE
+        !! Function returns the connectivity for cell (i)
+
+        IF (i < LBOUND(me%cell_list,DIM=1) .OR. i > UBOUND(me%cell_list,DIM=1)) THEN
+            ERROR STOP 'Error: Array bounds have been exceeded in unstruct_grid_get_connectivity'
+        END IF
+
+        ALLOCATE(connectivity, source=me%cell_list(i)%cell%points)
+
+        END PROCEDURE unstruct_grid_get_connectivity
+
+        MODULE PROCEDURE unstruct_grid_get_offset
+        IMPLICIT NONE
+        !! Function returns the offset for cell (i)
+        !! The offset is just the # of points
+
+        IF (i < LBOUND(me%cell_list,DIM=1) .OR. i > UBOUND(me%cell_list,DIM=1)) THEN
+            ERROR STOP 'Error: Array bounds have been exceeded in unstruct_grid_get_offset'
+        END IF
+
+        offset = me%cell_list(i)%cell%n_points
+
+        END PROCEDURE unstruct_grid_get_offset
+
+        MODULE PROCEDURE unstruct_grid_get_type
+        IMPLICIT NONE
+        !! Function returns the type for cell (i)
+
+        IF (i < LBOUND(me%cell_list,DIM=1) .OR. i > UBOUND(me%cell_list,DIM=1)) THEN
+            ERROR STOP 'Error: Array bounds have been exceeded in unstruct_grid_get_type'
+        END IF
+
+        type = me%cell_list(i)%cell%type
+
+        END PROCEDURE unstruct_grid_get_type
 
 END SUBMODULE vtk_datasets_implementation

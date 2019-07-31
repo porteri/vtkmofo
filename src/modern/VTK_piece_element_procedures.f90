@@ -151,8 +151,16 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
             END DO
             CALL me%add(me%DataArray)
             CALL me%DataArray%me_deallocate()
+        CLASS IS (unstruct_grid)
+            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
+            CALL me%DataArray%initialize(type=type_float64,format=format_ascii,NumberofComponents=3)
+            DO i = 1, geometry%n_points
+                CALL me%DataArray%add(geometry%get_point(i)) !! New procedure under works to append an array of reals
+            END DO
+            CALL me%add(me%DataArray)
+            CALL me%DataArray%me_deallocate()
         CLASS DEFAULT
-            ERROR STOP 'Error: In Points_initialize, the geometry is not yet defined.'
+            ERROR STOP 'Error: In Points_initialize, the geometry is not defined.'
         END SELECT
 
         END PROCEDURE Points_initialize
@@ -166,6 +174,65 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         CALL foo%deallocate()
 
         END PROCEDURE Points_deallocate
+
+        MODULE PROCEDURE Cells_initialize
+        USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
+        USE Misc,         ONLY : convert_to_string
+        IMPLICIT NONE
+        !1 author: Ian Porter
+        !! date: 07/09/2019
+        !!
+        !! Initializes a piece dt with the geometry information
+        !!
+        INTEGER(i4k) :: i, cnt
+        REAL(r8k), DIMENSION(2,3) :: range
+        CHARACTER(LEN=*), PARAMETER :: my_name = 'Cells'
+
+        CALL me%setup(name=my_name)
+
+        SELECT TYPE (geometry)
+        CLASS IS (unstruct_grid)
+            !! Set up cell connectivity
+!            ERROR STOP 'Error: In Cells_initialize, unstructured grid is not yet set up.'
+            CALL me%connectivity%initialize(name='connectivity',type=type_float64,format=format_ascii)
+            DO i = 1, geometry%n_cells
+                CALL me%connectivity%add(geometry%get_connectivity(i)) !! New procedure under works to append an array of reals
+            END DO
+            CALL me%add(me%connectivity)
+            CALL me%connectivity%me_deallocate()
+            !! Set up cell offsets
+            CALL me%offsets%initialize(name='offsets',type=type_float64,format=format_ascii)
+            cnt = 0
+            DO i = 1, geometry%n_cells
+                cnt = cnt + geometry%get_offset(i)
+                CALL me%offsets%add([cnt]) !! New procedure under works to append an array of reals
+            END DO
+            CALL me%add(me%offsets)
+            CALL me%offsets%me_deallocate()
+            !! Set up cell types
+            CALL me%types%initialize(name='types',type=type_float64,format=format_ascii)
+            DO i = 1, geometry%n_cells
+                CALL me%types%add([geometry%get_type(i)]) !! New procedure under works to append an array of reals
+            END DO
+            CALL me%add(me%types)
+            CALL me%types%me_deallocate()
+        CLASS DEFAULT
+            ERROR STOP 'Error: In Cells_initialize, the geometry is not yet defined.'
+        END SELECT
+
+        END PROCEDURE Cells_initialize
+
+        MODULE PROCEDURE Cells_deallocate
+        IMPLICIT NONE
+        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+
+        CALL foo%connectivity%me_deallocate()
+        CALL foo%offsets%me_deallocate()
+        CALL foo%types%me_deallocate()
+
+        CALL foo%deallocate()
+
+        END PROCEDURE Cells_deallocate
 
         MODULE PROCEDURE Coordinates_initialize
         USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
@@ -227,6 +294,8 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         !! Initializes a piece dt with the geometry information
         !!
         CHARACTER(LEN=10) :: tmp_string = '          '
+        CHARACTER(LEN=10) :: n_points   = '          '
+        CHARACTER(LEN=10) :: n_cells    = '          '
         CHARACTER(LEN=:), ALLOCATABLE :: range_string
         INTEGER(i4k) :: i, j
         INTEGER(i4k), DIMENSION(2,3)  :: range
@@ -235,39 +304,51 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         SELECT TYPE (geometry)
         CLASS IS (dataset)
             range = geometry%get_range_cnt()
-        END SELECT
-        !! end TODO
-        DO i = 1, 3
-            DO j = 1, 2
-                WRITE(tmp_string,'(i10)') range(j,i)
-                IF (.NOT. ALLOCATED(range_string)) THEN
-                    ALLOCATE(range_string,source=TRIM(ADJUSTL(tmp_string)))
-                ELSE
-                    range_string = range_string // ' ' // TRIM(ADJUSTL(tmp_string))
-                END IF
+            !! end TODO
+            DO i = 1, 3
+                DO j = 1, 2
+                    WRITE(tmp_string,'(i10)') range(j,i)
+                    IF (.NOT. ALLOCATED(range_string)) THEN
+                        ALLOCATE(range_string,source=TRIM(ADJUSTL(tmp_string)))
+                    ELSE
+                        range_string = range_string // ' ' // TRIM(ADJUSTL(tmp_string))
+                    END IF
+                END DO
             END DO
-        END DO
-
-        !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-        CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
+        CLASS IS (unstruct_grid)
+            WRITE(n_points,'(i10)') geometry%n_points
+            WRITE(n_cells,'(i10)') geometry%n_cells
+        END SELECT
 
         SELECT TYPE (geometry)
         CLASS IS (struct_pts)
             ERROR STOP 'Error: struct_pts is not yet implemented in piece_set_grid'
         CLASS IS (struct_grid)
+            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
+            CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
             ALLOCATE(me%points)
             CALL me%points%initialize(geometry)
             CALL me%add(me%points)
-!            ERROR STOP 'Error: struct_grid is not yet implemented in piece_set_grid'
         CLASS IS (rectlnr_grid)
+            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
+            CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
             ALLOCATE(me%coordinates)
             CALL me%coordinates%initialize(geometry)
-
             CALL me%add(me%coordinates)
         CLASS IS (polygonal_data)
             ERROR STOP 'Error: polygonal_data is not yet implemented in piece_set_grid'
         CLASS IS (unstruct_grid)
-            ERROR STOP 'Error: unstruct_grid is not yet implemented in piece_set_grid'
+            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
+            CALL me%setup(name="Piece",string="NumberOfPoints=" // '"' // TRIM(ADJUSTL(n_points)) // '"' // &
+                &                             " NumberOfCells=" // '"' // TRIM(ADJUSTL(n_cells)) // '"')
+            ALLOCATE(me%points)
+            CALL me%points%initialize(geometry)
+            CALL me%add(me%points)
+            ALLOCATE(me%cells)
+            CALL me%cells%initialize(geometry)
+            CALL me%add(me%cells)
+        CLASS DEFAULT
+            ERROR STOP 'Error: Unknown geometry type in piece_set_grid'
         END SELECT
 
         END PROCEDURE piece_set_grid
@@ -331,6 +412,7 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         IF (ALLOCATED(foo%celldata))    CALL foo%celldata%data_deallocate()
         IF (ALLOCATED(foo%coordinates)) CALL foo%coordinates%coordinates_deallocate()
         IF (ALLOCATED(foo%points))      CALL foo%points%points_deallocate()
+        IF (ALLOCATED(foo%cells))       CALL foo%cells%cells_deallocate()
 
         CALL foo%me_deallocate()
 

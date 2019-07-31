@@ -17,20 +17,21 @@ endfunction(add_VTKmofo_integration_test)
 # legacy tests
 foreach(test
     Append
-    Rectilinear
+    DTIO_T_shape
+    Polygonal_data
+    Rectilinear_grid
     Structured_grid
-    Rectangular_prism
-    Pyramid
-    T_shape
-    DTIO_T_shape)
+    Structured_points
+    Unstructured_grid)
   add_VTKmofo_integration_test(${test} "legacy")
   list(APPEND VTKmofo_integration_test_list "legacy_${test}")
 endforeach()
 
 # serial modern tests
 foreach(test
+    Rectilinear_grid
     Structured_grid
-    Rectilinear)
+    Unstructured_grid)
   add_VTKmofo_integration_test(${test} "serial")
   list(APPEND VTKmofo_integration_test_list "serial_${test}")
 endforeach()

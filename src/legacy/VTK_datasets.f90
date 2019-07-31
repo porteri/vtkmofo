@@ -98,8 +98,8 @@ MODULE VTK_datasets
     TYPE, EXTENDS(dataset) :: unstruct_grid
         !! Unstructured grid
         PRIVATE
-        INTEGER(i4k) :: n_points     = 0
-        INTEGER(i4k) :: n_cells      = 0
+        INTEGER(i4k), PUBLIC :: n_points = 0
+        INTEGER(i4k), PUBLIC :: n_cells  = 0
         INTEGER(i4k) :: n_cell_types = 0
         INTEGER(i4k) :: size         = 0
         REAL(r8k),          DIMENSION(:,:), ALLOCATABLE :: points
@@ -110,6 +110,10 @@ MODULE VTK_datasets
         PROCEDURE :: unstruct_grid_setup
         PROCEDURE :: unstruct_grid_setup_multiclass
         GENERIC, PRIVATE :: setup => unstruct_grid_setup, unstruct_grid_setup_multiclass
+        PROCEDURE :: get_point => unstruct_grid_get_point
+        PROCEDURE :: get_connectivity => unstruct_grid_get_connectivity
+        PROCEDURE :: get_offset => unstruct_grid_get_offset
+        PROCEDURE :: get_type => unstruct_grid_get_type
     END TYPE unstruct_grid
 
     INTERFACE
@@ -421,6 +425,43 @@ MODULE VTK_datasets
         INTEGER(i4k), DIMENSION(2,3)     :: range
 
         END FUNCTION unstruct_grid_get_range
+
+        MODULE FUNCTION unstruct_grid_get_point (me, i) RESULT (coord)
+        IMPLICIT NONE
+        !! Function returns the (x,y,z) dimension coordinates for point (i)
+        CLASS(unstruct_grid), INTENT(IN) :: me
+        INTEGER(i4k),         INTENT(IN) :: i
+        REAL(r8k), DIMENSION(3)          :: coord
+
+        END FUNCTION unstruct_grid_get_point
+
+        MODULE FUNCTION unstruct_grid_get_connectivity (me, i) RESULT (connectivity)
+        IMPLICIT NONE
+        !! Function returns the connectivity for cell (i)
+        CLASS(unstruct_grid), INTENT(IN) :: me
+        INTEGER(i4k),         INTENT(IN) :: i
+        INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: connectivity
+
+        END FUNCTION unstruct_grid_get_connectivity
+
+        MODULE FUNCTION unstruct_grid_get_offset (me, i) RESULT (offset)
+        IMPLICIT NONE
+        !! Function returns the offset for cell (i)
+        !! The offset is just the # of points
+        CLASS(unstruct_grid), INTENT(IN) :: me
+        INTEGER(i4k),         INTENT(IN) :: i
+        INTEGER(i4k) :: offset
+
+        END FUNCTION unstruct_grid_get_offset
+
+        MODULE FUNCTION unstruct_grid_get_type (me, i) RESULT (type)
+        IMPLICIT NONE
+        !! Function returns the type for cell (i)
+        CLASS(unstruct_grid), INTENT(IN) :: me
+        INTEGER(i4k),         INTENT(IN) :: i
+        INTEGER(i4k) :: type
+
+        END FUNCTION unstruct_grid_get_type
 
     END INTERFACE
 
