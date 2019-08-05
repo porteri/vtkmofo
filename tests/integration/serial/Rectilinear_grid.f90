@@ -3,6 +3,7 @@ PROGRAM modern_Rectilinear_test
     USE vtk_datasets,   ONLY : rectlnr_grid
     USE vtk_attributes, ONLY : scalar, attributes
     USE vtk,            ONLY : vtk_serial_write
+    USE XML,            ONLY : binary, ascii
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 05/20/2019
@@ -50,8 +51,20 @@ PROGRAM modern_Rectilinear_test
 
     CALL vtk_serial_write (cube, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)
                                                            !! This tests a full 1-time write
+    CLOSE(unit)
+write(0,*) 'rectilinear_grid, before vtk_serial_write for binary'
+    !! Binary file
+    CALL vtk_serial_write (cube, unit=unit, filename='binary_cube_append_' // filename, title=title, format=binary)
 
-    CALL vtk_serial_write (cube, unit=unit, filename='append_' // filename, title=title)
+    CALL vtk_serial_write (pointdata=vals_to_write(1)%attribute)
+
+    CALL vtk_serial_write (pointdatasets=vals_to_write(2:3))
+
+    CALL vtk_serial_write (finished=.TRUE.)
+    CLOSE(unit)
+write(0,*) 'rectilinear_grid, before vtk_serial_write for ascii'
+    !! Ascii file
+    CALL vtk_serial_write (cube, unit=unit, filename='ascii_cube_append_' // filename, title=title, format=ascii)
 
     CALL vtk_serial_write (pointdata=vals_to_write(1)%attribute)
 

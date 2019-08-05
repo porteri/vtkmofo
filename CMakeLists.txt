@@ -103,6 +103,7 @@ set(VTKmofo_interfaces
   legacy/VTK_vars.f90
   modern/VTK_DataArray.f90
   modern/VTK_element.f90
+  modern/VTK_formats_types.f90
   modern/VTK_piece_element.f90
   modern/VTK_serial_file.f90
   modern/VTK_serial_Grid.f90

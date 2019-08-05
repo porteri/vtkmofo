@@ -28,7 +28,7 @@ MODULE vtk_io
     INTERFACE
 
         MODULE SUBROUTINE vtk_legacy_full_write (geometry, celldata, pointdata, celldatasets, pointdatasets, &
-          &                                      unit, filename, multiple_io, data_type, title)
+          &                                      unit, filename, multiple_io, format, title)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/1/2017
@@ -41,7 +41,7 @@ MODULE vtk_io
         TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
         TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
         INTEGER(i4k),      INTENT(IN), OPTIONAL :: unit        !! VTK file unit
-        INTEGER(i4k),      INTENT(IN), OPTIONAL :: data_type   !! Identifier to write in ascii or Binary
+        INTEGER(i4k),      INTENT(IN), OPTIONAL :: format      !! Identifier to write in ascii or Binary
         LOGICAL,           INTENT(IN), OPTIONAL :: multiple_io !! Identifier as to whether there will be multiple files written
                                                                !! (i.e., time-dependent output)
         CHARACTER(LEN=*),  INTENT(IN), OPTIONAL :: filename    !! VTK filename
@@ -75,7 +75,7 @@ MODULE vtk_io
         END SUBROUTINE vtk_legacy_finalize
 
         MODULE SUBROUTINE vtk_legacy_read (unit, geometry, celldata, pointdata, celldatasets, pointdatasets, &
-          &                                filename, data_type, title)
+          &                                filename, format, title)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/20/2017
@@ -87,15 +87,15 @@ MODULE vtk_io
         CLASS(attribute),  INTENT(INOUT), OPTIONAL :: pointdata  !!
         TYPE(attributes), DIMENSION(:), INTENT(INOUT), OPTIONAL :: celldatasets  !!
         TYPE(attributes), DIMENSION(:), INTENT(INOUT), OPTIONAL :: pointdatasets !!
-        INTEGER(i4k),      INTENT(IN)           :: unit          !! VTK file unit
-        INTEGER(i4k),      INTENT(OUT), OPTIONAL :: data_type    !! Identifier as to whether VTK file is ascii or Binary
+        INTEGER(i4k),      INTENT(IN)            :: unit         !! VTK file unit
+        INTEGER(i4k),      INTENT(OUT), OPTIONAL :: format       !! Identifier as to whether VTK file is ascii or Binary
         CHARACTER(LEN=*),  INTENT(IN),  OPTIONAL :: filename     !! VTK filename
         CHARACTER(LEN=*),  INTENT(OUT), OPTIONAL :: title        !! Title to be written on title line (#2) in output file
 
         END SUBROUTINE vtk_legacy_read
 
         MODULE SUBROUTINE vtk_serial_full_write (geometry, celldata, pointdata, celldatasets, pointdatasets, &
-          &                                      unit, filename, multiple_io, data_type, title)
+          &                                      unit, filename, multiple_io, format, title)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 5/08/2019
@@ -108,7 +108,7 @@ MODULE vtk_io
         TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
         TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
         INTEGER(i4k),      INTENT(IN), OPTIONAL :: unit        !! VTK file unit
-        INTEGER(i4k),      INTENT(IN), OPTIONAL :: data_type   !! Identifier to write in ascii or Binary
+        INTEGER(i4k),      INTENT(IN), OPTIONAL :: format      !! Identifier to write in ascii or Binary
         LOGICAL,           INTENT(IN), OPTIONAL :: multiple_io !! Identifier as to whether there will be multiple files written
                                                                !! (i.e., time-dependent output)
         CHARACTER(LEN=*),  INTENT(IN), OPTIONAL :: filename    !! VTK filename
