@@ -7,7 +7,7 @@ MODULE File_utility
     !! This module contains a derived type for file information
     !!
     PRIVATE
-    PUBLIC :: file_data_structure
+    PUBLIC :: file_data_structure, is_little_endian
 
     TYPE file_data_structure
         !! File data derived type
@@ -29,6 +29,7 @@ MODULE File_utility
         PROCEDURE, PUBLIC  :: file_read_error
         PROCEDURE, PUBLIC  :: wait_for_file
         PROCEDURE, PUBLIC  :: get_unit
+        PROCEDURE, PUBLIC, NOPASS :: is_little_endian
     END TYPE file_data_structure
 
     INTERFACE
@@ -141,6 +142,12 @@ MODULE File_utility
         INTEGER :: unit                                !! File unit #
 
         END FUNCTION get_unit
+
+        PURE MODULE FUNCTION is_little_endian() RESULT (is_little)
+        !! Checks the type of bit ordering to determine if the architecture is little endian
+        LOGICAL :: is_little !! Flag to determine if little endian
+
+        END FUNCTION is_little_endian
 
     END INTERFACE
 

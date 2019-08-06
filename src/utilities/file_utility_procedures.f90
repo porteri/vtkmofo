@@ -1,5 +1,5 @@
 SUBMODULE (file_utility) file_utility_implementation
-    USE Precision, ONLY : i4k, r8k
+    USE Precision, ONLY : i1k, i4k, r8k
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 04/04/2018
@@ -129,8 +129,8 @@ SUBMODULE (file_utility) file_utility_implementation
         IF (me%unit < 0) THEN
             me%unit = 0 !! Re-set this to a non-negative number for a gfortran-8.3 bug w/ newunit
         END IF
-
-        OPEN (newunit=me%unit, file=me%filename, iostat=inputstat, Status='REPLACE', Form=me%form)
+write(0,*) me%form
+        OPEN (newunit=me%unit, file=me%filename, iostat=inputstat, Status='REPLACE', Form=me%form, access=me%access)
 
         END PROCEDURE make_file
 
@@ -191,5 +191,14 @@ SUBMODULE (file_utility) file_utility_implementation
         unit = me%unit
 
         END PROCEDURE get_unit
+
+        MODULE PROCEDURE is_little_endian
+        !! Checks the type of bit ordering to determine if the running architecture is little endian.
+        INTEGER(i1k) :: int1(1:4) !! One byte integer array for casting 4 bytes integer.
+
+        int1 = TRANSFER(1_i4k, int1)
+        is_little = (int1(1) == 1_i1k)
+
+        END PROCEDURE is_little_endian
 
 END SUBMODULE file_utility_implementation
