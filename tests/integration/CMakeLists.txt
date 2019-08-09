@@ -29,6 +29,7 @@ endforeach()
 
 # serial modern tests
 foreach(test
+    Image_Data
     Rectilinear_grid
     Structured_grid
     Unstructured_grid)
