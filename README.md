@@ -6,7 +6,7 @@ VTK legacy format using modern Fortran
 [![release downloads][download image]](https://github.com/porteri/vtkmofo/releases)
 [![codecov][codecov image]](https://codecov.io/gh/porteri/vtkmofo)
 
-This is a generic modern Fortran interface to write a VTK formatted file using the specifications outlined in [version 3.0][VTK Format Link].
+This is a generic modern Fortran interface to write a VTK formatted file using the specifications outlined in [version 3.0][VTK Format link].
 
 Format support:
  - [X] Legacy Format
@@ -59,3 +59,4 @@ Examples:
 [gcc link]: https://gcc.gnu.org/
 [Intel link]: https://software.intel.com/en-us/fortran-compilers
 [CMake link]: https://cmake.org
+[VTK Format link]: https://www.vtk.org/VTK/img/file-formats.pdf
