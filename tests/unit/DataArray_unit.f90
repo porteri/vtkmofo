@@ -2,6 +2,7 @@ PROGRAM DataArray_test
     USE Precision,             ONLY : i4k
     USE VTKmofoPassFail,       ONLY : all_tests_pass
     USE VTK_DataArray_element, ONLY : DataArray_dt
+    USE XML,                   ONLY : file_format, ascii
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 06/07/2019
@@ -19,9 +20,11 @@ PROGRAM DataArray_test
     INTEGER(i4k) :: unit
     CHARACTER(LEN=*), PARAMETER :: type = 'Float32'
     CHARACTER(LEN=*), PARAMETER :: name = 'foo_data'
-    INTEGER(i4k), PARAMETER :: NumberOfComponents = 1
+    INTEGER(i4k),     PARAMETER :: NumberOfComponents = 1
     CHARACTER(LEN=*), PARAMETER :: format = 'ascii'
     CHARACTER(LEN=*), PARAMETER :: offset = '0'
+
+    file_format = ascii
 
     CALL foo%initialize(type=type)
     CALL foo%initialize(name=name)
@@ -32,7 +35,7 @@ PROGRAM DataArray_test
 
     CALL foo%add(foo2)
 
-    OPEN (newunit=unit,file="DataArray_test.xml",status="replace")
+    OPEN (newunit=unit,file="DataArray_test.xml",status="replace",form="formatted")
     CALL foo%write(unit)
 
     CALL all_tests_pass()

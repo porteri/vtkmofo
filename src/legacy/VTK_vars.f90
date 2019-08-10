@@ -1,5 +1,6 @@
 MODULE vtk_vars
     USE Precision, ONLY : i4k
+    USE XML,       ONLY : ascii, binary, file_format
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/20/2017
@@ -7,10 +8,9 @@ MODULE vtk_vars
     !! This module contains basic information needed for reading/writing to the vtk file
     !!
     PRIVATE
-    PUBLIC :: ascii, binary, filetype, vtkunit, version, default_title, default_fn, vtkfilename, vtktitle, fcnt, file_extension
-
-    INTEGER(i4k), PARAMETER :: ascii=0_i4k, binary=1_i4k                            !! Available file types
-    INTEGER(i4k) :: filetype = ascii                                                !! Selected file type
+    PUBLIC :: vtkunit, version, default_title, default_fn, vtkfilename, vtktitle, fcnt, file_extension
+    PUBLIC :: ascii, binary, file_format
+                                              !! Selected file type
     INTEGER(i4k) :: vtkunit  = 20_i4k                                               !! Default VTK unit #
     INTEGER(i4k) :: fcnt     = 0_i4k                                                !! File counter for time-dependent output files
     INTEGER(i4k), PARAMETER :: bit=0_i4k, unsigned_char=1_i4k, char=2_i4k, unsigned_short=3_i4k, short=4_i4k, &

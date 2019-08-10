@@ -1,5 +1,5 @@
 MODULE XML
-    USE Precision,       ONLY : i4k, i8k, r4k, r8k
+    USE Precision,       ONLY : i1k, i4k, i8k, r4k, r8k
     USE File_utility,    ONLY : file_data_structure
     USE ISO_FORTRAN_ENV, ONLY : output_unit
     IMPLICIT NONE
@@ -11,6 +11,19 @@ MODULE XML
 
     PRIVATE
     PUBLIC :: xml_element_dt, xml_file_dt, gcc_bug_workaround_allocate, gcc_bug_workaround_deallocate
+    PUBLIC :: file_format, binary, ascii, convert_format_to_string, convert_string_to_format
+    PUBLIC :: format_ascii, format_binary, format_append, file_format_text
+
+    ENUM, BIND(C)
+        ENUMERATOR :: ascii, binary, append
+    END ENUM
+
+    INTEGER(i4k) :: file_format = ascii
+
+    CHARACTER(LEN=*), PARAMETER :: format_ascii  = 'ascii'
+    CHARACTER(LEN=*), PARAMETER :: format_binary = 'binary'
+    CHARACTER(LEN=*), PARAMETER :: format_append = 'appended'
+    CHARACTER(LEN=:), ALLOCATABLE :: file_format_text
 
     TYPE string_dt
         CHARACTER(LEN=:), ALLOCATABLE :: text
@@ -18,6 +31,14 @@ MODULE XML
         PROCEDURE, PRIVATE :: gcc_bug_deallocate_string_dt
         GENERIC, PUBLIC    :: deallocate => gcc_bug_deallocate_string_dt
     END TYPE string_dt
+
+    TYPE real32_dt
+        REAL(r4k), DIMENSION(:), ALLOCATABLE :: val
+    END TYPE real32_dt
+
+    TYPE real64_dt
+        REAL(r8k), DIMENSION(:), ALLOCATABLE :: val
+    END TYPE real64_dt
 
     TYPE xml_element_dt
         PRIVATE
@@ -27,18 +48,20 @@ MODULE XML
         CHARACTER(LEN=:), ALLOCATABLE :: offset       !! Offset for data within XML block
         CHARACTER(LEN=:), ALLOCATABLE :: additional_data !! Additional data to write in header
         TYPE(string_dt),      DIMENSION(:), ALLOCATABLE :: string  !! String data set(s) within element
+        TYPE(real32_dt),      DIMENSION(:), ALLOCATABLE :: real32  !! String of real64
+        TYPE(real64_dt),      DIMENSION(:), ALLOCATABLE :: real64  !! String of real64
         TYPE(xml_element_dt), DIMENSION(:), ALLOCATABLE :: element !! Element data set(s) within element
     CONTAINS
         PROCEDURE, PUBLIC  :: setup => element_setup   !! Set up element block
         PROCEDURE, PRIVATE :: begin => element_begin   !! Write open of element block
-        PROCEDURE, PRIVATE :: element_add_data         !! Write raw data inside of element block
+        PROCEDURE, PRIVATE :: element_add_string       !! Write raw data inside of element block
         PROCEDURE, PRIVATE :: element_add_element      !! Write another element inside element block
         PROCEDURE, PRIVATE :: element_add_real32       !! Write real32 into a string inside of element block
         PROCEDURE, PRIVATE :: element_add_real64       !! Write real64 into a string inside of element block
         PROCEDURE, PRIVATE :: element_add_int32        !! Write ints32 into a string inside of element block
         PROCEDURE, PRIVATE :: element_add_int64        !! Write ints64 into a string inside of element block
         PROCEDURE, PRIVATE :: element_add_logical      !! Write logical into a string inside of element block
-        GENERIC, PUBLIC    :: add   => element_add_data
+        GENERIC, PUBLIC    :: add   => element_add_string
         GENERIC, PUBLIC    :: add   => element_add_element
         GENERIC, PUBLIC    :: add   => element_add_real64
         GENERIC, PUBLIC    :: add   => element_add_real32
@@ -47,6 +70,7 @@ MODULE XML
         GENERIC, PUBLIC    :: add   => element_add_logical
         PROCEDURE, PRIVATE :: end   => element_end     !! Write closure of element block
         PROCEDURE, PUBLIC  :: write => element_write   !! Writes the element block
+        PROCEDURE, PUBLIC  :: replace => replace_in_string !! Replaces an identifier in the string
         PROCEDURE, PRIVATE :: gcc_bug_workaround_deallocate_single
         GENERIC, PUBLIC    :: deallocate => gcc_bug_workaround_deallocate_single
     END TYPE xml_element_dt
@@ -68,7 +92,7 @@ MODULE XML
     INTERFACE gcc_bug_workaround_deallocate
         PROCEDURE :: gcc_bug_workaround_deallocate_array
         PROCEDURE :: gcc_bug_workaround_deallocate_single
-    END INTERFACE
+    END INTERFACE gcc_bug_workaround_deallocate
 
     INTERFACE
 
@@ -123,12 +147,13 @@ MODULE XML
         LOGICAL, DIMENSION(:), INTENT(IN)    :: var   !! Data to write
         END SUBROUTINE element_add_logical
 
-        RECURSIVE MODULE SUBROUTINE element_add_data (me, string)
+        RECURSIVE MODULE SUBROUTINE element_add_string (me, string, quotes)
         IMPLICIT NONE
         !! This adds data inside of an xml element block
         CLASS(xml_element_dt), INTENT(INOUT) :: me      !! XML element derived type
         CHARACTER(LEN=*),      INTENT(IN)    :: string  !! String of data to write
-        END SUBROUTINE element_add_data
+        LOGICAL, OPTIONAL,     INTENT(IN)    :: quotes  !! Flag to turn quotation marks around string on/off
+        END SUBROUTINE element_add_string
 
         RECURSIVE MODULE SUBROUTINE element_add_element (me, element)
         IMPLICIT NONE
@@ -150,6 +175,14 @@ MODULE XML
         CLASS(xml_element_dt), INTENT(IN) :: me      !! XML element derived type
         INTEGER(i4k),          INTENT(IN) :: unit    !! File unit # to write to
         END SUBROUTINE element_write
+
+        MODULE SUBROUTINE replace_in_string (me, tag, value)
+        IMPLICIT NONE
+        !! Replaces the existing value associated with tag with value
+        CLASS(xml_element_dt), INTENT(INOUT) :: me
+        CHARACTER(LEN=*),      INTENT(IN)    :: tag
+        CHARACTER(LEN=*),      INTENT(IN)    :: value
+        END SUBROUTINE replace_in_string
 
         MODULE SUBROUTINE xml_file_setup (me, filename, open_status, close_status, form, access)
         IMPLICIT NONE
@@ -239,6 +272,20 @@ MODULE XML
         !! gcc Work-around
         CLASS(xml_file_dt), INTENT(INOUT) :: me
         END SUBROUTINE gcc_bug_workaround_deallocate_xml_file_dt
+
+        MODULE FUNCTION convert_format_to_string (format) RESULT(string)
+        IMPLICIT NONE
+        !! Converts the format integer to string
+        INTEGER(i4k), INTENT(IN) :: format
+        CHARACTER(LEN=:), ALLOCATABLE :: string
+        END FUNCTION convert_format_to_string
+
+        MODULE FUNCTION convert_string_to_format (string) RESULT(format)
+        IMPLICIT NONE
+        !! Converts the format integer to string
+        CHARACTER(LEN=*), INTENT(IN) :: string
+        INTEGER(i4k) :: format
+        END FUNCTION convert_string_to_format
 
     END INTERFACE
 

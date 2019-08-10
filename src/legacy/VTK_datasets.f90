@@ -48,7 +48,11 @@ MODULE VTK_datasets
     CONTAINS
         PROCEDURE :: read  => struct_pts_read
         PROCEDURE :: write => struct_pts_write
-        PROCEDURE, PRIVATE :: setup => struct_pts_setup
+        PROCEDURE :: struct_pts_get_origin
+        PROCEDURE :: struct_pts_get_spacing
+        GENERIC, PUBLIC :: get_origin => struct_pts_get_origin
+        GENERIC, PUBLIC :: get_spacing => struct_pts_get_spacing
+        PROCEDURE :: setup => struct_pts_setup
         PROCEDURE :: check_for_diffs => struct_pts_check_for_diffs
     END TYPE struct_pts
 
@@ -208,6 +212,22 @@ MODULE VTK_datasets
         INTEGER(i4k),      INTENT(IN) :: unit
 
         END SUBROUTINE struct_pts_write
+
+        PURE MODULE FUNCTION struct_pts_get_origin (me) RESULT (origin)
+        IMPLICIT NONE
+        !! Gets the private DT data for origin
+        CLASS (struct_pts), INTENT(IN) :: me
+        REAL(r8k), DIMENSION(3)        :: origin
+
+        END FUNCTION struct_pts_get_origin
+
+        PURE MODULE FUNCTION struct_pts_get_spacing (me) RESULT (spacing)
+        IMPLICIT NONE
+        !! Gets the private DT data for spacing
+        CLASS (struct_pts), INTENT(IN) :: me
+        REAL(r8k), DIMENSION(3)        :: spacing
+
+        END FUNCTION struct_pts_get_spacing
 
         MODULE SUBROUTINE struct_pts_setup (me, dims, origin, spacing)
         IMPLICIT NONE

@@ -13,13 +13,11 @@ MODULE VTK_element
     PUBLIC :: VTK_element_dt
 
     CHARACTER(LEN=*), PARAMETER :: def_version = "0.1"
-    CHARACTER(LEN=*), PARAMETER :: def_byte_order = "LittleEndian"
 
     TYPE, EXTENDS(xml_element_dt) :: VTK_element_dt
         PRIVATE
         CHARACTER(LEN=:), ALLOCATABLE :: type
         CHARACTER(LEN=:), ALLOCATABLE :: version
-        CHARACTER(LEN=:), ALLOCATABLE :: byte_order
         CHARACTER(LEN=:), ALLOCATABLE :: compression
         CHARACTER(LEN=:), ALLOCATABLE, PUBLIC :: file_extension
         CHARACTER(LEN=:), ALLOCATABLE, PUBLIC :: filename
@@ -45,7 +43,7 @@ MODULE VTK_element
 
         END SUBROUTINE vtk_element_setup
 
-        MODULE SUBROUTINE initialize (me, type, byte_order, compression, file_extension)
+        MODULE SUBROUTINE initialize (me, type, compression, file_extension)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 05/07/2019
@@ -54,7 +52,6 @@ MODULE VTK_element
         !!
         CLASS(VTK_element_dt), INTENT(INOUT)        :: me              !!
         CHARACTER(LEN=*),      INTENT(IN), OPTIONAL :: type            !! Grid type
-        CHARACTER(LEN=*),      INTENT(IN), OPTIONAL :: byte_order      !! Byte order (BigEndian or LittleEndian)
         CHARACTER(LEN=*),      INTENT(IN), OPTIONAL :: compression     !!
         CHARACTER(LEN=*),      INTENT(IN), OPTIONAL :: file_extension  !!
 

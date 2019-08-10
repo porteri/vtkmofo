@@ -149,6 +149,22 @@ SUBMODULE (vtk_datasets) vtk_datasets_implementation
 
         END PROCEDURE struct_pts_write
 
+        MODULE PROCEDURE struct_pts_get_origin
+        IMPLICIT NONE
+        !! Gets the private DT data for origin
+
+        origin = me%origin
+
+        END PROCEDURE struct_pts_get_origin
+
+        MODULE PROCEDURE struct_pts_get_spacing
+        IMPLICIT NONE
+        !! Gets the private DT data for spacing
+
+        spacing = me%spacing
+
+        END PROCEDURE struct_pts_get_spacing
+
         MODULE PROCEDURE struct_pts_setup
         IMPLICIT NONE
         !! Sets up the structured points dataset with information

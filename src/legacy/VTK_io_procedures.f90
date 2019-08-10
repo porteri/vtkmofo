@@ -15,24 +15,28 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         MODULE PROCEDURE vtk_legacy_full_write
         USE Misc,     ONLY : to_uppercase
-        USE vtk_vars, ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, &
-          &                  version, fcnt, file_extension
+        USE vtk_vars, ONLY : default_fn, default_title, vtkfilename, vtktitle, version, fcnt, file_extension
+        USE XML,      ONLY : convert_format_to_string, file_format_text, file_format, ascii, binary, format_ascii, format_binary
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/1/2017
         !!
         !! This subroutine writes the legacy vtk output file
         !!
-        INTEGER(i4k)  :: i, inputstat
-        CHARACTER(LEN=:), ALLOCATABLE :: filetype_text
+        INTEGER(i4k) :: i, inputstat
         CHARACTER(LEN=11) :: fm
 
         ! Clear out any pre-existing data
-        IF (ALLOCATED(vtkfilename)) DEALLOCATE(vtkfilename)
-        IF (ALLOCATED(form))        DEALLOCATE(form)
-        IF (ALLOCATED(vtktitle))    DEALLOCATE(vtktitle)
+        IF (ALLOCATED(vtkfilename))      DEALLOCATE(vtkfilename)
+        IF (ALLOCATED(form))             DEALLOCATE(form)
+        IF (ALLOCATED(vtktitle))         DEALLOCATE(vtktitle)
+        IF (ALLOCATED(file_format_text)) DEALLOCATE(file_format_text)
 
-        IF (PRESENT(data_type)) filetype = data_type            !! Calling program provided what file type to use for vtk file
+        IF (PRESENT(format)) THEN
+            file_format = format                                !! Calling program provided what file type to use for vtk file
+        ELSE
+            file_format = ascii                                 !! Default to ascii
+        END IF
         IF (PRESENT(filename)) THEN
             ALLOCATE(vtkfilename, source=filename)              !! Calling program provided a filename
         ELSE
@@ -61,51 +65,46 @@ SUBMODULE (vtk_io) vtk_io_implementation
         IF (PRESENT(unit)) THEN
             newunit = unit
             INQUIRE(unit=newunit, opened=file_was_already_open) !! Check to see if file is already open
-            IF (.NOT. file_was_already_open) THEN               !! File is not yet open. Determine format from filetype
-                SELECT CASE (filetype)
+            IF (.NOT. file_was_already_open) THEN               !! File is not yet open. Determine format from file_format
+                SELECT CASE (file_format)
                 CASE (ascii)
                     ALLOCATE(form, source='formatted')
-                    ALLOCATE(filetype_text, source='ASCII')
                 CASE (binary)
                     ALLOCATE(form, source='unformatted')
-                    ALLOCATE(filetype_text, source='BINARY')
                 CASE DEFAULT
-                    WRITE(*,*) 'Warning: filetype is incorrectly defined. Will default to ASCII'
-                    ALLOCATE(form, source='formatted')
-                    ALLOCATE(filetype_text, source='ASCII')
+                    ERROR STOP 'Error: file_format is incorrectly defined in vtk_legacy_full_write'
                 END SELECT
+                ALLOCATE(file_format_text, source=convert_format_to_string(file_format))
                 OPEN(unit=newunit, file=vtkfilename, iostat=inputstat, status='REPLACE', form=form)
                                                                 !! Open the VTK file
             ELSE                                                !! File is already open. Determine format based on file format
                 INQUIRE(unit=newunit,form=fm)
                 SELECT CASE (TO_UPPERCASE(TRIM(fm)))
                 CASE ('FORMATTED')
-                    ALLOCATE(filetype_text, source='ASCII')
+                    ALLOCATE(file_format_text, source=format_ascii)
                 CASE DEFAULT
-                    ALLOCATE(filetype_text, source='BINARY')
+                    ALLOCATE(file_format_text, source=format_binary)
                 END SELECT
             END IF
         ELSE
-            !! No unit # provided. Make determination by value set for filetype
-            SELECT CASE (filetype)
+            !! No unit # provided. Make determination by value set for file_format
+            SELECT CASE (file_format)
             CASE (ascii)
                 ALLOCATE(form, source='formatted')
-                ALLOCATE(filetype_text, source='ASCII')
             CASE (binary)
                 ALLOCATE(form, source='unformatted')
-                ALLOCATE(filetype_text, source='BINARY')
             CASE DEFAULT
-                WRITE(*,*) 'Warning: filetype is incorrectly defined. Will default to ASCII'
+                WRITE(*,*) 'Warning: file_format is incorrectly defined. Will default to ASCII'
                 ALLOCATE(form, source='formatted')
-                ALLOCATE(filetype_text, source='ASCII')
             END SELECT
+            ALLOCATE(file_format_text, source=convert_format_to_string(file_format))
             OPEN(newunit=newunit, file=vtkfilename, iostat=inputstat, status='REPLACE', form=form)
                                                                 !! Open the VTK file
         END IF
 
         WRITE(newunit,100) version                              !! VTK version (currently, 3.0)
         WRITE(newunit,100) vtktitle                             !! VTK title card
-        WRITE(newunit,100) filetype_text                        !! VTK file type
+        WRITE(newunit,100) file_format_text                     !! VTK file type
 
         CALL geometry%write(newunit)                            !! Write the geometry information
 
@@ -143,8 +142,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         MODULE PROCEDURE vtk_legacy_append
         USE Misc,     ONLY : to_uppercase
-        USE vtk_vars, ONLY : default_fn, default_title, ascii, binary, &
-          &                  version, file_extension
+        USE vtk_vars, ONLY : default_fn, default_title, version, file_extension
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/1/2017
@@ -216,7 +214,8 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         MODULE PROCEDURE vtk_legacy_read
         USE Misc,     ONLY : def_len
-        USE vtk_vars, ONLY : default_fn, default_title, filetype, vtkfilename, vtktitle, ascii, binary, version
+        USE vtk_vars, ONLY : default_fn, default_title, vtkfilename, vtktitle, version
+        USE XML,      ONLY : convert_string_to_format, ascii, binary, file_format, file_format_text
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/20/2017
@@ -225,7 +224,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         !!
         INTEGER(i4k) :: i, inputstat
         LOGICAL      :: file_is_open
-        CHARACTER(LEN=:), ALLOCATABLE :: form, filetype_text, vtk_version
+        CHARACTER(LEN=:), ALLOCATABLE :: form, vtk_version
         CHARACTER(LEN=def_len) :: line
 
         INQUIRE(unit = unit, opened = file_is_open)        !! Check to see if file is already open
@@ -244,17 +243,16 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         READ(unit,100) title                               !! VTK title card
         READ(unit,100) line                                !! VTK file type
-        ALLOCATE(filetype_text, source=TRIM(line))
+        ALLOCATE(file_format_text, source=TRIM(line))
         line = ''
 
         CLOSE(unit)                                        !! Close the file to re-open it in the proper format
 
-        SELECT CASE (filetype_text)
-        CASE ('ASCII')
-            data_type = ascii
+        file_format = convert_string_to_format(file_format_text)
+        SELECT CASE (file_format)
+        CASE (ascii)
             ALLOCATE(form, source='formatted')
-        CASE ('BINARY')
-            data_type = binary
+        CASE (binary)
             ALLOCATE(form, source='unformatted')
         CASE DEFAULT
             ERROR STOP 'Unsupported file type. Must be ASCII or BINARY. Terminated in vtk_legacy_read'
@@ -291,7 +289,6 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         ALLOCATE(vtkfilename, source=filename)             !! Save the filename for future internal use
         ALLOCATE(vtktitle, source=title)                   !! Save the title for future internal use
-        filetype = data_type                               !! Save the file type for future internal use
 
 100     FORMAT(a)
 
@@ -300,7 +297,9 @@ SUBMODULE (vtk_io) vtk_io_implementation
         MODULE PROCEDURE vtk_serial_full_write
         USE vtk_datasets,    ONLY : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         USE VTK_serial_file, ONLY : serial_file
-        USE VTK_serial_Grid, ONLY : VTK_serial_RectilinearGrid_dt, VTK_serial_StructuredGrid_dt, VTK_serial_UnstructuredGrid_dt
+        USE VTK_serial_Grid, ONLY : VTK_serial_RectilinearGrid_dt, VTK_serial_StructuredGrid_dt, &
+          &                         VTK_serial_UnstructuredGrid_dt, VTK_serial_ImageData_dt
+        USE XML,             ONLY : file_format, file_format_text, convert_format_to_string, ascii, format_ascii
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 5/08/2019
@@ -309,10 +308,17 @@ SUBMODULE (vtk_io) vtk_io_implementation
         !!
 
         ! Clear out any pre-existing data
-        IF (ALLOCATED(vtkfilename)) DEALLOCATE(vtkfilename)
-        IF (ALLOCATED(form))        DEALLOCATE(form)
+        IF (ALLOCATED(vtkfilename))      DEALLOCATE(vtkfilename)
+        IF (ALLOCATED(form))             DEALLOCATE(form)
+        IF (ALLOCATED(file_format_text)) DEALLOCATE(file_format_text)
 
-        IF (PRESENT(data_type)) filetype = data_type            !! Calling program provided what file type to use for vtk file
+        IF (PRESENT(format)) THEN
+            ALLOCATE(file_format_text, source=convert_format_to_string(format))
+            file_format = format
+        ELSE
+            ALLOCATE(file_format_text,source=format_ascii)     !! Default to binary
+            file_format = ascii
+        END IF
         IF (PRESENT(filename)) THEN
             ALLOCATE(vtkfilename, source=filename)              !! Calling program provided a filename
         ELSE
@@ -337,7 +343,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         SELECT TYPE (geometry)
         CLASS IS (struct_pts)
-            ERROR STOP 'Procedure not yet implemented for: STRUCTURED POINTS. Termination in subroutine: vtk_serial_full_write'
+            ALLOCATE(VTK_serial_ImageData_dt::serial_file%vtk_dataset)
         CLASS IS (struct_grid)
             ALLOCATE(VTK_serial_StructuredGrid_dt::serial_file%vtk_dataset)
         CLASS IS (rectlnr_grid)
@@ -352,7 +358,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         CALL serial_file%vtk_dataset%set_grid(geometry)
 
-        CALL serial_file%setup(filename=vtkfilename // TRIM(serial_file%vtk_dataset%file_extension),form='formatted')
+        CALL serial_file%setup(filename=vtkfilename // TRIM(serial_file%vtk_dataset%file_extension))
         !! Append data
         CALL vtk_serial_append (celldata, pointdata, celldatasets, pointdatasets)
         !! Finalize the write

@@ -6,14 +6,14 @@ VTK legacy format using modern Fortran
 [![release downloads][download image]](https://github.com/porteri/vtkmofo/releases)
 [![codecov][codecov image]](https://codecov.io/gh/porteri/vtkmofo)
 
-This is a generic modern Fortran interface to write a VTK formatted file using the specifications outlined in [version 3.0][VTK Format Link].
+This is a generic modern Fortran interface to write a VTK formatted file using the specifications outlined in [version 3.0][VTK Format link].
 
 Format support:
  - [X] Legacy Format
   * This code fully supports the legacy .vtk file format in ASCII
  - [X] XML Format
    - [ ] Serial Formats
-     - [ ] Image Data (.vti)
+     - [X] Image Data (.vti)
      - [ ] Poly Data (.vtp)
      - [X] Rectilinear Grid (.vtr)
      - [X] Structured Grid (.vts)
@@ -37,7 +37,7 @@ Operating Systems:
  - MacOS
 
 Build System:
- - [CMake][CMake link] 3.12.2 or newer
+ - [CMake][CMake link] 3.13.4 or newer
 
 Examples:
 # Structured Grid (2D)
@@ -59,3 +59,4 @@ Examples:
 [gcc link]: https://gcc.gnu.org/
 [Intel link]: https://software.intel.com/en-us/fortran-compilers
 [CMake link]: https://cmake.org
+[VTK Format link]: https://www.vtk.org/VTK/img/file-formats.pdf

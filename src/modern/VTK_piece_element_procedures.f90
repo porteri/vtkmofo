@@ -1,5 +1,7 @@
 SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
     USE Precision, ONLY : i4k, r8k
+    USE VTK_formats_types
+    USE XML, ONLY : file_format_text
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 06/07/2019
@@ -7,20 +9,6 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
     !! This is the basic file piece elements
     !!
     !! Data storage formats
-    CHARACTER(LEN=*), PARAMETER :: format_ascii  = 'ascii'
-    CHARACTER(LEN=*), PARAMETER :: format_binary = 'binary'
-    CHARACTER(LEN=*), PARAMETER :: format_append = 'appended'
-    !! Data types
-    CHARACTER(LEN=*), PARAMETER :: type_int8    = 'Int8'
-    CHARACTER(LEN=*), PARAMETER :: type_uint8   = 'UInt8'
-    CHARACTER(LEN=*), PARAMETER :: type_int16   = 'Int16'
-    CHARACTER(LEN=*), PARAMETER :: type_uint16  = 'UInt16'
-    CHARACTER(LEN=*), PARAMETER :: type_int32   = 'Int32'
-    CHARACTER(LEN=*), PARAMETER :: type_uint32  = 'UInt32'
-    CHARACTER(LEN=*), PARAMETER :: type_int64   = 'Int64'
-    CHARACTER(LEN=*), PARAMETER :: type_uint64  = 'UInt64'
-    CHARACTER(LEN=*), PARAMETER :: type_float32 = 'Float32'
-    CHARACTER(LEN=*), PARAMETER :: type_float64 = 'Float64'
 
     CONTAINS
 
@@ -116,7 +104,7 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         END PROCEDURE Data_deallocate
 
         MODULE PROCEDURE Points_initialize
-        USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
+        USE vtk_datasets, ONLY : struct_grid, unstruct_grid
         USE Misc,         ONLY : convert_to_string
         IMPLICIT NONE
         !1 author: Ian Porter
@@ -132,7 +120,7 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         SELECT TYPE (geometry)
         CLASS IS (struct_grid)
             !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-            CALL me%DataArray%initialize(type=type_float64,format=format_ascii,NumberofComponents=3)
+            CALL me%DataArray%initialize(type=type_float64,format=file_format_text,NumberofComponents=3)
             DO i = 1, geometry%n_points
                 CALL me%DataArray%add(geometry%get_point(i)) !! New procedure under works to append an array of reals
             END DO
@@ -140,7 +128,7 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
             CALL me%DataArray%me_deallocate()
         CLASS IS (unstruct_grid)
             !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-            CALL me%DataArray%initialize(type=type_float64,format=format_ascii,NumberofComponents=3)
+            CALL me%DataArray%initialize(type=type_float64,format=file_format_text,NumberofComponents=3)
             DO i = 1, geometry%n_points
                 CALL me%DataArray%add(geometry%get_point(i)) !! New procedure under works to append an array of reals
             END DO
@@ -163,8 +151,7 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         END PROCEDURE Points_deallocate
 
         MODULE PROCEDURE Cells_initialize
-        USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
-        USE Misc,         ONLY : convert_to_string
+        USE vtk_datasets, ONLY : unstruct_grid
         IMPLICIT NONE
         !1 author: Ian Porter
         !! date: 07/09/2019
@@ -179,14 +166,14 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         SELECT TYPE (geometry)
         CLASS IS (unstruct_grid)
             !! Set up cell connectivity
-            CALL me%connectivity%initialize(name='connectivity',type=type_float64,format=format_ascii)
+            CALL me%connectivity%initialize(name='connectivity',type=type_float64,format=file_format_text)
             DO i = 1, geometry%n_cells
                 CALL me%connectivity%add(geometry%get_connectivity(i)) !! New procedure under works to append an array of reals
             END DO
             CALL me%add(me%connectivity)
             CALL me%connectivity%me_deallocate()
             !! Set up cell offsets
-            CALL me%offsets%initialize(name='offsets',type=type_float64,format=format_ascii)
+            CALL me%offsets%initialize(name='offsets',type=type_float64,format=file_format_text)
             cnt = 0
             DO i = 1, geometry%n_cells
                 cnt = cnt + geometry%get_offset(i)
@@ -195,7 +182,7 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
             CALL me%add(me%offsets)
             CALL me%offsets%me_deallocate()
             !! Set up cell types
-            CALL me%types%initialize(name='types',type=type_float64,format=format_ascii)
+            CALL me%types%initialize(name='types',type=type_float64,format=file_format_text)
             DO i = 1, geometry%n_cells
                 CALL me%types%add([geometry%get_type(i)]) !! New procedure under works to append an array of reals
             END DO
@@ -242,11 +229,11 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
         SELECT TYPE (geometry)
         CLASS IS (rectlnr_grid)
             !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-            CALL me%DataArray_x%initialize(type=type_float64,format=format_ascii,range_min=range(1,1),range_max=range(2,1))
-            CALL me%DataArray_x%add(geometry%get_coord(1_i4k)) !! New procedure under works to append an array of reals
-            CALL me%DataArray_y%initialize(type=type_float64,format=format_ascii,range_min=range(1,2),range_max=range(2,2))
+            CALL me%DataArray_x%initialize(type=type_float64,format=file_format_text,range_min=range(1,1),range_max=range(2,1))
+            CALL me%DataArray_x%add(geometry%get_coord(1))
+            CALL me%DataArray_y%initialize(type=type_float64,format=file_format_text,range_min=range(1,2),range_max=range(2,2))
             CALL me%DataArray_y%add(geometry%get_coord(2))
-            CALL me%DataArray_z%initialize(type=type_float64,format=format_ascii,range_min=range(1,3),range_max=range(2,3))
+            CALL me%DataArray_z%initialize(type=type_float64,format=file_format_text,range_min=range(1,3),range_max=range(2,3))
             CALL me%DataArray_z%add(geometry%get_coord(3))
 
             CALL me%add(me%DataArray_x)
@@ -307,7 +294,7 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
 
         SELECT TYPE (geometry)
         CLASS IS (struct_pts)
-            ERROR STOP 'Error: struct_pts is not yet implemented in piece_set_grid'
+            CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
         CLASS IS (struct_grid)
             !! For now, don't allow "pieces" but instead force the piece to be the whole extent
             CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')

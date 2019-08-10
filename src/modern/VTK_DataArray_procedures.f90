@@ -1,4 +1,5 @@
 SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
+    USE VTK_formats_types
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 06/07/2019
@@ -6,20 +7,6 @@ SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
     !! This is the basic file piece elements
     !!
     !! Data storage formats
-    CHARACTER(LEN=*), PARAMETER :: format_ascii  = 'ascii'
-    CHARACTER(LEN=*), PARAMETER :: format_binary = 'binary'
-    CHARACTER(LEN=*), PARAMETER :: format_append = 'appended'
-    !! Data types
-    CHARACTER(LEN=*), PARAMETER :: type_int8    = 'Int8'
-    CHARACTER(LEN=*), PARAMETER :: type_uint8   = 'UInt8'
-    CHARACTER(LEN=*), PARAMETER :: type_int16   = 'Int16'
-    CHARACTER(LEN=*), PARAMETER :: type_uint16  = 'UInt16'
-    CHARACTER(LEN=*), PARAMETER :: type_int32   = 'Int32'
-    CHARACTER(LEN=*), PARAMETER :: type_uint32  = 'UInt32'
-    CHARACTER(LEN=*), PARAMETER :: type_int64   = 'Int64'
-    CHARACTER(LEN=*), PARAMETER :: type_uint64  = 'UInt64'
-    CHARACTER(LEN=*), PARAMETER :: type_float32 = 'Float32'
-    CHARACTER(LEN=*), PARAMETER :: type_float64 = 'Float64'
 
     CONTAINS
 
@@ -93,14 +80,18 @@ SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
         !!
 
         IF (PRESENT(type)) THEN
-            !! May need to convert the legacy type names to the modern type names
+            !! May need to convert the legacy data type names to the modern type names
+            !bit, unsigned_char, char, unsigned_short, short, unsigned_int, int, unsigned_long, long, float, or double
+            !Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64, Float32, Float64
             SELECT CASE (to_lowercase(type))
             CASE ('float')
-                ALLOCATE(me%type,source='Float32')
+                ALLOCATE(me%type,source=type_float32)
             CASE ('double')
-                ALLOCATE(me%type,source='Float64')
+                ALLOCATE(me%type,source=type_float64)
             CASE ('int')
-                ALLOCATE(me%type,source='Int32')
+                ALLOCATE(me%type,source=type_int32)
+            CASE ('unsigned_int')
+                ALLOCATE(me%type,source=type_uint32)
             CASE DEFAULT
                 !! Assume all other data types are ok
                 ALLOCATE(me%type,source=type)

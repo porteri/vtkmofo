@@ -15,17 +15,26 @@ MODULE VTK_serial_Grid
     PUBLIC :: VTK_serial_RectilinearGrid_dt
     PUBLIC :: VTK_serial_StructuredGrid_dt
     PUBLIC :: VTK_serial_UnstructuredGrid_dt
+    PUBLIC :: VTK_serial_ImageData_dt
 
     TYPE, EXTENDS(VTK_element_dt), ABSTRACT :: VTK_dataset_dt
         !! VTK dataset derived type
         CHARACTER(LEN=:), ALLOCATABLE :: WholeExtent  !! String for the whole extent of the range
         CHARACTER(LEN=:), ALLOCATABLE :: grid_type    !! Name of the grid type
+        CHARACTER(LEN=:), ALLOCATABLE :: extra_string !! Additional data needed to be written
         TYPE(piece_dt),   ALLOCATABLE :: piece        !! Piece DT (Currently only supporting one piece)
     CONTAINS
         PROCEDURE(abs_set_grid), DEFERRED :: set_grid
         PROCEDURE :: vtk_dataset_deallocate
         PROCEDURE :: finalize
     END TYPE VTK_dataset_dt
+
+    TYPE, EXTENDS(VTK_dataset_dt) :: VTK_serial_ImageData_dt
+        !! Serial file ImageData Grid
+        PRIVATE
+    CONTAINS
+        PROCEDURE :: set_grid => ImageData_set_grid
+    END TYPE VTK_serial_ImageData_dt
 
     TYPE, EXTENDS(VTK_dataset_dt) :: VTK_serial_RectilinearGrid_dt
         !! Serial file Rectilinear Grid
@@ -42,7 +51,7 @@ MODULE VTK_serial_Grid
     END TYPE VTK_serial_StructuredGrid_dt
 
     TYPE, EXTENDS(VTK_dataset_dt) :: VTK_serial_UnstructuredGrid_dt
-        !! Serial file Structured Grid
+        !! Serial file Unstructured Grid
         PRIVATE
     CONTAINS
         PROCEDURE :: set_grid => Unstructuredgrid_set_grid
@@ -64,17 +73,37 @@ MODULE VTK_serial_Grid
 
         MODULE SUBROUTINE finalize (me)
         IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 07/28/2019
+        !!
         !! Writes data inside of itself
+        !!
         CLASS(VTK_dataset_dt), INTENT(INOUT) :: me
 
         END SUBROUTINE finalize
 
         RECURSIVE MODULE SUBROUTINE vtk_dataset_deallocate (foo)
         IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 07/28/2019
+        !!
         !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+        !!
         CLASS(VTK_dataset_dt), INTENT(INOUT) :: foo
 
         END SUBROUTINE vtk_dataset_deallocate
+
+        MODULE SUBROUTINE ImageData_set_grid (me, geometry)
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 08/08/2019
+        !!
+        !! This writes the grid information for an image data grid
+        !!
+        CLASS(VTK_serial_ImageData_dt), INTENT(INOUT) :: me         !! Serial geometry DT
+        CLASS(dataset),                 INTENT(IN)    :: geometry   !! DT of geometry information
+
+        END SUBROUTINE ImageData_set_grid
 
         MODULE SUBROUTINE Rectilineargrid_set_grid (me, geometry)
         IMPLICIT NONE

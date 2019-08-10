@@ -54,7 +54,12 @@ SUBMODULE (XML) XML_implementation
         !! This begins an xml element block
         CHARACTER(LEN=:), ALLOCATABLE :: tmp_offset
 
-        WRITE(unit,'(a)',advance='no') prior_offset // '<' // me%name // me%additional_data // '>' // new_line('a')
+        SELECT CASE (file_format)
+        CASE (ascii)
+            WRITE(unit,'(a)',advance='no') prior_offset // '<' // me%name // me%additional_data // '>' // new_line('a')
+        CASE (binary)
+            WRITE(unit) '<' // me%name // me%additional_data // '>' // new_line('a')
+        END SELECT
 
         ALLOCATE(tmp_offset,source=prior_offset // me%offset)   !! Set the new offset length
         CALL MOVE_ALLOC(tmp_offset,prior_offset)
@@ -66,28 +71,41 @@ SUBMODULE (XML) XML_implementation
         IMPLICIT NONE
         !! This adds data inside of an xml element block
         INTEGER(i4k) :: i
+        TYPE(real32_dt) :: real32
         TYPE(string_dt), DIMENSION(:), ALLOCATABLE :: tmp_string_dt
+        TYPE(real32_dt), DIMENSION(:), ALLOCATABLE :: tmp_real32_dt
         CHARACTER(LEN=:), ALLOCATABLE :: string
 
-        IF (.NOT. ALLOCATED(me%string)) THEN
-            ALLOCATE(me%string(0))
-        END IF
-
-        ALLOCATE(tmp_string_dt(1:SIZE(me%string)+1))
-        tmp_string_dt(1:SIZE(me%string)) = me%string
-        CALL MOVE_ALLOC(tmp_string_dt, me%string)
-
-        DO i = 1, SIZE(var)
-            IF (i == 1) THEN
-                ALLOCATE(string, source=convert_to_string(var(i)))
-            ELSE
-                string = string // " " // convert_to_string(var(i))
+        SELECT CASE (file_format)
+        CASE (binary)
+            IF (.NOT. ALLOCATED(me%real32)) THEN
+                ALLOCATE(me%real32(0))
             END IF
-        END DO
+            ALLOCATE(real32%val, source=var)
+            ALLOCATE(tmp_real32_dt, source = [me%real32, real32])
+            CALL MOVE_ALLOC(tmp_real32_dt, me%real32)
 
-        ASSOCIATE (my_entry => UBOUND(me%string,DIM=1))
-            ALLOCATE(me%string(my_entry)%text,source= string // new_line('a'))
-        END ASSOCIATE
+        CASE (ascii)
+            IF (.NOT. ALLOCATED(me%string)) THEN
+                ALLOCATE(me%string(0))
+            END IF
+
+            ALLOCATE(tmp_string_dt(1:SIZE(me%string)+1))
+            tmp_string_dt(1:SIZE(me%string)) = me%string
+            CALL MOVE_ALLOC(tmp_string_dt, me%string)
+
+            DO i = 1, SIZE(var)
+                IF (i == 1) THEN
+                    ALLOCATE(string, source=convert_to_string(var(i)))
+                ELSE
+                    string = string // " " // convert_to_string(var(i))
+                END IF
+            END DO
+
+            ASSOCIATE (my_entry => UBOUND(me%string,DIM=1))
+                ALLOCATE(me%string(my_entry)%text,source= string // new_line('a'))
+            END ASSOCIATE
+        END SELECT
 
         END PROCEDURE element_add_real32
 
@@ -95,29 +113,31 @@ SUBMODULE (XML) XML_implementation
         USE Misc, ONLY : convert_to_string
         IMPLICIT NONE
         !! This adds data inside of an xml element block
-        INTEGER(i4k) :: i
+        TYPE(real64_dt) :: real64
         TYPE(string_dt), DIMENSION(:), ALLOCATABLE :: tmp_string_dt
-        CHARACTER(LEN=:), ALLOCATABLE :: string
+        TYPE(real64_dt), DIMENSION(:), ALLOCATABLE :: tmp_real64_dt
 
-        IF (.NOT. ALLOCATED(me%string)) THEN
-            ALLOCATE(me%string(0))
-        END IF
-
-        ALLOCATE(tmp_string_dt(1:SIZE(me%string)+1))
-        tmp_string_dt(1:SIZE(me%string)) = me%string
-        CALL MOVE_ALLOC(tmp_string_dt, me%string)
-
-        DO i = 1, SIZE(var)
-            IF (i == 1) THEN
-                ALLOCATE(string, source=convert_to_string(var(i)))
-            ELSE
-                string = string // " " // convert_to_string(var(i))
+        SELECT CASE (file_format)
+        CASE (binary)
+            IF (.NOT. ALLOCATED(me%real64)) THEN
+                ALLOCATE(me%real64(0))
             END IF
-        END DO
+            ALLOCATE(real64%val, source=var)
+            ALLOCATE(tmp_real64_dt, source = [me%real64, real64])
+            CALL MOVE_ALLOC(tmp_real64_dt, me%real64)
+        CASE (ascii)
+            IF (.NOT. ALLOCATED(me%string)) THEN
+                ALLOCATE(me%string(0))
+            END IF
 
-        ASSOCIATE (my_entry => UBOUND(me%string,DIM=1))
-            ALLOCATE(me%string(my_entry)%text,source= string // new_line('a'))
-        END ASSOCIATE
+            ALLOCATE(tmp_string_dt(1:SIZE(me%string)+1))
+            tmp_string_dt(1:SIZE(me%string)) = me%string
+            CALL MOVE_ALLOC(tmp_string_dt, me%string)
+
+            ASSOCIATE (my_entry => UBOUND(me%string,DIM=1))
+                ALLOCATE(me%string(my_entry)%text,source=convert_to_string(var) // new_line('a'))
+            END ASSOCIATE
+        END SELECT
 
         END PROCEDURE element_add_real64
 
@@ -211,10 +231,17 @@ SUBMODULE (XML) XML_implementation
 
         END PROCEDURE element_add_logical
 
-        MODULE PROCEDURE element_add_data
+        MODULE PROCEDURE element_add_string
         IMPLICIT NONE
         !! This adds data inside of an xml element block
+        LOGICAL :: add_quotes
         TYPE(string_dt), DIMENSION(:), ALLOCATABLE :: tmp_string_dt
+
+        IF (PRESENT(quotes)) THEN
+            add_quotes = quotes
+        ELSE
+            add_quotes = .TRUE.  !! By default, add quotation marks around a string
+        END IF
 
         IF (.NOT. ALLOCATED(me%string)) THEN
             ALLOCATE(me%string(0))
@@ -225,10 +252,14 @@ SUBMODULE (XML) XML_implementation
         CALL MOVE_ALLOC(tmp_string_dt, me%string)
 
         ASSOCIATE (my_entry => UBOUND(me%string,DIM=1))
-            ALLOCATE(me%string(my_entry)%text,source='"' // string // '"' // new_line('a'))
+            IF (add_quotes) THEN
+                ALLOCATE(me%string(my_entry)%text,source='"' // string // '"' // new_line('a'))
+            ELSE
+                ALLOCATE(me%string(my_entry)%text,source= string // new_line('a'))
+            END IF
         END ASSOCIATE
 
-        END PROCEDURE element_add_data
+        END PROCEDURE element_add_string
 
         MODULE PROCEDURE element_add_element
         IMPLICIT NONE
@@ -268,7 +299,12 @@ SUBMODULE (XML) XML_implementation
             CALL MOVE_ALLOC(tmp_offset,prior_offset) !! Reset the offset length
         END ASSOCIATE
 
-        WRITE(unit,'(a)',advance='no') prior_offset // '</' // me%name // '>' // new_line('a')
+        SELECT CASE (file_format)
+        CASE (ascii)
+            WRITE(unit,'(a)',advance='no') prior_offset // '</' // me%name // '>' // new_line('a')
+        CASE (binary)
+            WRITE(unit) '</' // me%name // '>' // new_line('a')
+        END SELECT
 
         END PROCEDURE element_end
 
@@ -279,14 +315,35 @@ SUBMODULE (XML) XML_implementation
         !!
         !! Writes the element to the file
         !!
-        INTEGER(i4k) :: i
+        INTEGER(i4k) :: i, j
 
         CALL me%begin(unit)
 
         IF (ALLOCATED(me%string)) THEN
             DO i = 1, SIZE(me%string)
-                WRITE(unit,'(a)',advance='no') prior_offset // me%string(i)%text
+                SELECT CASE (file_format)
+                CASE (ASCII)
+                    WRITE(unit,'(a)',advance='no') prior_offset // me%string(i)%text
+                CASE (BINARY)
+                    WRITE(unit) me%string(i)%text
+                END SELECT
             END DO
+        ELSE IF (ALLOCATED(me%real32)) THEN
+            DO i = 1, SIZE(me%real32)
+                ASSOCIATE (n_vals => SIZE(me%real32(i)%val))
+                    WRITE(unit) (me%real32(i)%val(j),j=1,n_vals)
+                END ASSOCIATE
+            END DO
+            WRITE(unit) new_line('a')
+        ELSE IF (ALLOCATED(me%real64)) THEN
+            DO i = 1, SIZE(me%real64)
+                ASSOCIATE (n_vals => SIZE(me%real64(i)%val))
+                    DO j = 1, n_vals
+                        WRITE(unit) me%real64(i)%val(j)
+                    END DO
+                END ASSOCIATE
+            END DO
+            WRITE(unit) new_line('a')
         END IF
 
         IF (ALLOCATED(me%element)) THEN
@@ -299,7 +356,22 @@ SUBMODULE (XML) XML_implementation
 
         END PROCEDURE element_write
 
+        MODULE PROCEDURE replace_in_string
+        IMPLICIT NONE
+        !! Replaces the existing value associated with tag with value
+
+        !! Find where "tag" is located
+
+        !! Find the end of the string associated with "tag"
+
+        !! Replace that value with value
+
+        ERROR STOP 'Error: replace_in_string in xml_procedures is not yet implemented.'
+
+        END PROCEDURE replace_in_string
+
         MODULE PROCEDURE XML_file_setup
+        USE Misc, ONLY : to_lowercase
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 05/02/2019
@@ -319,9 +391,26 @@ SUBMODULE (XML) XML_implementation
         ELSE
             ALLOCATE(me%close_status, source='KEEP')
         END IF
-
-        ALLOCATE(me%form, source='FORMATTED')    !! Ignore the user-defined form, even if present
-        ALLOCATE(me%access, source='SEQUENTIAL') !! Ignore the user-defined access, even if present
+        IF (PRESENT(form)) THEN
+            SELECT CASE (to_lowercase(form))
+            CASE ('formatted')
+                ALLOCATE(me%form, source='FORMATTED')    !! Ignore the user-defined form, even if present
+                file_format = ascii
+            CASE ('unformatted')
+                ALLOCATE(me%form, source='UNFORMATTED')  !! Ignore the user-defined form, even if present
+                file_format = binary
+            END SELECT
+        ELSE
+            SELECT CASE (file_format)
+            CASE (ascii)
+                ALLOCATE(me%form, source='FORMATTED')
+            CASE (binary)
+                ALLOCATE(me%form, source='UNFORMATTED')
+            END SELECT
+        END IF
+        file_format_text = convert_format_to_string (file_format)
+!        ALLOCATE(me%access, source='SEQUENTIAL') !! Ignore the user-defined access, even if present
+        ALLOCATE(me%access, source='STREAM') !! Ignore the user-defined access, even if present
 
         IF (.NOT. ALLOCATED(prior_offset)) ALLOCATE(prior_offset,source='')
 
@@ -335,9 +424,19 @@ SUBMODULE (XML) XML_implementation
         !! Begins the writing of the XMl file
         !!
 
+        IF (.NOT. ALLOCATED(me%filename)) THEN
+            WRITE(0,*) 'WARNING: FILE NAME HAS NOT YET BEEN SET IN XML_begin'
+            CALL me%setup('dummy')
+        END IF
+
         CALL me%make_file()
 
-        WRITE(me%unit,'(a)',advance='no') version // new_line('a')
+        SELECT CASE (file_format)
+        CASE (ascii)
+            WRITE(me%unit,'(a)',advance='no') version // new_line('a')
+        CASE (binary)
+            WRITE(me%unit) version // new_line('a')
+        END SELECT
 
         END PROCEDURE XML_begin
 
@@ -426,6 +525,8 @@ SUBMODULE (XML) XML_implementation
                 IF (ALLOCATED(oldfoo(i)%additional_data)) &
                   &  ALLOCATE(me(i)%additional_data, source=oldfoo(i)%additional_data)
                 IF (ALLOCATED(oldfoo(i)%string)) ALLOCATE(me(i)%string, source=oldfoo(i)%string)
+                IF (ALLOCATED(oldfoo(i)%real32)) ALLOCATE(me(i)%real32, source=oldfoo(i)%real32)
+                IF (ALLOCATED(oldfoo(i)%real64)) ALLOCATE(me(i)%real64, source=oldfoo(i)%real64)
                 IF (ALLOCATED(oldfoo(i)%element)) CALL gcc_bug_workaround_allocate(me(i)%element, oldfoo=oldfoo(i)%element)
             END DO
         ELSE
@@ -439,6 +540,8 @@ SUBMODULE (XML) XML_implementation
             IF (ALLOCATED(addfoo%additional_data)) &
               &  ALLOCATE(me(i)%additional_data, source=addfoo%additional_data)
             IF (ALLOCATED(addfoo%string)) ALLOCATE(me(i)%string, source=addfoo%string)
+            IF (ALLOCATED(addfoo%real32)) ALLOCATE(me(i)%real32, source=addfoo%real32)
+            IF (ALLOCATED(addfoo%real64)) ALLOCATE(me(i)%real64, source=addfoo%real64)
             IF (ALLOCATED(addfoo%element)) CALL gcc_bug_workaround_allocate(me(i)%element, oldfoo=addfoo%element)
         END IF
 
@@ -451,7 +554,6 @@ SUBMODULE (XML) XML_implementation
 
         IF (ALLOCATED(me)) THEN
             DO i = LBOUND(me,DIM=1), UBOUND(me,DIM=1)
-
                 CALL gcc_bug_workaround_deallocate(me(i))
             END DO
             IF (ALLOCATED(me)) DEALLOCATE(me)
@@ -474,7 +576,8 @@ SUBMODULE (XML) XML_implementation
             END DO
             IF (ALLOCATED(me%string)) DEALLOCATE(me%string)
         END IF
-
+        IF (ALLOCATED(me%real32))     DEALLOCATE(me%real32)
+        IF (ALLOCATED(me%real64))     DEALLOCATE(me%real64)
         IF (ALLOCATED(me%element)) THEN
             DO i = LBOUND(me%element,DIM=1), UBOUND(me%element,DIM=1)
                 CALL gcc_bug_workaround_deallocate (me%element(i))
@@ -492,7 +595,6 @@ SUBMODULE (XML) XML_implementation
 
         END PROCEDURE gcc_bug_deallocate_string_dt
 
-
         MODULE PROCEDURE gcc_bug_workaround_deallocate_xml_file_dt
         IMPLICIT NONE
         !! gcc Work-around to de-allocate the string derived type
@@ -500,5 +602,40 @@ SUBMODULE (XML) XML_implementation
         IF (ALLOCATED(me%element)) CALL gcc_bug_workaround_deallocate (me%element)
 
         END PROCEDURE gcc_bug_workaround_deallocate_xml_file_dt
+
+        MODULE PROCEDURE convert_format_to_string
+        IMPLICIT NONE
+        !! Converts the format integer to string
+
+        SELECT CASE (format)
+        CASE (ascii)
+            ALLOCATE(string,source=format_ascii)
+        CASE (binary)
+            ALLOCATE(string,source=format_binary)
+        CASE (append)
+            ALLOCATE(string,source=format_append)
+        CASE DEFAULT
+            ERROR STOP 'Error: Undefined format in convert_format_to_string'
+        END SELECT
+
+        END PROCEDURE convert_format_to_string
+
+        MODULE PROCEDURE convert_string_to_format
+        USE Misc, ONLY : to_lowercase
+        IMPLICIT NONE
+        !! Converts the format integer to string
+
+        SELECT CASE (to_lowercase(string))
+        CASE (format_ascii)
+            format = ascii
+        CASE (format_binary)
+            format = binary
+        CASE (format_append)
+            format = append
+        CASE DEFAULT
+            ERROR STOP 'Error: Undefined string in convert_string_to_format'
+        END SELECT
+
+        END PROCEDURE convert_string_to_format
 
 END SUBMODULE XML_implementation

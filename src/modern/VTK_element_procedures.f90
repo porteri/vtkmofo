@@ -10,6 +10,7 @@ SUBMODULE (VTK_element) VTK_element_procedures
     CONTAINS
 
         MODULE PROCEDURE vtk_element_setup
+        USE File_utility, ONLY : is_little_endian
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 05/06/2019
@@ -30,10 +31,10 @@ SUBMODULE (VTK_element) VTK_element_procedures
         ELSE
             ERROR STOP "Error. Can't create VTK file without a known type. Terminated in vtk_element_setup"
         END IF
-        IF (ALLOCATED(me%byte_order)) THEN
-            ALLOCATE(byte_order_string,source=' byte_order="' // me%byte_order // '"')
+        IF (is_little_endian()) THEN
+            ALLOCATE(byte_order_string,source=' byte_order="LittleEndian"')
         ELSE
-            ALLOCATE(byte_order_string,source=' byte_order="' // def_byte_order // '"')
+            ALLOCATE(byte_order_string,source=' byte_order="BigEndian"')
         END IF
         IF (ALLOCATED(me%compression)) THEN
             ALLOCATE(compression_string,source=' compression="' // me%compression // '"')
@@ -56,7 +57,6 @@ SUBMODULE (VTK_element) VTK_element_procedures
         !!
 
         IF (PRESENT(type))           ALLOCATE(me%type,source=type)
-        IF (PRESENT(byte_order))     ALLOCATE(me%byte_order,source=byte_order)
         IF (PRESENT(compression))    ALLOCATE(me%compression,source=compression)
         IF (PRESENT(file_extension)) ALLOCATE(me%file_extension,source=file_extension)
 
@@ -84,7 +84,6 @@ SUBMODULE (VTK_element) VTK_element_procedures
 
         IF (ALLOCATED(foo%type))           DEALLOCATE(foo%type)
         IF (ALLOCATED(foo%version))        DEALLOCATE(foo%version)
-        IF (ALLOCATED(foo%byte_order))     DEALLOCATE(foo%byte_order)
         IF (ALLOCATED(foo%compression))    DEALLOCATE(foo%compression)
         IF (ALLOCATED(foo%file_extension)) DEALLOCATE(foo%file_extension)
         IF (ALLOCATED(foo%filename))       DEALLOCATE(foo%filename)
