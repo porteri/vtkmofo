@@ -130,6 +130,24 @@ SUBMODULE (Misc) Misc_implementation
 
         END PROCEDURE convert_real64_to_string
 
+        MODULE PROCEDURE convert_real64_array_to_string
+        IMPLICIT NONE
+        !! Converts a real to a character string
+        INTEGER(i4k) :: i
+        CHARACTER(LEN=:), ALLOCATABLE :: tmp_string
+
+        DO i = 1, SIZE(var)
+            ALLOCATE(tmp_string, source=convert_real64_to_string(var(i)))
+            IF (.NOT. ALLOCATED(string)) THEN
+                ALLOCATE(string,source=tmp_string)
+            ELSE
+                string = string // " " // tmp_string
+            END IF
+            DEALLOCATE(tmp_string)
+        END DO
+
+        END PROCEDURE convert_real64_array_to_string
+
         MODULE PROCEDURE convert_int32_to_string
         IMPLICIT NONE
         CHARACTER(LEN=20) :: tmp_string = '                    '

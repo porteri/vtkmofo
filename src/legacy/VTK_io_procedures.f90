@@ -297,7 +297,8 @@ SUBMODULE (vtk_io) vtk_io_implementation
         MODULE PROCEDURE vtk_serial_full_write
         USE vtk_datasets,    ONLY : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         USE VTK_serial_file, ONLY : serial_file
-        USE VTK_serial_Grid, ONLY : VTK_serial_RectilinearGrid_dt, VTK_serial_StructuredGrid_dt, VTK_serial_UnstructuredGrid_dt
+        USE VTK_serial_Grid, ONLY : VTK_serial_RectilinearGrid_dt, VTK_serial_StructuredGrid_dt, &
+          &                         VTK_serial_UnstructuredGrid_dt, VTK_serial_ImageData_dt
         USE XML,             ONLY : file_format, file_format_text, convert_format_to_string, ascii, format_ascii
         IMPLICIT NONE
         !! author: Ian Porter
@@ -342,7 +343,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         SELECT TYPE (geometry)
         CLASS IS (struct_pts)
-            ERROR STOP 'Procedure not yet implemented for: STRUCTURED POINTS. Termination in subroutine: vtk_serial_full_write'
+            ALLOCATE(VTK_serial_ImageData_dt::serial_file%vtk_dataset)
         CLASS IS (struct_grid)
             ALLOCATE(VTK_serial_StructuredGrid_dt::serial_file%vtk_dataset)
         CLASS IS (rectlnr_grid)

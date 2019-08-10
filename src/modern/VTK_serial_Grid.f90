@@ -15,11 +15,13 @@ MODULE VTK_serial_Grid
     PUBLIC :: VTK_serial_RectilinearGrid_dt
     PUBLIC :: VTK_serial_StructuredGrid_dt
     PUBLIC :: VTK_serial_UnstructuredGrid_dt
+    PUBLIC :: VTK_serial_ImageData_dt
 
     TYPE, EXTENDS(VTK_element_dt), ABSTRACT :: VTK_dataset_dt
         !! VTK dataset derived type
         CHARACTER(LEN=:), ALLOCATABLE :: WholeExtent  !! String for the whole extent of the range
         CHARACTER(LEN=:), ALLOCATABLE :: grid_type    !! Name of the grid type
+        CHARACTER(LEN=:), ALLOCATABLE :: extra_string !! Additional data needed to be written
         TYPE(piece_dt),   ALLOCATABLE :: piece        !! Piece DT (Currently only supporting one piece)
     CONTAINS
         PROCEDURE(abs_set_grid), DEFERRED :: set_grid

@@ -294,7 +294,7 @@ SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
 
         SELECT TYPE (geometry)
         CLASS IS (struct_pts)
-            ERROR STOP 'Error: struct_pts is not yet implemented in piece_set_grid'
+            CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
         CLASS IS (struct_grid)
             !! For now, don't allow "pieces" but instead force the piece to be the whole extent
             CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')

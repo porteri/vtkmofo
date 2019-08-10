@@ -58,7 +58,7 @@ SUBMODULE (XML) XML_implementation
         CASE (ascii)
             WRITE(unit,'(a)',advance='no') prior_offset // '<' // me%name // me%additional_data // '>' // new_line('a')
         CASE (binary)
-            WRITE(unit) prior_offset // '<' // me%name // me%additional_data // '>' // new_line('a')
+            WRITE(unit) '<' // me%name // me%additional_data // '>' // new_line('a')
         END SELECT
 
         ALLOCATE(tmp_offset,source=prior_offset // me%offset)   !! Set the new offset length
@@ -113,11 +113,9 @@ SUBMODULE (XML) XML_implementation
         USE Misc, ONLY : convert_to_string
         IMPLICIT NONE
         !! This adds data inside of an xml element block
-        INTEGER(i4k) :: i
         TYPE(real64_dt) :: real64
         TYPE(string_dt), DIMENSION(:), ALLOCATABLE :: tmp_string_dt
         TYPE(real64_dt), DIMENSION(:), ALLOCATABLE :: tmp_real64_dt
-        CHARACTER(LEN=:), ALLOCATABLE :: string
 
         SELECT CASE (file_format)
         CASE (binary)
@@ -136,16 +134,8 @@ SUBMODULE (XML) XML_implementation
             tmp_string_dt(1:SIZE(me%string)) = me%string
             CALL MOVE_ALLOC(tmp_string_dt, me%string)
 
-            DO i = 1, SIZE(var)
-                IF (i == 1) THEN
-                    ALLOCATE(string, source=convert_to_string(var(i)))
-                ELSE
-                    string = string // " " // convert_to_string(var(i))
-                END IF
-            END DO
-
             ASSOCIATE (my_entry => UBOUND(me%string,DIM=1))
-                ALLOCATE(me%string(my_entry)%text,source= string // new_line('a'))
+                ALLOCATE(me%string(my_entry)%text,source=convert_to_string(var) // new_line('a'))
             END ASSOCIATE
         END SELECT
 
@@ -241,10 +231,17 @@ SUBMODULE (XML) XML_implementation
 
         END PROCEDURE element_add_logical
 
-        MODULE PROCEDURE element_add_data
+        MODULE PROCEDURE element_add_string
         IMPLICIT NONE
         !! This adds data inside of an xml element block
+        LOGICAL :: add_quotes
         TYPE(string_dt), DIMENSION(:), ALLOCATABLE :: tmp_string_dt
+
+        IF (PRESENT(quotes)) THEN
+            add_quotes = quotes
+        ELSE
+            add_quotes = .TRUE.  !! By default, add quotation marks around a string
+        END IF
 
         IF (.NOT. ALLOCATED(me%string)) THEN
             ALLOCATE(me%string(0))
@@ -255,10 +252,14 @@ SUBMODULE (XML) XML_implementation
         CALL MOVE_ALLOC(tmp_string_dt, me%string)
 
         ASSOCIATE (my_entry => UBOUND(me%string,DIM=1))
-            ALLOCATE(me%string(my_entry)%text,source='"' // string // '"' // new_line('a'))
+            IF (add_quotes) THEN
+                ALLOCATE(me%string(my_entry)%text,source='"' // string // '"' // new_line('a'))
+            ELSE
+                ALLOCATE(me%string(my_entry)%text,source= string // new_line('a'))
+            END IF
         END ASSOCIATE
 
-        END PROCEDURE element_add_data
+        END PROCEDURE element_add_string
 
         MODULE PROCEDURE element_add_element
         IMPLICIT NONE
@@ -302,7 +303,7 @@ SUBMODULE (XML) XML_implementation
         CASE (ascii)
             WRITE(unit,'(a)',advance='no') prior_offset // '</' // me%name // '>' // new_line('a')
         CASE (binary)
-            WRITE(unit) prior_offset // '</' // me%name // '>' // new_line('a')
+            WRITE(unit) '</' // me%name // '>' // new_line('a')
         END SELECT
 
         END PROCEDURE element_end
@@ -324,20 +325,22 @@ SUBMODULE (XML) XML_implementation
                 CASE (ASCII)
                     WRITE(unit,'(a)',advance='no') prior_offset // me%string(i)%text
                 CASE (BINARY)
-                    WRITE(unit) prior_offset // me%string(i)%text
+                    WRITE(unit) me%string(i)%text
                 END SELECT
             END DO
         ELSE IF (ALLOCATED(me%real32)) THEN
             DO i = 1, SIZE(me%real32)
                 ASSOCIATE (n_vals => SIZE(me%real32(i)%val))
-                    WRITE(unit) prior_offset, (me%real32(i)%val(j),j=1,n_vals)
+                    WRITE(unit) (me%real32(i)%val(j),j=1,n_vals)
                 END ASSOCIATE
             END DO
             WRITE(unit) new_line('a')
         ELSE IF (ALLOCATED(me%real64)) THEN
             DO i = 1, SIZE(me%real64)
                 ASSOCIATE (n_vals => SIZE(me%real64(i)%val))
-                    WRITE(unit) prior_offset, (me%real64(i)%val(j),j=1,n_vals)
+                    DO j = 1, n_vals
+                        WRITE(unit) me%real64(i)%val(j)
+                    END DO
                 END ASSOCIATE
             END DO
             WRITE(unit) new_line('a')

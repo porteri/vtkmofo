@@ -18,6 +18,7 @@ MODULE Misc
     INTERFACE convert_to_string
         PROCEDURE :: convert_real32_to_string
         PROCEDURE :: convert_real64_to_string
+        PROCEDURE :: convert_real64_array_to_string
         PROCEDURE :: convert_int32_to_string
         PROCEDURE :: convert_int64_to_string
         PROCEDURE :: convert_logical_to_string
@@ -85,6 +86,13 @@ MODULE Misc
         REAL(r8k),        INTENT(IN)  :: var      !! Real variable
         CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
         END FUNCTION convert_real64_to_string
+
+        MODULE FUNCTION convert_real64_array_to_string (var) RESULT (string)
+        IMPLICIT NONE
+        !! Converts a real64 to a character string
+        REAL(r8k), DIMENSION(:), INTENT(IN) :: var      !! Real array
+        CHARACTER(LEN=:),       ALLOCATABLE :: string   !! Character string
+        END FUNCTION convert_real64_array_to_string
 
         MODULE FUNCTION convert_int32_to_string (var) RESULT (string)
         IMPLICIT NONE
