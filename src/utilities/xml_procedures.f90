@@ -309,6 +309,7 @@ SUBMODULE (XML) XML_implementation
         END PROCEDURE element_end
 
         MODULE PROCEDURE element_write
+        USE befor64
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 05/03/2019
@@ -332,6 +333,8 @@ SUBMODULE (XML) XML_implementation
             DO i = 1, SIZE(me%real32)
                 ASSOCIATE (n_vals => SIZE(me%real32(i)%val))
                     WRITE(unit) (me%real32(i)%val(j),j=1,n_vals)
+                    !call b64_encode(n=12._r8k,code=code64)
+                    !print "(A)", code64
                 END ASSOCIATE
             END DO
             WRITE(unit) new_line('a')

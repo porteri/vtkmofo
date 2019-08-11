@@ -87,6 +87,27 @@ endif()
 # Where to put VTKmofo module files
 set(VTKmofo_mod_dir ${CMAKE_CURRENT_BINARY_DIR}/mod)
 
+#set(PENF_files
+#  )
+
+#foreach(item ${PENF_files})
+#  list(APPEND VTKmofo_interface_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
+#endforeach()
+#penf
+#add_library(PENF OBJECT "${CMAKE_CURRENT_SOURCE_DIR}/src/lib/BeFoR64/src/third_party/PENF")
+
+set(subdirectories_list
+  src/lib/BeFoR64
+  src/lib/BeFoR64/src/third_party/PENF
+  )
+
+foreach(subdirectory ${subdirectories_list})
+  add_subdirectory(${subdirectory})
+endforeach()
+
+# base64
+#add_library(base64 OBJECT "${CMAKE_CURRENT_SOURCE_DIR}/src/lib/BeFoR64")
+
 # Avoid compilation cascades:
 #    put interfaces and submodules in separate libraries
 # Specify VTKmofo interfaces
@@ -131,7 +152,9 @@ set(VTKmofo_procedures
 foreach(item ${VTKmofo_interfaces})
   list(APPEND VTKmofo_interface_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
 endforeach()
+
 add_library(vtkmofo_interfaces OBJECT ${VTKmofo_interface_srcs})
+
 # Tell CMake where to put vtkmofo .mod files generated with libvtkmofo
 set_property(TARGET vtkmofo_interfaces
   PROPERTY
@@ -149,7 +172,10 @@ add_library(vtkmofo
   STATIC ${VTKmofo_procedures_srcs} $<TARGET_OBJECTS:vtkmofo_interfaces>)
 if(VTKmofo_USE_OpenCoarrays)
   target_link_libraries(vtkmofo
+    PUBLIC  BeFoR64 PENF
     PRIVATE OpenCoarrays::caf_mpi_static)
+else()
+    target_link_libraries(vtkmofo PUBLIC BeFoR64 PENF)
 endif()
 
 # Tell CMake where to put vtkmofo .mod files generated with libvtkmofo
