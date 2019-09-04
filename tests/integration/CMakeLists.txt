@@ -30,7 +30,7 @@ endforeach()
 if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "Intel")
 
 else()
-    add_VTK_mofo_integration_test(DTIO_T_shape "legacy")
+    add_VTKmofo_integration_test(DTIO_T_shape "legacy")
     list(APPEND VTKmofo_integration_test_list "legacy_DTIO_T_shape")
 endif()
 
