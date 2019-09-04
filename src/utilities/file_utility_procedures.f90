@@ -129,7 +129,7 @@ SUBMODULE (file_utility) file_utility_implementation
         IF (me%unit < 0) THEN
             me%unit = 0 !! Re-set this to a non-negative number for a gfortran-8.3 bug w/ newunit
         END IF
-write(0,*) me%form
+
         OPEN (newunit=me%unit, file=me%filename, iostat=inputstat, Status='REPLACE', Form=me%form, access=me%access)
 
         END PROCEDURE make_file

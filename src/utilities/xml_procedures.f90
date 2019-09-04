@@ -399,15 +399,22 @@ SUBMODULE (XML) XML_implementation
             CASE ('unformatted')
                 ALLOCATE(me%form, source='UNFORMATTED')  !! Ignore the user-defined form, even if present
                 file_format = binary
+            CASE DEFAULT
+                ERROR STOP 'Error: Unknown value for form. Terminated in XML_file_setup'
             END SELECT
         ELSE
             SELECT CASE (file_format)
             CASE (ascii)
                 ALLOCATE(me%form, source='FORMATTED')
+                file_format = ascii
             CASE (binary)
                 ALLOCATE(me%form, source='UNFORMATTED')
+                file_format = binary
+            CASE DEFAULT
+                ERROR STOP 'Error: Unknown value for file_format. Terminated in XML_file_setup'
             END SELECT
         END IF
+
         file_format_text = convert_format_to_string (file_format)
 !        ALLOCATE(me%access, source='SEQUENTIAL') !! Ignore the user-defined access, even if present
         ALLOCATE(me%access, source='STREAM') !! Ignore the user-defined access, even if present

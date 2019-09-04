@@ -30,6 +30,7 @@ This code is built and tested with the following:
 Compilers: (may work for older ones as well)
  - [gfortran][gcc link] 7.4, 8.1, 8.2, 8.3, 9.0
  - [Intel][Intel link] 2018
+   - * Warning: Intel 2018 does not support derived type IO *
 
 Operating Systems:
  - Linnux (Tested on Ubuntu 16, 18)

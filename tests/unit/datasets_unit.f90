@@ -309,7 +309,6 @@ MODULE vtk_datasets_unit_tests
         LOGICAL, DIMENSION(n_types) :: individual_tests_pass
 
         DO i = 1, n_types
-        write(0,*) i
             IF (ALLOCATED(vtk_dataset_1)) DEALLOCATE (vtk_dataset_1)
             IF (ALLOCATED(vtk_dataset_2)) DEALLOCATE (vtk_dataset_2)
             SELECT CASE (i)

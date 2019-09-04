@@ -18,7 +18,7 @@ MODULE File_utility
         CHARACTER(LEN=:), ALLOCATABLE :: form
         CHARACTER(LEN=:), ALLOCATABLE :: access
     CONTAINS
-        PROCEDURE, PRIVATE :: setup_file_information
+        PROCEDURE, PUBLIC  :: setup_file_information
         GENERIC,   PUBLIC  :: setup => setup_file_information
         PROCEDURE, PRIVATE :: check_if_exists
         GENERIC,   PUBLIC  :: exists => check_if_exists

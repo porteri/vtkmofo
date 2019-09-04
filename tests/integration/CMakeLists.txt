@@ -17,7 +17,6 @@ endfunction(add_VTKmofo_integration_test)
 # legacy tests
 foreach(test
     Append
-    DTIO_T_shape
     Polygonal_data
     Rectilinear_grid
     Structured_grid
@@ -26,6 +25,14 @@ foreach(test
   add_VTKmofo_integration_test(${test} "legacy")
   list(APPEND VTKmofo_integration_test_list "legacy_${test}")
 endforeach()
+
+# Currently ignore the DTIO test b/c Intel 18.x does not properly support DTIO
+if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "Intel")
+
+else()
+    add_VTKmofo_integration_test(DTIO_T_shape "legacy")
+    list(APPEND VTKmofo_integration_test_list "legacy_DTIO_T_shape")
+endif()
 
 # serial modern tests
 foreach(test
