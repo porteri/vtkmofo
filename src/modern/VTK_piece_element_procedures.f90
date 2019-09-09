@@ -1,6 +1,6 @@
 SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
     USE Precision, ONLY : i4k, r8k
-    USE VTK_formats_types
+    USE VTK_formats_types, ONLY : type_float64
     USE XML, ONLY : file_format_text
     IMPLICIT NONE
     !! author: Ian Porter
