@@ -16,26 +16,31 @@ SUBMODULE (file_utility) file_utility_implementation
         !! Establishes the file information
         !!
 
+        IF (ALLOCATED(me%filename)) DEALLOCATE(me%filename)
         ALLOCATE(me%filename, source=TRIM(filename))
         IF (PRESENT(open_status)) THEN
+            IF (ALLOCATED(me%open_status)) DEALLOCATE(me%open_status)
             ALLOCATE(me%open_status, source=open_status)
         ELSE
-            ALLOCATE(me%open_status, source='UNKNOWN')
+            IF (.NOT. ALLOCATED(me%open_status)) ALLOCATE(me%open_status, source='UNKNOWN')
         END IF
         IF (PRESENT(close_status)) THEN
+            IF (ALLOCATED(me%close_status)) DEALLOCATE(me%close_status)
             ALLOCATE(me%close_status, source=close_status)
         ELSE
-            ALLOCATE(me%close_status, source='KEEP')
+            IF (.NOT. ALLOCATED(me%close_status)) ALLOCATE(me%close_status, source='KEEP')
         END IF
         IF (PRESENT(form)) THEN
+            IF (ALLOCATED(me%form)) DEALLOCATE(me%form)
             ALLOCATE(me%form, source=form)
         ELSE
-            ALLOCATE(me%form, source='UNKNOWN')
+            IF (.NOT. ALLOCATED(me%form)) ALLOCATE(me%form, source='UNKNOWN')
         END IF
         IF (PRESENT(access)) THEN
+            IF (ALLOCATED(me%access)) DEALLOCATE(me%access)
             ALLOCATE(me%access, source=access)
         ELSE
-            ALLOCATE(me%access, source='UNKNOWN')
+            IF (.NOT. ALLOCATED(me%access)) ALLOCATE(me%access, source='UNKNOWN')
         END IF
 
         END PROCEDURE setup_file_information

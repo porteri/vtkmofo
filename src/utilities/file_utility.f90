@@ -144,7 +144,11 @@ MODULE File_utility
         END FUNCTION get_unit
 
         PURE MODULE FUNCTION is_little_endian() RESULT (is_little)
+        !! author: Ian Porter
+        !! date: 09/25/2019
+        !!
         !! Checks the type of bit ordering to determine if the architecture is little endian
+        !!
         LOGICAL :: is_little !! Flag to determine if little endian
 
         END FUNCTION is_little_endian
