@@ -1,5 +1,5 @@
 SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
-    USE VTK_formats_types
+    USE VTK_formats_types, ONLY : type_float32, type_float64, type_int32, type_uint32
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 06/07/2019
