@@ -9,7 +9,7 @@ project(vtkmofo LANGUAGES Fortran)
 
 # vtkmofo project version
 set (VTKMOFO_VERSION_MAJOR 1)
-set (VTKMOFO_VERSION_MINOR 001)
+set (VTKMOFO_VERSION_MINOR 100)
 
 # Print project logo, version and tag line
 file(READ ${CMAKE_CURRENT_LIST_DIR}/cmake/VTKMOFO-logo.txt VTKMOFO_LOGO)
