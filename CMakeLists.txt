@@ -67,7 +67,7 @@ if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "Intel")
 elseif("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
   set(gnu_compiler true)
   # Fortran 2008 standard, free format (due to automatic build to .f file for testing)
-  set(CMAKE_Fortran_FLAGS "${prefix}std=f2008 ${prefix}fcheck=all ${prefix}Wall ${prefix}Wno-unused-dummy-argument ${prefix}ffree-form")
+  set(CMAKE_Fortran_FLAGS "${prefix}std=f2008 ${prefix}fcheck=all ${prefix}Wall ${prefix}Wno-unused-dummy-argument ${prefix}ffree-form -fbacktrace")
 else()
   message(WARNING
     "\n"
@@ -151,6 +151,20 @@ if(VTKmofo_USE_OpenCoarrays)
   target_link_libraries(vtkmofo
     PRIVATE OpenCoarrays::caf_mpi_static)
 endif()
+
+# Work around for GFortran bug
+if("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
+  set_property( SOURCE
+    src/utilities/xml_procedures.f90
+    src/modern/VTK_piece_element_procedures.f90
+    src/legacy/VTK_cells_procedures.f90
+    src/legacy/VTK_datasets_procedures.f90
+    APPEND
+    PROPERTY
+    COMPILE_OPTIONS "-O0"
+    )
+endif()
+
 
 # Tell CMake where to put vtkmofo .mod files generated with libvtkmofo
 set_property(TARGET vtkmofo
