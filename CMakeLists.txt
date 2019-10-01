@@ -92,7 +92,7 @@ set(VTKmofo_mod_dir ${CMAKE_CURRENT_BINARY_DIR}/mod)
 # Specify VTKmofo interfaces
 set(VTKmofo_interfaces
   utilities/file_utility.f90
-  utilities/linked_list.f90
+#  utilities/linked_list.f90
   utilities/Misc.f90
   utilities/Precision.f90
   utilities/xml.f90
@@ -112,7 +112,7 @@ set(VTKmofo_interfaces
 # Specify VTKmofo implementations
 set(VTKmofo_procedures
   utilities/file_utility_procedures.f90
-  utilities/linked_list_procedures.f90
+#  utilities/linked_list_procedures.f90
   utilities/Misc_procedures.f90
   utilities/xml_procedures.f90
   legacy/VTK_attributes_procedures.f90
