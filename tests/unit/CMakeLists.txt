@@ -28,7 +28,7 @@ foreach(test
     cells_unit
     DataArray_unit
     datasets_unit
-    linked_list_unit
+#    linked_list_unit
     xml_unit
     )
   add_VTKmofo_unit_test(${test})
