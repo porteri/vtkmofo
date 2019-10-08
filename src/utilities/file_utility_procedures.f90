@@ -15,9 +15,11 @@ SUBMODULE (file_utility) file_utility_implementation
         !!
         !! Establishes the file information
         !!
+        CHARACTER(LEN=:), ALLOCATABLE :: tmp_filename
 
+        ALLOCATE(tmp_filename,source=filename)
         IF (ALLOCATED(me%filename)) DEALLOCATE(me%filename)
-        ALLOCATE(me%filename, source=TRIM(filename))
+        ALLOCATE(me%filename, source=tmp_filename)
         IF (PRESENT(open_status)) THEN
             IF (ALLOCATED(me%open_status)) DEALLOCATE(me%open_status)
             ALLOCATE(me%open_status, source=open_status)
