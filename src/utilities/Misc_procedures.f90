@@ -225,6 +225,34 @@ SUBMODULE (Misc) Misc_implementation
 
         END PROCEDURE to_lowercase
 
+        MODULE PROCEDURE TRIM_FROM_STRING
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 11/06/2019
+        !!
+        !! This function trims <item> from a string
+        !!
+        INTEGER(i4k) :: string_len !! Length of the string
+        INTEGER(i4k) :: item_len   !! Length of the item to trim
+
+        string_len = LEN(string)
+        item_len = LEN(item)
+        IF (string_len >= item_len) THEN
+            IF (string(string_len-(item_len-1):) == item) THEN
+                IF (string_len == item_len) THEN
+                    newstring = ''
+                ELSE
+                    newstring = string(1:string_len-(item_len))
+                END IF
+            ELSE
+                newstring = string
+            END IF
+        ELSE
+            newstring = string
+        END IF
+
+        END PROCEDURE TRIM_FROM_STRING
+
         MODULE PROCEDURE sleep_for
         IMPLICIT NONE
         !! author: Zaak Beekman, ParaTools

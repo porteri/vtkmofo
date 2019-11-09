@@ -62,7 +62,7 @@ if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "Intel")
     # Full debug, Fortran 2008 standard, free format (due to automatic build to .f file for testing), Check bounds
     set(CMAKE_Fortran_FLAGS
       "${prefix}nologo ${prefix}debug${infix}full ${prefix}multiple-processes ${prefix}O0 ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
-	   )
+       )
   endif()
 elseif("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
   set(gnu_compiler true)
