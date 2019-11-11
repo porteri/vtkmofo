@@ -150,7 +150,7 @@ MODULE Misc
 
         END SUBROUTINE
 
-        PURE MODULE FUNCTION trim_from_string (string, item) RESULT (newstring)
+        RECURSIVE MODULE FUNCTION trim_from_string (string, item, case_sensitive) RESULT (new_string)
         IMPLICIT NONE
         !! author: Ian Porter, GSE
         !! date: 11/06/2019
@@ -159,7 +159,9 @@ MODULE Misc
         !!
         CHARACTER(LEN=*), INTENT(IN)  :: string     !! String to be converted
         CHARACTER(LEN=*), INTENT(IN)  :: item       !! Item to be trimmed from string
-        CHARACTER(LEN=:), ALLOCATABLE :: newstring  !! New string
+        LOGICAL,          INTENT(IN), OPTIONAL :: case_sensitive
+                                                    !! Flag for whether or not to search using case sensitivity (False by default)
+        CHARACTER(LEN=:), ALLOCATABLE :: new_string !! New string
 
         END FUNCTION trim_from_string
 
