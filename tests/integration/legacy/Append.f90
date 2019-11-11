@@ -15,7 +15,7 @@ PROGRAM Append_test
     TYPE (scalar)               :: cell_val_1, cell_val_2, point_val_1, point_val_2, point_val_3
     INTEGER(i4k)                :: t
     INTEGER(i4k),     PARAMETER :: n_points = 32, n_cells = 7, unit = 20, n_steps = 10
-    CHARACTER(LEN=*), PARAMETER :: filename = 'Append.vtk'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'legacy_append_unstruct_grid'
     CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of appending to a VTK file'
     CHARACTER(LEN=8)            :: t_char
     REAL(r8k), DIMENSION(n_points,1:3) :: point_vals = 0.0_r8k

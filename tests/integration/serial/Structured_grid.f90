@@ -1,4 +1,4 @@
-PROGRAM Structured_grid_test
+PROGRAM serial_Structured_grid_test
     USE Precision,      ONLY : i4k, r8k
     USE vtk_datasets,   ONLY : struct_grid
     USE vtk_attributes, ONLY : scalar, attribute, attributes
@@ -84,4 +84,4 @@ PROGRAM Structured_grid_test
 
     WRITE(*,*) 'Finished'
 
-END PROGRAM Structured_grid_test
+END PROGRAM serial_Structured_grid_test

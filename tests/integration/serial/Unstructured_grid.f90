@@ -1,4 +1,4 @@
-PROGRAM T_shape_test
+PROGRAM serial_T_shape_test
     USE Precision,      ONLY : i4k, r8k
     USE vtk_datasets,   ONLY : unstruct_grid
     USE vtk_attributes, ONLY : scalar, attributes
@@ -15,7 +15,7 @@ PROGRAM T_shape_test
     TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
     INTEGER(i4k)                :: i, t
     INTEGER(i4k),     PARAMETER :: n_points = 24, n_cells = 5, unit = 20, n_steps = 10
-    CHARACTER(LEN=*), PARAMETER :: filename = 't_shape'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'serial_unstruct_grid'
     CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of T-shape unstructured grid geometry'
     CHARACTER(LEN=8)            :: t_char
     REAL(r8k), DIMENSION(n_cells, 1:n_params_to_write) :: cell_vals
@@ -102,4 +102,4 @@ PROGRAM T_shape_test
 
     WRITE(*,*) 'Finished'
 
-END PROGRAM T_shape_test
+END PROGRAM serial_T_shape_test

@@ -15,6 +15,7 @@ PROGRAM pyramid_test
     TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
     INTEGER(i4k)                :: i = 0_i4k
     INTEGER(i4k),     PARAMETER :: n_x = 3, n_y = 3, n_z = 3, n_faces = 20
+    !CHARACTER(LEN=*), PARAMETER :: filename = 'legacy_polygonal_data' !! Will use default out.vtk filename
     INTEGER(i4k), DIMENSION(3)  :: dims
     REAL(r8k), DIMENSION(n_faces,1:n_params_to_write)     :: cell_vals
     REAL(r8k), DIMENSION(n_x*n_y*n_z,1:n_params_to_write) :: point_vals

@@ -7,7 +7,7 @@ MODULE Misc
     !! This module contains miscellaneous routines used to read/write to the .vtk file
     !!
     PRIVATE
-    PUBLIC :: interpret_string, def_len, to_uppercase, to_lowercase, char_dt, sleep_for, convert_to_string
+    PUBLIC :: interpret_string, def_len, to_uppercase, to_lowercase, char_dt, sleep_for, convert_to_string, trim_from_string
 
     INTERFACE get_string_value
         PROCEDURE :: get_string_char
@@ -149,6 +149,21 @@ MODULE Misc
         INTEGER(i4k), INTENT(IN) :: msecs  !! # of milliseconds to sleep for
 
         END SUBROUTINE
+
+        RECURSIVE MODULE FUNCTION trim_from_string (string, item, case_sensitive) RESULT (new_string)
+        IMPLICIT NONE
+        !! author: Ian Porter, GSE
+        !! date: 11/06/2019
+        !!
+        !! This function trims <item> from a string
+        !!
+        CHARACTER(LEN=*), INTENT(IN)  :: string     !! String to be converted
+        CHARACTER(LEN=*), INTENT(IN)  :: item       !! Item to be trimmed from string
+        LOGICAL,          INTENT(IN), OPTIONAL :: case_sensitive
+                                                    !! Flag for whether or not to search using case sensitivity (False by default)
+        CHARACTER(LEN=:), ALLOCATABLE :: new_string !! New string
+
+        END FUNCTION trim_from_string
 
     END INTERFACE
 

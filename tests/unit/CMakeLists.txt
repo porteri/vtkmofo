@@ -29,6 +29,7 @@ foreach(test
     DataArray_unit
     datasets_unit
 #    linked_list_unit
+    trim_from_string_unit
     xml_unit
     )
   add_VTKmofo_unit_test(${test})

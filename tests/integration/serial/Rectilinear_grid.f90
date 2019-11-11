@@ -1,4 +1,4 @@
-PROGRAM modern_Rectilinear_test
+PROGRAM serial_Rectilinear_test
     USE Precision,      ONLY : i4k, r8k
     USE vtk_datasets,   ONLY : rectlnr_grid
     USE vtk_attributes, ONLY : scalar, attributes
@@ -17,7 +17,7 @@ PROGRAM modern_Rectilinear_test
     INTEGER(i4k),     PARAMETER :: n_x = 11, n_y = 6, n_z = 3, unit = 20
     REAL(r8k)                   :: j = 0.0_r8k
     REAL(r8k),        PARAMETER :: temp_val = 555.0_r8k
-    CHARACTER(LEN=*), PARAMETER :: filename = 'cube'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'serial_rectlnr_grid'
     CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of cube geometry'
     INTEGER(i4k), DIMENSION(3)  :: dims = [ n_x, n_y, n_z ]
     REAL(r8k), DIMENSION(n_x), PARAMETER :: x_coords = &
@@ -55,7 +55,7 @@ PROGRAM modern_Rectilinear_test
     CLOSE(unit)
 
     !! Binary file
-    CALL vtk_serial_write (cube, unit=unit, filename='binary_cube_append_' // filename, title=title, format=binary)
+    CALL vtk_serial_write (cube, unit=unit, filename='serial_binary_rectlnr_grid_append_' // filename, title=title, format=binary)
 
     CALL vtk_serial_write (pointdata=vals_to_write(1)%attribute)
 
@@ -65,7 +65,7 @@ PROGRAM modern_Rectilinear_test
     CLOSE(unit)
 
     !! ASCII file
-    CALL vtk_serial_write (cube, unit=unit, filename='ascii_cube_append_' // filename, title=title, format=ascii)
+    CALL vtk_serial_write (cube, unit=unit, filename='serial_ascii_rectlnr_grid_append_' // filename, title=title, format=ascii)
 
     CALL vtk_serial_write (pointdata=vals_to_write(1)%attribute)
 
@@ -75,4 +75,4 @@ PROGRAM modern_Rectilinear_test
 
     WRITE(*,*) 'Finished'
 
-END PROGRAM modern_Rectilinear_test
+END PROGRAM serial_Rectilinear_test

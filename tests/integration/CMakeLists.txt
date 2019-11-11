@@ -36,13 +36,21 @@ endif()
 
 # serial modern tests
 foreach(test
-    Image_Data
     Rectilinear_grid
     Structured_grid
+    Structured_points
     Unstructured_grid)
   add_VTKmofo_integration_test(${test} "serial")
   list(APPEND VTKmofo_integration_test_list "serial_${test}")
 endforeach()
+
+# Currently ignore the DTIO test b/c Intel 18.x does not properly support DTIO
+if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "Intel")
+
+else()
+    add_VTKmofo_integration_test(DTIO_T_shape "serial")
+    list(APPEND VTKmofo_integration_test_list "serial_DTIO_T_shape")
+endif()
 
 # Export integration test list so that we don't have to keep track if it twice
 set(VTKmofo_integration_test_list "${VTKmofo_integration_test_list}" PARENT_SCOPE)

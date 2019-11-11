@@ -1,4 +1,4 @@
-MODULE DTIO_vtkmofo
+MODULE serial_DTIO_vtkmofo
     USE Precision,    ONLY : i4k, r8k
     USE vtk_datasets, ONLY : unstruct_grid
     IMPLICIT NONE
@@ -13,8 +13,6 @@ MODULE DTIO_vtkmofo
     CONTAINS
         PROCEDURE, PRIVATE :: write_formatted
         GENERIC, PUBLIC :: WRITE(FORMATTED) => write_formatted
-        !PROCEDURE, PRIVATE :: read_formatted
-        !GENERIC, PUBLIC :: READ(FORMATTED) => read_formatted
     END TYPE foo
 
     CONTAINS
@@ -22,7 +20,7 @@ MODULE DTIO_vtkmofo
         SUBROUTINE write_formatted (me, unit, iotype, v_list, iostat, iomsg)
         USE vtk_attributes, ONLY : scalar, attributes
         USE vtk_cells,      ONLY : voxel, hexahedron, vtkcell_list
-        USE vtk,            ONLY : vtk_legacy_write
+        USE vtk,            ONLY : vtk_serial_write
         IMPLICIT NONE
         !! Subroutine performs a formatted write for a cell
         CLASS(foo),       INTENT(IN)    :: me
@@ -37,7 +35,6 @@ MODULE DTIO_vtkmofo
         TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
         INTEGER(i4k)                :: i
         INTEGER(i4k),     PARAMETER :: n_points = 24, n_cells = 5
-        CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of T-shape unstructured grid geometry'
         REAL(r8k), DIMENSION(n_cells, 1:n_params_to_write) :: cell_vals
         REAL(r8k), DIMENSION(n_points,1:n_params_to_write) :: point_vals
         REAL(r8k), DIMENSION(3,n_points), PARAMETER        :: points = RESHAPE ( &
@@ -115,53 +112,34 @@ MODULE DTIO_vtkmofo
         SELECT CASE (iotype)
         CASE DEFAULT
             !! No specific formatting at this point
-            CALL vtk_legacy_write (t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
-              &                    unit=unit, title=title, multiple_io=.FALSE.)
+            CALL vtk_serial_write (t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
+              &                    unit=unit, multiple_io=.FALSE.)
         END SELECT
 
         iostat = 0; iomsg=''
 
         END SUBROUTINE write_formatted
 
+END MODULE serial_DTIO_vtkmofo
 
-        !SUBROUTINE read_formatted (me, unit, iotype, v_list, iostat, iomsg)
-        !IMPLICIT NONE
-        !!! Subroutine performs a formatted read for a cell
-        !CLASS(foo),       INTENT(INOUT) :: me
-        !INTEGER(i4k),     INTENT(IN)    :: unit
-        !CHARACTER(LEN=*), INTENT(IN)    :: iotype
-        !INTEGER(i4k),     DIMENSION(:), INTENT(IN) :: v_list
-        !INTEGER(i4k),     INTENT(OUT)   :: iostat
-        !CHARACTER(LEN=*), INTENT(INOUT) :: iomsg
-        !
-        !iostat = 0
-        !
-        !END SUBROUTINE read_formatted
-
-END MODULE DTIO_vtkmofo
-
-
-PROGRAM DTIO_T_shape_test
+PROGRAM serial_DTIO_T_shape_test
     USE Precision,    ONLY : i4k
-    USE DTIO_vtkmofo, ONLY : foo
+    USE serial_DTIO_vtkmofo, ONLY : foo
     IMPLICIT NONE
     !! author: Ian Porter
-    !! date: 03/24/2019
+    !! date: 11/10/2019
     !!
     !! This is a test of an unstructured grid (T-shape) geometry
     !!
     INTEGER(i4k) :: unit
     TYPE(foo) :: t_shape
-    CHARACTER(LEN=*), PARAMETER :: filename = 'legacy_dtio_t_shape.vtk'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'serial_dtio_t_shape'
 
     OPEN(newunit=unit, file=filename, status='replace', form='formatted')
     WRITE(unit,'(DT)') t_shape
 
     CLOSE(unit)
 
-    !OPEN(newunit=unit, file=filename, status='old', form='formatted')
-    !READ(unit,'(DT)') t_shape
-
     WRITE(*,*) 'Finished'
 
-END PROGRAM DTIO_T_shape_test
+END PROGRAM serial_DTIO_T_shape_test

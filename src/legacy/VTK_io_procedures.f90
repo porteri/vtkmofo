@@ -1,4 +1,5 @@
 SUBMODULE (vtk_io) vtk_io_implementation
+    USE Precision, ONLY : i4k
     !! author: Ian Porter
     !! date: 12/1/2017
     !!
@@ -14,8 +15,8 @@ SUBMODULE (vtk_io) vtk_io_implementation
     CONTAINS
 
         MODULE PROCEDURE vtk_legacy_full_write
-        USE Misc,     ONLY : to_uppercase
-        USE vtk_vars, ONLY : default_fn, default_title, vtkfilename, vtktitle, version, fcnt, file_extension
+        USE Misc,     ONLY : to_uppercase, trim_from_string
+        USE vtk_vars, ONLY : default_fn, default_title, vtkfilename, vtktitle, version, fcnt, vtk_extension
         USE XML,      ONLY : convert_format_to_string, file_format_text, file_format, ascii, binary, format_ascii, format_binary
         IMPLICIT NONE
         !! author: Ian Porter
@@ -38,9 +39,11 @@ SUBMODULE (vtk_io) vtk_io_implementation
             file_format = ascii                                 !! Default to ascii
         END IF
         IF (PRESENT(filename)) THEN
-            ALLOCATE(vtkfilename, source=filename)              !! Calling program provided a filename
+            ALLOCATE(vtkfilename, source=trim_from_string(filename,vtk_extension) // vtk_extension)
+                                                                !! Calling program provided a filename
         ELSE
-            ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename. Use default
+            ALLOCATE(vtkfilename, source=default_fn // vtk_extension)
+                                                                !! Calling program did not provide a filename. Use default
         END IF
         IF (PRESENT(multiple_io)) THEN
             IF (multiple_io) THEN
@@ -48,9 +51,10 @@ SUBMODULE (vtk_io) vtk_io_implementation
                     CHARACTER(LEN=8) :: fcnt_char = ''          !! File count character
                     CHARACTER(LEN=:), ALLOCATABLE :: base_fn    !! Base file name
                     WRITE (fcnt_char,FMT='(i8)') fcnt
-                    ALLOCATE(base_fn, source=vtkfilename(1:INDEX(to_uppercase(vtkfilename),to_uppercase(file_extension))-1))
+                    !ALLOCATE(base_fn, source=vtkfilename(1:INDEX(to_uppercase(vtkfilename),to_uppercase(file_extension))-1))
+                    ALLOCATE(base_fn, source=trim_from_string(vtkfilename,vtk_extension))
                     DEALLOCATE(vtkfilename)
-                    ALLOCATE(vtkfilename, source=base_fn // "_" // TRIM(ADJUSTL(fcnt_char)) // file_extension)
+                    ALLOCATE(vtkfilename, source=base_fn // "_" // TRIM(ADJUSTL(fcnt_char)) // vtk_extension)
                     fcnt = fcnt + 1                             !! Increase timestep file counter by 1
                 END BLOCK mio_filename
             END IF
@@ -141,8 +145,6 @@ SUBMODULE (vtk_io) vtk_io_implementation
         END PROCEDURE vtk_legacy_full_write
 
         MODULE PROCEDURE vtk_legacy_append
-        USE Misc,     ONLY : to_uppercase
-        USE vtk_vars, ONLY : default_fn, default_title, version, file_extension
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/1/2017
@@ -214,7 +216,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         MODULE PROCEDURE vtk_legacy_read
         USE Misc,     ONLY : def_len
-        USE vtk_vars, ONLY : default_fn, default_title, vtkfilename, vtktitle, version
+        USE vtk_vars, ONLY : vtkfilename, vtktitle, version
         USE XML,      ONLY : convert_string_to_format, ascii, binary, file_format, file_format_text
         IMPLICIT NONE
         !! author: Ian Porter
@@ -299,13 +301,16 @@ SUBMODULE (vtk_io) vtk_io_implementation
         USE VTK_serial_file, ONLY : serial_file
         USE VTK_serial_Grid, ONLY : VTK_serial_RectilinearGrid_dt, VTK_serial_StructuredGrid_dt, &
           &                         VTK_serial_UnstructuredGrid_dt, VTK_serial_ImageData_dt
+        USE VTK_vars,        ONLY : vtk_extension
         USE XML,             ONLY : file_format, file_format_text, convert_format_to_string, ascii, format_ascii
+        USE Misc,            ONLY : trim_from_string
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 5/08/2019
         !!
         !! This subroutine writes the modern serial vtk output file
         !!
+        INTEGER(i4k) :: file_unit = 0
 
         ! Clear out any pre-existing data
         IF (ALLOCATED(vtkfilename))      DEALLOCATE(vtkfilename)
@@ -316,13 +321,28 @@ SUBMODULE (vtk_io) vtk_io_implementation
             ALLOCATE(file_format_text, source=convert_format_to_string(format))
             file_format = format
         ELSE
-            ALLOCATE(file_format_text,source=format_ascii)     !! Default to binary
+            ALLOCATE(file_format_text,source=format_ascii)      !! Default to binary
             file_format = ascii
         END IF
-        IF (PRESENT(filename)) THEN
-            ALLOCATE(vtkfilename, source=filename)              !! Calling program provided a filename
+        IF (PRESENT(filename)) THEN                             !! Calling program provided a filename
+            ALLOCATE(vtkfilename, source=trim_from_string(filename,vtk_extension))
+            IF (PRESENT(unit)) THEN
+                file_unit = unit
+            ELSE
+                INQUIRE(file=vtkfilename, number=file_unit)
+                IF (file_unit == -1) file_unit = 0
+            END IF
+        ELSE IF (PRESENT(unit)) THEN
+                                                                !! Calling program provided a unit # but no filename
+            BLOCK
+                CHARACTER(LEN=132) :: dummy_name
+                INQUIRE(unit=unit,name=dummy_name)
+                file_unit = unit
+                ALLOCATE(vtkfilename,source=trim_from_string(TRIM(ADJUSTL(dummy_name)),vtk_extension))
+            END BLOCK
         ELSE
-            ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename. Use default
+            ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename or unit #. Use default
+            file_unit = 0
         END IF
 
         IF (PRESENT(multiple_io)) THEN
@@ -358,7 +378,13 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         CALL serial_file%vtk_dataset%set_grid(geometry)
 
-        CALL serial_file%setup(filename=vtkfilename // TRIM(serial_file%vtk_dataset%file_extension))
+        IF (file_unit /= 0) THEN
+            CALL serial_file%setup(filename=vtkfilename // TRIM(serial_file%vtk_dataset%file_extension),unit=file_unit)
+        ELSE
+            CALL serial_file%setup(filename=vtkfilename // TRIM(serial_file%vtk_dataset%file_extension))
+        END IF
+        write(0,*) serial_file%filename
+        write(0,*) serial_file%unit
         !! Append data
         CALL vtk_serial_append (celldata, pointdata, celldatasets, pointdatasets)
         !! Finalize the write

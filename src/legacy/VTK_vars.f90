@@ -8,7 +8,7 @@ MODULE vtk_vars
     !! This module contains basic information needed for reading/writing to the vtk file
     !!
     PRIVATE
-    PUBLIC :: vtkunit, version, default_title, default_fn, vtkfilename, vtktitle, fcnt, file_extension
+    PUBLIC :: vtkunit, version, default_title, default_fn, vtkfilename, vtktitle, fcnt, vtk_extension
     PUBLIC :: ascii, binary, file_format
                                               !! Selected file type
     INTEGER(i4k) :: vtkunit  = 20_i4k                                               !! Default VTK unit #
@@ -18,8 +18,8 @@ MODULE vtk_vars
       &                        double=10_i4k                                        !! Types of data
     CHARACTER(LEN=*), PARAMETER   :: version       = '# vtk DataFile Version 3.0'   !! VTK datafile version
     CHARACTER(LEN=*), PARAMETER   :: default_title = 'Version 3.0 VTK file'         !! Title card
-    CHARACTER(LEN=*), PARAMETER   :: file_extension='.vtk'                          !! File extension
-    CHARACTER(LEN=*), PARAMETER   :: default_fn    = 'out' // file_extension        !! Default filename
+    CHARACTER(LEN=*), PARAMETER   :: vtk_extension = '.vtk'                         !! File extension
+    CHARACTER(LEN=*), PARAMETER   :: default_fn    = 'out'                          !! Default filename
     CHARACTER(LEN=:), ALLOCATABLE :: vtkfilename                                    !! Supplied filename
     CHARACTER(LEN=:), ALLOCATABLE :: vtktitle                                       !! Supplied title
 

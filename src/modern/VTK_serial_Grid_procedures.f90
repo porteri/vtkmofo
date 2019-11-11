@@ -1,5 +1,5 @@
 SUBMODULE (VTK_serial_Grid) VTK_serial_Grid_procedures
-    USE Precision, ONLY : i4k, r8k
+    USE Precision, ONLY : i4k
     !! author: Ian Porter
     !! date: 05/06/2019
     !!

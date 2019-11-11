@@ -1,5 +1,5 @@
 SUBMODULE (file_utility) file_utility_implementation
-    USE Precision, ONLY : i1k, i4k, r8k
+    USE Precision, ONLY : i1k, i4k
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 04/04/2018
@@ -44,18 +44,38 @@ SUBMODULE (file_utility) file_utility_implementation
         ELSE
             IF (.NOT. ALLOCATED(me%access)) ALLOCATE(me%access, source='UNKNOWN')
         END IF
+        IF (PRESENT(unit)) THEN
+            me%unit = unit
+        ELSE
+            me%unit = 0
+        END IF
 
         END PROCEDURE setup_file_information
 
         MODULE PROCEDURE check_if_exists
+        USE Misc, ONLY : TO_UPPERCASE
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 04/04/2018
         !!
         !! Checks to see if the file is open
         !!
+        CHARACTER(LEN=:), ALLOCATABLE :: check_by_type
 
-        INQUIRE (file=me%filename, exist=file_exists)
+        IF (PRESENT(check)) THEN
+            ALLOCATE(check_by_type, source=TO_UPPERCASE(check))
+        ELSE
+            ALLOCATE(check_by_type, source='FILENAME')
+        END IF
+
+        SELECT CASE (check_by_type)
+        CASE ('FILENAME')
+            INQUIRE (file=me%filename, exist=file_exists)
+        CASE ('UNIT')
+            INQUIRE (unit=me%unit, exist=file_exists)
+        CASE DEFAULT
+            ERROR STOP 'Unrecognized check_by_type in module procedure check_if_exists'
+        END SELECT
 
         END PROCEDURE check_if_exists
 
@@ -132,12 +152,31 @@ SUBMODULE (file_utility) file_utility_implementation
         !! Makes a new file
         !!
         INTEGER(i4k) :: inputstat
+        LOGICAL :: make_it
+        CHARACTER(LEN=132) :: file_name
 
-        IF (me%unit < 0) THEN
-            me%unit = 0 !! Re-set this to a non-negative number for a gfortran-8.3 bug w/ newunit
+        make_it = .true.
+        IF (me%unit /= 0) THEN
+            IF (me%exists('UNIT')) THEN
+                !! The number is an allowable number. Keep checking.
+                IF (me%check_if_open('UNIT')) THEN
+                    !! The file is open. Check to make sure the name is valid.
+                    INQUIRE(unit=me%unit,name=file_name)
+                    IF (file_name == me%filename) THEN
+                        make_it = .false.
+                    ELSE
+                        !! The file open has the wrong filename. Close it.
+                        CALL me%close_file()
+                    END IF
+                END IF
+            ELSE IF (me%unit < 0) THEN
+                me%unit = 0 !! Re-set this to a non-negative number for a gfortran-8.3 bug w/ newunit
+            END IF
         END IF
 
-        OPEN (newunit=me%unit, file=me%filename, iostat=inputstat, Status='REPLACE', Form=me%form, access=me%access)
+        IF (make_it) THEN
+            OPEN (newunit=me%unit, file=me%filename, iostat=inputstat, Status='REPLACE', Form=me%form, access=me%access)
+        END IF
 
         END PROCEDURE make_file
 

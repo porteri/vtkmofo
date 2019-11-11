@@ -225,6 +225,47 @@ SUBMODULE (Misc) Misc_implementation
 
         END PROCEDURE to_lowercase
 
+        MODULE PROCEDURE TRIM_FROM_STRING
+        IMPLICIT NONE
+        !! author: Ian Porter
+        !! date: 11/06/2019
+        !!
+        !! This function trims <item> from a string
+        !!
+        INTEGER(i4k) :: start_len  !! Length to the start of where to trim string from
+        INTEGER(i4k) :: string_len !! Length of the string
+        INTEGER(i4k) :: item_len   !! Length of the item to trim
+        LOGICAL :: search_by_case  !! Flag to determine whether consider case sensitivity in search
+
+        IF (PRESENT(case_sensitive)) THEN
+            search_by_case = case_sensitive
+        ELSE
+            search_by_case = .true.
+        END IF
+
+        IF (search_by_case) THEN
+            start_len = INDEX(string,item,back=.true.)
+        ELSE
+            start_len = INDEX(to_uppercase(string),to_uppercase(item),back=.true.)
+        END IF
+
+        IF (start_len > 0) THEN
+            item_len = LEN(item)
+            string_len = LEN(string)
+            IF (string_len == item_len) THEN
+                new_string = ''
+            ELSE
+                new_string = string(1:start_len - 1)
+                IF (LEN(new_string) + item_len < string_len) THEN
+                    new_string = new_string // string(start_len + item_len:)
+                END IF
+            END IF
+        ELSE
+            new_string = string
+        END IF
+
+        END PROCEDURE TRIM_FROM_STRING
+
         MODULE PROCEDURE sleep_for
         IMPLICIT NONE
         !! author: Zaak Beekman, ParaTools

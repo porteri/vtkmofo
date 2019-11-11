@@ -16,7 +16,7 @@ PROGRAM rectangular_prism_test
     INTEGER(i4k),     PARAMETER :: n_x = 11, n_y = 6, n_z = 3, unit = 20
     REAL(r8k)                   :: j = 0.0_r8k
     REAL(r8k),        PARAMETER :: temp_val = 555.0_r8k
-    CHARACTER(LEN=*), PARAMETER :: filename = 'rectangular_prism.vtk'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'legacy_struct_pts'
     CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of rectangular_prism geometry'
     INTEGER(i4k), DIMENSION(3)  :: dims
     REAL(r8k), DIMENSION(3), PARAMETER :: origin  = &

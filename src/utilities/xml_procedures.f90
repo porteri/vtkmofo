@@ -415,6 +415,12 @@ SUBMODULE (XML) XML_implementation
             END SELECT
         END IF
 
+        IF (PRESENT(unit)) THEN
+            me%unit = unit
+        ELSE
+            me%unit = 0
+        END IF
+
         file_format_text = convert_format_to_string (file_format)
 !        ALLOCATE(me%access, source='SEQUENTIAL') !! Ignore the user-defined access, even if present
         ALLOCATE(me%access, source='STREAM') !! Ignore the user-defined access, even if present
