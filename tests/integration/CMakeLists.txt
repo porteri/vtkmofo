@@ -36,9 +36,9 @@ endif()
 
 # serial modern tests
 foreach(test
-    Image_Data
     Rectilinear_grid
     Structured_grid
+    Structured_points
     Unstructured_grid)
   add_VTKmofo_integration_test(${test} "serial")
   list(APPEND VTKmofo_integration_test_list "serial_${test}")

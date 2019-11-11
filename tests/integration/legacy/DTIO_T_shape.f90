@@ -152,9 +152,9 @@ PROGRAM DTIO_T_shape_test
     !!
     INTEGER(i4k) :: unit
     TYPE(foo) :: t_shape
-    CHARACTER(LEN=*), PARAMETER :: filename = 'dtio_t_shape.vtk'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'legacy_dtio_t_shape.vtk'
 
-    OPEN(newunit=unit, file=filename, status='unknown', form='formatted')
+    OPEN(newunit=unit, file=filename, status='replace', form='formatted')
     WRITE(unit,'(DT)') t_shape
 
     CLOSE(unit)

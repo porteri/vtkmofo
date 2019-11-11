@@ -1,4 +1,4 @@
-MODULE DTIO_vtkmofo
+MODULE serial_DTIO_vtkmofo
     USE Precision,    ONLY : i4k, r8k
     USE vtk_datasets, ONLY : unstruct_grid
     IMPLICIT NONE
@@ -35,7 +35,6 @@ MODULE DTIO_vtkmofo
         TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
         INTEGER(i4k)                :: i
         INTEGER(i4k),     PARAMETER :: n_points = 24, n_cells = 5
-        CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of T-shape unstructured grid geometry'
         REAL(r8k), DIMENSION(n_cells, 1:n_params_to_write) :: cell_vals
         REAL(r8k), DIMENSION(n_points,1:n_params_to_write) :: point_vals
         REAL(r8k), DIMENSION(3,n_points), PARAMETER        :: points = RESHAPE ( &
@@ -114,18 +113,18 @@ MODULE DTIO_vtkmofo
         CASE DEFAULT
             !! No specific formatting at this point
             CALL vtk_serial_write (t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
-              &                    unit=unit, title=title, multiple_io=.FALSE.)
+              &                    unit=unit, multiple_io=.FALSE.)
         END SELECT
 
         iostat = 0; iomsg=''
 
         END SUBROUTINE write_formatted
 
-END MODULE DTIO_vtkmofo
+END MODULE serial_DTIO_vtkmofo
 
-PROGRAM DTIO_T_shape_test
+PROGRAM serial_DTIO_T_shape_test
     USE Precision,    ONLY : i4k
-    USE DTIO_vtkmofo, ONLY : foo
+    USE serial_DTIO_vtkmofo, ONLY : foo
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 11/10/2019
@@ -134,13 +133,13 @@ PROGRAM DTIO_T_shape_test
     !!
     INTEGER(i4k) :: unit
     TYPE(foo) :: t_shape
-    CHARACTER(LEN=*), PARAMETER :: filename = 'dtio_t_shape'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'serial_dtio_t_shape'
 
-    OPEN(newunit=unit, file=filename, status='unknown', form='formatted')
+    OPEN(newunit=unit, file=filename, status='replace', form='formatted')
     WRITE(unit,'(DT)') t_shape
 
     CLOSE(unit)
 
     WRITE(*,*) 'Finished'
 
-END PROGRAM DTIO_T_shape_test
+END PROGRAM serial_DTIO_T_shape_test

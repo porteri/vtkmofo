@@ -184,7 +184,7 @@ MODULE XML
         CHARACTER(LEN=*),      INTENT(IN)    :: value
         END SUBROUTINE replace_in_string
 
-        MODULE SUBROUTINE xml_file_setup (me, filename, open_status, close_status, form, access)
+        MODULE SUBROUTINE xml_file_setup (me, filename, open_status, close_status, form, access, unit)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 05/02/2019
@@ -197,6 +197,7 @@ MODULE XML
         CHARACTER(LEN=*),   INTENT(IN), OPTIONAL :: close_status !! File close status
         CHARACTER(LEN=*),   INTENT(IN), OPTIONAL :: form         !! File format (formatted or unformatted)
         CHARACTER(LEN=*),   INTENT(IN), OPTIONAL :: access       !! File access type
+        INTEGER(i4k),       INTENT(IN), OPTIONAL :: unit         !! Requested file unit #
         END SUBROUTINE xml_file_setup
 
         RECURSIVE MODULE SUBROUTINE xml_begin (me)

@@ -309,6 +309,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
         !!
         !! This subroutine writes the modern serial vtk output file
         !!
+        INTEGER(i4k) :: file_unit = 0
 
         ! Clear out any pre-existing data
         IF (ALLOCATED(vtkfilename))      DEALLOCATE(vtkfilename)
@@ -319,15 +320,28 @@ SUBMODULE (vtk_io) vtk_io_implementation
             ALLOCATE(file_format_text, source=convert_format_to_string(format))
             file_format = format
         ELSE
-            ALLOCATE(file_format_text,source=format_ascii)     !! Default to binary
+            ALLOCATE(file_format_text,source=format_ascii)      !! Default to binary
             file_format = ascii
         END IF
-        IF (PRESENT(filename)) THEN
+        IF (PRESENT(filename)) THEN                             !! Calling program provided a filename
             ALLOCATE(vtkfilename, source=trim_from_string(filename,vtk_extension))
-                                                                !! Calling program provided a filename
+            IF (PRESENT(unit)) THEN
+                file_unit = unit
+            ELSE
+                INQUIRE(file=vtkfilename, number=file_unit)
+                IF (file_unit == -1) file_unit = 0
+            END IF
+        ELSE IF (PRESENT(unit)) THEN
+                                                                !! Calling program provided a unit # but no filename
+            BLOCK
+                CHARACTER(LEN=132) :: dummy_name
+                INQUIRE(unit=unit,name=dummy_name)
+                file_unit = unit
+                ALLOCATE(vtkfilename,source=trim_from_string(TRIM(ADJUSTL(dummy_name)),vtk_extension))
+            END BLOCK
         ELSE
-            ALLOCATE(vtkfilename, source=default_fn)
-                                                                !! Calling program did not provide a filename. Use default
+            ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename or unit #. Use default
+            file_unit = 0
         END IF
 
         IF (PRESENT(multiple_io)) THEN
@@ -363,7 +377,13 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         CALL serial_file%vtk_dataset%set_grid(geometry)
 
-        CALL serial_file%setup(filename=vtkfilename // TRIM(serial_file%vtk_dataset%file_extension))
+        IF (file_unit /= 0) THEN
+            CALL serial_file%setup(filename=vtkfilename // TRIM(serial_file%vtk_dataset%file_extension),unit=file_unit)
+        ELSE
+            CALL serial_file%setup(filename=vtkfilename // TRIM(serial_file%vtk_dataset%file_extension))
+        END IF
+        write(0,*) serial_file%filename
+        write(0,*) serial_file%unit
         !! Append data
         CALL vtk_serial_append (celldata, pointdata, celldatasets, pointdatasets)
         !! Finalize the write

@@ -14,7 +14,7 @@ PROGRAM Cylinder_test
     TYPE (attributes), DIMENSION(n_params_to_write) :: vals_to_write
     INTEGER(i4k)                :: i, j, k, cnt = 1
     INTEGER(i4k),     PARAMETER :: n_x = 19, n_y = 1, n_z = 4, unit = 20
-    CHARACTER(LEN=*), PARAMETER :: filename = 'cylinder.vtk'
+    CHARACTER(LEN=*), PARAMETER :: filename = 'legacy_struct_grid.vtk' !! The .vtk should get stripped by vtkmofo
     CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of cylindrical geometry'
     INTEGER(i4k), DIMENSION(3)  :: dims
     REAL(r8k), DIMENSION(n_x), PARAMETER :: x_vals = &

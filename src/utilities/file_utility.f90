@@ -34,7 +34,7 @@ MODULE File_utility
 
     INTERFACE
 
-        MODULE SUBROUTINE setup_file_information (me, filename, open_status, close_status, form, access)
+        MODULE SUBROUTINE setup_file_information (me, filename, open_status, close_status, form, access, unit)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 04/16/2018
@@ -47,18 +47,20 @@ MODULE File_utility
         CHARACTER(LEN=*),           INTENT(IN), OPTIONAL :: close_status !! File close status
         CHARACTER(LEN=*),           INTENT(IN), OPTIONAL :: form         !! File format (formatted or unformatted)
         CHARACTER(LEN=*),           INTENT(IN), OPTIONAL :: access       !! File access type
+        INTEGER(i4k),               INTENT(IN), OPTIONAL :: unit         !! Requested file unit #
 
         END SUBROUTINE setup_file_information
 
-        MODULE FUNCTION check_if_exists (me) RESULT (file_exists)
+        MODULE FUNCTION check_if_exists (me, check) RESULT (file_exists)
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 04/04/2018
         !!
         !! Checks to see if the file exists
         !!
-        CLASS(file_data_structure), INTENT(IN) :: me           !! DT
-        LOGICAL                                :: file_exists  !! Determins if file exists
+        CLASS(file_data_structure), INTENT(IN)           :: me           !! DT
+        CHARACTER(LEN=*),           INTENT(IN), OPTIONAL :: check    !! Type of check (filename or unit)
+        LOGICAL                                          :: file_exists  !! Determins if file exists
 
         END FUNCTION check_if_exists
 
