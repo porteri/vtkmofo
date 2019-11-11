@@ -14,8 +14,8 @@ SUBMODULE (vtk_io) vtk_io_implementation
     CONTAINS
 
         MODULE PROCEDURE vtk_legacy_full_write
-        USE Misc,     ONLY : to_uppercase
-        USE vtk_vars, ONLY : default_fn, default_title, vtkfilename, vtktitle, version, fcnt, file_extension
+        USE Misc,     ONLY : to_uppercase, trim_from_string
+        USE vtk_vars, ONLY : default_fn, default_title, vtkfilename, vtktitle, version, fcnt, vtk_extension
         USE XML,      ONLY : convert_format_to_string, file_format_text, file_format, ascii, binary, format_ascii, format_binary
         IMPLICIT NONE
         !! author: Ian Porter
@@ -38,7 +38,8 @@ SUBMODULE (vtk_io) vtk_io_implementation
             file_format = ascii                                 !! Default to ascii
         END IF
         IF (PRESENT(filename)) THEN
-            ALLOCATE(vtkfilename, source=filename)              !! Calling program provided a filename
+            ALLOCATE(vtkfilename, source=trim_from_string(filename,vtk_extension) // vtk_extension)
+                                                                !! Calling program provided a filename
         ELSE
             ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename. Use default
         END IF
@@ -48,9 +49,10 @@ SUBMODULE (vtk_io) vtk_io_implementation
                     CHARACTER(LEN=8) :: fcnt_char = ''          !! File count character
                     CHARACTER(LEN=:), ALLOCATABLE :: base_fn    !! Base file name
                     WRITE (fcnt_char,FMT='(i8)') fcnt
-                    ALLOCATE(base_fn, source=vtkfilename(1:INDEX(to_uppercase(vtkfilename),to_uppercase(file_extension))-1))
+                    !ALLOCATE(base_fn, source=vtkfilename(1:INDEX(to_uppercase(vtkfilename),to_uppercase(file_extension))-1))
+                    ALLOCATE(base_fn, source=trim_from_string(vtkfilename,vtk_extension))
                     DEALLOCATE(vtkfilename)
-                    ALLOCATE(vtkfilename, source=base_fn // "_" // TRIM(ADJUSTL(fcnt_char)) // file_extension)
+                    ALLOCATE(vtkfilename, source=base_fn // "_" // TRIM(ADJUSTL(fcnt_char)) // vtk_extension)
                     fcnt = fcnt + 1                             !! Increase timestep file counter by 1
                 END BLOCK mio_filename
             END IF
@@ -142,7 +144,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         MODULE PROCEDURE vtk_legacy_append
         USE Misc,     ONLY : to_uppercase
-        USE vtk_vars, ONLY : default_fn, default_title, version, file_extension
+        USE vtk_vars, ONLY : default_fn, default_title, version
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/1/2017
@@ -299,7 +301,9 @@ SUBMODULE (vtk_io) vtk_io_implementation
         USE VTK_serial_file, ONLY : serial_file
         USE VTK_serial_Grid, ONLY : VTK_serial_RectilinearGrid_dt, VTK_serial_StructuredGrid_dt, &
           &                         VTK_serial_UnstructuredGrid_dt, VTK_serial_ImageData_dt
+        USE VTK_vars,        ONLY : vtk_extension
         USE XML,             ONLY : file_format, file_format_text, convert_format_to_string, ascii, format_ascii
+        USE Misc,            ONLY : trim_from_string
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 5/08/2019
@@ -320,7 +324,8 @@ SUBMODULE (vtk_io) vtk_io_implementation
             file_format = ascii
         END IF
         IF (PRESENT(filename)) THEN
-            ALLOCATE(vtkfilename, source=filename)              !! Calling program provided a filename
+            ALLOCATE(vtkfilename, source=trim_from_string(filename,vtk_extension))
+                                                                !! Calling program provided a filename
         ELSE
             ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename. Use default
         END IF
