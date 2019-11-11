@@ -1,5 +1,5 @@
 MODULE XML
-    USE Precision,       ONLY : i1k, i4k, i8k, r4k, r8k
+    USE Precision,       ONLY : i4k, i8k, r4k, r8k
     USE File_utility,    ONLY : file_data_structure
     USE ISO_FORTRAN_ENV, ONLY : output_unit
     IMPLICIT NONE

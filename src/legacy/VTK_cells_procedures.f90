@@ -1,4 +1,6 @@
 SUBMODULE (vtk_cells) vtk_cells_implementation
+    USE Precision, ONLY : i4k
+    IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/2/2017
     !!

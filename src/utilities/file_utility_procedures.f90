@@ -1,5 +1,5 @@
 SUBMODULE (file_utility) file_utility_implementation
-    USE Precision, ONLY : i1k, i4k, r8k
+    USE Precision, ONLY : i1k, i4k
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 04/04/2018

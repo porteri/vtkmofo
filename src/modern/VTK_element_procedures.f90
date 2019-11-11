@@ -1,5 +1,4 @@
 SUBMODULE (VTK_element) VTK_element_procedures
-    USE Precision, ONLY : i4k
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 05/06/2019

@@ -1,5 +1,5 @@
 MODULE vtk_cells
-    USE Precision, ONLY : i4k, r8k
+    USE Precision, ONLY : i4k
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 12/2/2017

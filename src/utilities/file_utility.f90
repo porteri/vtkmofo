@@ -1,5 +1,5 @@
 MODULE File_utility
-    USE Precision, ONLY : i4k, r8k
+    USE Precision, ONLY : i4k
     IMPLICIT NONE
     !! author: Ian Porter
     !! date: 04/04/2018

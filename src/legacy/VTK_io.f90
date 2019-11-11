@@ -1,5 +1,5 @@
 MODULE vtk_io
-    USE Precision,      ONLY : i4k, r8k
+    USE Precision,      ONLY : i4k
     USE vtk_attributes, ONLY : attribute, attributes
     USE vtk_datasets,   ONLY : dataset
     USE vtk_vars,       ONLY : vtkfilename, default_fn, fcnt
