@@ -19,7 +19,7 @@ MODULE vtk_vars
     CHARACTER(LEN=*), PARAMETER   :: version       = '# vtk DataFile Version 3.0'   !! VTK datafile version
     CHARACTER(LEN=*), PARAMETER   :: default_title = 'Version 3.0 VTK file'         !! Title card
     CHARACTER(LEN=*), PARAMETER   :: vtk_extension = '.vtk'                         !! File extension
-    CHARACTER(LEN=*), PARAMETER   :: default_fn    = 'out' // vtk_extension         !! Default filename
+    CHARACTER(LEN=*), PARAMETER   :: default_fn    = 'out'                          !! Default filename
     CHARACTER(LEN=:), ALLOCATABLE :: vtkfilename                                    !! Supplied filename
     CHARACTER(LEN=:), ALLOCATABLE :: vtktitle                                       !! Supplied title
 

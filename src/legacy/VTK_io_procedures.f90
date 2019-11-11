@@ -41,7 +41,8 @@ SUBMODULE (vtk_io) vtk_io_implementation
             ALLOCATE(vtkfilename, source=trim_from_string(filename,vtk_extension) // vtk_extension)
                                                                 !! Calling program provided a filename
         ELSE
-            ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename. Use default
+            ALLOCATE(vtkfilename, source=default_fn // vtk_extension)
+                                                                !! Calling program did not provide a filename. Use default
         END IF
         IF (PRESENT(multiple_io)) THEN
             IF (multiple_io) THEN
@@ -143,8 +144,6 @@ SUBMODULE (vtk_io) vtk_io_implementation
         END PROCEDURE vtk_legacy_full_write
 
         MODULE PROCEDURE vtk_legacy_append
-        USE Misc,     ONLY : to_uppercase
-        USE vtk_vars, ONLY : default_fn, default_title, version
         IMPLICIT NONE
         !! author: Ian Porter
         !! date: 12/1/2017
@@ -216,7 +215,7 @@ SUBMODULE (vtk_io) vtk_io_implementation
 
         MODULE PROCEDURE vtk_legacy_read
         USE Misc,     ONLY : def_len
-        USE vtk_vars, ONLY : default_fn, default_title, vtkfilename, vtktitle, version
+        USE vtk_vars, ONLY : vtkfilename, vtktitle, version
         USE XML,      ONLY : convert_string_to_format, ascii, binary, file_format, file_format_text
         IMPLICIT NONE
         !! author: Ian Porter
@@ -327,7 +326,8 @@ SUBMODULE (vtk_io) vtk_io_implementation
             ALLOCATE(vtkfilename, source=trim_from_string(filename,vtk_extension))
                                                                 !! Calling program provided a filename
         ELSE
-            ALLOCATE(vtkfilename, source=default_fn)            !! Calling program did not provide a filename. Use default
+            ALLOCATE(vtkfilename, source=default_fn)
+                                                                !! Calling program did not provide a filename. Use default
         END IF
 
         IF (PRESENT(multiple_io)) THEN
