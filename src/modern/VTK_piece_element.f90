@@ -1,5 +1,4 @@
 MODULE VTK_piece_element
-    USE Precision,      ONLY : i4k
     USE XML,            ONLY : xml_element_dt
     USE vtk_datasets,   ONLY : dataset
     USE vtk_attributes, ONLY : attribute, attributes

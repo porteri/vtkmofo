@@ -1,4 +1,5 @@
 SUBMODULE (vtk_io) vtk_io_implementation
+    USE Precision, ONLY : i4k
     !! author: Ian Porter
     !! date: 12/1/2017
     !!
