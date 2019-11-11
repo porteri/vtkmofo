@@ -1,6 +1,5 @@
 MODULE vtk_attributes
     USE Precision, ONLY : i4k, r8k
-    USE Misc,      ONLY : def_len
     USE VTK_DataArray_element, ONLY : DataArray_dt
     IMPLICIT NONE
     !! author: Ian Porter

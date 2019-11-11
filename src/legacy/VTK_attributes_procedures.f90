@@ -302,7 +302,7 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !! Function converts an attribute to a dataarray
         !!
         INTEGER(i4k) :: i
-        
+
         CALL array%initialize(name=TRIM(ADJUSTL(me%dataname)), type=me%datatype)
 
         DO i = 1, me%nvals
@@ -664,9 +664,9 @@ SUBMODULE (vtk_attributes) vtk_attributes_implementation
         !!
         !! Subroutine performs the read for a texture attribute
         !!
-        INTEGER(i4k)                :: i, iostat, dim
-        LOGICAL                     :: end_of_file
-        CHARACTER(LEN=def_len)      :: line
+        INTEGER(i4k)           :: i, iostat, dim
+        LOGICAL                :: end_of_file
+        CHARACTER(LEN=def_len) :: line
         INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
         REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
         TYPE(char_dt),    DIMENSION(:),   ALLOCATABLE :: chars
