@@ -214,7 +214,7 @@ endforeach()
 # Add unit tests and define the string that is used to signal success
 foreach(unit_test ${VTKmofo_unit_test_list})
   add_test(NAME "VTKmofo_${unit_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/${unit_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/unit)
-  set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Test passed")
+  set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Test Passed")
   set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY LABELS "VTKmofo" "unit-test")
 endforeach()
 

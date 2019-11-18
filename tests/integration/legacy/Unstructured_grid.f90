@@ -1,105 +1,105 @@
-PROGRAM T_shape_test
-    USE Precision,      ONLY : i4k, r8k
-    USE vtk_datasets,   ONLY : unstruct_grid
-    USE vtk_attributes, ONLY : scalar, attributes
-    USE vtk_cells,      ONLY : voxel, hexahedron, vtkcell_list
-    USE vtk,            ONLY : vtk_legacy_write
-    IMPLICIT NONE
+program t_shape_test
+    use precision,      only : i4k, r8k
+    use vtk_datasets,   only : unstruct_grid
+    use vtk_attributes, only : scalar, attributes
+    use vtk_cells,      only : voxel, hexahedron, vtkcell_list
+    use vtk,            only : vtk_legacy_write
+    implicit none
     !! author: Ian Porter
     !! date: 01/04/2018
     !!
-    !! This is a test of an unstructured grid (T-shape) geometry
+    !! this is a test of an unstructured grid (t-shape) geometry
     !!
-    INTEGER(i4k), PARAMETER     :: n_params_to_write = 1
-    TYPE (unstruct_grid)        :: t_shape
-    TYPE (attributes), DIMENSION(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
-    INTEGER(i4k)                :: i, t
-    INTEGER(i4k),     PARAMETER :: n_points = 24, n_cells = 5, unit = 20, n_steps = 10
-    CHARACTER(LEN=*), PARAMETER :: filename = 'legacy_unstruct_grid'
-    CHARACTER(LEN=*), PARAMETER :: title    = 'Testing of T-shape unstructured grid geometry'
-    CHARACTER(LEN=8)            :: t_char
-    REAL(r8k), DIMENSION(n_cells, 1:n_params_to_write) :: cell_vals
-    REAL(r8k), DIMENSION(n_points,1:n_params_to_write) :: point_vals
-    REAL(r8k), DIMENSION(3,n_points), PARAMETER        :: points = RESHAPE ( &
-      & [ 0.5_r8k, 0.0_r8k, 0.0_r8k, &
-      &   1.0_r8k, 0.0_r8k, 0.0_r8k, &
-      &   0.5_r8k, 0.5_r8k, 0.0_r8k, &
-      &   1.0_r8k, 0.5_r8k, 0.0_r8k, &
-      &   0.5_r8k, 0.0_r8k, 0.5_r8k, &
-      &   1.0_r8k, 0.0_r8k, 0.5_r8k, &
-      &   0.5_r8k, 0.5_r8k, 0.5_r8k, &
-      &   1.0_r8k, 0.5_r8k, 0.5_r8k, &
-      &   0.0_r8k, 0.0_r8k, 1.0_r8k, &
-      &   0.5_r8k, 0.0_r8k, 1.0_r8k, &
-      &   1.0_r8k, 0.0_r8k, 1.0_r8k, &
-      &   1.5_r8k, 0.0_r8k, 1.0_r8k, &
-      &   0.0_r8k, 0.5_r8k, 1.0_r8k, &
-      &   0.5_r8k, 0.5_r8k, 1.0_r8k, &
-      &   1.0_r8k, 0.5_r8k, 1.0_r8k, &
-      &   1.5_r8k, 0.5_r8k, 1.0_r8k, &
-      &   0.0_r8k, 0.0_r8k, 1.5_r8k, &
-      &   0.5_r8k, 0.0_r8k, 1.5_r8k, &
-      &   1.0_r8k, 0.0_r8k, 1.5_r8k, &
-      &   1.5_r8k, 0.0_r8k, 1.5_r8k, &
-      &   0.0_r8k, 0.5_r8k, 1.5_r8k, &
-      &   0.5_r8k, 0.5_r8k, 1.5_r8k, &
-      &   1.0_r8k, 0.5_r8k, 1.5_r8k, &
-      &   1.5_r8k, 0.5_r8k, 1.5_r8k ], [3,n_points] )
-    REAL(r8k), PARAMETER :: temp_default = 100.0_r8k, temp_increment = 10.0_r8k
-    REAL(r8k), DIMENSION(n_points), PARAMETER :: temp_norm = &
-      & [ 1.0_r8k, 1.0_r8k, 1.0_r8k, 1.0_r8k, 2.0_r8k, 2.0_r8k, 2.0_r8k, 2.0_r8k, 1.0_r8k, &
-      &   3.0_r8k, 3.0_r8k, 1.0_r8k, 1.0_r8k, 4.0_r8k, 4.0_r8k, 1.0_r8k, 1.0_r8k, 2.0_r8k, &
-      &   2.0_r8k, 1.0_r8k, 1.0_r8k, 3.0_r8k, 3.0_r8k, 1.0_r8k ]
-    INTEGER(i4k), DIMENSION(n_cells), PARAMETER :: cellID = &
-      & [ 11, 11, 11, 11, 12 ]
-    TYPE(voxel),        DIMENSION(n_cells-1) :: voxel_cells     !! Voxel cell type
-    TYPE(hexahedron)                         :: hexahedron_cell !! Hexahedron cell type
-    TYPE(vtkcell_list), DIMENSION(n_cells)   :: cell_list       !! Full list of all cells
-    CHARACTER(LEN=10), DIMENSION(n_params_to_write), PARAMETER :: cell_dataname = &
-      & [ 'cellIDs   ' ]
-    CHARACTER(LEN=15), DIMENSION(n_params_to_write), PARAMETER :: point_dataname = &
-      & [ 'Temperature(K) ' ]
+    integer(i4k), parameter     :: n_params_to_write = 1
+    type (unstruct_grid)        :: t_shape
+    type (attributes), dimension(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
+    integer(i4k)                :: i, t
+    integer(i4k),     parameter :: n_points = 24, n_cells = 5, unit = 20, n_steps = 10
+    character(len=*), parameter :: filename = 'legacy_unstruct_grid'
+    character(len=*), parameter :: title    = 'testing of t-shape unstructured grid geometry'
+    character(len=8)            :: t_char
+    real(r8k), dimension(n_cells, 1:n_params_to_write) :: cell_vals
+    real(r8k), dimension(n_points,1:n_params_to_write) :: point_vals
+    real(r8k), dimension(3,n_points), parameter        :: points = reshape ( &
+        & [ 0.5_r8k, 0.0_r8k, 0.0_r8k, &
+        &   1.0_r8k, 0.0_r8k, 0.0_r8k, &
+        &   0.5_r8k, 0.5_r8k, 0.0_r8k, &
+        &   1.0_r8k, 0.5_r8k, 0.0_r8k, &
+        &   0.5_r8k, 0.0_r8k, 0.5_r8k, &
+        &   1.0_r8k, 0.0_r8k, 0.5_r8k, &
+        &   0.5_r8k, 0.5_r8k, 0.5_r8k, &
+        &   1.0_r8k, 0.5_r8k, 0.5_r8k, &
+        &   0.0_r8k, 0.0_r8k, 1.0_r8k, &
+        &   0.5_r8k, 0.0_r8k, 1.0_r8k, &
+        &   1.0_r8k, 0.0_r8k, 1.0_r8k, &
+        &   1.5_r8k, 0.0_r8k, 1.0_r8k, &
+        &   0.0_r8k, 0.5_r8k, 1.0_r8k, &
+        &   0.5_r8k, 0.5_r8k, 1.0_r8k, &
+        &   1.0_r8k, 0.5_r8k, 1.0_r8k, &
+        &   1.5_r8k, 0.5_r8k, 1.0_r8k, &
+        &   0.0_r8k, 0.0_r8k, 1.5_r8k, &
+        &   0.5_r8k, 0.0_r8k, 1.5_r8k, &
+        &   1.0_r8k, 0.0_r8k, 1.5_r8k, &
+        &   1.5_r8k, 0.0_r8k, 1.5_r8k, &
+        &   0.0_r8k, 0.5_r8k, 1.5_r8k, &
+        &   0.5_r8k, 0.5_r8k, 1.5_r8k, &
+        &   1.0_r8k, 0.5_r8k, 1.5_r8k, &
+        &   1.5_r8k, 0.5_r8k, 1.5_r8k ], [3,n_points] )
+    real(r8k), parameter :: temp_default = 100.0_r8k, temp_increment = 10.0_r8k
+    real(r8k), dimension(n_points), parameter :: temp_norm = &
+        & [ 1.0_r8k, 1.0_r8k, 1.0_r8k, 1.0_r8k, 2.0_r8k, 2.0_r8k, 2.0_r8k, 2.0_r8k, 1.0_r8k, &
+        &   3.0_r8k, 3.0_r8k, 1.0_r8k, 1.0_r8k, 4.0_r8k, 4.0_r8k, 1.0_r8k, 1.0_r8k, 2.0_r8k, &
+        &   2.0_r8k, 1.0_r8k, 1.0_r8k, 3.0_r8k, 3.0_r8k, 1.0_r8k ]
+    integer(i4k), dimension(n_cells), parameter :: cellid = &
+        & [ 11, 11, 11, 11, 12 ]
+    type(voxel),        dimension(n_cells-1) :: voxel_cells     !! voxel cell type
+    type(hexahedron)                         :: hexahedron_cell !! hexahedron cell type
+    type(vtkcell_list), dimension(n_cells)   :: cell_list       !! full list of all cells
+    character(len=10), dimension(n_params_to_write), parameter :: cell_dataname = &
+        & [ 'cellids   ' ]
+    character(len=15), dimension(n_params_to_write), parameter :: point_dataname = &
+        & [ 'temperature(k) ' ]
 
-    CALL voxel_cells(1)%setup ( [ 0, 1, 2, 3, 4, 5, 6, 7 ] )
-    CALL voxel_cells(2)%setup ( [ 4, 5, 6, 7, 9, 10, 13, 14 ] )
-    CALL voxel_cells(3)%setup ( [ 8, 9, 12, 13, 16, 17, 20, 21 ] )
-    CALL voxel_cells(4)%setup ( [ 9, 10, 13, 14, 17, 18, 21, 22 ] )
-    CALL hexahedron_cell%setup ( [ 10, 11, 15, 14, 18, 19, 23, 22 ] )
+    call voxel_cells(1)%setup ( [ 0, 1, 2, 3, 4, 5, 6, 7 ] )
+    call voxel_cells(2)%setup ( [ 4, 5, 6, 7, 9, 10, 13, 14 ] )
+    call voxel_cells(3)%setup ( [ 8, 9, 12, 13, 16, 17, 20, 21 ] )
+    call voxel_cells(4)%setup ( [ 9, 10, 13, 14, 17, 18, 21, 22 ] )
+    call hexahedron_cell%setup ( [ 10, 11, 15, 14, 18, 19, 23, 22 ] )
 
-!    cell_list(1)%cell = voxel_cells(1) !! Works for Intel 18.5, Not for gfortran-8.2
-!    cell_list(2)%cell = voxel_cells(2)
-!    cell_list(3)%cell = voxel_cells(3)
-!    cell_list(4)%cell = voxel_cells(4)
-!    cell_list(5)%cell = hexahedron_cell
-    ALLOCATE(cell_list(1)%cell,source=voxel_cells(1)) !! Workaround for gfortran-8.2
-    ALLOCATE(cell_list(2)%cell,source=voxel_cells(2))
-    ALLOCATE(cell_list(3)%cell,source=voxel_cells(3))
-    ALLOCATE(cell_list(4)%cell,source=voxel_cells(4))
-    ALLOCATE(cell_list(5)%cell,source=hexahedron_cell)
+    ! cell_list(1)%cell = voxel_cells(1) !! works for intel 18.5, not for gfortran-8.2
+    ! cell_list(2)%cell = voxel_cells(2)
+    ! cell_list(3)%cell = voxel_cells(3)
+    ! cell_list(4)%cell = voxel_cells(4)
+    ! cell_list(5)%cell = hexahedron_cell
+    allocate(cell_list(1)%cell,source=voxel_cells(1)) !! workaround for gfortran-8.2
+    allocate(cell_list(2)%cell,source=voxel_cells(2))
+    allocate(cell_list(3)%cell,source=voxel_cells(3))
+    allocate(cell_list(4)%cell,source=voxel_cells(4))
+    allocate(cell_list(5)%cell,source=hexahedron_cell)
 
-    CALL t_shape%init (points=points, cell_list=cell_list)
+    call t_shape%init (points=points, cell_list=cell_list)
 
-    DO t = 1, n_steps
-        cell_vals(:,1)  = REAL(cellID(:)); WRITE(t_char,'(i0)') t
+    do t = 1, n_steps
+        cell_vals(:,1)  = real(cellid(:)); write(t_char,'(i0)') t
         point_vals(:,1) = temp_default + (t-1) * temp_increment * temp_norm
 
-        DO i = 1, n_params_to_write
-            ! Cell values
-            IF (.NOT. ALLOCATED(cell_vals_to_write(i)%attribute))THEN
-                ALLOCATE(scalar::cell_vals_to_write(i)%attribute)
-            END IF
-            CALL cell_vals_to_write(i)%attribute%init (TRIM(cell_dataname(i)), numcomp=1, real1d=cell_vals(:,i))
-            ! Point values
-            IF (.NOT. ALLOCATED(point_vals_to_write(i)%attribute))THEN
-                ALLOCATE(scalar::point_vals_to_write(i)%attribute)
-            END IF
-            CALL point_vals_to_write(i)%attribute%init (TRIM(point_dataname(i)), numcomp=1, real1d=point_vals(:,i))
-        END DO
+        do i = 1, n_params_to_write
+            ! cell values
+            if (.not. allocated(cell_vals_to_write(i)%attribute))then
+                allocate(scalar::cell_vals_to_write(i)%attribute)
+            end if
+            call cell_vals_to_write(i)%attribute%init (trim(cell_dataname(i)), numcomp=1, real1d=cell_vals(:,i))
+            ! point values
+            if (.not. allocated(point_vals_to_write(i)%attribute))then
+                allocate(scalar::point_vals_to_write(i)%attribute)
+            end if
+            call point_vals_to_write(i)%attribute%init (trim(point_dataname(i)), numcomp=1, real1d=point_vals(:,i))
+        end do
 
-        CALL vtk_legacy_write (t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
-          &                    unit=unit, filename=filename, title=title, multiple_io=.TRUE.)
-    END DO
+        call vtk_legacy_write (t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
+            &                  unit=unit, filename=filename, title=title, multiple_io=.true.)
+    end do
 
-    WRITE(*,*) 'Finished'
+    write(*,*) 'Finished'
 
-END PROGRAM T_shape_test
+end program t_shape_test

@@ -1,393 +1,417 @@
-SUBMODULE (VTK_piece_element) VTK_piece_element_implementation
-    USE Precision, ONLY : i4k, r8k
-    USE VTK_formats_types, ONLY : type_float64
-    USE XML, ONLY : file_format_text
-    IMPLICIT NONE
+submodule (vtk_piece_element) vtk_piece_element_procedures
+    use precision, only : i4k, r8k
+    use vtk_formats_types, only : type_float64
+    use xml, only : file_format_text
+    implicit none
     !! author: Ian Porter
     !! date: 06/07/2019
     !!
-    !! This is the basic file piece elements
+    !! this is the basic file piece elements
     !!
-    !! Data storage formats
+    !! data storage formats
 
-    CONTAINS
+contains
 
-        MODULE PROCEDURE Data_setup
-        IMPLICIT NONE
+    module procedure data_setup
+        implicit none
         !! author: Ian Porter
         !! date: 06/06/2019
         !!
-        !! This writes the header for a Data
+        !! this writes the header for a data
         !!
-        CHARACTER(LEN=*), PARAMETER   :: PointData_name = 'PointData'
-        CHARACTER(LEN=*), PARAMETER   :: CellData_name  = 'CellData'
-        CHARACTER(LEN=:), ALLOCATABLE :: string
-        CHARACTER(LEN=:), ALLOCATABLE :: my_name
-        CHARACTER(LEN=:), ALLOCATABLE :: scalar_string
+        character(len=*), parameter   :: pointdata_name = 'pointdata'
+        character(len=*), parameter   :: celldata_name  = 'celldata'
+        character(len=:), allocatable :: string
+        character(len=:), allocatable :: my_name
+        character(len=:), allocatable :: scalar_string
 
-        IF (ALLOCATED(me%Scalars)) THEN
-            ALLOCATE(scalar_string,source=' Scalars="' // me%Scalars // '"')
-        ELSE
-            ALLOCATE(scalar_string,source='')
-        END IF
+        if (allocated(me%scalars)) then
+            allocate(scalar_string,source=' scalars="' // me%scalars // '"')
+        else
+            allocate(scalar_string,source='')
+        end if
 
-        ALLOCATE(string, source=scalar_string)
+        allocate(string, source=scalar_string)
 
-        SELECT TYPE (me)
-        CLASS IS (pointdata_dt)
-            ALLOCATE(my_name,source=PointData_name)
-        CLASS IS (celldata_dt)
-            ALLOCATE(my_name,source=CellData_name)
-        CLASS DEFAULT
-            ERROR STOP 'Error: Undefined type in Data_setup'
-        END SELECT
+        select type (me)
+        class is (pointdata_dt)
+            allocate(my_name,source=pointdata_name)
+        class is (celldata_dt)
+            allocate(my_name,source=celldata_name)
+        class default
+            error stop 'error: undefined type in data_setup'
+        end select
 
-        CALL me%setup(name=my_name, string=string)
+        call me%setup(name=my_name, string=string)
 
-        END PROCEDURE Data_setup
+    end procedure data_setup
 
-        MODULE PROCEDURE Data_initialize
-        USE Misc, ONLY : convert_to_string
-        IMPLICIT NONE
+    module procedure data_initialize
+        use misc, only : convert_to_string
+        implicit none
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
-        !! This converts the VTK_element_dt header into XML format
+        !! this converts the vtk_element_dt header into xml format
         !!
 
-        IF (PRESENT(Scalar)) ALLOCATE(me%Scalars,source=Scalar)
+        if (present(scalar)) allocate(me%scalars,source=scalar)
 
-        CALL me%Data_setup()
+        call me%data_setup()
 
-        END PROCEDURE Data_initialize
+    end procedure data_initialize
 
-        MODULE PROCEDURE Data_add_attribute
-        IMPLICIT NONE
+    module procedure data_add_attribute
+        implicit none
+        !! author: Ian Porter
+        !! date: 06/07/2019
 
-        CALL me%add(cell%convert_to_dataarray())
+        call me%add(cell%convert_to_dataarray())
 
-        END PROCEDURE Data_add_attribute
+    end procedure data_add_attribute
 
-        MODULE PROCEDURE Data_add_attributes
-        IMPLICIT NONE
-        INTEGER(i4k) :: i
+    module procedure data_add_attributes
+        implicit none
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        integer(i4k) :: i
 
-        DO i = 1, SIZE(cell)
-            CALL me%add(cell(i)%attribute%convert_to_dataarray())
-        END DO
+        do i = 1, size(cell)
+            call me%add(cell(i)%attribute%convert_to_dataarray())
+        end do
 
-        END PROCEDURE Data_add_attributes
+    end procedure data_add_attributes
 
-        MODULE PROCEDURE Data_finalize
-        IMPLICIT NONE
+    module procedure data_finalize
+        implicit none
+        !! author: Ian Porter
+        !! date: 06/07/2019
 
-!! IDK if there's anything to do here
+        !! idk if there's anything to do here
 
-        END PROCEDURE Data_finalize
+    end procedure data_finalize
 
-        MODULE PROCEDURE Data_deallocate
-        IMPLICIT NONE
+    module procedure data_deallocate
+        implicit none
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
-        !! Explicitly deallocate a Data_dt
+        !! explicitly deallocate a data_dt
         !!
 
-        IF (ALLOCATED(foo%scalars)) DEALLOCATE(foo%scalars)
-        IF (ALLOCATED(foo%Vectors)) DEALLOCATE(foo%Vectors)
-        IF (ALLOCATED(foo%Normals)) DEALLOCATE(foo%Normals)
-        IF (ALLOCATED(foo%Tensors)) DEALLOCATE(foo%Tensors)
-        IF (ALLOCATED(foo%TCoords)) DEALLOCATE(foo%TCoords)
+        if (allocated(foo%scalars)) deallocate(foo%scalars)
+        if (allocated(foo%vectors)) deallocate(foo%vectors)
+        if (allocated(foo%normals)) deallocate(foo%normals)
+        if (allocated(foo%tensors)) deallocate(foo%tensors)
+        if (allocated(foo%tcoords)) deallocate(foo%tcoords)
 
-        CALL foo%deallocate()
+        call foo%deallocate()
 
-        END PROCEDURE Data_deallocate
+    end procedure data_deallocate
 
-        MODULE PROCEDURE Points_initialize
-        USE vtk_datasets, ONLY : struct_grid, unstruct_grid
-        USE Misc,         ONLY : convert_to_string
-        IMPLICIT NONE
-        !1 author: Ian Porter
+    module procedure points_initialize
+        use vtk_datasets, only : struct_grid, unstruct_grid
+        use misc,         only : convert_to_string
+        implicit none
+        !! author: Ian Porter
         !! date: 07/09/2019
         !!
-        !! Initializes a piece dt with the geometry information
+        !! initializes a piece dt with the geometry information
         !!
-        INTEGER(i4k) :: i
-        CHARACTER(LEN=*), PARAMETER :: Points_name = 'Points'
+        integer(i4k) :: i
+        character(len=*), parameter :: points_name = 'points'
 
-        CALL me%setup(name=Points_name)
+        call me%setup(name=points_name)
 
-        SELECT TYPE (geometry)
-        CLASS IS (struct_grid)
-            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-            CALL me%DataArray%initialize(type=type_float64,format=file_format_text,NumberofComponents=3)
-            DO i = 1, geometry%n_points
-                CALL me%DataArray%add(geometry%get_point(i)) !! New procedure under works to append an array of reals
-            END DO
-            CALL me%add(me%DataArray)
-            CALL me%DataArray%me_deallocate()
-        CLASS IS (unstruct_grid)
-            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-            CALL me%DataArray%initialize(type=type_float64,format=file_format_text,NumberofComponents=3)
-            DO i = 1, geometry%n_points
-                CALL me%DataArray%add(geometry%get_point(i)) !! New procedure under works to append an array of reals
-            END DO
-            CALL me%add(me%DataArray)
-            CALL me%DataArray%me_deallocate()
-        CLASS DEFAULT
-            ERROR STOP 'Error: In Points_initialize, the geometry is not defined.'
-        END SELECT
+        select type (geometry)
+        class is (struct_grid)
+            !! for now, don't allow "pieces" but instead force the piece to be the whole extent
+            call me%dataarray%initialize(type=type_float64,format=file_format_text,numberofcomponents=3)
+            do i = 1, geometry%n_points
+                call me%dataarray%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
+            end do
+            call me%add(me%dataarray)
+            call me%dataarray%me_deallocate()
+        class is (unstruct_grid)
+            !! for now, don't allow "pieces" but instead force the piece to be the whole extent
+            call me%dataarray%initialize(type=type_float64,format=file_format_text,numberofcomponents=3)
+            do i = 1, geometry%n_points
+                call me%dataarray%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
+            end do
+            call me%add(me%dataarray)
+            call me%dataarray%me_deallocate()
+        class default
+            error stop 'error: in points_initialize, the geometry is not defined.'
+        end select
 
-        END PROCEDURE Points_initialize
+    end procedure points_initialize
 
-        MODULE PROCEDURE Points_deallocate
-        IMPLICIT NONE
-        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+    module procedure points_deallocate
+        implicit none
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+        !!
 
-        CALL foo%DataArray%me_deallocate()
+        call foo%dataarray%me_deallocate()
 
-        CALL foo%deallocate()
+        call foo%deallocate()
 
-        END PROCEDURE Points_deallocate
+    end procedure points_deallocate
 
-        MODULE PROCEDURE Cells_initialize
-        USE vtk_datasets, ONLY : unstruct_grid
-        IMPLICIT NONE
-        !1 author: Ian Porter
+    module procedure cells_initialize
+        use vtk_datasets, only : unstruct_grid
+        implicit none
+        !! author: Ian Porter
         !! date: 07/09/2019
         !!
-        !! Initializes a piece dt with the geometry information
+        !! initializes a piece dt with the geometry information
         !!
-        INTEGER(i4k) :: i, cnt
-        CHARACTER(LEN=*), PARAMETER :: my_name = 'Cells'
+        integer(i4k) :: i, cnt
+        character(len=*), parameter :: my_name = 'cells'
 
-        CALL me%setup(name=my_name)
+        call me%setup(name=my_name)
 
-        SELECT TYPE (geometry)
-        CLASS IS (unstruct_grid)
-            !! Set up cell connectivity
-            CALL me%connectivity%initialize(name='connectivity',type=type_float64,format=file_format_text)
-            DO i = 1, geometry%n_cells
-                CALL me%connectivity%add(geometry%get_connectivity(i)) !! New procedure under works to append an array of reals
-            END DO
-            CALL me%add(me%connectivity)
-            CALL me%connectivity%me_deallocate()
-            !! Set up cell offsets
-            CALL me%offsets%initialize(name='offsets',type=type_float64,format=file_format_text)
+        select type (geometry)
+        class is (unstruct_grid)
+            !! set up cell connectivity
+            call me%connectivity%initialize(name='connectivity',type=type_float64,format=file_format_text)
+            do i = 1, geometry%n_cells
+                call me%connectivity%add(geometry%get_connectivity(i)) !! new procedure under works to append an array of reals
+            end do
+            call me%add(me%connectivity)
+            call me%connectivity%me_deallocate()
+            !! set up cell offsets
+            call me%offsets%initialize(name='offsets',type=type_float64,format=file_format_text)
             cnt = 0
-            DO i = 1, geometry%n_cells
+            do i = 1, geometry%n_cells
                 cnt = cnt + geometry%get_offset(i)
-                CALL me%offsets%add([cnt]) !! New procedure under works to append an array of reals
-            END DO
-            CALL me%add(me%offsets)
-            CALL me%offsets%me_deallocate()
-            !! Set up cell types
-            CALL me%types%initialize(name='types',type=type_float64,format=file_format_text)
-            DO i = 1, geometry%n_cells
-                CALL me%types%add([geometry%get_type(i)]) !! New procedure under works to append an array of reals
-            END DO
-            CALL me%add(me%types)
-            CALL me%types%me_deallocate()
-        CLASS DEFAULT
-            ERROR STOP 'Error: In Cells_initialize, the geometry is not yet defined.'
-        END SELECT
+                call me%offsets%add([cnt]) !! new procedure under works to append an array of reals
+            end do
+            call me%add(me%offsets)
+            call me%offsets%me_deallocate()
+            !! set up cell types
+            call me%types%initialize(name='types',type=type_float64,format=file_format_text)
+            do i = 1, geometry%n_cells
+                call me%types%add([geometry%get_type(i)]) !! new procedure under works to append an array of reals
+            end do
+            call me%add(me%types)
+            call me%types%me_deallocate()
+        class default
+            error stop 'error: in cells_initialize, the geometry is not yet defined.'
+        end select
 
-        END PROCEDURE Cells_initialize
+    end procedure cells_initialize
 
-        MODULE PROCEDURE Cells_deallocate
-        IMPLICIT NONE
-        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+    module procedure cells_deallocate
+        implicit none
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+        !!
 
-        CALL foo%connectivity%me_deallocate()
-        CALL foo%offsets%me_deallocate()
-        CALL foo%types%me_deallocate()
+        call foo%connectivity%me_deallocate()
+        call foo%offsets%me_deallocate()
+        call foo%types%me_deallocate()
 
-        CALL foo%deallocate()
+        call foo%deallocate()
 
-        END PROCEDURE Cells_deallocate
+    end procedure cells_deallocate
 
-        MODULE PROCEDURE Coordinates_initialize
-        USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
-        USE Misc,         ONLY : convert_to_string
-        IMPLICIT NONE
-        !1 author: Ian Porter
+    module procedure coordinates_initialize
+        use vtk_datasets, only : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
+        use misc,         only : convert_to_string
+        implicit none
+        !! author: Ian Porter
         !! date: 07/09/2019
         !!
-        !! Initializes a piece dt with the geometry information
+        !! initializes a piece dt with the geometry information
         !!
-        REAL(r8k),   DIMENSION(2,3) :: range
-        CHARACTER(LEN=*), PARAMETER :: Coordinate_name = 'Coordinates'
+        real(r8k),   dimension(2,3) :: range
+        character(len=*), parameter :: coordinate_name = 'coordinates'
 
-        CALL me%setup(name=Coordinate_name)
-        !! TODO: Figure out why gfortran requires this
-        SELECT TYPE (geometry)
-        CLASS IS (dataset)
+        call me%setup(name=coordinate_name)
+        !! todo: figure out why gfortran requires this
+        select type (geometry)
+        class is (dataset)
             range = geometry%get_range()
-        END SELECT
-        !! end TODO
+        end select
+        !! end todo
 
-        SELECT TYPE (geometry)
-        CLASS IS (rectlnr_grid)
-            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-            CALL me%DataArray_x%initialize(type=type_float64,format=file_format_text,range_min=range(1,1),range_max=range(2,1))
-            CALL me%DataArray_x%add(geometry%get_coord(1))
-            CALL me%DataArray_y%initialize(type=type_float64,format=file_format_text,range_min=range(1,2),range_max=range(2,2))
-            CALL me%DataArray_y%add(geometry%get_coord(2))
-            CALL me%DataArray_z%initialize(type=type_float64,format=file_format_text,range_min=range(1,3),range_max=range(2,3))
-            CALL me%DataArray_z%add(geometry%get_coord(3))
+        select type (geometry)
+        class is (rectlnr_grid)
+            !! for now, don't allow "pieces" but instead force the piece to be the whole extent
+            call me%dataarray_x%initialize(type=type_float64,format=file_format_text,range_min=range(1,1),range_max=range(2,1))
+            call me%dataarray_x%add(geometry%get_coord(1))
+            call me%dataarray_y%initialize(type=type_float64,format=file_format_text,range_min=range(1,2),range_max=range(2,2))
+            call me%dataarray_y%add(geometry%get_coord(2))
+            call me%dataarray_z%initialize(type=type_float64,format=file_format_text,range_min=range(1,3),range_max=range(2,3))
+            call me%dataarray_z%add(geometry%get_coord(3))
 
-            CALL me%add(me%DataArray_x)
-            CALL me%add(me%DataArray_y)
-            CALL me%add(me%DataArray_z)
-        CLASS DEFAULT
-            ERROR STOP 'Error: In Coordinates_initialize, the geometry is not yet defined.'
-        END SELECT
+            call me%add(me%dataarray_x)
+            call me%add(me%dataarray_y)
+            call me%add(me%dataarray_z)
+        class default
+            error stop 'error: in coordinates_initialize, the geometry is not yet defined.'
+        end select
 
-        END PROCEDURE Coordinates_initialize
+    end procedure coordinates_initialize
 
-        MODULE PROCEDURE Coordinates_deallocate
-        IMPLICIT NONE
-        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+    module procedure coordinates_deallocate
+        implicit none
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+        !!
 
-        CALL foo%DataArray_x%me_deallocate()
-        CALL foo%DataArray_y%me_deallocate()
-        CALL foo%DataArray_z%me_deallocate()
+        call foo%dataarray_x%me_deallocate()
+        call foo%dataarray_y%me_deallocate()
+        call foo%dataarray_z%me_deallocate()
 
-        CALL foo%deallocate()
+        call foo%deallocate()
 
-        END PROCEDURE Coordinates_deallocate
+    end procedure coordinates_deallocate
 
-        MODULE PROCEDURE piece_set_grid
-        USE vtk_datasets, ONLY : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
-        IMPLICIT NONE
-        !1 author: Ian Porter
+    module procedure piece_set_grid
+        use vtk_datasets, only : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
+        implicit none
+        !! author: Ian Porter
         !! date: 07/09/2019
         !!
-        !! Initializes a piece dt with the geometry information
+        !! initializes a piece dt with the geometry information
         !!
-        CHARACTER(LEN=10) :: tmp_string = '          '
-        CHARACTER(LEN=10) :: n_points   = '          '
-        CHARACTER(LEN=10) :: n_cells    = '          '
-        CHARACTER(LEN=:), ALLOCATABLE :: range_string
-        INTEGER(i4k) :: i, j
-        INTEGER(i4k), DIMENSION(2,3)  :: range
+        character(len=10) :: tmp_string = '          '
+        character(len=10) :: n_points   = '          '
+        character(len=10) :: n_cells    = '          '
+        character(len=:), allocatable :: range_string
+        integer(i4k) :: i, j
+        integer(i4k), dimension(2,3)  :: range
 
-        !! TODO: Figure out why gfortran requires this
-        SELECT TYPE (geometry)
-        CLASS IS (dataset)
+        !! todo: figure out why gfortran requires this
+        select type (geometry)
+        class is (dataset)
             range = geometry%get_range_cnt()
-            !! end TODO
-            DO i = 1, 3
-                DO j = 1, 2
-                    WRITE(tmp_string,'(i10)') range(j,i)
-                    IF (.NOT. ALLOCATED(range_string)) THEN
-                        ALLOCATE(range_string,source=TRIM(ADJUSTL(tmp_string)))
-                    ELSE
-                        range_string = range_string // ' ' // TRIM(ADJUSTL(tmp_string))
-                    END IF
-                END DO
-            END DO
-        CLASS IS (unstruct_grid)
-            WRITE(n_points,'(i10)') geometry%n_points
-            WRITE(n_cells,'(i10)') geometry%n_cells
-        END SELECT
+            !! end todo
+            do i = 1, 3
+                do j = 1, 2
+                    write(tmp_string,'(i10)') range(j,i)
+                    if (.not. allocated(range_string)) then
+                        allocate(range_string,source=trim(adjustl(tmp_string)))
+                    else
+                        range_string = range_string // ' ' // trim(adjustl(tmp_string))
+                    end if
+                end do
+            end do
+        class is (unstruct_grid)
+            write(n_points,'(i10)') geometry%n_points
+            write(n_cells,'(i10)') geometry%n_cells
+        end select
 
-        SELECT TYPE (geometry)
-        CLASS IS (struct_pts)
-            CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
-        CLASS IS (struct_grid)
-            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-            CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
-            ALLOCATE(me%points)
-            CALL me%points%initialize(geometry)
-            CALL me%add(me%points)
-        CLASS IS (rectlnr_grid)
-            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-            CALL me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
-            ALLOCATE(me%coordinates)
-            CALL me%coordinates%initialize(geometry)
-            CALL me%add(me%coordinates)
-        CLASS IS (polygonal_data)
-            ERROR STOP 'Error: polygonal_data is not yet implemented in piece_set_grid'
-        CLASS IS (unstruct_grid)
-            !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-            CALL me%setup(name="Piece",string="NumberOfPoints=" // '"' // TRIM(ADJUSTL(n_points)) // '"' // &
-                &                             " NumberOfCells=" // '"' // TRIM(ADJUSTL(n_cells)) // '"')
-            ALLOCATE(me%points)
-            CALL me%points%initialize(geometry)
-            CALL me%add(me%points)
-            ALLOCATE(me%cells)
-            CALL me%cells%initialize(geometry)
-            CALL me%add(me%cells)
-        CLASS DEFAULT
-            ERROR STOP 'Error: Unknown geometry type in piece_set_grid'
-        END SELECT
+        select type (geometry)
+        class is (struct_pts)
+            call me%setup(name="piece",string="extent=" // '"' // range_string // '"')
+        class is (struct_grid)
+            !! for now, don't allow "pieces" but instead force the piece to be the whole extent
+            call me%setup(name="piece",string="extent=" // '"' // range_string // '"')
+            allocate(me%points)
+            call me%points%initialize(geometry)
+            call me%add(me%points)
+        class is (rectlnr_grid)
+            !! for now, don't allow "pieces" but instead force the piece to be the whole extent
+            call me%setup(name="piece",string="extent=" // '"' // range_string // '"')
+            allocate(me%coordinates)
+            call me%coordinates%initialize(geometry)
+            call me%add(me%coordinates)
+        class is (polygonal_data)
+            error stop 'error: polygonal_data is not yet implemented in piece_set_grid'
+        class is (unstruct_grid)
+            !! for now, don't allow "pieces" but instead force the piece to be the whole extent
+            call me%setup(name="piece",string="numberofpoints=" // '"' // trim(adjustl(n_points)) // '"' // &
+                &                             " numberofcells=" // '"' // trim(adjustl(n_cells)) // '"')
+            allocate(me%points)
+            call me%points%initialize(geometry)
+            call me%add(me%points)
+            allocate(me%cells)
+            call me%cells%initialize(geometry)
+            call me%add(me%cells)
+        class default
+            error stop 'error: unknown geometry type in piece_set_grid'
+        end select
 
-        END PROCEDURE piece_set_grid
+    end procedure piece_set_grid
 
-        MODULE PROCEDURE piece_add_data
-        IMPLICIT NONE
+    module procedure piece_add_data
+        implicit none
         !! author: Ian Porter
         !! date: 07/28/2019
         !!
-        !! This is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
+        !! this is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
         !!
 
-        IF (PRESENT(celldatasets)) THEN
-            IF (.NOT. ALLOCATED(me%celldata)) THEN
-                ALLOCATE(me%celldata)
-                CALL me%celldata%initialize()
-            END IF
-            CALL me%celldata%add_cell(celldatasets)
-        ELSE IF (PRESENT(celldata)) THEN
-            IF (.NOT. ALLOCATED(me%celldata)) THEN
-                ALLOCATE(me%celldata)
-                CALL me%celldata%initialize()
-            END IF
-            CALL me%celldata%add_cell(celldata)
-        END IF
-        IF (PRESENT(pointdatasets)) THEN
-            IF (.NOT. ALLOCATED(me%pointdata)) THEN
-                ALLOCATE(me%pointdata)
-                CALL me%pointdata%initialize()
-            END IF
-            CALL me%pointdata%add_cell(pointdatasets)
-        ELSE IF (PRESENT(pointdata)) THEN
-            IF (.NOT. ALLOCATED(me%pointdata)) THEN
-                ALLOCATE(me%pointdata)
-                CALL me%pointdata%initialize()
-            END IF
-            CALL me%pointdata%add_cell(pointdata)
-        END IF
+        if (present(celldatasets)) then
+            if (.not. allocated(me%celldata)) then
+                allocate(me%celldata)
+                call me%celldata%initialize()
+            end if
+            call me%celldata%add_cell(celldatasets)
+        else if (present(celldata)) then
+            if (.not. allocated(me%celldata)) then
+                allocate(me%celldata)
+                call me%celldata%initialize()
+            end if
+            call me%celldata%add_cell(celldata)
+        end if
+        if (present(pointdatasets)) then
+            if (.not. allocated(me%pointdata)) then
+                allocate(me%pointdata)
+                call me%pointdata%initialize()
+            end if
+            call me%pointdata%add_cell(pointdatasets)
+        else if (present(pointdata)) then
+            if (.not. allocated(me%pointdata)) then
+                allocate(me%pointdata)
+                call me%pointdata%initialize()
+            end if
+            call me%pointdata%add_cell(pointdata)
+        end if
 
-        END PROCEDURE piece_add_data
+    end procedure piece_add_data
 
-        MODULE PROCEDURE piece_finalize
-        IMPLICIT NONE
+    module procedure piece_finalize
+        implicit none
+        !! author: Ian Porter
+        !! date: 06/07/2019
 
-        IF (ALLOCATED(me%pointdata)) THEN
-            CALL me%pointdata%finalize()
-            CALL me%add(me%pointdata)
-        END IF
-        IF (ALLOCATED(me%celldata)) THEN
-          CALL me%celldata%finalize()
-          CALL me%add(me%celldata)
-        END IF
+        if (allocated(me%pointdata)) then
+            call me%pointdata%finalize()
+            call me%add(me%pointdata)
+        end if
+        if (allocated(me%celldata)) then
+            call me%celldata%finalize()
+            call me%add(me%celldata)
+        end if
 
-        END PROCEDURE piece_finalize
+    end procedure piece_finalize
 
-        MODULE PROCEDURE piece_deallocate
-        IMPLICIT NONE
-        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+    module procedure piece_deallocate
+        implicit none
+        !! author: Ian Porter
+        !! date: 06/07/2019
+        !!
+        !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+        !!
 
-        IF (ALLOCATED(foo%pointdata))   CALL foo%pointdata%data_deallocate()
-        IF (ALLOCATED(foo%celldata))    CALL foo%celldata%data_deallocate()
-        IF (ALLOCATED(foo%coordinates)) CALL foo%coordinates%coordinates_deallocate()
-        IF (ALLOCATED(foo%points))      CALL foo%points%points_deallocate()
-        IF (ALLOCATED(foo%cells))       CALL foo%cells%cells_deallocate()
+        if (allocated(foo%pointdata))   call foo%pointdata%data_deallocate()
+        if (allocated(foo%celldata))    call foo%celldata%data_deallocate()
+        if (allocated(foo%coordinates)) call foo%coordinates%coordinates_deallocate()
+        if (allocated(foo%points))      call foo%points%points_deallocate()
+        if (allocated(foo%cells))       call foo%cells%cells_deallocate()
 
-        CALL foo%me_deallocate()
+        call foo%me_deallocate()
 
-        END PROCEDURE piece_deallocate
+    end procedure piece_deallocate
 
-END SUBMODULE VTK_piece_element_implementation
+end submodule vtk_piece_element_procedures

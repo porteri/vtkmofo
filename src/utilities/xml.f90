@@ -1,293 +1,294 @@
-MODULE XML
-    USE Precision,       ONLY : i4k, i8k, r4k, r8k
-    USE File_utility,    ONLY : file_data_structure
-    USE ISO_FORTRAN_ENV, ONLY : output_unit
-    IMPLICIT NONE
+module xml
+    use precision,       only : i4k, i8k, r4k, r8k
+    use file_utility,    only : file_data_structure
+    use iso_fortran_env, only : output_unit
+    implicit none
     !! author: Ian Porter
     !! date: 04/02/2019
     !!
-    !! This is a simple xml format writer
+    !! this is a simple xml format writer
     !!
 
-    PRIVATE
-    PUBLIC :: xml_element_dt, xml_file_dt, gcc_bug_workaround_allocate, gcc_bug_workaround_deallocate
-    PUBLIC :: file_format, binary, ascii, convert_format_to_string, convert_string_to_format
-    PUBLIC :: format_ascii, format_binary, format_append, file_format_text
+    private
+    public :: xml_element_dt, xml_file_dt, gcc_bug_workaround_allocate, gcc_bug_workaround_deallocate
+    public :: file_format, binary, ascii, convert_format_to_string, convert_string_to_format
+    public :: format_ascii, format_binary, format_append, file_format_text
 
-    ENUM, BIND(C)
-        ENUMERATOR :: ascii, binary, append
-    END ENUM
+    enum, bind(c)
+        enumerator :: ascii, binary, append
+    end enum
 
-    INTEGER(i4k) :: file_format = ascii
+    integer(i4k) :: file_format = ascii
 
-    CHARACTER(LEN=*), PARAMETER :: format_ascii  = 'ascii'
-    CHARACTER(LEN=*), PARAMETER :: format_binary = 'binary'
-    CHARACTER(LEN=*), PARAMETER :: format_append = 'appended'
-    CHARACTER(LEN=:), ALLOCATABLE :: file_format_text
+    character(len=*), parameter :: format_ascii  = 'ascii'
+    character(len=*), parameter :: format_binary = 'binary'
+    character(len=*), parameter :: format_append = 'appended'
+    character(len=:), allocatable :: file_format_text
 
-    TYPE string_dt
-        CHARACTER(LEN=:), ALLOCATABLE :: text
-    CONTAINS
-        PROCEDURE, PRIVATE :: gcc_bug_deallocate_string_dt
-        GENERIC, PUBLIC    :: deallocate => gcc_bug_deallocate_string_dt
-    END TYPE string_dt
+    type string_dt
+        !! String derived type to allow handling of various sized strings
+        character(len=:), allocatable :: text
+    contains
+        procedure, private :: gcc_bug_deallocate_string_dt
+        generic, public    :: deallocate => gcc_bug_deallocate_string_dt
+    end type string_dt
 
-    TYPE real32_dt
-        REAL(r4k), DIMENSION(:), ALLOCATABLE :: val
-    END TYPE real32_dt
+    type real32_dt
+        real(r4k), dimension(:), allocatable :: val
+    end type real32_dt
 
-    TYPE real64_dt
-        REAL(r8k), DIMENSION(:), ALLOCATABLE :: val
-    END TYPE real64_dt
+    type real64_dt
+        real(r8k), dimension(:), allocatable :: val
+    end type real64_dt
 
-    TYPE xml_element_dt
-        PRIVATE
-        !! XML derived type
-        CHARACTER(LEN=:), ALLOCATABLE :: name         !! Name of the XML block
-        INTEGER(i4k) :: unit = output_unit            !! File unit #
-        CHARACTER(LEN=:), ALLOCATABLE :: offset       !! Offset for data within XML block
-        CHARACTER(LEN=:), ALLOCATABLE :: additional_data !! Additional data to write in header
-        TYPE(string_dt),      DIMENSION(:), ALLOCATABLE :: string  !! String data set(s) within element
-        TYPE(real32_dt),      DIMENSION(:), ALLOCATABLE :: real32  !! String of real64
-        TYPE(real64_dt),      DIMENSION(:), ALLOCATABLE :: real64  !! String of real64
-        TYPE(xml_element_dt), DIMENSION(:), ALLOCATABLE :: element !! Element data set(s) within element
-    CONTAINS
-        PROCEDURE, PUBLIC  :: setup => element_setup   !! Set up element block
-        PROCEDURE, PRIVATE :: begin => element_begin   !! Write open of element block
-        PROCEDURE, PRIVATE :: element_add_string       !! Write raw data inside of element block
-        PROCEDURE, PRIVATE :: element_add_element      !! Write another element inside element block
-        PROCEDURE, PRIVATE :: element_add_real32       !! Write real32 into a string inside of element block
-        PROCEDURE, PRIVATE :: element_add_real64       !! Write real64 into a string inside of element block
-        PROCEDURE, PRIVATE :: element_add_int32        !! Write ints32 into a string inside of element block
-        PROCEDURE, PRIVATE :: element_add_int64        !! Write ints64 into a string inside of element block
-        PROCEDURE, PRIVATE :: element_add_logical      !! Write logical into a string inside of element block
-        GENERIC, PUBLIC    :: add   => element_add_string
-        GENERIC, PUBLIC    :: add   => element_add_element
-        GENERIC, PUBLIC    :: add   => element_add_real64
-        GENERIC, PUBLIC    :: add   => element_add_real32
-        GENERIC, PUBLIC    :: add   => element_add_int64
-        GENERIC, PUBLIC    :: add   => element_add_int32
-        GENERIC, PUBLIC    :: add   => element_add_logical
-        PROCEDURE, PRIVATE :: end   => element_end     !! Write closure of element block
-        PROCEDURE, PUBLIC  :: write => element_write   !! Writes the element block
-        PROCEDURE, PUBLIC  :: replace => replace_in_string !! Replaces an identifier in the string
-        PROCEDURE, PRIVATE :: gcc_bug_workaround_deallocate_single
-        GENERIC, PUBLIC    :: deallocate => gcc_bug_workaround_deallocate_single
-    END TYPE xml_element_dt
+    type xml_element_dt
+        !! xml derived type
+        private
+        character(len=:), allocatable :: name         !! name of the xml block
+        integer(i4k) :: unit = output_unit            !! file unit #
+        character(len=:), allocatable :: offset       !! offset for data within xml block
+        character(len=:), allocatable :: additional_data !! additional data to write in header
+        type(string_dt),      dimension(:), allocatable :: string  !! string data set(s) within element
+        type(real32_dt),      dimension(:), allocatable :: real32  !! string of real64
+        type(real64_dt),      dimension(:), allocatable :: real64  !! string of real64
+        type(xml_element_dt), dimension(:), allocatable :: element !! element data set(s) within element
+    contains
+        procedure, public  :: setup => element_setup   !! set up element block
+        procedure, private :: begin => element_begin   !! write open of element block
+        procedure, private :: element_add_string       !! write raw data inside of element block
+        procedure, private :: element_add_element      !! write another element inside element block
+        procedure, private :: element_add_real32       !! write real32 into a string inside of element block
+        procedure, private :: element_add_real64       !! write real64 into a string inside of element block
+        procedure, private :: element_add_int32        !! write ints32 into a string inside of element block
+        procedure, private :: element_add_int64        !! write ints64 into a string inside of element block
+        procedure, private :: element_add_logical      !! write logical into a string inside of element block
+        generic, public    :: add   => element_add_string
+        generic, public    :: add   => element_add_element
+        generic, public    :: add   => element_add_real64
+        generic, public    :: add   => element_add_real32
+        generic, public    :: add   => element_add_int64
+        generic, public    :: add   => element_add_int32
+        generic, public    :: add   => element_add_logical
+        procedure, private :: end   => element_end     !! write closure of element block
+        procedure, public  :: write => element_write   !! writes the element block
+        procedure, public  :: replace => replace_in_string !! replaces an identifier in the string
+        procedure, private :: gcc_bug_workaround_deallocate_single
+        generic, public    :: deallocate => gcc_bug_workaround_deallocate_single
+    end type xml_element_dt
 
-    TYPE, EXTENDS(file_data_structure) :: xml_file_dt
-        PRIVATE
-        !! Full XML file DT
-        TYPE(xml_element_dt), DIMENSION(:), ALLOCATABLE, PUBLIC :: element
-    CONTAINS
-        PROCEDURE :: setup_file_information => xml_file_setup
-        PROCEDURE, PRIVATE :: begin => xml_begin
-        PROCEDURE, PUBLIC  :: add   => xml_add
-        PROCEDURE, PRIVATE :: end   => xml_end
-        PROCEDURE, PUBLIC  :: write => xml_write
-        PROCEDURE, PRIVATE :: gcc_bug_workaround_deallocate_xml_file_dt
-        GENERIC,   PUBLIC  :: deallocate => gcc_bug_workaround_deallocate_xml_file_dt
-    END TYPE xml_file_dt
+    type, extends(file_data_structure) :: xml_file_dt
+        !! full xml file dt
+        private
+        type(xml_element_dt), dimension(:), allocatable, public :: element
+    contains
+        procedure :: setup_file_information => xml_file_setup
+        procedure, private :: begin => xml_begin
+        procedure, public  :: add   => xml_add
+        procedure, private :: end   => xml_end
+        procedure, public  :: write => xml_write
+        procedure, private :: gcc_bug_workaround_deallocate_xml_file_dt
+        generic,   public  :: deallocate => gcc_bug_workaround_deallocate_xml_file_dt
+    end type xml_file_dt
 
-    INTERFACE gcc_bug_workaround_deallocate
-        PROCEDURE :: gcc_bug_workaround_deallocate_array
-        PROCEDURE :: gcc_bug_workaround_deallocate_single
-    END INTERFACE gcc_bug_workaround_deallocate
+    interface gcc_bug_workaround_deallocate
+        procedure :: gcc_bug_workaround_deallocate_array
+        procedure :: gcc_bug_workaround_deallocate_single
+    end interface gcc_bug_workaround_deallocate
 
-    INTERFACE
+    interface
 
-        MODULE SUBROUTINE element_setup (me, name, string, offset)
-        IMPLICIT NONE
-        !! This sets up the information needed to define the XML element block
-        CLASS(xml_element_dt), INTENT(INOUT) :: me     !! XML element derived type
-        CHARACTER(LEN=*),      INTENT(IN)    :: name   !! Name of the XML block
-        CHARACTER(LEN=*),      INTENT(IN), OPTIONAL :: string !! String of additional data to write
-        INTEGER(i4k),          INTENT(IN), OPTIONAL :: offset !! # of leading spaces inside XML block
-        END SUBROUTINE element_setup
+        module subroutine element_setup (me, name, string, offset)
+            implicit none
+            !! this sets up the information needed to define the xml element block
+            class(xml_element_dt), intent(inout) :: me     !! xml element derived type
+            character(len=*),      intent(in)    :: name   !! name of the xml block
+            character(len=*),      intent(in), optional :: string !! string of additional data to write
+            integer(i4k),          intent(in), optional :: offset !! # of leading spaces inside xml block
+        end subroutine element_setup
 
-        MODULE SUBROUTINE element_begin (me, unit)
-        IMPLICIT NONE
-        !! This begins an xml element block
-        CLASS(xml_element_dt), INTENT(IN) :: me      !! XML element derived type
-        INTEGER(i4k),          INTENT(IN) :: unit    !! File unit # to write to
-        END SUBROUTINE element_begin
+        module subroutine element_begin (me, unit)
+            implicit none
+            !! this begins an xml element block
+            class(xml_element_dt), intent(in) :: me      !! xml element derived type
+            integer(i4k),          intent(in) :: unit    !! file unit # to write to
+        end subroutine element_begin
 
-        RECURSIVE MODULE SUBROUTINE element_add_real32 (me, var)
-        IMPLICIT NONE
-        !! This adds real double precision data inside of an xml element block
-        CLASS(xml_element_dt),   INTENT(INOUT) :: me    !! XML element derived type
-        REAL(r4k), DIMENSION(:), INTENT(IN)    :: var   !! Data to write
-        END SUBROUTINE element_add_real32
+        recursive module subroutine element_add_real32 (me, var)
+            implicit none
+            !! this adds real double precision data inside of an xml element block
+            class(xml_element_dt),   intent(inout) :: me    !! xml element derived type
+            real(r4k), dimension(:), intent(in)    :: var   !! data to write
+        end subroutine element_add_real32
 
-        RECURSIVE MODULE SUBROUTINE element_add_real64 (me, var)
-        IMPLICIT NONE
-        !! This adds real double precision data inside of an xml element block
-        CLASS(xml_element_dt),   INTENT(INOUT) :: me    !! XML element derived type
-        REAL(r8k), DIMENSION(:), INTENT(IN)    :: var   !! Data to write
-        END SUBROUTINE element_add_real64
+        recursive module subroutine element_add_real64 (me, var)
+            implicit none
+            !! this adds real double precision data inside of an xml element block
+            class(xml_element_dt),   intent(inout) :: me    !! xml element derived type
+            real(r8k), dimension(:), intent(in)    :: var   !! data to write
+        end subroutine element_add_real64
 
-        RECURSIVE MODULE SUBROUTINE element_add_int32 (me, var)
-        IMPLICIT NONE
-        !! This adds real double precision data inside of an xml element block
-        CLASS(xml_element_dt),      INTENT(INOUT) :: me    !! XML element derived type
-        INTEGER(i4k), DIMENSION(:), INTENT(IN)    :: var   !! Data to write
-        END SUBROUTINE element_add_int32
+        recursive module subroutine element_add_int32 (me, var)
+            implicit none
+            !! this adds real double precision data inside of an xml element block
+            class(xml_element_dt),      intent(inout) :: me    !! xml element derived type
+            integer(i4k), dimension(:), intent(in)    :: var   !! data to write
+        end subroutine element_add_int32
 
-        RECURSIVE MODULE SUBROUTINE element_add_int64 (me, var)
-        IMPLICIT NONE
-        !! This adds real double precision data inside of an xml element block
-        CLASS(xml_element_dt),      INTENT(INOUT) :: me    !! XML element derived type
-        INTEGER(i8k), DIMENSION(:), INTENT(IN)    :: var   !! Data to write
-        END SUBROUTINE element_add_int64
+        recursive module subroutine element_add_int64 (me, var)
+            implicit none
+            !! this adds real double precision data inside of an xml element block
+            class(xml_element_dt),      intent(inout) :: me    !! xml element derived type
+            integer(i8k), dimension(:), intent(in)    :: var   !! data to write
+        end subroutine element_add_int64
 
-        RECURSIVE MODULE SUBROUTINE element_add_logical (me, var)
-        IMPLICIT NONE
-        !! This adds real double precision data inside of an xml element block
-        CLASS(xml_element_dt), INTENT(INOUT) :: me    !! XML element derived type
-        LOGICAL, DIMENSION(:), INTENT(IN)    :: var   !! Data to write
-        END SUBROUTINE element_add_logical
+        recursive module subroutine element_add_logical (me, var)
+            implicit none
+            !! this adds real double precision data inside of an xml element block
+            class(xml_element_dt), intent(inout) :: me    !! xml element derived type
+            logical, dimension(:), intent(in)    :: var   !! data to write
+        end subroutine element_add_logical
 
-        RECURSIVE MODULE SUBROUTINE element_add_string (me, string, quotes)
-        IMPLICIT NONE
-        !! This adds data inside of an xml element block
-        CLASS(xml_element_dt), INTENT(INOUT) :: me      !! XML element derived type
-        CHARACTER(LEN=*),      INTENT(IN)    :: string  !! String of data to write
-        LOGICAL, OPTIONAL,     INTENT(IN)    :: quotes  !! Flag to turn quotation marks around string on/off
-        END SUBROUTINE element_add_string
+        recursive module subroutine element_add_string (me, string, quotes)
+            implicit none
+            !! this adds data inside of an xml element block
+            class(xml_element_dt), intent(inout) :: me      !! xml element derived type
+            character(len=*),      intent(in)    :: string  !! string of data to write
+            logical, optional,     intent(in)    :: quotes  !! flag to turn quotation marks around string on/off
+        end subroutine element_add_string
 
-        RECURSIVE MODULE SUBROUTINE element_add_element (me, element)
-        IMPLICIT NONE
-        !! This adds an element inside of an xml element block
-        CLASS(xml_element_dt), INTENT(INOUT) :: me       !! XML element derived type
-        CLASS(xml_element_dt), INTENT(IN)    :: element  !! Inner XML element
-        END SUBROUTINE element_add_element
+        recursive module subroutine element_add_element (me, element)
+            implicit none
+            !! this adds an element inside of an xml element block
+            class(xml_element_dt), intent(inout) :: me       !! xml element derived type
+            class(xml_element_dt), intent(in)    :: element  !! inner xml element
+        end subroutine element_add_element
 
-        MODULE SUBROUTINE element_end (me, unit)
-        IMPLICIT NONE
-        !! This ends an XML element block
-        CLASS(xml_element_dt), INTENT(IN) :: me      !! XML element derived type
-        INTEGER(i4k),          INTENT(IN) :: unit    !! File unit # to write to
-        END SUBROUTINE element_end
+        module subroutine element_end (me, unit)
+            implicit none
+            !! this ends an xml element block
+            class(xml_element_dt), intent(in) :: me      !! xml element derived type
+            integer(i4k),          intent(in) :: unit    !! file unit # to write to
+        end subroutine element_end
 
-        RECURSIVE MODULE SUBROUTINE element_write (me, unit)
-        IMPLICIT NONE
-        !! This writes an XML element block
-        CLASS(xml_element_dt), INTENT(IN) :: me      !! XML element derived type
-        INTEGER(i4k),          INTENT(IN) :: unit    !! File unit # to write to
-        END SUBROUTINE element_write
+        recursive module subroutine element_write (me, unit)
+            implicit none
+            !! this writes an xml element block
+            class(xml_element_dt), intent(in) :: me      !! xml element derived type
+            integer(i4k),          intent(in) :: unit    !! file unit # to write to
+        end subroutine element_write
 
-        MODULE SUBROUTINE replace_in_string (me, tag, value)
-        IMPLICIT NONE
-        !! Replaces the existing value associated with tag with value
-        CLASS(xml_element_dt), INTENT(INOUT) :: me
-        CHARACTER(LEN=*),      INTENT(IN)    :: tag
-        CHARACTER(LEN=*),      INTENT(IN)    :: value
-        END SUBROUTINE replace_in_string
+        module subroutine replace_in_string (me, tag, value)
+            implicit none
+            !! replaces the existing value associated with tag with value
+            class(xml_element_dt), intent(inout) :: me
+            character(len=*),      intent(in)    :: tag
+            character(len=*),      intent(in)    :: value
+        end subroutine replace_in_string
 
-        MODULE SUBROUTINE xml_file_setup (me, filename, open_status, close_status, form, access, unit)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 05/02/2019
-        !!
-        !! Establishes the file information
-        !!
-        CLASS(xml_file_dt), INTENT(INOUT) :: me                  !! XML file DT
-        CHARACTER(LEN=*),   INTENT(IN)    :: filename            !! File name
-        CHARACTER(LEN=*),   INTENT(IN), OPTIONAL :: open_status  !! File open status
-        CHARACTER(LEN=*),   INTENT(IN), OPTIONAL :: close_status !! File close status
-        CHARACTER(LEN=*),   INTENT(IN), OPTIONAL :: form         !! File format (formatted or unformatted)
-        CHARACTER(LEN=*),   INTENT(IN), OPTIONAL :: access       !! File access type
-        INTEGER(i4k),       INTENT(IN), OPTIONAL :: unit         !! Requested file unit #
-        END SUBROUTINE xml_file_setup
+        module subroutine xml_file_setup (me, filename, open_status, close_status, form, access, unit)
+            implicit none
+            !! author: Ian Porter
+            !! date: 05/02/2019
+            !!
+            !! establishes the file information
+            !!
+            class(xml_file_dt), intent(inout) :: me                  !! xml file dt
+            character(len=*),   intent(in)    :: filename            !! file name
+            character(len=*),   intent(in), optional :: open_status  !! file open status
+            character(len=*),   intent(in), optional :: close_status !! file close status
+            character(len=*),   intent(in), optional :: form         !! file format(formatted or unformatted)
+            character(len=*),   intent(in), optional :: access       !! file access type
+            integer(i4k),       intent(in), optional :: unit         !! requested file unit #
+        end subroutine xml_file_setup
 
-        RECURSIVE MODULE SUBROUTINE xml_begin (me)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 05/03/2019
-        !!
-        !! Begins the writing of the XMl file
-        !!
-        CLASS(xml_file_dt), INTENT(INOUT) :: me                  !! XML file DT
-        END SUBROUTINE xml_begin
+        recursive module subroutine xml_begin (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 05/03/2019
+            !!
+            !! begins the writing of the xml file
+            !!
+            class(xml_file_dt), intent(inout) :: me                  !! xml file dt
+        end subroutine xml_begin
 
-        RECURSIVE MODULE SUBROUTINE xml_add (me, element)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 05/03/2019
-        !!
-        !! This adds data inside of the file
-        !!
-        CLASS(xml_file_dt),    INTENT(INOUT) :: me               !! XML file DT
-        CLASS(xml_element_dt), INTENT(IN)    :: element
-        END SUBROUTINE xml_add
+        recursive module subroutine xml_add (me, element)
+            implicit none
+            !! author: Ian Porter
+            !! date: 05/03/2019
+            !!
+            !! this adds data inside of the file
+            !!
+            class(xml_file_dt),    intent(inout) :: me               !! xml file dt
+            class(xml_element_dt), intent(in)    :: element
+        end subroutine xml_add
 
-        RECURSIVE MODULE SUBROUTINE xml_end (me)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 05/03/2019
-        !!
-        !! Ends the writing of the XMl file
-        !!
-        CLASS(xml_file_dt), INTENT(IN) :: me                     !! XML file DT
-        END SUBROUTINE xml_end
+        recursive module subroutine xml_end (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 05/03/2019
+            !!
+            !! ends the writing of the xml file
+            !!
+            class(xml_file_dt), intent(in) :: me                     !! xml file dt
+        end subroutine xml_end
 
-        RECURSIVE MODULE SUBROUTINE xml_write (me)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 05/03/2019
-        !!
-        !! Writes the XMl file
-        !!
-        CLASS(xml_file_dt), INTENT(INOUT) :: me                  !! XML file DT
-        END SUBROUTINE xml_write
+        recursive module subroutine xml_write (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 05/03/2019
+            !!
+            !! writes the xml file
+            !!
+            class(xml_file_dt), intent(inout) :: me                  !! xml file dt
+        end subroutine xml_write
 
-        RECURSIVE MODULE SUBROUTINE gcc_bug_workaround_allocate (me, addfoo, oldfoo)
-        IMPLICIT NONE
-        !! gcc Work-around for allocating a multi-dimension derived type w/ allocatable character strings
-        !! when trying to increase the size of the foo array by 1
-        TYPE(xml_element_dt), DIMENSION(:), INTENT(INOUT), ALLOCATABLE :: me      !! DT to be resized to [oldfoo, addfoo]
-        TYPE(xml_element_dt), DIMENSION(:), INTENT(IN), OPTIONAL       :: oldfoo  !! Old array of DTs
-        TYPE(xml_element_dt),               INTENT(IN), OPTIONAL       :: addfoo  !! New DT to add to array
-        END SUBROUTINE gcc_bug_workaround_allocate
+        recursive module subroutine gcc_bug_workaround_allocate (me, addfoo, oldfoo)
+            implicit none
+            !! gcc work-around for allocating a multi-dimension derived type w/ allocatable character strings
+            !! when trying to increase the size of the foo array by 1
+            type(xml_element_dt), dimension(:), intent(inout), allocatable :: me      !! dt to be resized to [oldfoo, addfoo]
+            type(xml_element_dt), dimension(:), intent(in), optional       :: oldfoo  !! old array of dts
+            type(xml_element_dt),               intent(in), optional       :: addfoo  !! new dt to add to array
+        end subroutine gcc_bug_workaround_allocate
 
-        RECURSIVE MODULE SUBROUTINE gcc_bug_workaround_deallocate_array (me)
-        IMPLICIT NONE
-        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
-        TYPE(xml_element_dt), DIMENSION(:), INTENT(INOUT), ALLOCATABLE :: me
-        END SUBROUTINE gcc_bug_workaround_deallocate_array
+        recursive module subroutine gcc_bug_workaround_deallocate_array (me)
+            implicit none
+            !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+            type(xml_element_dt), dimension(:), intent(inout), allocatable :: me
+        end subroutine gcc_bug_workaround_deallocate_array
 
-        RECURSIVE MODULE SUBROUTINE gcc_bug_workaround_deallocate_single (me)
-        IMPLICIT NONE
-        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
-        CLASS(xml_element_dt), INTENT(INOUT) :: me
-        END SUBROUTINE gcc_bug_workaround_deallocate_single
+        recursive module subroutine gcc_bug_workaround_deallocate_single (me)
+            implicit none
+            !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+            class(xml_element_dt), intent(inout) :: me
+        end subroutine gcc_bug_workaround_deallocate_single
 
-        RECURSIVE MODULE SUBROUTINE gcc_bug_deallocate_string_dt (me)
-        IMPLICIT NONE
-        !! gcc Work-around
-        CLASS(string_dt), INTENT(INOUT) :: me
-        END SUBROUTINE gcc_bug_deallocate_string_dt
+        recursive module subroutine gcc_bug_deallocate_string_dt (me)
+            implicit none
+            !! gcc work-around
+            class(string_dt), intent(inout) :: me
+        end subroutine gcc_bug_deallocate_string_dt
 
-        RECURSIVE MODULE SUBROUTINE gcc_bug_workaround_deallocate_xml_file_dt (me)
-        IMPLICIT NONE
-        !! gcc Work-around
-        CLASS(xml_file_dt), INTENT(INOUT) :: me
-        END SUBROUTINE gcc_bug_workaround_deallocate_xml_file_dt
+        recursive module subroutine gcc_bug_workaround_deallocate_xml_file_dt (me)
+            implicit none
+            !! gcc work-around
+            class(xml_file_dt), intent(inout) :: me
+        end subroutine gcc_bug_workaround_deallocate_xml_file_dt
 
-        MODULE FUNCTION convert_format_to_string (format) RESULT(string)
-        IMPLICIT NONE
-        !! Converts the format integer to string
-        INTEGER(i4k), INTENT(IN) :: format
-        CHARACTER(LEN=:), ALLOCATABLE :: string
-        END FUNCTION convert_format_to_string
+        module function convert_format_to_string (format) result(string)
+            implicit none
+            !! converts the format integer to string
+            integer(i4k), intent(in) :: format
+            character(len=:), allocatable :: string
+        end function convert_format_to_string
 
-        MODULE FUNCTION convert_string_to_format (string) RESULT(format)
-        IMPLICIT NONE
-        !! Converts the format integer to string
-        CHARACTER(LEN=*), INTENT(IN) :: string
-        INTEGER(i4k) :: format
-        END FUNCTION convert_string_to_format
+        module function convert_string_to_format(string) result(format)
+            implicit none
+            !! converts the format integer to string
+            character(len=*), intent(in) :: string
+            integer(i4k) :: format
+        end function convert_string_to_format
 
-    END INTERFACE
+    end interface
 
-END MODULE XML
+end module xml

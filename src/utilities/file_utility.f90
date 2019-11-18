@@ -1,160 +1,161 @@
-MODULE File_utility
-    USE Precision, ONLY : i4k
-    IMPLICIT NONE
+module file_utility
+    use precision, only : i4k
+    implicit none
     !! author: Ian Porter
     !! date: 04/04/2018
     !!
-    !! This module contains a derived type for file information
+    !! this module contains a derived type for file information
     !!
-    PRIVATE
-    PUBLIC :: file_data_structure, is_little_endian
+    private
+    public :: file_data_structure, is_little_endian
 
-    TYPE file_data_structure
-        !! File data derived type
-        INTEGER(i4k) :: unit
-        CHARACTER(LEN=:), ALLOCATABLE :: filename
-        CHARACTER(LEN=:), ALLOCATABLE :: open_status
-        CHARACTER(LEN=:), ALLOCATABLE :: close_status
-        CHARACTER(LEN=:), ALLOCATABLE :: form
-        CHARACTER(LEN=:), ALLOCATABLE :: access
-    CONTAINS
-        PROCEDURE, PUBLIC  :: setup_file_information
-        GENERIC,   PUBLIC  :: setup => setup_file_information
-        PROCEDURE, PRIVATE :: check_if_exists
-        GENERIC,   PUBLIC  :: exists => check_if_exists
-        PROCEDURE, PRIVATE :: check_if_open
-        PROCEDURE, PUBLIC  :: open_file
-        PROCEDURE, PUBLIC  :: close_file
-        PROCEDURE, PUBLIC  :: make_file
-        PROCEDURE, PUBLIC  :: file_read_error
-        PROCEDURE, PUBLIC  :: wait_for_file
-        PROCEDURE, PUBLIC  :: get_unit
-        PROCEDURE, PUBLIC, NOPASS :: is_little_endian
-    END TYPE file_data_structure
+    type file_data_structure
+        !! file data derived type
+        integer(i4k) :: unit
+        character(len=:), allocatable :: filename
+        character(len=:), allocatable :: open_status
+        character(len=:), allocatable :: close_status
+        character(len=:), allocatable :: form
+        character(len=:), allocatable :: access
+    contains
+        procedure, public  :: setup_file_information
+        generic,   public  :: setup => setup_file_information
+        procedure, private :: check_if_exists
+        generic,   public  :: exists => check_if_exists
+        procedure, private :: check_if_open
+        procedure, public  :: open_file
+        procedure, public  :: close_file
+        procedure, public  :: make_file
+        procedure, public  :: file_read_error
+        procedure, public  :: wait_for_file
+        procedure, public  :: get_unit
+        procedure, public, nopass :: is_little_endian
+    end type file_data_structure
 
-    INTERFACE
+    interface
 
-        MODULE SUBROUTINE setup_file_information (me, filename, open_status, close_status, form, access, unit)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 04/16/2018
-        !!
-        !! Establishes the file information
-        !!
-        CLASS(file_data_structure), INTENT(INOUT) :: me                  !! DT
-        CHARACTER(LEN=*),           INTENT(IN)    :: filename            !! File name
-        CHARACTER(LEN=*),           INTENT(IN), OPTIONAL :: open_status  !! File open status
-        CHARACTER(LEN=*),           INTENT(IN), OPTIONAL :: close_status !! File close status
-        CHARACTER(LEN=*),           INTENT(IN), OPTIONAL :: form         !! File format (formatted or unformatted)
-        CHARACTER(LEN=*),           INTENT(IN), OPTIONAL :: access       !! File access type
-        INTEGER(i4k),               INTENT(IN), OPTIONAL :: unit         !! Requested file unit #
+        module subroutine setup_file_information (me, filename, open_status, close_status, form, access, unit)
+            implicit none
+            !! author: Ian Porter
+            !! date: 04/16/2018
+            !!
+            !! establishes the file information
+            !!
+            class(file_data_structure), intent(inout) :: me                  !! dt
+            character(len=*),           intent(in)    :: filename            !! file name
+            character(len=*),           intent(in), optional :: open_status  !! file open status
+            character(len=*),           intent(in), optional :: close_status !! file close status
+            character(len=*),           intent(in), optional :: form         !! file format(formatted or unformatted)
+            character(len=*),           intent(in), optional :: access       !! file access type
+            integer(i4k),               intent(in), optional :: unit         !! requested file unit #
 
-        END SUBROUTINE setup_file_information
+        end subroutine setup_file_information
 
-        MODULE FUNCTION check_if_exists (me, check) RESULT (file_exists)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 04/04/2018
-        !!
-        !! Checks to see if the file exists
-        !!
-        CLASS(file_data_structure), INTENT(IN)           :: me           !! DT
-        CHARACTER(LEN=*),           INTENT(IN), OPTIONAL :: check    !! Type of check (filename or unit)
-        LOGICAL                                          :: file_exists  !! Determins if file exists
+        module function check_if_exists (me, check) result (file_exists)
+            implicit none
+            !! author: Ian Porter
+            !! date: 04/04/2018
+            !!
+            !! checks to see if the file exists
+            !!
+            class(file_data_structure), intent(in)           :: me           !! dt
+            character(len=*),           intent(in), optional :: check    !! type of check (filename or unit)
+            logical                                          :: file_exists  !! determins if file exists
 
-        END FUNCTION check_if_exists
+        end function check_if_exists
 
-        MODULE FUNCTION check_if_open (me, check) RESULT (is_open)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 04/04/2018
-        !!
-        !! Checks to see if the file is open
-        !!
-        CLASS(file_data_structure), INTENT(IN)           :: me       !! DT
-        CHARACTER(LEN=*),           INTENT(IN), OPTIONAL :: check    !! Type of check (filename or unit)
-        LOGICAL                                          :: is_open  !! Determins if file is open
+        module function check_if_open (me, check) result (is_open)
+            implicit none
+            !! author: Ian Porter
+            !! date: 04/04/2018
+            !!
+            !! checks to see if the file is open
+            !!
+            class(file_data_structure), intent(in)           :: me       !! dt
+            character(len=*),           intent(in), optional :: check    !! type of check (filename or unit)
+            logical                                          :: is_open  !! determins if file is open
 
-        END FUNCTION check_if_open
+        end function check_if_open
 
-        MODULE SUBROUTINE open_file (me)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 04/04/2018
-        !!
-        !! Opens the file
-        !!
-        CLASS(file_data_structure), INTENT(INOUT) :: me   !! DT
+        module subroutine open_file (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 04/04/2018
+            !!
+            !! opens the file
+            !!
+            class(file_data_structure), intent(inout) :: me   !! dt
 
-        END SUBROUTINE open_file
+        end subroutine open_file
 
-        MODULE SUBROUTINE close_file (me)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 10/25/2018
-        !!
-        !! Closes the file
-        !!
-        CLASS(file_data_structure), INTENT(IN) :: me   !! DT
+        module subroutine close_file (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 10/25/2018
+            !!
+            !! closes the file
+            !!
+            class(file_data_structure), intent(in) :: me   !! dt
 
-        END SUBROUTINE close_file
+        end subroutine close_file
 
-        MODULE SUBROUTINE make_file (me)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 10/26/2018
-        !!
-        !! Makes a new file
-        !!
-        CLASS(file_data_structure), INTENT(INOUT) :: me   !! DT
+        module subroutine make_file (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 10/26/2018
+            !!
+            !! makes a new file
+            !!
+            class(file_data_structure), intent(inout) :: me   !! dt
 
-        END SUBROUTINE make_file
+        end subroutine make_file
 
-        MODULE SUBROUTINE file_read_error (me, inputstat)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 04/04/2018
-        !!
-        !! Prints that a file i/o error as occurred
-        !!
-        CLASS(file_data_structure), INTENT(IN) :: me          !! DT
-        INTEGER(i4k),               INTENT(IN) :: inputstat   !! File read error #
+        module subroutine file_read_error (me, inputstat)
+            implicit none
+            !! author: Ian Porter
+            !! date: 04/04/2018
+            !!
+            !! prints that a file i/o error as occurred
+            !!
+            class(file_data_structure), intent(in) :: me          !! dt
+            integer(i4k),               intent(in) :: inputstat   !! file read error #
 
-        END SUBROUTINE file_read_error
+        end subroutine file_read_error
 
-        MODULE SUBROUTINE wait_for_file (me)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 04/04/2018
-        !!
-        !! Waits for a file to exist
-        !!
-        CLASS(file_data_structure), INTENT(INOUT) :: me   !! DT
+        module subroutine wait_for_file (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 04/04/2018
+            !!
+            !! waits for a file to exist
+            !!
+            class(file_data_structure), intent(inout) :: me   !! dt
 
-        END SUBROUTINE wait_for_file
+        end subroutine wait_for_file
 
-        MODULE FUNCTION get_unit (me) RESULT (unit)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 04/03/2019
-        !!
-        !! Function returns the unit of a file
-        !!
-        CLASS(file_data_structure), INTENT(IN) :: me   !! DT
-        INTEGER :: unit                                !! File unit #
+        module function get_unit (me) result (unit)
+            implicit none
+            !! author: Ian Porter
+            !! date: 04/03/2019
+            !!
+            !! function returns the unit of a file
+            !!
+            class(file_data_structure), intent(in) :: me   !! dt
+            integer :: unit                                !! file unit #
 
-        END FUNCTION get_unit
+        end function get_unit
 
-        PURE MODULE FUNCTION is_little_endian() RESULT (is_little)
-        !! author: Ian Porter
-        !! date: 09/25/2019
-        !!
-        !! Checks the type of bit ordering to determine if the architecture is little endian
-        !!
-        LOGICAL :: is_little !! Flag to determine if little endian
+        pure module function is_little_endian() result (is_little)
+            implicit none
+            !! author: Ian Porter
+            !! date: 09/25/2019
+            !!
+            !! checks the type of bit ordering to determine if the architecture is little endian
+            !!
+            logical :: is_little !! flag to determine if little endian
 
-        END FUNCTION is_little_endian
+        end function is_little_endian
 
-    END INTERFACE
+    end interface
 
-END MODULE File_utility
+end module file_utility

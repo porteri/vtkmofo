@@ -1,190 +1,197 @@
-SUBMODULE (VTK_serial_Grid) VTK_serial_Grid_procedures
-    USE Precision, ONLY : i4k
+submodule (vtk_serial_grid) vtk_serial_grid_procedures
+    use precision, only : i4k
     !! author: Ian Porter
     !! date: 05/06/2019
     !!
-    !! This submodule implements the procedures for a serial Rectilinear Grid
+    !! this submodule implements the procedures for a serial rectilinear grid
     !!
 
-    CONTAINS
+contains
 
-        MODULE PROCEDURE finalize
-        USE XML, ONLY : xml_element_dt
-        IMPLICIT NONE
-        !! Writes data inside of itself
-        TYPE(VTK_element_dt) :: grid
+    module procedure finalize
+        use xml, only : xml_element_dt
+        implicit none
+        !! author: Ian Porter
+        !! date: 05/06/2019
+        !!
+        !! writes data inside of itself
+        !!
+        type(vtk_element_dt) :: grid
 
-        IF (ALLOCATED(me%piece)) THEN
-            CALL me%piece%finalize()
-            IF (ALLOCATED(me%WholeExtent)) THEN
-                CALL grid%setup(name=me%grid_type,string= "WholeExtent=" // '"' // me%WholeExtent // '"')
-            ELSE
-                CALL grid%setup(name=me%grid_type)
-            END IF
-            IF (ALLOCATED(me%extra_string)) CALL grid%add(me%extra_string, quotes=.FALSE.)
-            CALL grid%add(me%piece)
-            CALL me%add(grid)
-            CALL grid%me_deallocate()
-        END IF
+        if (allocated(me%piece)) then
+            call me%piece%finalize()
+            if (allocated(me%wholeextent)) then
+                call grid%setup(name=me%grid_type,string= "wholeextent=" // '"' // me%wholeextent // '"')
+            else
+                call grid%setup(name=me%grid_type)
+            end if
+            if (allocated(me%extra_string)) call grid%add(me%extra_string, quotes=.false.)
+            call grid%add(me%piece)
+            call me%add(grid)
+            call grid%me_deallocate()
+        end if
 
-        END PROCEDURE finalize
+    end procedure finalize
 
-        MODULE PROCEDURE vtk_dataset_deallocate
-        IMPLICIT NONE
-        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+    module procedure vtk_dataset_deallocate
+        implicit none
+        !! author: Ian Porter
+        !! date: 05/06/2019
+        !!
+        !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+        !!
 
-        IF (ALLOCATED(foo%piece)) CALL foo%piece%piece_deallocate()
+        if (allocated(foo%piece)) call foo%piece%piece_deallocate()
 
-        CALL foo%me_deallocate()
+        call foo%me_deallocate()
 
-        END PROCEDURE vtk_dataset_deallocate
+    end procedure vtk_dataset_deallocate
 
-        MODULE PROCEDURE ImageData_set_grid
-        USE VTK_datasets, ONLY : struct_pts
-        USE Misc,         ONLY : convert_to_string
-        IMPLICIT NONE
+    module procedure imagedata_set_grid
+        use vtk_datasets, only : struct_pts
+        use misc,         only : convert_to_string
+        implicit none
         !! author: Ian Porter
         !! date: 08/08/2019
         !!
-        !! This writes the grid information for an image data grid
+        !! this writes the grid information for an image data grid
         !!
-        CHARACTER(LEN=10) :: tmp_string = '          '
-        CHARACTER(LEN=:), ALLOCATABLE :: range_string, origin_string, spacing_string
-        INTEGER(i4k) :: i, j
-        INTEGER(i4k), DIMENSION(2,3)  :: range
-        CHARACTER(LEN=*), PARAMETER :: file_extension = ".vti"
-        CHARACTER(LEN=*), PARAMETER :: grid_type = "ImageData"
+        character(len=10) :: tmp_string = '          '
+        character(len=:), allocatable :: range_string, origin_string, spacing_string
+        integer(i4k) :: i, j
+        integer(i4k), dimension(2,3)  :: range
+        character(len=*), parameter :: file_extension = ".vti"
+        character(len=*), parameter :: grid_type = "imagedata"
 
-        CALL me%initialize(type=grid_type,file_extension=file_extension)
+        call me%initialize(type=grid_type,file_extension=file_extension)
 
         range = geometry%get_range_cnt()
 
-        DO i = 1, 3
-            DO j = 1, 2
-                WRITE(tmp_string,'(i10)') range(j,i)
-                IF (.NOT. ALLOCATED(range_string)) THEN
-                    ALLOCATE(range_string,source=TRIM(ADJUSTL(tmp_string)))
-                ELSE
-                    range_string = range_string // ' ' // TRIM(ADJUSTL(tmp_string))
-                END IF
-            END DO
-        END DO
+        do i = 1, 3
+            do j = 1, 2
+                write(tmp_string,'(i10)') range(j,i)
+                if (.not. allocated(range_string)) then
+                    allocate(range_string,source=trim(adjustl(tmp_string)))
+                else
+                    range_string = range_string // ' ' // trim(adjustl(tmp_string))
+                end if
+            end do
+        end do
 
-        ALLOCATE(me%WholeExtent, source=range_string)
-        ALLOCATE(me%grid_type, source=grid_type)
+        allocate(me%wholeextent, source=range_string)
+        allocate(me%grid_type, source=grid_type)
 
-        !! Still need to set the following line of information:
-        !! Origin=”x0 y0 z0” Spacing=”dx dy dz”>
-        SELECT TYPE(geometry)
-        CLASS IS (struct_pts)
-            ALLOCATE(origin_string, source=convert_to_string(geometry%get_origin()))
-            ALLOCATE(spacing_string, source=convert_to_string(geometry%get_spacing()))
-            ALLOCATE(me%extra_string, source='Origin="' // origin_string // '", Spacing="' // spacing_string // '"')
-        CLASS DEFAULT
-            ERROR STOP 'Bad geometry type for ImageData. Terminated in ImageData_set_grid'
-        END SELECT
+        !! still need to set the following line of information:
+        !! origin=”x0 y0 z0” spacing=”dx dy dz”>
+        select type(geometry)
+        class is (struct_pts)
+            allocate(origin_string, source=convert_to_string(geometry%get_origin()))
+            allocate(spacing_string, source=convert_to_string(geometry%get_spacing()))
+            allocate(me%extra_string, source='origin="' // origin_string // '", spacing="' // spacing_string // '"')
+        class default
+            error stop 'bad geometry type for imagedata. terminated in imagedata_set_grid'
+        end select
 
-!        ERROR STOP 'ImageData_set_grid is not yet implemented. Need to set origin, spacing'
+        !        error stop 'imagedata_set_grid is not yet implemented. need to set origin, spacing'
 
-        !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-        IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
-        CALL me%piece%set(geometry)
+        !! for now, don't allow "pieces" but instead force the piece to be the whole extent
+        if (.not. allocated(me%piece)) allocate(me%piece)
+        call me%piece%set(geometry)
 
-        END PROCEDURE ImageData_set_grid
+    end procedure imagedata_set_grid
 
-        MODULE PROCEDURE Rectilineargrid_set_grid
-        IMPLICIT NONE
+    module procedure rectilineargrid_set_grid
+        implicit none
         !! author: Ian Porter
         !! date: 05/06/2019
         !!
-        !! This sets parameters specific to the DT
+        !! this sets parameters specific to the dt
         !!
-        CHARACTER(LEN=10) :: tmp_string = '          '
-        CHARACTER(LEN=:), ALLOCATABLE :: range_string
-        INTEGER(i4k) :: i, j
-        INTEGER(i4k), DIMENSION(2,3)  :: range
-        CHARACTER(LEN=*), PARAMETER :: file_extension = ".vtr"
-        CHARACTER(LEN=*), PARAMETER :: grid_type = "RectilinearGrid"
+        character(len=10) :: tmp_string = '          '
+        character(len=:), allocatable :: range_string
+        integer(i4k) :: i, j
+        integer(i4k), dimension(2,3)  :: range
+        character(len=*), parameter :: file_extension = ".vtr"
+        character(len=*), parameter :: grid_type = "rectilineargrid"
 
-        CALL me%initialize(type=grid_type,file_extension=file_extension)
+        call me%initialize(type=grid_type,file_extension=file_extension)
         range = geometry%get_range_cnt()
 
-        DO i = 1, 3
-            DO j = 1, 2
-                WRITE(tmp_string,'(i10)') range(j,i)
-                IF (.NOT. ALLOCATED(range_string)) THEN
-                    ALLOCATE(range_string,source=TRIM(ADJUSTL(tmp_string)))
-                ELSE
-                    range_string = range_string // ' ' // TRIM(ADJUSTL(tmp_string))
-                END IF
-            END DO
-        END DO
+        do i = 1, 3
+            do j = 1, 2
+                write(tmp_string,'(i10)') range(j,i)
+                if (.not. allocated(range_string)) then
+                    allocate(range_string,source=trim(adjustl(tmp_string)))
+                else
+                    range_string = range_string // ' ' // trim(adjustl(tmp_string))
+                end if
+            end do
+        end do
 
-        ALLOCATE(me%WholeExtent, source=range_string)
-        ALLOCATE(me%grid_type, source=grid_type)
+        allocate(me%wholeextent, source=range_string)
+        allocate(me%grid_type, source=grid_type)
 
-        !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-        IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
-        CALL me%piece%set(geometry)
+        !! for now, don't allow "pieces" but instead force the piece to be the whole extent
+        if (.not. allocated(me%piece)) allocate(me%piece)
+        call me%piece%set(geometry)
 
-        END PROCEDURE Rectilineargrid_set_grid
+    end procedure rectilineargrid_set_grid
 
-        MODULE PROCEDURE Structuredgrid_set_grid
-        IMPLICIT NONE
+    module procedure structuredgrid_set_grid
+        implicit none
         !! author: Ian Porter
         !! date: 05/06/2019
         !!
-        !! This sets parameters specific to the DT
+        !! this sets parameters specific to the dt
         !!
-        CHARACTER(LEN=10) :: tmp_string = '          '
-        CHARACTER(LEN=:), ALLOCATABLE :: range_string
-        INTEGER(i4k) :: i, j
-        INTEGER(i4k), DIMENSION(2,3)  :: range
-        CHARACTER(LEN=*), PARAMETER :: file_extension = ".vts"
-        CHARACTER(LEN=*), PARAMETER :: grid_type = "StructuredGrid"
+        character(len=10) :: tmp_string = '          '
+        character(len=:), allocatable :: range_string
+        integer(i4k) :: i, j
+        integer(i4k), dimension(2,3)  :: range
+        character(len=*), parameter :: file_extension = ".vts"
+        character(len=*), parameter :: grid_type = "structuredgrid"
 
-        CALL me%initialize(type=grid_type,file_extension=file_extension)
+        call me%initialize(type=grid_type,file_extension=file_extension)
         range = geometry%get_range_cnt()
 
-        DO i = 1, 3
-            DO j = 1, 2
-                WRITE(tmp_string,'(i10)') range(j,i)
-                IF (.NOT. ALLOCATED(range_string)) THEN
-                    ALLOCATE(range_string,source=TRIM(ADJUSTL(tmp_string)))
-                ELSE
-                    range_string = range_string // ' ' // TRIM(ADJUSTL(tmp_string))
-                END IF
-            END DO
-        END DO
+        do i = 1, 3
+            do j = 1, 2
+                write(tmp_string,'(i10)') range(j,i)
+                if (.not. allocated(range_string)) then
+                    allocate(range_string,source=trim(adjustl(tmp_string)))
+                else
+                    range_string = range_string // ' ' // trim(adjustl(tmp_string))
+                end if
+            end do
+        end do
 
-        ALLOCATE(me%WholeExtent, source=range_string)
-        ALLOCATE(me%grid_type, source=grid_type)
+        allocate(me%wholeextent, source=range_string)
+        allocate(me%grid_type, source=grid_type)
 
-        !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-        IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
-        CALL me%piece%set(geometry)
+        !! for now, don't allow "pieces" but instead force the piece to be the whole extent
+        if (.not. allocated(me%piece)) allocate(me%piece)
+        call me%piece%set(geometry)
 
-        END PROCEDURE Structuredgrid_set_grid
+    end procedure structuredgrid_set_grid
 
-        MODULE PROCEDURE Unstructuredgrid_set_grid
-        IMPLICIT NONE
+    module procedure unstructuredgrid_set_grid
+        implicit none
         !! author: Ian Porter
         !! date: 05/06/2019
         !!
-        !! This sets parameters specific to the DT
+        !! this sets parameters specific to the dt
         !!
-        CHARACTER(LEN=*), PARAMETER :: file_extension = ".vtu"
-        CHARACTER(LEN=*), PARAMETER :: grid_type = "UnstructuredGrid"
+        character(len=*), parameter :: file_extension = ".vtu"
+        character(len=*), parameter :: grid_type = "unstructuredgrid"
 
-        CALL me%initialize(type=grid_type,file_extension=file_extension)
+        call me%initialize(type=grid_type,file_extension=file_extension)
 
-        ALLOCATE(me%grid_type, source=grid_type)
+        allocate(me%grid_type, source=grid_type)
 
-        !! For now, don't allow "pieces" but instead force the piece to be the whole extent
-        IF (.NOT. ALLOCATED(me%piece)) ALLOCATE(me%piece)
-        CALL me%piece%set(geometry)
+        !! for now, don't allow "pieces" but instead force the piece to be the whole extent
+        if (.not. allocated(me%piece)) allocate(me%piece)
+        call me%piece%set(geometry)
 
-        END PROCEDURE Unstructuredgrid_set_grid
+    end procedure unstructuredgrid_set_grid
 
-
-END SUBMODULE VTK_serial_Grid_procedures
+end submodule vtk_serial_grid_procedures

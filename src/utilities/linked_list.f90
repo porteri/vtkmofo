@@ -1,152 +1,167 @@
-MODULE linked_list
-    USE Precision, ONLY : i4k
-    IMPLICIT NONE
-    !! author: Taken from examples in Metcalf, Modern Fortran Explained, 2008
-    !!         Modified by Ian Porter
+module linked_list
+    use precision, only : i4k
+    implicit none
+    !! author: taken from examples in metcalf, modern fortran explained, 2008
+    !!         modified by Ian Porter
     !! date: 11/9/2018
     !!
-    !! Module for a list type that can contain items with any value.
+    !! module for a list type that can contain items with any value.
     !!
-    !! Note: A list item can be in at most one list at a time.
+    !! note: a list item can be in at most one list at a time.
     !!
 
-    PRIVATE
-    PUBLIC :: anylist, anyitem, newitem
+    private
+    public :: anylist, anyitem, newitem
 
-    TYPE anylist
-        !! Header type
-        CLASS(anyitem), POINTER, PRIVATE :: firstptr => NULL()
-    CONTAINS
-        PROCEDURE, NON_OVERRIDABLE :: append
-        PROCEDURE, NON_OVERRIDABLE :: count_list
-        PROCEDURE, NON_OVERRIDABLE :: delete_list
-        PROCEDURE, NON_OVERRIDABLE :: first
-        PROCEDURE, NON_OVERRIDABLE :: last
-        PROCEDURE, NON_OVERRIDABLE :: prepend
-        PROCEDURE, NON_OVERRIDABLE :: print_list
-    END TYPE
+    type anylist
+        !! header type
+        class(anyitem), pointer, private :: firstptr => null()
+    contains
+        procedure, non_overridable :: append
+        procedure, non_overridable :: count_list
+        procedure, non_overridable :: delete_list
+        procedure, non_overridable :: first
+        procedure, non_overridable :: last
+        procedure, non_overridable :: prepend
+        procedure, non_overridable :: print_list
+    end type
 
-    TYPE anyitem
-        !! List item type
-        CLASS(*), ALLOCATABLE            :: value
-        CLASS(anyitem), POINTER, PRIVATE :: nextptr => NULL()
-        CLASS(anyitem), POINTER, PRIVATE :: prevptr => NULL()
-        CLASS(anylist), POINTER, PRIVATE :: upptr   => NULL()
-    CONTAINS
-        PROCEDURE, NON_OVERRIDABLE :: change
-        PROCEDURE, NON_OVERRIDABLE :: delete
-        PROCEDURE, NON_OVERRIDABLE :: list
-        PROCEDURE, NON_OVERRIDABLE :: next
-        PROCEDURE, NON_OVERRIDABLE :: prev
-        PROCEDURE                  :: print
-        PROCEDURE, NON_OVERRIDABLE :: remove
-    END TYPE
+    type anyitem
+        !! list item type
+        class(*), allocatable            :: value
+        class(anyitem), pointer, private :: nextptr => null()
+        class(anyitem), pointer, private :: prevptr => null()
+        class(anylist), pointer, private :: upptr   => null()
+    contains
+        procedure, non_overridable :: change
+        procedure, non_overridable :: delete
+        procedure, non_overridable :: list
+        procedure, non_overridable :: next
+        procedure, non_overridable :: prev
+        procedure                  :: print
+        procedure, non_overridable :: remove
+    end type
 
-    INTERFACE
+    interface
 
-        MODULE FUNCTION newitem(something)
-        !! Create a new (orphaned) list item.
-        CLASS(*), INTENT(IN)    :: something !!
-        CLASS(anyitem), POINTER :: newitem   !!
+        module function newitem(something)
+            implicit none
+            !! create a new (orphaned) list item.
+            class(*), intent(in)    :: something !!
+            class(anyitem), pointer :: newitem   !!
 
-        END FUNCTION
+        end function
 
-        MODULE FUNCTION count_list(list)
-        !! Count how many items there are in a list.
-        CLASS(anylist), INTENT(IN) :: list        !!
-        INTEGER(i4k)               :: count_list  !!
+        module function count_list(list)
+            implicit none
+            !! count how many items there are in a list.
+            class(anylist), intent(in) :: list        !!
+            integer(i4k)               :: count_list  !!
 
-        END FUNCTION
+        end function
 
-        MODULE SUBROUTINE delete_list(list)
-        !! Delete the contents of a list.
-        CLASS(anylist), INTENT(INOUT) :: list !!
+        module subroutine delete_list(list)
+            implicit none
+            !! delete the contents of a list.
+            class(anylist), intent(inout) :: list !!
 
-        END SUBROUTINE
+        end subroutine
 
-        MODULE FUNCTION first(list)
-        !! Return the first element of a list.
-        CLASS(anylist), INTENT(IN) :: list  !!
-        CLASS(anyitem), POINTER    :: first !!
+        module function first(list)
+            implicit none
+            !! return the first element of a list.
+            class(anylist), intent(in) :: list  !!
+            class(anyitem), pointer    :: first !!
 
-        END FUNCTION
+        end function
 
-        MODULE FUNCTION last(list)
-        !! Return the last element of a list
-        CLASS(anylist), INTENT(IN) :: list  !!
-        CLASS(anyitem), POINTER    :: last  !!
+        module function last(list)
+            implicit none
+            !! return the last element of a list
+            class(anylist), intent(in) :: list  !!
+            class(anyitem), pointer    :: last  !!
 
-        END FUNCTION
+        end function
 
-        MODULE SUBROUTINE prepend(list, item)
-        !! Insert an item at the beginning of a list.
-        CLASS(anylist), INTENT(INOUT), TARGET :: list  !!
-        CLASS(anyitem), TARGET                :: item  !!
+        module subroutine prepend(list, item)
+            implicit none
+            !! insert an item at the beginning of a list.
+            class(anylist), intent(inout), target :: list  !!
+            class(anyitem), target                :: item  !!
 
-        END SUBROUTINE
+        end subroutine
 
-        MODULE SUBROUTINE append(list, item)
-        !! Append an item to a list.
-        CLASS(anylist), INTENT(INOUT), TARGET :: list  !!
-        CLASS(anyitem), TARGET                :: item  !!
+        module subroutine append(list, item)
+            implicit none
+            !! append an item to a list.
+            class(anylist), intent(inout), target :: list  !!
+            class(anyitem), target                :: item  !!
 
-        END SUBROUTINE
+        end subroutine
 
-        MODULE SUBROUTINE print_list(list, show_item_numbers, show_empty_list)
-        !! Print the items in a list.
-        CLASS(anylist), INTENT(IN) :: list  !!
-        LOGICAL,        INTENT(IN), OPTIONAL :: show_item_numbers  !!
-        LOGICAL,        INTENT(IN), OPTIONAL :: show_empty_list    !!
+        module subroutine print_list(list, show_item_numbers, show_empty_list)
+            implicit none
+            !! print the items in a list.
+            class(anylist), intent(in) :: list  !!
+            logical,        intent(in), optional :: show_item_numbers  !!
+            logical,        intent(in), optional :: show_empty_list    !!
 
-        END SUBROUTINE
+        end subroutine
 
-        MODULE SUBROUTINE change(item, newvalue)
-        !! Change the value of an item.
-        CLASS(anyitem), INTENT(INOUT) :: item     !!
-        CLASS(*),       INTENT(IN)    :: newvalue !!
+        module subroutine change(item, newvalue)
+            implicit none
+            !! change the value of an item.
+            class(anyitem), intent(inout) :: item     !!
+            class(*),       intent(in)    :: newvalue !!
 
-        END SUBROUTINE
+        end subroutine
 
-        MODULE SUBROUTINE delete(item)
-        !! Delete an item: removes it from the list and deallocates it.
-        CLASS(anyitem), TARGET  :: item     !!
+        module subroutine delete(item)
+            implicit none
+            !! delete an item: removes it from the list and deallocates it.
+            class(anyitem), target  :: item     !!
 
-        END SUBROUTINE
+        end subroutine
 
-        MODULE FUNCTION list(item)
-        !! Return the list that an item is a member of.  Null if an orphan.
-        CLASS(anyitem), INTENT(IN) :: item  !!
-        CLASS(anylist), POINTER    :: list  !!
+        module function list(item)
+            implicit none
+            !! return the list that an item is a member of.  null if an orphan.
+            class(anyitem), intent(in) :: item  !!
+            class(anylist), pointer    :: list  !!
 
-        END FUNCTION
+        end function
 
-        MODULE FUNCTION next(item)
-        !! Return the next item in the list.
-        CLASS(anyitem), INTENT(IN) :: item  !!
-        CLASS(anyitem), POINTER    :: next  !!
+        module function next(item)
+            implicit none
+            !! return the next item in the list.
+            class(anyitem), intent(in) :: item  !!
+            class(anyitem), pointer    :: next  !!
 
-        END FUNCTION
+        end function
 
-        MODULE FUNCTION prev(item)
-        !! Return the previous item in the list,
-        !! or the last item IF this one is the first.
-        CLASS(anyitem), INTENT(IN) :: item  !!
-        CLASS(anyitem), POINTER    :: prev  !!
+        module function prev(item)
+            implicit none
+            !! return the previous item in the list,
+            !! or the last item if this one is the first.
+            class(anyitem), intent(in) :: item  !!
+            class(anyitem), pointer    :: prev  !!
 
-        END FUNCTION
+        end function
 
-        MODULE SUBROUTINE PRINT(this)
-        !! Print an item.  This is overridable.
-        CLASS(anyitem), INTENT(IN) :: this  !!
+        module subroutine print(this)
+            implicit none
+            !! print an item.  this is overridable.
+            class(anyitem), intent(in) :: this  !!
 
-        END SUBROUTINE
+        end subroutine
 
-        MODULE SUBROUTINE remove(item)
-        !! Remove an item from a list (but keep it and its value).
-        CLASS(anyitem), INTENT(INOUT), TARGET :: item
+        module subroutine remove(item)
+            implicit none
+            !! remove an item from a list (but keep it and its value).
+            class(anyitem), intent(inout), target :: item  !!
 
-        END SUBROUTINE
+        end subroutine
 
-    END INTERFACE
+    end interface
 
-END MODULE linked_list
+end module linked_list

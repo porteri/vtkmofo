@@ -1,24 +1,24 @@
-MODULE vtk_cells_unit_tests
-    USE Precision, ONLY : i4k
-    IMPLICIT NONE
+module vtk_cells_unit_tests
+    use precision, only : i4k
+    implicit none
     !! author: Ian Porter
     !! date: 12/16/2017
     !!
-    !! Unit testing for cells
+    !! unit testing for cells
     !!
-    PRIVATE
-    PUBLIC :: vtk_cells_unit
-! Generic information
-    INTEGER(i4k), PARAMETER :: n_types = 19
-    INTEGER(i4k), PARAMETER :: vtk_unit = 20
-    INTEGER(i4k), PARAMETER :: n = 11
-    INTEGER(i4k),      DIMENSION(n_types), PARAMETER :: type       = &
+    private
+    public :: vtk_cells_unit
+    ! generic information
+    integer(i4k), parameter :: n_types = 19
+    integer(i4k), parameter :: vtk_unit = 20
+    integer(i4k), parameter :: n = 11
+    integer(i4k),      dimension(n_types), parameter :: type       = &
         & [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 22, 23, 24, 25 ]
-    INTEGER(i4k),      DIMENSION(n_types), PARAMETER :: n_points   = &
+    integer(i4k),      dimension(n_types), parameter :: n_points   = &
         & [ 1, 7, 2, n, 3, n, n, 4, 4,  4,  8,  8,  6,  5,  3,  6,  8, 10, 20 ]
-    INTEGER(i4k),      DIMENSION(*),       PARAMETER :: point_vals = &
+    integer(i4k),      dimension(*),       parameter :: point_vals = &
         & [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ]
-    CHARACTER(LEN=25), DIMENSION(n_types), PARAMETER :: filename   = &
+    character(len=25), dimension(n_types), parameter :: filename   = &
         & [ 'vertex.vtk               ', &
         &   'poly_vertex.vtk          ', &
         &   'line.vtk                 ', &
@@ -39,118 +39,119 @@ MODULE vtk_cells_unit_tests
         &   'quadratic_tetra.vtk      ', &
         &   'quadratic_hexahedron.vtk ' ]
 
-    CONTAINS
+contains
 
-        SUBROUTINE vtk_cells_unit (test_pass)
-        USE vtk_cells, ONLY : vtkcell, vertex, poly_vertex, line, poly_line, triangle, triangle_strip, polygon, pixel, quad, &
-          &                   tetra, voxel, hexahedron, wedge, pyramid, quadratic_edge, quadratic_triangle, quadratic_quad,  &
-          &                   quadratic_tetra, quadratic_hexahedron
-        IMPLICIT NONE
+    subroutine vtk_cells_unit (test_pass)
+        use vtk_cells, only : vtkcell, vertex, poly_vertex, line, poly_line, triangle, triangle_strip, polygon, pixel, quad, &
+            &                 tetra, voxel, hexahedron, wedge, pyramid, quadratic_edge, quadratic_triangle, quadratic_quad,  &
+            &                 quadratic_tetra, quadratic_hexahedron
+        implicit none
         !!
-        !! Loops over each cell type, performs a write, then performs a read on a different cell
+        !! loops over each cell type, performs a write, then performs a read on a different cell
         !! and compares the two to make sure they are identical
-        CLASS(vtkcell), ALLOCATABLE :: vtk_cell_1, vtk_cell_2
-        INTEGER(i4k)                :: i
-        LOGICAL, INTENT(OUT)        :: test_pass
-        LOGICAL, DIMENSION(n_types) :: individual_tests_pass
+        class(vtkcell), allocatable :: vtk_cell_1, vtk_cell_2
+        integer(i4k)                :: i
+        logical, intent(out)        :: test_pass
+        logical, dimension(n_types) :: individual_tests_pass
 
-        DO i = 1, n_types
-            IF (ALLOCATED(vtk_cell_1)) DEALLOCATE(vtk_cell_1)
-            IF (ALLOCATED(vtk_cell_2)) DEALLOCATE(vtk_cell_2)
-            SELECT CASE (type(i))
-            CASE (1)
-                !! Vertex
-                ALLOCATE(vertex::vtk_cell_1, vtk_cell_2)
-            CASE (2)
-                !! Poly_vertex
-                ALLOCATE(poly_vertex::vtk_cell_1, vtk_cell_2)
-            CASE (3)
-                !! Line
-                ALLOCATE(line::vtk_cell_1, vtk_cell_2)
-            CASE (4)
-                !! Poly_line
-                ALLOCATE(poly_line::vtk_cell_1, vtk_cell_2)
-            CASE (5)
-                !! Triangle
-                ALLOCATE(triangle::vtk_cell_1, vtk_cell_2)
-            CASE (6)
-                !! Triangle_strip
-                ALLOCATE(triangle_strip::vtk_cell_1, vtk_cell_2)
-            CASE (7)
-                !! Polygon
-                ALLOCATE(polygon::vtk_cell_1, vtk_cell_2)
-            CASE (8)
-                !! Pixel
-                ALLOCATE(pixel::vtk_cell_1, vtk_cell_2)
-            CASE (9)
-                !! Quad
-                ALLOCATE(quad::vtk_cell_1, vtk_cell_2)
-            CASE (10)
-                !! Tetra
-                ALLOCATE(tetra::vtk_cell_1, vtk_cell_2)
-            CASE (11)
-                !! Vine
-                ALLOCATE(voxel::vtk_cell_1, vtk_cell_2)
-            CASE (12)
-                !! Hexahedron
-                ALLOCATE(hexahedron::vtk_cell_1, vtk_cell_2)
-            CASE (13)
-                !! Wedge
-                ALLOCATE(wedge::vtk_cell_1, vtk_cell_2)
-            CASE (14)
+        do i = 1, n_types
+            if (allocated(vtk_cell_1)) deallocate(vtk_cell_1)
+            if (allocated(vtk_cell_2)) deallocate(vtk_cell_2)
+            select case (type(i))
+            case (1)
+                !! vertex
+                allocate(vertex::vtk_cell_1, vtk_cell_2)
+            case (2)
+                !! poly_vertex
+                allocate(poly_vertex::vtk_cell_1, vtk_cell_2)
+            case (3)
+                !! line
+                allocate(line::vtk_cell_1, vtk_cell_2)
+            case (4)
+                !! poly_line
+                allocate(poly_line::vtk_cell_1, vtk_cell_2)
+            case (5)
+                !! triangle
+                allocate(triangle::vtk_cell_1, vtk_cell_2)
+            case (6)
+                !! triangle_strip
+                allocate(triangle_strip::vtk_cell_1, vtk_cell_2)
+            case (7)
+                !! polygon
+                allocate(polygon::vtk_cell_1, vtk_cell_2)
+            case (8)
+                !! pixel
+                allocate(pixel::vtk_cell_1, vtk_cell_2)
+            case (9)
+                !! quad
+                allocate(quad::vtk_cell_1, vtk_cell_2)
+            case (10)
+                !! tetra
+                allocate(tetra::vtk_cell_1, vtk_cell_2)
+            case (11)
+                !! vine
+                allocate(voxel::vtk_cell_1, vtk_cell_2)
+            case (12)
+                !! hexahedron
+                allocate(hexahedron::vtk_cell_1, vtk_cell_2)
+            case (13)
+                !! wedge
+                allocate(wedge::vtk_cell_1, vtk_cell_2)
+            case (14)
                 !! pyramid
-                ALLOCATE(pyramid::vtk_cell_1, vtk_cell_2)
-            CASE (21)
-                !! Quadratic_edge
-                ALLOCATE(quadratic_edge::vtk_cell_1, vtk_cell_2)
-            CASE (22)
-                !! Quadratic_triangle
-                ALLOCATE(quadratic_triangle::vtk_cell_1, vtk_cell_2)
-            CASE (23)
-                !! Quadratic_quad
-                ALLOCATE(quadratic_quad::vtk_cell_1, vtk_cell_2)
-            CASE (24)
-                !! Quadratic_tetra
-                ALLOCATE(quadratic_tetra::vtk_cell_1, vtk_cell_2)
-            CASE (25)
-                !! Quadratic_hexahedron
-                ALLOCATE(quadratic_hexahedron::vtk_cell_1, vtk_cell_2)
-            END SELECT
+                allocate(pyramid::vtk_cell_1, vtk_cell_2)
+            case (21)
+                !! quadratic_edge
+                allocate(quadratic_edge::vtk_cell_1, vtk_cell_2)
+            case (22)
+                !! quadratic_triangle
+                allocate(quadratic_triangle::vtk_cell_1, vtk_cell_2)
+            case (23)
+                !! quadratic_quad
+                allocate(quadratic_quad::vtk_cell_1, vtk_cell_2)
+            case (24)
+                !! quadratic_tetra
+                allocate(quadratic_tetra::vtk_cell_1, vtk_cell_2)
+            case (25)
+                !! quadratic_hexahedron
+                allocate(quadratic_hexahedron::vtk_cell_1, vtk_cell_2)
+            end select
 
-            !! Data type is generated from the defined values above
-            CALL vtk_cell_1%setup(points=point_vals(1:n_points(i)))
-            OPEN (unit=vtk_unit, file=filename(i), form='formatted')
-            CALL vtk_cell_1%write(vtk_unit)
-            CLOSE(unit=vtk_unit)
+            !! data type is generated from the defined values above
+            call vtk_cell_1%setup(points=point_vals(1:n_points(i)))
+            open (unit=vtk_unit, file=filename(i), form='formatted')
+            call vtk_cell_1%write(vtk_unit)
+            close(unit=vtk_unit)
 
-            !! Data type is generated from the read
-            OPEN (unit=vtk_unit, file=filename(i), status='old', form='formatted')
-            CALL vtk_cell_2%read(vtk_unit)
-            CLOSE(unit=vtk_unit)
+            !! data type is generated from the read
+            open (unit=vtk_unit, file=filename(i), status='old', form='formatted')
+            call vtk_cell_2%read(vtk_unit)
+            close(unit=vtk_unit)
 
-            !! Compare the read file and the written/read file to ensure both types are the same
-            individual_tests_pass(i) = .NOT. (vtk_cell_1 .diff. vtk_cell_2)
-        END DO
+            !! compare the read file and the written/read file to ensure both types are the same
+            individual_tests_pass(i) = .not. (vtk_cell_1 .diff. vtk_cell_2)
+        end do
 
-        !! Compare the read file and the written/read file to ensure both types are the same
-        test_pass = ALL(individual_tests_pass)
+        !! compare the read file and the written/read file to ensure both types are the same
+        test_pass = all(individual_tests_pass)
 
-        END SUBROUTINE vtk_cells_unit
-END MODULE vtk_cells_unit_tests
+    end subroutine vtk_cells_unit
 
-PROGRAM vtk_cells_test
-    USE vtk_cells_unit_tests, ONLY : vtk_cells_unit
-    USE VTKmofoPassFail,      ONLY : all_tests_pass
-    IMPLICIT NONE
+end module vtk_cells_unit_tests
+
+program vtk_cells_test
+    use vtk_cells_unit_tests, only : vtk_cells_unit
+    use vtkmofopassfail,      only : all_tests_pass
+    implicit none
     !! author: Ian Porter
     !! date: 12/15/2017
     !!
-    !! Driver testing subroutine for the cells information
+    !! driver testing subroutine for the cells information
     !!
-    LOGICAL :: test_passes = .FALSE.
+    logical :: test_passes = .false.
 
-    CALL vtk_cells_unit (test_passes)
+    call vtk_cells_unit (test_passes)
 
-    IF (test_passes) CALL all_tests_pass()
+    if (test_passes) call all_tests_pass()
 
-END PROGRAM vtk_cells_test
+end program vtk_cells_test

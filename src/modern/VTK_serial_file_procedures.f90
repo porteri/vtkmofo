@@ -1,21 +1,25 @@
-SUBMODULE (VTK_Serial_file) VTK_Serial_file_implementation
-    IMPLICIT NONE
+submodule (vtk_serial_file) vtk_serial_file_procedures
+    implicit none
     !! author: Ian Porter
     !! date: 05/06/2019
     !!
-    !! This is the basic file for a serial VTK file
+    !! this is the basic file for a serial vtk file
     !!
 
-    CONTAINS
+contains
 
-        MODULE PROCEDURE deallocate_VTK_file_dt
-        IMPLICIT NONE
-        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+    module procedure deallocate_vtk_file_dt
+        implicit none
+        !! author: Ian Porter
+        !! date: 05/06/2019
+        !!
+        !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+        !!
 
-        IF (ALLOCATED(foo%vtk_dataset)) CALL foo%vtk_dataset%vtk_dataset_deallocate()
+        if (allocated(foo%vtk_dataset)) call foo%vtk_dataset%vtk_dataset_deallocate()
 
-        CALL foo%deallocate() !! Deallocate the xml data
+        call foo%deallocate() !! deallocate the xml data
 
-        END PROCEDURE deallocate_VTK_file_dt
+    end procedure deallocate_vtk_file_dt
 
-END SUBMODULE VTK_Serial_file_implementation
+end submodule vtk_serial_file_procedures

@@ -1,140 +1,140 @@
-SUBMODULE (VTK_DataArray_element) VTK_DataArray_element_implementation
-    USE VTK_formats_types, ONLY : type_float32, type_float64, type_int32, type_uint32
-    IMPLICIT NONE
+submodule (vtk_dataarray_element) vtk_dataarray_element_procedures
+    use vtk_formats_types, only : type_float32, type_float64, type_int32, type_uint32
+    implicit none
     !! author: Ian Porter
     !! date: 06/07/2019
     !!
-    !! This is the basic file piece elements
+    !! this is the basic file piece elements
     !!
-    !! Data storage formats
+    !! data storage formats
 
-    CONTAINS
+contains
 
-        MODULE PROCEDURE DataArray_setup
-        IMPLICIT NONE
+    module procedure dataarray_setup
+        implicit none
         !! author: Ian Porter
         !! date: 06/06/2019
         !!
-        !! This writes the header for a DataArray
+        !! this writes the header for a dataarray
         !!
-        CHARACTER(LEN=*), PARAMETER   :: DataArray_name = 'DataArray'
-        CHARACTER(LEN=:), ALLOCATABLE :: string
-        CHARACTER(LEN=:), ALLOCATABLE :: type_string
-        CHARACTER(LEN=:), ALLOCATABLE :: name_string
-        CHARACTER(LEN=:), ALLOCATABLE :: NofC_string
-        CHARACTER(LEN=:), ALLOCATABLE :: format_string
-        CHARACTER(LEN=:), ALLOCATABLE :: offset_string
-        CHARACTER(LEN=:), ALLOCATABLE :: range_min_string
-        CHARACTER(LEN=:), ALLOCATABLE :: range_max_string
+        character(len=*), parameter   :: dataarray_name = 'dataarray'
+        character(len=:), allocatable :: string
+        character(len=:), allocatable :: type_string
+        character(len=:), allocatable :: name_string
+        character(len=:), allocatable :: nofc_string
+        character(len=:), allocatable :: format_string
+        character(len=:), allocatable :: offset_string
+        character(len=:), allocatable :: range_min_string
+        character(len=:), allocatable :: range_max_string
 
-        IF (ALLOCATED(me%type)) THEN
-            ALLOCATE(type_string,source=' type="' // me%type // '"')
-        ELSE
-            ALLOCATE(type_string,source='')
-        END IF
-        IF (ALLOCATED(me%array_name)) THEN
-            ALLOCATE(name_string,source=' Name="' // me%array_name // '"')
-        ELSE
-            ALLOCATE(name_string,source='')
-        END IF
-        IF (ALLOCATED(me%NumberofComponents)) THEN
-            ALLOCATE(NofC_string,source=' NumberOfComponents="' // me%NumberOfComponents // '"')
-        ELSE
-            ALLOCATE(NofC_string,source='')
-        END IF
-        IF (ALLOCATED(me%format)) THEN
-            ALLOCATE(format_string,source=' format="' // me%format // '"')
-        ELSE
-            ALLOCATE(format_string,source='')
-        END IF
-        IF (ALLOCATED(me%array_offset)) THEN
-            ALLOCATE(offset_string,source=' offset="' // me%array_offset // '"')
-        ELSE
-            ALLOCATE(offset_string,source='')
-        END IF
-        IF (ALLOCATED(me%range_min)) THEN
-            ALLOCATE(range_min_string,source=' RangeMin="' // me%range_min // '"')
-        ELSE
-            ALLOCATE(range_min_string,source='')
-        END IF
-        IF (ALLOCATED(me%range_max)) THEN
-            ALLOCATE(range_max_string,source=' RangeMax="' // me%range_max // '"')
-        ELSE
-            ALLOCATE(range_max_string,source='')
-        END IF
+        if (allocated(me%type)) then
+            allocate(type_string,source=' type="' // me%type // '"')
+        else
+            allocate(type_string,source='')
+        end if
+        if (allocated(me%array_name)) then
+            allocate(name_string,source=' name="' // me%array_name // '"')
+        else
+            allocate(name_string,source='')
+        end if
+        if (allocated(me%numberofcomponents)) then
+            allocate(nofc_string,source=' numberofcomponents="' // me%numberofcomponents // '"')
+        else
+            allocate(nofc_string,source='')
+        end if
+        if (allocated(me%format)) then
+            allocate(format_string,source=' format="' // me%format // '"')
+        else
+            allocate(format_string,source='')
+        end if
+        if (allocated(me%array_offset)) then
+            allocate(offset_string,source=' offset="' // me%array_offset // '"')
+        else
+            allocate(offset_string,source='')
+        end if
+        if (allocated(me%range_min)) then
+            allocate(range_min_string,source=' rangemin="' // me%range_min // '"')
+        else
+            allocate(range_min_string,source='')
+        end if
+        if (allocated(me%range_max)) then
+            allocate(range_max_string,source=' rangemax="' // me%range_max // '"')
+        else
+            allocate(range_max_string,source='')
+        end if
 
-        ALLOCATE(string, source=type_string // name_string // NofC_string // format_string // &
+        allocate(string, source=type_string // name_string // nofc_string // format_string // &
             &                   offset_string // range_min_string // range_max_string)
 
-        CALL me%setup(name=DataArray_name, string=string)
+        call me%setup(name=dataarray_name, string=string)
 
-        END PROCEDURE DataArray_setup
+    end procedure dataarray_setup
 
-        MODULE PROCEDURE DataArray_initialize
-        USE Misc, ONLY : convert_to_string, to_lowercase
-        IMPLICIT NONE
+    module procedure dataarray_initialize
+        use misc, only : convert_to_string, to_lowercase
+        implicit none
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
-        !! This converts the VTK_element_dt header into XML format
+        !! this converts the vtk_element_dt header into xml format
         !!
 
-        IF (PRESENT(type)) THEN
-            !! May need to convert the legacy data type names to the modern type names
+        if (present(type)) then
+            !! may need to convert the legacy data type names to the modern type names
             !bit, unsigned_char, char, unsigned_short, short, unsigned_int, int, unsigned_long, long, float, or double
-            !Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64, Float32, Float64
-            SELECT CASE (to_lowercase(type))
-            CASE ('float')
-                ALLOCATE(me%type,source=type_float32)
-            CASE ('double')
-                ALLOCATE(me%type,source=type_float64)
-            CASE ('int')
-                ALLOCATE(me%type,source=type_int32)
-            CASE ('unsigned_int')
-                ALLOCATE(me%type,source=type_uint32)
-            CASE DEFAULT
-                !! Assume all other data types are ok
-                ALLOCATE(me%type,source=type)
-            END SELECT
-        END IF
-        IF (PRESENT(name))               ALLOCATE(me%array_name,source=name)
-        IF (PRESENT(NumberofComponents)) THEN
-            ALLOCATE(me%NumberOfComponents,source=convert_to_string(NumberOfComponents))
-        END IF
-        IF (PRESENT(format))             ALLOCATE(me%format,source=format)
-        IF (PRESENT(offset))             ALLOCATE(me%array_offset,source=offset)
-        IF (PRESENT(range_min)) THEN
-            ALLOCATE(me%range_min,source=convert_to_string(range_min))
-        END IF
-        IF (PRESENT(range_max)) THEN
-            ALLOCATE(me%range_max,source=convert_to_string(range_max))
-        END IF
+            !int8, uint8, int16, uint16, int32, uint32, int64, uint64, float32, float64
+            select case (to_lowercase(type))
+            case ('float')
+                allocate(me%type,source=type_float32)
+            case ('double')
+                allocate(me%type,source=type_float64)
+            case ('int')
+                allocate(me%type,source=type_int32)
+            case ('unsigned_int')
+                allocate(me%type,source=type_uint32)
+            case default
+                !! assume all other data types are ok
+                allocate(me%type,source=type)
+            end select
+        end if
+        if (present(name))               allocate(me%array_name,source=name)
+        if (present(numberofcomponents)) then
+            allocate(me%numberofcomponents,source=convert_to_string(numberofcomponents))
+        end if
+        if (present(format))             allocate(me%format,source=format)
+        if (present(offset))             allocate(me%array_offset,source=offset)
+        if (present(range_min)) then
+            allocate(me%range_min,source=convert_to_string(range_min))
+        end if
+        if (present(range_max)) then
+            allocate(me%range_max,source=convert_to_string(range_max))
+        end if
 
-        CALL me%DataArray_setup()
+        call me%dataarray_setup()
 
-        END PROCEDURE DataArray_initialize
+    end procedure dataarray_initialize
 
-        MODULE PROCEDURE DataArray_add_DataArray
-        IMPLICIT NONE
-        !! This adds an element inside of an xml element block
-        !TYPE(xml_element_dt), DIMENSION(:), ALLOCATABLE :: tmp_element_dt
+    module procedure dataarray_add_dataarray
+        implicit none
+        !! this adds an element inside of an xml element block
+        !type(xml_element_dt), dimension(:), allocatable :: tmp_element_dt
 
-        END PROCEDURE DataArray_add_DataArray
+    end procedure dataarray_add_dataarray
 
-        MODULE PROCEDURE DataArray_deallocate
-        IMPLICIT NONE
-        !! This explicitly deallocates a DataArray
+    module procedure dataarray_deallocate
+        implicit none
+        !! this explicitly deallocates a dataarray
 
-        IF (ALLOCATED(me%type))               DEALLOCATE(me%type)
-        IF (ALLOCATED(me%array_name))         DEALLOCATE(me%array_name)
-        IF (ALLOCATED(me%NumberOfComponents)) DEALLOCATE(me%NumberofComponents)
-        IF (ALLOCATED(me%format))             DEALLOCATE(me%format)
-        IF (ALLOCATED(me%array_offset))       DEALLOCATE(me%array_offset)
-        IF (ALLOCATED(me%range_min))          DEALLOCATE(me%range_min)
-        IF (ALLOCATED(me%range_max))          DEALLOCATE(me%range_max)
+        if (allocated(me%type))               deallocate(me%type)
+        if (allocated(me%array_name))         deallocate(me%array_name)
+        if (allocated(me%numberofcomponents)) deallocate(me%numberofcomponents)
+        if (allocated(me%format))             deallocate(me%format)
+        if (allocated(me%array_offset))       deallocate(me%array_offset)
+        if (allocated(me%range_min))          deallocate(me%range_min)
+        if (allocated(me%range_max))          deallocate(me%range_max)
 
-        CALL me%deallocate()
+        call me%deallocate()
 
-        END PROCEDURE DataArray_deallocate
+    end procedure dataarray_deallocate
 
-END SUBMODULE VTK_DataArray_element_implementation
+end submodule vtk_dataarray_element_procedures

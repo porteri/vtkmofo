@@ -1,1188 +1,1188 @@
-SUBMODULE (vtk_attributes) vtk_attributes_implementation
-    USE Precision, ONLY : i4k, r8k
-    USE Misc,      ONLY : def_len, char_dt
-    IMPLICIT NONE
+submodule (vtk_attributes) vtk_attributes_procedures
+    use precision, only : i4k, r8k
+    use misc,      only : def_len, char_dt
+    implicit none
     !! author: Ian Porter
     !! date: 12/13/2017
     !!
-    !! This module contains the dataset attributes for vtk format
+    !! this module contains the dataset attributes for vtk format
     !!
-    !! The following dataset attributes are available:
+    !! the following dataset attributes are available:
     !! 1) scalars
     !! 2) vectors
     !! 3) normals
-    !! 4) texture coordinates (1D, 2D & 3D)
+    !! 4) texture coordinates (1d, 2d & 3d)
     !! 5) 3x3 tensors
     !! 6) field data
     !!
-    !! Possible data types:
+    !! possible data types:
     !! bit, unsigned_char, char, unsigned_short, short, unsigned_int, int,
     !! unsigned_long, long, float, or double.
-    CHARACTER(LEN=*), PARAMETER :: default = 'default'     !! Default table name
+    character(len=*), parameter :: default = 'default'     !! default table name
 
-    CONTAINS
+contains
 
-        MODULE PROCEDURE abs_read
-        IMPLICIT NONE
+    module procedure abs_read
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Abstract for reading an attribute
+        !! abstract for reading an attribute
         !!
-        SELECT TYPE (me)
-        CLASS IS (attribute)
-            READ(unit,*) me%dataname !! Workaround for ifort 2018 linux compiler error (not error for 2018 on Windows)
-                                     !! that a class with intent(out) was not provided a value
-        END SELECT
-        END PROCEDURE abs_read
+        select type (me)
+        class is (attribute)
+            read(unit,*) me%dataname !! workaround for ifort 2018 linux compiler error (not error for 2018 on windows)
+            !! that a class with intent(out) was not provided a value
+        end select
+    end procedure abs_read
 
-        MODULE PROCEDURE abs_write
-        IMPLICIT NONE
+    module procedure abs_write
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Abstract for writing an attribute
+        !! abstract for writing an attribute
         !!
-        SELECT TYPE (me)
-        CLASS IS (attribute)
-            WRITE(unit,*) me%dataname
-        END SELECT
-        END PROCEDURE abs_write
+        select type (me)
+        class is (attribute)
+            write(unit,*) me%dataname
+        end select
+    end procedure abs_write
 
-        MODULE PROCEDURE initialize
-        IMPLICIT NONE
+    module procedure initialize
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Abstract for performing the set-up of an attribute
+        !! abstract for performing the set-up of an attribute
         !!
-        SELECT TYPE (me)
-        CLASS IS (scalar)
-            CALL me%setup(dataname, datatype, numcomp, tablename, int1d, real1d)
-        CLASS IS (vector)
-            CALL me%setup(dataname, datatype, int2d, real2d)
-        CLASS IS (normal)
-            CALL me%setup(dataname, datatype, int2d, real2d)
-        CLASS IS (texture)
-            CALL me%setup(dataname, datatype, int2d, real2d)
-        CLASS IS (tensor)
-            CALL me%setup(dataname, datatype, int3d, real3d)
-        CLASS IS (field)
-            CALL me%setup(dataname, datatype, field_arrays)
-        CLASS DEFAULT
-            ERROR STOP 'Generic class not defined for vtkmofo class attribute'
-        END SELECT
+        select type (me)
+        class is (scalar)
+            call me%setup(dataname, datatype, numcomp, tablename, int1d, real1d)
+        class is (vector)
+            call me%setup(dataname, datatype, int2d, real2d)
+        class is (normal)
+            call me%setup(dataname, datatype, int2d, real2d)
+        class is (texture)
+            call me%setup(dataname, datatype, int2d, real2d)
+        class is (tensor)
+            call me%setup(dataname, datatype, int3d, real3d)
+        class is (field)
+            call me%setup(dataname, datatype, field_arrays)
+        class default
+            error stop 'generic class not defined for vtkmofo class attribute'
+        end select
 
-        END PROCEDURE initialize
+    end procedure initialize
 
-        MODULE PROCEDURE check_for_diffs
-        IMPLICIT NONE
+    module procedure check_for_diffs
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Function checks for differences in an attribute
+        !! function checks for differences in an attribute
         !!
-        diffs = .FALSE.
-        IF      (.NOT. SAME_TYPE_AS(me,you))  THEN
-            diffs = .TRUE.
-        ELSE IF (me%dataname /= you%dataname) THEN
-            diffs = .TRUE.
-        END IF
+        diffs = .false.
+        if      (.not. same_type_as(me,you))  then
+            diffs = .true.
+        else if (me%dataname /= you%dataname) then
+            diffs = .true.
+        end if
 
-        END PROCEDURE check_for_diffs
+    end procedure check_for_diffs
 
-        MODULE PROCEDURE convert_to_dataarray
-        IMPLICIT NONE
+    module procedure convert_to_dataarray
+        implicit none
         !! author: Ian Porter
         !! date: 07/20/2019
         !!
-        !! Function converts an attribute to a dataarray
+        !! function converts an attribute to a dataarray
         !!
         !! array, me
-        CALL array%initialize(name=me%dataname, type=me%datatype)
+        call array%initialize(name=me%dataname, type=me%datatype)
 
-        END PROCEDURE convert_to_dataarray
+    end procedure convert_to_dataarray
 
-!********
-! Scalars
-!********
-        MODULE PROCEDURE scalar_read
-        USE Misc, ONLY : interpret_string, to_lowercase
-        IMPLICIT NONE
+    !********
+    ! scalars
+    !********
+    module procedure scalar_read
+        use misc, only : interpret_string, to_lowercase
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Subroutine performs the read for a scalar attribute
+        !! subroutine performs the read for a scalar attribute
         !!
-        INTEGER(i4k)               :: i, iostat
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
-        INTEGER(i4k),  DIMENSION(:), ALLOCATABLE :: ints
-        REAL(r8k),     DIMENSION(:), ALLOCATABLE :: reals, dummy
-        TYPE(char_dt), DIMENSION(:), ALLOCATABLE :: chars
+        integer(i4k)               :: i, iostat
+        logical                    :: end_of_file
+        character(len=def_len)     :: line
+        integer(i4k),  dimension(:), allocatable :: ints
+        real(r8k),     dimension(:), allocatable :: reals, dummy
+        type(char_dt), dimension(:), allocatable :: chars
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=[ 'C','C','I' ], ignore='SCALARS ', separator=' ', &
-          &                    ints=ints, chars=chars)
-        me%numcomp = ints(1); me%dataname = TRIM(chars(1)%text); me%datatype = to_lowercase(TRIM(chars(2)%text))
-        IF (ALLOCATED(ints)) DEALLOCATE(ints)
-        IF (ALLOCATED(chars)) DEALLOCATE(chars)
+        read(unit,100) line
+        call interpret_string (line=line, datatype=[ 'c','c','i' ], ignore='scalars ', separator=' ', &
+            &                  ints=ints, chars=chars)
+        me%numcomp = ints(1); me%dataname = trim(chars(1)%text); me%datatype = to_lowercase(trim(chars(2)%text))
+        if (allocated(ints)) deallocate(ints)
+        if (allocated(chars)) deallocate(chars)
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=[ 'C' ], ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
-        me%tablename = TRIM(chars(1)%text)
+        read(unit,100) line
+        call interpret_string (line=line, datatype=[ 'c' ], ignore='lookup_table ', separator=' ', chars=chars)
+        me%tablename = trim(chars(1)%text)
 
-        SELECT CASE (me%datatype)
-        CASE ('unsigned_int', 'int')
-            ALLOCATE(me%ints(0))
-        CASE ('float', 'double')
-            ALLOCATE(me%reals(0))
-        CASE DEFAULT
-            ERROR STOP 'datatype not supported in scalar_read'
-        END SELECT
+        select case (me%datatype)
+        case ('unsigned_int', 'int')
+            allocate(me%ints(0))
+        case ('float', 'double')
+            allocate(me%reals(0))
+        case default
+            error stop 'datatype not supported in scalar_read'
+        end select
 
-        end_of_file  = .FALSE.; i = 0
+        end_of_file  = .false.; i = 0
 
-        get_scalars: DO
-            READ(unit,100,iostat=iostat) line
+        get_scalars: do
+            read(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
-            IF (end_of_file) THEN
-                EXIT get_scalars
-            ELSE IF (TRIM(line) == '') THEN
-                CYCLE     !! Skip blank lines
-            ELSE
-                SELECT CASE (me%datatype)
-                CASE ('unsigned_int', 'int')
-                    ALLOCATE(ints(1:UBOUND(me%ints,DIM=1)+1),source=0_i4k)
-                    IF (i > 0) ints(1:UBOUND(me%ints,DIM=1)) = me%ints
-                    CALL MOVE_ALLOC(ints, me%ints)
+            if (end_of_file) then
+                exit get_scalars
+            else if (trim(line) == '') then
+                cycle     !! skip blank lines
+            else
+                select case (me%datatype)
+                case ('unsigned_int', 'int')
+                    allocate(ints(1:ubound(me%ints,dim=1)+1),source=0_i4k)
+                    if (i > 0) ints(1:ubound(me%ints,dim=1)) = me%ints
+                    call move_alloc(ints, me%ints)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=[ 'I' ], separator=' ', ints=ints)
+                    call interpret_string (line=line, datatype=[ 'i' ], separator=' ', ints=ints)
                     me%ints(i) = ints(1)
-                    DEALLOCATE(ints)
-                CASE ('float', 'double')
-                    ALLOCATE(dummy(1:UBOUND(me%reals,DIM=1)+1),source=0.0_r8k)
-                    IF (i > 0) dummy(1:UBOUND(me%reals,DIM=1)) = me%reals
-                    CALL MOVE_ALLOC(dummy, me%reals)
+                    deallocate(ints)
+                case ('float', 'double')
+                    allocate(dummy(1:ubound(me%reals,dim=1)+1),source=0.0_r8k)
+                    if (i > 0) dummy(1:ubound(me%reals,dim=1)) = me%reals
+                    call move_alloc(dummy, me%reals)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=[ 'R' ], separator=' ', reals=reals)
+                    call interpret_string (line=line, datatype=[ 'r' ], separator=' ', reals=reals)
                     me%reals(i) = reals(1)
-                CASE DEFAULT
-                    ERROR STOP 'datatype not supported in scalar_read'
-                END SELECT
-            END IF
-        END DO get_scalars
+                case default
+                    error stop 'datatype not supported in scalar_read'
+                end select
+            end if
+        end do get_scalars
 
-        IF (ALLOCATED(me%ints)) THEN
-            me%nvals = SIZE(me%ints)
-        ELSE IF (ALLOCATED(me%reals)) THEN
-            me%nvals = SIZE(me%reals)
-        END IF
+        if (allocated(me%ints)) then
+            me%nvals = size(me%ints)
+        else if (allocated(me%reals)) then
+            me%nvals = size(me%reals)
+        end if
 
-100     FORMAT((a))
-        END PROCEDURE scalar_read
+100     format((a))
+    end procedure scalar_read
 
-        MODULE PROCEDURE scalar_write
-        IMPLICIT NONE
+    module procedure scalar_write
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Subroutine performs the write for a scalar attribute
+        !! subroutine performs the write for a scalar attribute
         !!
-        INTEGER(i4k) :: i
+        integer(i4k) :: i
 
-        WRITE(unit,100) me%dataname, me%datatype, me%numcomp
-        WRITE(unit,101) me%tablename
-        IF (ALLOCATED(me%reals)) THEN
-            DO i = 1, SIZE(me%reals)
-                WRITE(unit,102) me%reals(i)
-            END DO
-        ELSE IF (ALLOCATED(me%ints)) THEN
-            DO i = 1, SIZE(me%ints)
-                WRITE(unit,103) me%ints(i)
-            END DO
-        ELSE
-            ERROR STOP 'Neither real or integer arrays are allocated for scalar_write'
-        END IF
+        write(unit,100) me%dataname, me%datatype, me%numcomp
+        write(unit,101) me%tablename
+        if (allocated(me%reals)) then
+            do i = 1, size(me%reals)
+                write(unit,102) me%reals(i)
+            end do
+        else if (allocated(me%ints)) then
+            do i = 1, size(me%ints)
+                write(unit,103) me%ints(i)
+            end do
+        else
+            error stop 'neither real or integer arrays are allocated for scalar_write'
+        end if
 
-100     FORMAT('SCALARS ',(a),' ',(a),' ',(i1))
-101     FORMAT('LOOKUP_TABLE ',(a))
-102     FORMAT(es13.6)
-103     FORMAT(i0)
+100     format('scalars ',(a),' ',(a),' ',(i1))
+101     format('lookup_table ',(a))
+102     format(es13.6)
+103     format(i0)
 
-        END PROCEDURE scalar_write
+    end procedure scalar_write
 
-        MODULE PROCEDURE scalar_setup
-        IMPLICIT NONE
+    module procedure scalar_setup
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Subroutine performs the set-up for a scalar attribute
+        !! subroutine performs the set-up for a scalar attribute
         !!
         me%dataname = dataname
-        IF (PRESENT(datatype)) THEN
+        if (present(datatype)) then
             me%datatype = datatype
-        ELSE IF (PRESENT(int1d)) THEN
+        else if (present(int1d)) then
             me%datatype = 'int'
-        ELSE
+        else
             me%datatype = 'double'
-        END IF
-        IF (PRESENT(numcomp)) THEN
+        end if
+        if (present(numcomp)) then
             me%numcomp = numcomp
-        ELSE
+        else
             me%numcomp = 1
-        END IF
-        IF (PRESENT(tablename)) THEN
+        end if
+        if (present(tablename)) then
             me%tablename = tablename
-        ELSE
+        else
             me%tablename = default
-        END IF
-        IF (PRESENT(int1d)) THEN
+        end if
+        if (present(int1d)) then
             me%ints = int1d
-            me%nvals = SIZE(me%ints)
-        ELSE IF (PRESENT(real1d)) THEN
+            me%nvals = size(me%ints)
+        else if (present(real1d)) then
             me%reals = real1d
-            me%nvals = SIZE(me%reals)
-        ELSE
-            ERROR STOP 'Must provide either array of integers or reals in scalar_setup'
-        END IF
+            me%nvals = size(me%reals)
+        else
+            error stop 'must provide either array of integers or reals in scalar_setup'
+        end if
 
-        END PROCEDURE scalar_setup
+    end procedure scalar_setup
 
-        MODULE PROCEDURE scalar_check_for_diffs
-        IMPLICIT NONE
+    module procedure scalar_check_for_diffs
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Function checks for differences in a scalar attribute
+        !! function checks for differences in a scalar attribute
         !!
-        INTEGER(i4k) :: i
+        integer(i4k) :: i
 
-        diffs = .FALSE.
-        IF (.NOT. SAME_TYPE_AS(me,you)) THEN
-            diffs = .TRUE.
-        ELSE
-            SELECT TYPE (you)
-            CLASS IS (scalar)
-                IF (me%dataname /= you%dataname)         THEN
-                    diffs = .TRUE.
-                ELSE IF (me%datatype /= you%datatype)    THEN
-                    diffs = .TRUE.
-                ELSE IF (me%nvals /= you%nvals)          THEN
-                    diffs = .TRUE.
-                ELSE IF (me%numcomp /= you%numcomp)      THEN
-                    diffs = .TRUE.
-                ELSE IF (me%tablename /= you%tablename)  THEN
-                    diffs = .TRUE.
-                ELSE IF (ALLOCATED(me%reals))            THEN
-                    DO i = 1, UBOUND(me%reals,DIM=1)
-                        IF (me%reals(i) /= you%reals(i)) THEN
-                            diffs = .TRUE.
-                        END IF
-                    END DO
-                ELSE IF (ALLOCATED(me%ints))             THEN
-                    DO i = 1, UBOUND(me%ints,DIM=1)
-                        IF (me%ints(i) /= you%ints(i))   THEN
-                            diffs = .TRUE.
-                        END IF
-                    END DO
-                END IF
-            END SELECT
-        END IF
+        diffs = .false.
+        if (.not. same_type_as(me,you)) then
+            diffs = .true.
+        else
+            select type (you)
+            class is (scalar)
+                if (me%dataname /= you%dataname)         then
+                    diffs = .true.
+                else if (me%datatype /= you%datatype)    then
+                    diffs = .true.
+                else if (me%nvals /= you%nvals)          then
+                    diffs = .true.
+                else if (me%numcomp /= you%numcomp)      then
+                    diffs = .true.
+                else if (me%tablename /= you%tablename)  then
+                    diffs = .true.
+                else if (allocated(me%reals))            then
+                    do i = 1, ubound(me%reals,dim=1)
+                        if (me%reals(i) /= you%reals(i)) then
+                            diffs = .true.
+                        end if
+                    end do
+                else if (allocated(me%ints))             then
+                    do i = 1, ubound(me%ints,dim=1)
+                        if (me%ints(i) /= you%ints(i))   then
+                            diffs = .true.
+                        end if
+                    end do
+                end if
+            end select
+        end if
 
-        END PROCEDURE scalar_check_for_diffs
+    end procedure scalar_check_for_diffs
 
-        MODULE PROCEDURE scalar_convert_to_dataarray
-        IMPLICIT NONE
+    module procedure scalar_convert_to_dataarray
+        implicit none
         !! author: Ian Porter
         !! date: 07/20/2019
         !!
-        !! Function converts an attribute to a dataarray
+        !! function converts an attribute to a dataarray
         !!
-        INTEGER(i4k) :: i
+        integer(i4k) :: i
 
-        CALL array%initialize(name=TRIM(ADJUSTL(me%dataname)), type=me%datatype)
+        call array%initialize(name=trim(adjustl(me%dataname)), type=me%datatype)
 
-        DO i = 1, me%nvals
-            IF (ALLOCATED(me%ints)) THEN
-                CALL array%add([me%ints(i)])
-            ELSE IF (ALLOCATED(me%reals)) THEN
-                CALL array%add([me%reals(i)])
-            END IF
-        END DO
+        do i = 1, me%nvals
+            if (allocated(me%ints)) then
+                call array%add([me%ints(i)])
+            else if (allocated(me%reals)) then
+                call array%add([me%reals(i)])
+            end if
+        end do
 
-        END PROCEDURE scalar_convert_to_dataarray
+    end procedure scalar_convert_to_dataarray
 
-!********
-! Vectors
-!********
-        MODULE PROCEDURE vector_read
-        USE Misc, ONLY : interpret_string, to_lowercase
-        IMPLICIT NONE
+    !********
+    ! vectors
+    !********
+    module procedure vector_read
+        use misc, only : interpret_string, to_lowercase
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Subroutine performs the read for a vector attribute
+        !! subroutine performs the read for a vector attribute
         !!
-        INTEGER(i4k)               :: i, iostat
-        INTEGER(i4k),  PARAMETER   :: dim = 3
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
-        INTEGER(i4k),  DIMENSION(:),   ALLOCATABLE :: ints
-        REAL(r8k),     DIMENSION(:),   ALLOCATABLE :: reals
-        TYPE(char_dt), DIMENSION(:),   ALLOCATABLE :: chars
-        INTEGER(i4k),  DIMENSION(:,:), ALLOCATABLE :: i_dummy
-        REAL(r8k),     DIMENSION(:,:), ALLOCATABLE :: r_dummy
+        integer(i4k)             :: i, iostat
+        integer(i4k),  parameter :: dim = 3
+        logical                  :: end_of_file
+        character(len=def_len)   :: line
+        integer(i4k),  dimension(:),   allocatable :: ints
+        real(r8k),     dimension(:),   allocatable :: reals
+        type(char_dt), dimension(:),   allocatable :: chars
+        integer(i4k),  dimension(:,:), allocatable :: i_dummy
+        real(r8k),     dimension(:,:), allocatable :: r_dummy
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='VECTORS ', separator=' ', chars=chars)
-        me%dataname = TRIM(chars(1)%text); me%datatype = to_lowercase(TRIM(chars(2)%text))
+        read(unit,100) line
+        call interpret_string (line=line, datatype=[ 'c','c' ], ignore='vectors ', separator=' ', chars=chars)
+        me%dataname = trim(chars(1)%text); me%datatype = to_lowercase(trim(chars(2)%text))
 
-        SELECT CASE (me%datatype)
-        CASE ('unsigned_int', 'int')
-            ALLOCATE(me%i_vector(0,0))
-        CASE ('float', 'double')
-            ALLOCATE(me%r_vector(0,0))
-        CASE DEFAULT
-            ERROR STOP 'datatype not supported in scalar_read'
-        END SELECT
+        select case (me%datatype)
+        case ('unsigned_int', 'int')
+            allocate(me%i_vector(0,0))
+        case ('float', 'double')
+            allocate(me%r_vector(0,0))
+        case default
+            error stop 'datatype not supported in scalar_read'
+        end select
 
-        end_of_file = .FALSE.; i = 0
+        end_of_file = .false.; i = 0
 
-        get_vectors: DO
-            READ(unit,100,iostat=iostat) line
+        get_vectors: do
+            read(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
-            IF (end_of_file) THEN
-                EXIT get_vectors
-            ELSE IF (TRIM(line) == '') THEN
-                CYCLE     !! Skip blank lines
-            ELSE
-                SELECT CASE (me%datatype)
-                CASE ('unsigned_int', 'int')
-                    ALLOCATE(i_dummy(1:UBOUND(me%i_vector,DIM=1)+1,1:dim),source=0_i4k)
-                    IF (i > 0) i_dummy(1:UBOUND(me%i_vector,DIM=1),1:dim) = me%i_vector
-                    CALL MOVE_ALLOC(i_dummy, me%i_vector)
+            if (end_of_file) then
+                exit get_vectors
+            else if (trim(line) == '') then
+                cycle     !! skip blank lines
+            else
+                select case (me%datatype)
+                case ('unsigned_int', 'int')
+                    allocate(i_dummy(1:ubound(me%i_vector,dim=1)+1,1:dim),source=0_i4k)
+                    if (i > 0) i_dummy(1:ubound(me%i_vector,dim=1),1:dim) = me%i_vector
+                    call move_alloc(i_dummy, me%i_vector)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=[ 'I','I','I' ], separator=' ', ints=ints)
+                    call interpret_string (line=line, datatype=[ 'i','i','i' ], separator=' ', ints=ints)
                     me%i_vector(i,1:dim) = ints(1:dim)
-                CASE ('float', 'double')
-                    ALLOCATE(r_dummy(1:UBOUND(me%r_vector,DIM=1)+1,1:dim),source=0.0_r8k)
-                    IF (i > 0) r_dummy(1:UBOUND(me%r_vector,DIM=1),1:dim) = me%r_vector
-                    CALL MOVE_ALLOC(r_dummy, me%r_vector)
+                case ('float', 'double')
+                    allocate(r_dummy(1:ubound(me%r_vector,dim=1)+1,1:dim),source=0.0_r8k)
+                    if (i > 0) r_dummy(1:ubound(me%r_vector,dim=1),1:dim) = me%r_vector
+                    call move_alloc(r_dummy, me%r_vector)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=[ 'R','R','R' ], separator=' ', reals=reals)
+                    call interpret_string (line=line, datatype=[ 'r','r','r' ], separator=' ', reals=reals)
                     me%r_vector(i,1:dim) = reals(1:dim)
-                END SELECT
-            END IF
-        END DO get_vectors
+                end select
+            end if
+        end do get_vectors
 
-        IF (ALLOCATED(me%i_vector)) THEN
-            me%nvals = SIZE(me%i_vector, DIM=1)
-        ELSE IF (ALLOCATED(me%r_vector)) THEN
-            me%nvals = SIZE(me%r_vector, DIM=1)
-        END IF
+        if (allocated(me%i_vector)) then
+            me%nvals = size(me%i_vector, dim=1)
+        else if (allocated(me%r_vector)) then
+            me%nvals = size(me%r_vector, dim=1)
+        end if
 
-100     FORMAT((a))
-        END PROCEDURE vector_read
+100     format((a))
+    end procedure vector_read
 
-        MODULE PROCEDURE vector_write
-        IMPLICIT NONE
+    module procedure vector_write
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Subroutine performs the write for a vector attribute
+        !! subroutine performs the write for a vector attribute
         !!
-        INTEGER(i4k) :: i
+        integer(i4k) :: i
 
-        WRITE(unit,100) me%dataname, me%datatype
-        IF (ALLOCATED(me%i_vector)) THEN
-            DO i = 1, SIZE(me%i_vector,DIM=1)
-                WRITE(unit,101) me%i_vector(i,1:3)
-            END DO
-        ELSE IF (ALLOCATED(me%r_vector)) THEN
-            DO i = 1, SIZE(me%r_vector,DIM=1)
-                WRITE(unit,102) me%r_vector(i,1:3)
-            END DO
-        END IF
+        write(unit,100) me%dataname, me%datatype
+        if (allocated(me%i_vector)) then
+            do i = 1, size(me%i_vector,dim=1)
+                write(unit,101) me%i_vector(i,1:3)
+            end do
+        else if (allocated(me%r_vector)) then
+            do i = 1, size(me%r_vector,dim=1)
+                write(unit,102) me%r_vector(i,1:3)
+            end do
+        end if
 
-100     FORMAT('VECTORS ',(a),' ',(a))
-101     FORMAT(*(i8,' '))
-102     FORMAT(*(es13.6,' '))
-        END PROCEDURE vector_write
+100     format('vectors ',(a),' ',(a))
+101     format(*(i8,' '))
+102     format(*(es13.6,' '))
+    end procedure vector_write
 
-        MODULE PROCEDURE vector_setup
-        IMPLICIT NONE
+    module procedure vector_setup
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Subroutine performs the set-up for a vector attribute
+        !! subroutine performs the set-up for a vector attribute
         !!
         me%dataname = dataname
-        IF (PRESENT(datatype)) THEN
+        if (present(datatype)) then
             me%datatype = datatype
-        ELSE
+        else
             me%datatype = 'double'
-        END IF
-        IF (PRESENT(int2d)) THEN
-            IF (me%datatype == 'double') me%datatype = 'int'
-            ALLOCATE(me%i_vector, source=int2d)
-            me%nvals = SIZE(me%i_vector,DIM=1)
-        ELSE IF (PRESENT(real2d)) THEN
-            ALLOCATE(me%r_vector, source=real2d)
-            me%nvals = SIZE(me%r_vector,DIM=1)
-        ELSE
-            ERROR STOP 'Error: Must provide either int2d or real2d in vector_setup'
-        END IF
+        end if
+        if (present(int2d)) then
+            if (me%datatype == 'double') me%datatype = 'int'
+            allocate(me%i_vector, source=int2d)
+            me%nvals = size(me%i_vector,dim=1)
+        else if (present(real2d)) then
+            allocate(me%r_vector, source=real2d)
+            me%nvals = size(me%r_vector,dim=1)
+        else
+            error stop 'error: must provide either int2d or real2d in vector_setup'
+        end if
 
-        END PROCEDURE vector_setup
+    end procedure vector_setup
 
-        MODULE PROCEDURE vector_check_for_diffs
-        IMPLICIT NONE
+    module procedure vector_check_for_diffs
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Function checks for differences in a vector attribute
+        !! function checks for differences in a vector attribute
         !!
-        INTEGER(i4k) :: i, j
+        integer(i4k) :: i, j
 
-        diffs = .FALSE.
-        IF (.NOT. SAME_TYPE_AS(me,you)) THEN
-            diffs = .TRUE.
-        ELSE
-            SELECT TYPE (you)
-            CLASS IS (vector)
-                IF (me%dataname /= you%dataname)      THEN
-                    diffs = .TRUE.
-                ELSE IF (me%datatype /= you%datatype) THEN
-                    diffs = .TRUE.
-                ELSE IF (me%nvals /= you%nvals)       THEN
-                    diffs = .TRUE.
-                ELSE IF (ALLOCATED(me%i_vector))      THEN
-                    DO i = 1, UBOUND(me%i_vector,DIM=1)
-                        DO j = 1, UBOUND(me%i_vector,DIM=2)
-                            IF (me%i_vector(i,j) /= you%i_vector(i,j)) THEN
-                                diffs = .TRUE.
-                            END IF
-                        END DO
-                    END DO
-                ELSE IF (ALLOCATED(me%r_vector))      THEN
-                    DO i = 1, UBOUND(me%r_vector,DIM=1)
-                        DO j = 1, UBOUND(me%r_vector,DIM=2)
-                            IF (me%r_vector(i,j) /= you%r_vector(i,j)) THEN
-                                diffs = .TRUE.
-                            END IF
-                        END DO
-                    END DO
-                ELSE
-                    diffs = .TRUE.
-                END IF
-            END SELECT
-        END IF
+        diffs = .false.
+        if (.not. same_type_as(me,you)) then
+            diffs = .true.
+        else
+            select type (you)
+            class is (vector)
+                if (me%dataname /= you%dataname)      then
+                    diffs = .true.
+                else if (me%datatype /= you%datatype) then
+                    diffs = .true.
+                else if (me%nvals /= you%nvals)       then
+                    diffs = .true.
+                else if (allocated(me%i_vector))      then
+                    do i = 1, ubound(me%i_vector,dim=1)
+                        do j = 1, ubound(me%i_vector,dim=2)
+                            if (me%i_vector(i,j) /= you%i_vector(i,j)) then
+                                diffs = .true.
+                            end if
+                        end do
+                    end do
+                else if (allocated(me%r_vector))      then
+                    do i = 1, ubound(me%r_vector,dim=1)
+                        do j = 1, ubound(me%r_vector,dim=2)
+                            if (me%r_vector(i,j) /= you%r_vector(i,j)) then
+                                diffs = .true.
+                            end if
+                        end do
+                    end do
+                else
+                    diffs = .true.
+                end if
+            end select
+        end if
 
-        END PROCEDURE vector_check_for_diffs
-!********
-! Normals
-!********
-        MODULE PROCEDURE normal_read
-        USE Misc, ONLY : interpret_string, to_lowercase
-        IMPLICIT NONE
+    end procedure vector_check_for_diffs
+    !********
+    ! normals
+    !********
+    module procedure normal_read
+        use misc, only : interpret_string, to_lowercase
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Subroutine performs the read for a normal attribute
+        !! subroutine performs the read for a normal attribute
         !!
-        INTEGER(i4k)               :: i, iostat
-        INTEGER(i4k),  PARAMETER   :: dim = 3
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
-        INTEGER(i4k),  DIMENSION(:),   ALLOCATABLE :: ints
-        REAL(r8k),     DIMENSION(:),   ALLOCATABLE :: reals
-        TYPE(char_dt), DIMENSION(:),   ALLOCATABLE :: chars
-        INTEGER(i4k),  DIMENSION(:,:), ALLOCATABLE :: i_dummy
-        REAL(r8k),     DIMENSION(:,:), ALLOCATABLE :: r_dummy
+        integer(i4k)               :: i, iostat
+        integer(i4k),  parameter   :: dim = 3
+        logical                    :: end_of_file
+        character(len=def_len)     :: line
+        integer(i4k),  dimension(:),   allocatable :: ints
+        real(r8k),     dimension(:),   allocatable :: reals
+        type(char_dt), dimension(:),   allocatable :: chars
+        integer(i4k),  dimension(:,:), allocatable :: i_dummy
+        real(r8k),     dimension(:,:), allocatable :: r_dummy
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='NORMALS ', separator=' ', chars=chars)
-        me%dataname = TRIM(chars(1)%text); me%datatype = to_lowercase(TRIM(chars(2)%text))
+        read(unit,100) line
+        call interpret_string (line=line, datatype=[ 'c','c' ], ignore='normals ', separator=' ', chars=chars)
+        me%dataname = trim(chars(1)%text); me%datatype = to_lowercase(trim(chars(2)%text))
 
-        SELECT CASE (me%datatype)
-        CASE ('unsigned_int', 'int')
-            ALLOCATE(me%i_normal(0,0))
-        CASE ('float', 'double')
-            ALLOCATE(me%r_normal(0,0))
-        CASE DEFAULT
-            ERROR STOP 'datatype not supported in normal_read'
-        END SELECT
+        select case (me%datatype)
+        case ('unsigned_int', 'int')
+            allocate(me%i_normal(0,0))
+        case ('float', 'double')
+            allocate(me%r_normal(0,0))
+        case default
+            error stop 'datatype not supported in normal_read'
+        end select
 
-        end_of_file = .FALSE.; i = 0
+        end_of_file = .false.; i = 0
 
-        get_normals: DO
-            READ(unit,100,iostat=iostat) line
+        get_normals: do
+            read(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
-            IF (end_of_file) THEN
-                EXIT get_normals
-            ELSE IF (TRIM(line) == '') THEN
-                CYCLE     !! Skip blank lines
-            ELSE
-                SELECT CASE (me%datatype)
-                CASE ('unsigned_int', 'int')
-                    ALLOCATE(i_dummy(1:UBOUND(me%i_normal,DIM=1)+1,1:dim),source=0_i4k)
-                    IF (i > 0) i_dummy(1:UBOUND(me%i_normal,DIM=1),1:dim) = me%i_normal
-                    CALL MOVE_ALLOC(i_dummy, me%i_normal)
+            if (end_of_file) then
+                exit get_normals
+            else if (trim(line) == '') then
+                cycle     !! skip blank lines
+            else
+                select case (me%datatype)
+                case ('unsigned_int', 'int')
+                    allocate(i_dummy(1:ubound(me%i_normal,dim=1)+1,1:dim),source=0_i4k)
+                    if (i > 0) i_dummy(1:ubound(me%i_normal,dim=1),1:dim) = me%i_normal
+                    call move_alloc(i_dummy, me%i_normal)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=[ 'I','I','I' ], separator=' ', ints=ints)
+                    call interpret_string (line=line, datatype=[ 'i','i','i' ], separator=' ', ints=ints)
                     me%i_normal(i,1:dim) = ints(1:dim)
-                CASE ('float', 'double')
-                    ALLOCATE(r_dummy(1:UBOUND(me%r_normal,DIM=1)+1,1:dim),source=0.0_r8k)
-                    IF (i > 0) r_dummy(1:UBOUND(me%r_normal,DIM=1),1:dim) = me%r_normal
-                    CALL MOVE_ALLOC(r_dummy, me%r_normal)
+                case ('float', 'double')
+                    allocate(r_dummy(1:ubound(me%r_normal,dim=1)+1,1:dim),source=0.0_r8k)
+                    if (i > 0) r_dummy(1:ubound(me%r_normal,dim=1),1:dim) = me%r_normal
+                    call move_alloc(r_dummy, me%r_normal)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=[ 'R','R','R' ], separator=' ', reals=reals)
+                    call interpret_string (line=line, datatype=[ 'r','r','r' ], separator=' ', reals=reals)
                     me%r_normal(i,1:dim) = reals(1:dim)
-                END SELECT
-            END IF
-        END DO get_normals
+                end select
+            end if
+        end do get_normals
 
-        IF (ALLOCATED(me%i_normal)) THEN
-            me%nvals = SIZE(me%i_normal, DIM=1)
-        ELSE IF (ALLOCATED(me%r_normal)) THEN
-            me%nvals = SIZE(me%r_normal, DIM=1)
-        END IF
+        if (allocated(me%i_normal)) then
+            me%nvals = size(me%i_normal, dim=1)
+        else if (allocated(me%r_normal)) then
+            me%nvals = size(me%r_normal, dim=1)
+        end if
 
-100     FORMAT((a))
-        END PROCEDURE normal_read
+100     format((a))
+    end procedure normal_read
 
-        MODULE PROCEDURE normal_write
-        IMPLICIT NONE
+    module procedure normal_write
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Subroutine performs the write for a normal attribute
+        !! subroutine performs the write for a normal attribute
         !!
-        INTEGER(i4k) :: i
+        integer(i4k) :: i
 
-        WRITE(unit,100) me%dataname, me%datatype
-        IF (ALLOCATED(me%i_normal)) THEN
-            DO i = 1, SIZE(me%i_normal,DIM=1)
-                WRITE(unit,101) me%i_normal(i,1:3)
-            END DO
-        ELSE IF (ALLOCATED(me%r_normal)) THEN
-            DO i = 1, SIZE(me%r_normal,DIM=1)
-                WRITE(unit,102) me%r_normal(i,1:3)
-            END DO
-        END IF
+        write(unit,100) me%dataname, me%datatype
+        if (allocated(me%i_normal)) then
+            do i = 1, size(me%i_normal,dim=1)
+                write(unit,101) me%i_normal(i,1:3)
+            end do
+        else if (allocated(me%r_normal)) then
+            do i = 1, size(me%r_normal,dim=1)
+                write(unit,102) me%r_normal(i,1:3)
+            end do
+        end if
 
-100     FORMAT('NORMALS ',(a),' ',(a))
-101     FORMAT(*(i8,' '))
-102     FORMAT(*(es13.6,' '))
-        END PROCEDURE normal_write
+100     format('normals ',(a),' ',(a))
+101     format(*(i8,' '))
+102     format(*(es13.6,' '))
+    end procedure normal_write
 
-        MODULE PROCEDURE normal_setup
-        IMPLICIT NONE
+    module procedure normal_setup
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Subroutine performs the set-up for a normal attribute
+        !! subroutine performs the set-up for a normal attribute
         !!
         me%dataname = dataname
-        IF (PRESENT(datatype)) THEN
+        if (present(datatype)) then
             me%datatype = datatype
-        ELSE
+        else
             me%datatype = 'double'
-        END IF
-        IF (PRESENT(int2d)) THEN
-            IF (me%datatype == 'double') me%datatype = 'int'
-            ALLOCATE(me%i_normal, source=int2d)
-            me%nvals = SIZE(me%i_normal,DIM=1)
-        ELSE IF (PRESENT(real2d)) THEN
-            ALLOCATE(me%r_normal, source=real2d)
-            me%nvals = SIZE(me%r_normal,DIM=1)
-        ELSE
-            ERROR STOP 'Error: Must provide either int2d or real2d in normal_setup'
-        END IF
+        end if
+        if (present(int2d)) then
+            if (me%datatype == 'double') me%datatype = 'int'
+            allocate(me%i_normal, source=int2d)
+            me%nvals = size(me%i_normal,dim=1)
+        else if (present(real2d)) then
+            allocate(me%r_normal, source=real2d)
+            me%nvals = size(me%r_normal,dim=1)
+        else
+            error stop 'error: must provide either int2d or real2d in normal_setup'
+        end if
 
-        END PROCEDURE normal_setup
+    end procedure normal_setup
 
-        MODULE PROCEDURE normal_check_for_diffs
-        IMPLICIT NONE
+    module procedure normal_check_for_diffs
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Function checks for differences in a normal attribute
+        !! function checks for differences in a normal attribute
         !!
-        INTEGER(i4k) :: i, j
+        integer(i4k) :: i, j
 
-        diffs = .FALSE.
-        IF (.NOT. SAME_TYPE_AS(me,you)) THEN
-            diffs = .TRUE.
-        ELSE
-            SELECT TYPE (you)
-            CLASS IS (normal)
-                IF (me%dataname /= you%dataname)      THEN
-                    diffs = .TRUE.
-                ELSE IF (me%datatype /= you%datatype) THEN
-                    diffs = .TRUE.
-                ELSE IF (me%nvals /= you%nvals)       THEN
-                    diffs = .TRUE.
-                ELSE IF (ALLOCATED(me%i_normal))      THEN
-                    DO i = 1, UBOUND(me%i_normal,DIM=1)
-                        DO j = 1, UBOUND(me%i_normal,DIM=2)
-                            IF (me%i_normal(i,j) /= you%i_normal(i,j)) THEN
-                                diffs = .TRUE.
-                            END IF
-                        END DO
-                    END DO
-                ELSE IF (ALLOCATED(me%r_normal))      THEN
-                    DO i = 1, UBOUND(me%r_normal,DIM=1)
-                        DO j = 1, UBOUND(me%r_normal,DIM=2)
-                            IF (me%r_normal(i,j) /= you%r_normal(i,j)) THEN
-                                diffs = .TRUE.
-                            END IF
-                        END DO
-                    END DO
-                ELSE
-                    diffs = .TRUE.
-                END IF
-            END SELECT
-        END IF
+        diffs = .false.
+        if (.not. same_type_as(me,you)) then
+            diffs = .true.
+        else
+            select type (you)
+            class is (normal)
+                if (me%dataname /= you%dataname)      then
+                    diffs = .true.
+                else if (me%datatype /= you%datatype) then
+                    diffs = .true.
+                else if (me%nvals /= you%nvals)       then
+                    diffs = .true.
+                else if (allocated(me%i_normal))      then
+                    do i = 1, ubound(me%i_normal,dim=1)
+                        do j = 1, ubound(me%i_normal,dim=2)
+                            if (me%i_normal(i,j) /= you%i_normal(i,j)) then
+                                diffs = .true.
+                            end if
+                        end do
+                    end do
+                else if (allocated(me%r_normal))      then
+                    do i = 1, ubound(me%r_normal,dim=1)
+                        do j = 1, ubound(me%r_normal,dim=2)
+                            if (me%r_normal(i,j) /= you%r_normal(i,j)) then
+                                diffs = .true.
+                            end if
+                        end do
+                    end do
+                else
+                    diffs = .true.
+                end if
+            end select
+        end if
 
-        END PROCEDURE normal_check_for_diffs
-!********
-! Textures
-!********
-        MODULE PROCEDURE texture_read
-        USE Misc, ONLY : interpret_string, to_lowercase
-        IMPLICIT NONE
+    end procedure normal_check_for_diffs
+    !********
+    ! textures
+    !********
+    module procedure texture_read
+        use misc, only : interpret_string, to_lowercase
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Subroutine performs the read for a texture attribute
+        !! subroutine performs the read for a texture attribute
         !!
-        INTEGER(i4k)           :: i, iostat, dim
-        LOGICAL                :: end_of_file
-        CHARACTER(LEN=def_len) :: line
-        INTEGER(i4k),     DIMENSION(:),   ALLOCATABLE :: ints
-        REAL(r8k),        DIMENSION(:),   ALLOCATABLE :: reals
-        TYPE(char_dt),    DIMENSION(:),   ALLOCATABLE :: chars
-        INTEGER(i4k),     DIMENSION(:,:), ALLOCATABLE :: i_dummy
-        REAL(r8k),        DIMENSION(:,:), ALLOCATABLE :: r_dummy
-        CHARACTER(LEN=1), DIMENSION(3),   PARAMETER   :: i_datatype = [ 'I','I','I' ]
-        CHARACTER(LEN=1), DIMENSION(3),   PARAMETER   :: r_datatype = [ 'R','R','R' ]
+        integer(i4k)           :: i, iostat, dim
+        logical                :: end_of_file
+        character(len=def_len) :: line
+        integer(i4k),     dimension(:),   allocatable :: ints
+        real(r8k),        dimension(:),   allocatable :: reals
+        type(char_dt),    dimension(:),   allocatable :: chars
+        integer(i4k),     dimension(:,:), allocatable :: i_dummy
+        real(r8k),        dimension(:,:), allocatable :: r_dummy
+        character(len=1), dimension(3),   parameter   :: i_datatype = [ 'i','i','i' ]
+        character(len=1), dimension(3),   parameter   :: r_datatype = [ 'r','r','r' ]
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=[ 'C','I','C' ], ignore='TEXTURE_COORDINATES ', separator=' ', &
-          &                    ints=ints, chars=chars)
-        me%dataname = TRIM(chars(1)%text); dim = ints(1); me%datatype = to_lowercase(TRIM(chars(2)%text))
+        read(unit,100) line
+        call interpret_string (line=line, datatype=[ 'c','i','c' ], ignore='texture_coordinates ', separator=' ', &
+            &                  ints=ints, chars=chars)
+        me%dataname = trim(chars(1)%text); dim = ints(1); me%datatype = to_lowercase(trim(chars(2)%text))
 
-        SELECT CASE (me%datatype)
-        CASE ('unsigned_int', 'int')
-            ALLOCATE(me%i_texture(0,0))
-        CASE ('float', 'double')
-            ALLOCATE(me%r_texture(0,0))
-        CASE DEFAULT
-            ERROR STOP 'datatype not supported in texture_read'
-        END SELECT
+        select case (me%datatype)
+        case ('unsigned_int', 'int')
+            allocate(me%i_texture(0,0))
+        case ('float', 'double')
+            allocate(me%r_texture(0,0))
+        case default
+            error stop 'datatype not supported in texture_read'
+        end select
 
-        end_of_file = .FALSE.; i = 0
+        end_of_file = .false.; i = 0
 
-        get_textures: DO
-            READ(unit,100,iostat=iostat) line
+        get_textures: do
+            read(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
-            IF (end_of_file) THEN
-                EXIT get_textures
-            ELSE IF (TRIM(line) == '') THEN
-                CYCLE     !! Skip blank lines
-            ELSE
-                SELECT CASE (me%datatype)
-                CASE ('unsigned_int', 'int')
-                    ALLOCATE(i_dummy(1:UBOUND(me%i_texture,DIM=1)+1,1:dim),source=0_i4k)
-                    IF (i > 0) i_dummy(1:UBOUND(me%i_texture,DIM=1),1:dim) = me%i_texture
-                    CALL MOVE_ALLOC(i_dummy, me%i_texture)
+            if (end_of_file) then
+                exit get_textures
+            else if (trim(line) == '') then
+                cycle     !! skip blank lines
+            else
+                select case (me%datatype)
+                case ('unsigned_int', 'int')
+                    allocate(i_dummy(1:ubound(me%i_texture,dim=1)+1,1:dim),source=0_i4k)
+                    if (i > 0) i_dummy(1:ubound(me%i_texture,dim=1),1:dim) = me%i_texture
+                    call move_alloc(i_dummy, me%i_texture)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=i_datatype(1:dim), separator=' ', ints=ints)
+                    call interpret_string (line=line, datatype=i_datatype(1:dim), separator=' ', ints=ints)
                     me%i_texture(i,1:dim) = ints(1:dim)
-                CASE ('float', 'double')
-                    ALLOCATE(r_dummy(1:UBOUND(me%r_texture,DIM=1)+1,1:dim),source=0.0_r8k)
-                    IF (i > 0) r_dummy(1:UBOUND(me%r_texture,DIM=1),1:dim) = me%r_texture
-                    CALL MOVE_ALLOC(r_dummy, me%r_texture)
+                case ('float', 'double')
+                    allocate(r_dummy(1:ubound(me%r_texture,dim=1)+1,1:dim),source=0.0_r8k)
+                    if (i > 0) r_dummy(1:ubound(me%r_texture,dim=1),1:dim) = me%r_texture
+                    call move_alloc(r_dummy, me%r_texture)
                     i = i + 1
 
-                    CALL interpret_string (line=line, datatype=r_datatype(1:dim), separator=' ', reals=reals)
+                    call interpret_string (line=line, datatype=r_datatype(1:dim), separator=' ', reals=reals)
                     me%r_texture(i,1:dim) = reals(1:dim)
-                END SELECT
-            END IF
-        END DO get_textures
+                end select
+            end if
+        end do get_textures
 
-        IF (ALLOCATED(me%i_texture)) THEN
-            me%nvals = SIZE(me%i_texture, DIM=1)
-        ELSE IF (ALLOCATED(me%r_texture)) THEN
-            me%nvals = SIZE(me%r_texture, DIM=1)
-        END IF
+        if (allocated(me%i_texture)) then
+            me%nvals = size(me%i_texture, dim=1)
+        else if (allocated(me%r_texture)) then
+            me%nvals = size(me%r_texture, dim=1)
+        end if
 
-100     FORMAT((a))
-        END PROCEDURE texture_read
+100     format((a))
+    end procedure texture_read
 
-        MODULE PROCEDURE texture_write
-        IMPLICIT NONE
+    module procedure texture_write
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Subroutine performs the write for a texture attribute
+        !! subroutine performs the write for a texture attribute
         !!
-        INTEGER(i4k) :: i, dim
+        integer(i4k) :: i, dim
 
-        IF (ALLOCATED(me%i_texture)) THEN
-            dim = SIZE(me%i_texture,DIM=2)
-        ELSE IF (ALLOCATED(me%r_texture)) THEN
-            dim = SIZE(me%r_texture,DIM=2)
-        ELSE
+        if (allocated(me%i_texture)) then
+            dim = size(me%i_texture,dim=2)
+        else if (allocated(me%r_texture)) then
+            dim = size(me%r_texture,dim=2)
+        else
             dim = 0
-        END IF
+        end if
 
-        WRITE(unit,100) me%dataname, dim, me%datatype
-        IF (ALLOCATED(me%i_texture)) THEN
-            DO i = 1, SIZE(me%i_texture,DIM=1)
-                WRITE(unit,101) me%i_texture(i,:)
-            END DO
-        ELSE IF (ALLOCATED(me%r_texture)) THEN
-            DO i = 1, SIZE(me%r_texture,DIM=1)
-                WRITE(unit,102) me%r_texture(i,:)
-            END DO
-        END IF
+        write(unit,100) me%dataname, dim, me%datatype
+        if (allocated(me%i_texture)) then
+            do i = 1, size(me%i_texture,dim=1)
+                write(unit,101) me%i_texture(i,:)
+            end do
+        else if (allocated(me%r_texture)) then
+            do i = 1, size(me%r_texture,dim=1)
+                write(unit,102) me%r_texture(i,:)
+            end do
+        end if
 
-100     FORMAT('TEXTURE_COORDINATES ',(a),' ',(i1),' ',(a))
-101     FORMAT(*(i8,' '))
-102     FORMAT(*(es13.6,' '))
-        END PROCEDURE texture_write
+100     format('texture_coordinates ',(a),' ',(i1),' ',(a))
+101     format(*(i8,' '))
+102     format(*(es13.6,' '))
+    end procedure texture_write
 
-        MODULE PROCEDURE texture_setup
-        IMPLICIT NONE
+    module procedure texture_setup
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Subroutine performs the set-up for a texture attribute
+        !! subroutine performs the set-up for a texture attribute
         !!
         me%dataname = dataname
-        IF (PRESENT(datatype)) THEN
+        if (present(datatype)) then
             me%datatype = datatype
-        ELSE
+        else
             me%datatype = 'double'
-        END IF
-        IF (PRESENT(int2d)) THEN
-            IF (me%datatype == 'double') me%datatype = 'int'
-            ALLOCATE(me%i_texture, source=int2d)
-            me%nvals = SIZE(me%i_texture,DIM=1)
-        ELSE IF (PRESENT(real2d)) THEN
-            ALLOCATE(me%r_texture, source=real2d)
-            me%nvals = SIZE(me%r_texture,DIM=1)
-        ELSE
-            ERROR STOP 'Error: Must provide either int2d or real2d in texture_setup'
-        END IF
+        end if
+        if (present(int2d)) then
+            if (me%datatype == 'double') me%datatype = 'int'
+            allocate(me%i_texture, source=int2d)
+            me%nvals = size(me%i_texture,dim=1)
+        else if (present(real2d)) then
+            allocate(me%r_texture, source=real2d)
+            me%nvals = size(me%r_texture,dim=1)
+        else
+            error stop 'error: must provide either int2d or real2d in texture_setup'
+        end if
 
-        END PROCEDURE texture_setup
+    end procedure texture_setup
 
-        MODULE PROCEDURE texture_check_for_diffs
-        IMPLICIT NONE
+    module procedure texture_check_for_diffs
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Function checks for differences in a texture attribute
+        !! function checks for differences in a texture attribute
         !!
-        INTEGER(i4k) :: i, j
+        integer(i4k) :: i, j
 
-        diffs = .FALSE.
-        IF (.NOT. SAME_TYPE_AS(me,you)) THEN
-            diffs = .TRUE.
-        ELSE
-            SELECT TYPE (you)
-            CLASS IS (texture)
-                IF (me%dataname /= you%dataname)      THEN
-                    diffs = .TRUE.
-                ELSE IF (me%datatype /= you%datatype) THEN
-                    diffs = .TRUE.
-                ELSE IF (me%nvals /= you%nvals)       THEN
-                    diffs = .TRUE.
-                ELSE IF (ALLOCATED(me%i_texture))     THEN
-                    DO i = 1, UBOUND(me%i_texture,DIM=1)
-                        DO j = 1, UBOUND(me%i_texture,DIM=2)
-                            IF (me%i_texture(i,j) /= you%i_texture(i,j)) THEN
-                                diffs = .TRUE.
-                            END IF
-                        END DO
-                    END DO
-                ELSE IF (ALLOCATED(me%r_texture))     THEN
-                    DO i = 1, UBOUND(me%r_texture,DIM=1)
-                        DO j = 1, UBOUND(me%r_texture,DIM=2)
-                            IF (me%r_texture(i,j) /= you%r_texture(i,j)) THEN
-                                diffs = .TRUE.
-                            END IF
-                        END DO
-                    END DO
-                ELSE
-                    diffs = .TRUE.
-                END IF
-            END SELECT
-        END IF
+        diffs = .false.
+        if (.not. same_type_as(me,you)) then
+            diffs = .true.
+        else
+            select type (you)
+            class is (texture)
+                if (me%dataname /= you%dataname)      then
+                    diffs = .true.
+                else if (me%datatype /= you%datatype) then
+                    diffs = .true.
+                else if (me%nvals /= you%nvals)       then
+                    diffs = .true.
+                else if (allocated(me%i_texture))     then
+                    do i = 1, ubound(me%i_texture,dim=1)
+                        do j = 1, ubound(me%i_texture,dim=2)
+                            if (me%i_texture(i,j) /= you%i_texture(i,j)) then
+                                diffs = .true.
+                            end if
+                        end do
+                    end do
+                else if (allocated(me%r_texture))     then
+                    do i = 1, ubound(me%r_texture,dim=1)
+                        do j = 1, ubound(me%r_texture,dim=2)
+                            if (me%r_texture(i,j) /= you%r_texture(i,j)) then
+                                diffs = .true.
+                            end if
+                        end do
+                    end do
+                else
+                    diffs = .true.
+                end if
+            end select
+        end if
 
-        END PROCEDURE texture_check_for_diffs
-!********
-! Tensors
-!********
-        MODULE PROCEDURE tensor_read
-        USE Misc, ONLY : interpret_string, to_lowercase
-        IMPLICIT NONE
+    end procedure texture_check_for_diffs
+    !********
+    ! tensors
+    !********
+    module procedure tensor_read
+        use misc, only : interpret_string, to_lowercase
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Subroutine performs the read for a tensor attribute
+        !! subroutine performs the read for a tensor attribute
         !!
-        INTEGER(i4k)               :: i, j, iostat
-        LOGICAL                    :: end_of_file
-        CHARACTER(LEN=def_len)     :: line
-        INTEGER(i4k),         DIMENSION(:), ALLOCATABLE :: ints
-        REAL(r8k),            DIMENSION(:), ALLOCATABLE :: reals
-        TYPE(char_dt),        DIMENSION(:), ALLOCATABLE :: chars
-        TYPE(r_tensor_array), DIMENSION(:), ALLOCATABLE :: r_dummy
-        TYPE(i_tensor_array), DIMENSION(:), ALLOCATABLE :: i_dummy
+        integer(i4k)               :: i, j, iostat
+        logical                    :: end_of_file
+        character(len=def_len)     :: line
+        integer(i4k),         dimension(:), allocatable :: ints
+        real(r8k),            dimension(:), allocatable :: reals
+        type(char_dt),        dimension(:), allocatable :: chars
+        type(r_tensor_array), dimension(:), allocatable :: r_dummy
+        type(i_tensor_array), dimension(:), allocatable :: i_dummy
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=[ 'C','C' ], ignore='TENSORS ', separator=' ', &
-          &                    chars=chars)
-        me%dataname = TRIM(chars(1)%text); me%datatype = to_lowercase(TRIM(chars(2)%text))
+        read(unit,100) line
+        call interpret_string (line=line, datatype=[ 'c','c' ], ignore='tensors ', separator=' ', &
+            &                  chars=chars)
+        me%dataname = trim(chars(1)%text); me%datatype = to_lowercase(trim(chars(2)%text))
 
-        SELECT CASE (me%datatype)
-        CASE ('unsigned_int', 'int')
-            ALLOCATE(me%i_tensor(0))
-        CASE ('float', 'double')
-            ALLOCATE(me%r_tensor(0))
-        CASE DEFAULT
-            ERROR STOP 'Unsupported data type for tensor_read.'
-        END SELECT
+        select case (me%datatype)
+        case ('unsigned_int', 'int')
+            allocate(me%i_tensor(0))
+        case ('float', 'double')
+            allocate(me%r_tensor(0))
+        case default
+            error stop 'unsupported data type for tensor_read.'
+        end select
 
-        end_of_file = .FALSE.; i = 0
+        end_of_file = .false.; i = 0
 
-        get_tensors: DO
-            READ(unit,100,iostat=iostat) line
+        get_tensors: do
+            read(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
-            IF (end_of_file) THEN
-                EXIT get_tensors
-            ELSE IF (TRIM(line) == '') THEN
-                CYCLE      !! Skip blank lines
-            ELSE
-                SELECT CASE (me%datatype)
-                CASE ('unsigned_int', 'int')
-                    !! Integers
-                    ALLOCATE(i_dummy(1:UBOUND(me%i_tensor,DIM=1)+1))
-                    i_dummy(1:UBOUND(me%i_tensor,DIM=1)) = me%i_tensor
-                    CALL MOVE_ALLOC(i_dummy, me%i_tensor)
+            if (end_of_file) then
+                exit get_tensors
+            else if (trim(line) == '') then
+                cycle      !! skip blank lines
+            else
+                select case (me%datatype)
+                case ('unsigned_int', 'int')
+                    !! integers
+                    allocate(i_dummy(1:ubound(me%i_tensor,dim=1)+1))
+                    i_dummy(1:ubound(me%i_tensor,dim=1)) = me%i_tensor
+                    call move_alloc(i_dummy, me%i_tensor)
                     i = i + 1
 
-                    DO j = 1, UBOUND(me%i_tensor(i)%val,DIM=1)
-                        IF (j > 1) READ(unit,100,iostat=iostat) line
-                        CALL interpret_string (line=line, datatype=[ 'I','I','I' ], separator=' ', ints=ints)
+                    do j = 1, ubound(me%i_tensor(i)%val,dim=1)
+                        if (j > 1) read(unit,100,iostat=iostat) line
+                        call interpret_string (line=line, datatype=[ 'i','i','i' ], separator=' ', ints=ints)
                         me%i_tensor(i)%val(j,1:3) = ints(1:3)
-                    END DO
-                CASE ('float', 'double')
-                    !! Reals
-                    ALLOCATE(r_dummy(1:UBOUND(me%r_tensor,DIM=1)+1))
-                    r_dummy(1:UBOUND(me%r_tensor,DIM=1)) = me%r_tensor
-                    CALL MOVE_ALLOC(r_dummy, me%r_tensor)
+                    end do
+                case ('float', 'double')
+                    !! reals
+                    allocate(r_dummy(1:ubound(me%r_tensor,dim=1)+1))
+                    r_dummy(1:ubound(me%r_tensor,dim=1)) = me%r_tensor
+                    call move_alloc(r_dummy, me%r_tensor)
                     i = i + 1
 
-                    DO j = 1, UBOUND(me%r_tensor(i)%val,DIM=1)
-                        IF (j > 1) READ(unit,100,iostat=iostat) line
-                        CALL interpret_string (line=line, datatype=[ 'R','R','R' ], separator=' ', reals=reals)
+                    do j = 1, ubound(me%r_tensor(i)%val,dim=1)
+                        if (j > 1) read(unit,100,iostat=iostat) line
+                        call interpret_string (line=line, datatype=[ 'r','r','r' ], separator=' ', reals=reals)
                         me%r_tensor(i)%val(j,1:3) = reals(1:3)
-                    END DO
-                END SELECT
-            END IF
-        END DO get_tensors
+                    end do
+                end select
+            end if
+        end do get_tensors
 
-        IF (ALLOCATED(me%i_tensor)) THEN
-            me%nvals = SIZE(me%i_tensor, DIM=1)
-        ELSE IF (ALLOCATED(me%r_tensor)) THEN
-            me%nvals = SIZE(me%r_tensor, DIM=1)
-        END IF
+        if (allocated(me%i_tensor)) then
+            me%nvals = size(me%i_tensor, dim=1)
+        else if (allocated(me%r_tensor)) then
+            me%nvals = size(me%r_tensor, dim=1)
+        end if
 
-100     FORMAT((a))
-        END PROCEDURE tensor_read
+100     format((a))
+    end procedure tensor_read
 
-        MODULE PROCEDURE tensor_write
-        IMPLICIT NONE
+    module procedure tensor_write
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Subroutine performs the write for a tensor attribute
+        !! subroutine performs the write for a tensor attribute
         !!
-        INTEGER(i4k) :: i, j
+        integer(i4k) :: i, j
 
-        WRITE(unit,100) me%dataname, me%datatype
-        IF (ALLOCATED(me%i_tensor)) THEN
-            DO i = 1, SIZE(me%i_tensor,DIM=1)
-                DO j = 1, SIZE(me%i_tensor(i)%val,DIM=1)
-                    WRITE(unit,101) me%i_tensor(i)%val(j,:)
-                END DO
-                WRITE(unit,105)
-            END DO
-        ELSE IF (ALLOCATED(me%r_tensor)) THEN
-            DO i = 1, SIZE(me%r_tensor,DIM=1)
-                DO j = 1, SIZE(me%r_tensor(i)%val,DIM=1)
-                    WRITE(unit,102) me%r_tensor(i)%val(j,:)
-                END DO
-                WRITE(unit,105)
-            END DO
-        END IF
+        write(unit,100) me%dataname, me%datatype
+        if (allocated(me%i_tensor)) then
+            do i = 1, size(me%i_tensor,dim=1)
+                do j = 1, size(me%i_tensor(i)%val,dim=1)
+                    write(unit,101) me%i_tensor(i)%val(j,:)
+                end do
+                write(unit,105)
+            end do
+        else if (allocated(me%r_tensor)) then
+            do i = 1, size(me%r_tensor,dim=1)
+                do j = 1, size(me%r_tensor(i)%val,dim=1)
+                    write(unit,102) me%r_tensor(i)%val(j,:)
+                end do
+                write(unit,105)
+            end do
+        end if
 
-100     FORMAT('TENSORS ',(a),' ',(a))
-101     FORMAT(*(i8,' '))
-102     FORMAT(*(es13.6,' '))
-105     FORMAT()
-        END PROCEDURE tensor_write
+100     format('tensors ',(a),' ',(a))
+101     format(*(i8,' '))
+102     format(*(es13.6,' '))
+105     format()
+    end procedure tensor_write
 
-        MODULE PROCEDURE tensor_setup
-        IMPLICIT NONE
+    module procedure tensor_setup
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Subroutine performs the set-up for a tensor attribute
+        !! subroutine performs the set-up for a tensor attribute
         !!
-        INTEGER(i4k) :: i
+        integer(i4k) :: i
 
         me%dataname = dataname
-        IF (PRESENT(datatype)) THEN
+        if (present(datatype)) then
             me%datatype = datatype
-        ELSE IF (PRESENT(int3d)) THEN
+        else if (present(int3d)) then
             me%datatype = 'int'
-        ELSE
+        else
             me%datatype = 'double'
-        END IF
-        IF (PRESENT(int3d)) THEN
-            IF (SIZE(int3d,DIM=2) /= 3 .OR. SIZE(int3d,DIM=3) /= 3) THEN
-                ERROR STOP 'Tensors can only be 3x3'
-            ELSE
-                ALLOCATE(me%i_tensor(1:UBOUND(int3d,DIM=1)))
-                DO i = 1, UBOUND(int3d,DIM=1)
+        end if
+        if (present(int3d)) then
+            if (size(int3d,dim=2) /= 3 .or. size(int3d,dim=3) /= 3) then
+                error stop 'tensors can only be 3x3'
+            else
+                allocate(me%i_tensor(1:ubound(int3d,dim=1)))
+                do i = 1, ubound(int3d,dim=1)
                     me%i_tensor(i)%val(1:3,1:3) = int3d(i,1:3,1:3)
-                END DO
-                me%nvals = SIZE(me%i_tensor,DIM=1)
-            END IF
-        ELSE IF (PRESENT(real3d)) THEN
-            IF (SIZE(real3d,DIM=2) /= 3 .OR. SIZE(real3d,DIM=3) /= 3) THEN
-                ERROR STOP 'Tensors can only be 3x3'
-            ELSE
-                ALLOCATE(me%r_tensor(1:UBOUND(real3d,DIM=1)))
-                DO i = 1, UBOUND(real3d,DIM=1)
+                end do
+                me%nvals = size(me%i_tensor,dim=1)
+            end if
+        else if (present(real3d)) then
+            if (size(real3d,dim=2) /= 3 .or. size(real3d,dim=3) /= 3) then
+                error stop 'tensors can only be 3x3'
+            else
+                allocate(me%r_tensor(1:ubound(real3d,dim=1)))
+                do i = 1, ubound(real3d,dim=1)
                     me%r_tensor(i)%val(1:3,1:3) = real3d(i,1:3,1:3)
-                END DO
-                me%nvals = SIZE(me%r_tensor,DIM=1)
-            END IF
-        ELSE
-            ERROR STOP 'Error: Must provide either int3d or real3d in tensor_setup'
-        END IF
+                end do
+                me%nvals = size(me%r_tensor,dim=1)
+            end if
+        else
+            error stop 'error: must provide either int3d or real3d in tensor_setup'
+        end if
 
-        END PROCEDURE tensor_setup
+    end procedure tensor_setup
 
-        MODULE PROCEDURE tensor_check_for_diffs
-        IMPLICIT NONE
+    module procedure tensor_check_for_diffs
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Function checks for differences in a tensor attribute
+        !! function checks for differences in a tensor attribute
         !!
-        INTEGER(i4k) :: i, j, k
+        integer(i4k) :: i, j, k
 
-        diffs = .FALSE.
-        IF (.NOT. SAME_TYPE_AS(me,you)) THEN
-            diffs = .TRUE.
-        ELSE
-            SELECT TYPE (you)
-            CLASS IS (tensor)
-                IF (me%dataname /= you%dataname)      THEN
-                    diffs = .TRUE.
-                ELSE IF (me%datatype /= you%datatype) THEN
-                    diffs = .TRUE.
-                ELSE IF (me%nvals /= you%nvals)       THEN
-                    diffs = .TRUE.
-                ELSE IF (ALLOCATED(me%i_tensor))      THEN
-                        DO i = 1, UBOUND(me%i_tensor,DIM=1)
-                            DO j = 1, UBOUND(me%i_tensor(i)%val,DIM=1)
-                                DO k = 1, UBOUND(me%i_tensor(i)%val,DIM=2)
-                                    IF (me%i_tensor(i)%val(j,k) /= you%i_tensor(i)%val(j,k)) THEN
-                                        diffs = .TRUE.
-                                    END IF
-                                END DO
-                            END DO
-                        END DO
-                ELSE IF (ALLOCATED(me%r_tensor))      THEN
-                    DO i = 1, UBOUND(me%r_tensor,DIM=1)
-                        DO j = 1, UBOUND(me%r_tensor(i)%val,DIM=1)
-                            DO k = 1, UBOUND(me%r_tensor(i)%val,DIM=2)
-                                IF (me%r_tensor(i)%val(j,k) /= you%r_tensor(i)%val(j,k))     THEN
-                                    diffs = .TRUE.
-                                END IF
-                            END DO
-                        END DO
-                    END DO
-                ELSE
-                    diffs = .TRUE.
-                END IF
-            END SELECT
-        END IF
+        diffs = .false.
+        if (.not. same_type_as(me,you)) then
+            diffs = .true.
+        else
+            select type (you)
+            class is (tensor)
+                if (me%dataname /= you%dataname)      then
+                    diffs = .true.
+                else if (me%datatype /= you%datatype) then
+                    diffs = .true.
+                else if (me%nvals /= you%nvals)       then
+                    diffs = .true.
+                else if (allocated(me%i_tensor))      then
+                    do i = 1, ubound(me%i_tensor,dim=1)
+                        do j = 1, ubound(me%i_tensor(i)%val,dim=1)
+                            do k = 1, ubound(me%i_tensor(i)%val,dim=2)
+                                if (me%i_tensor(i)%val(j,k) /= you%i_tensor(i)%val(j,k)) then
+                                    diffs = .true.
+                                end if
+                            end do
+                        end do
+                    end do
+                else if (allocated(me%r_tensor))      then
+                    do i = 1, ubound(me%r_tensor,dim=1)
+                        do j = 1, ubound(me%r_tensor(i)%val,dim=1)
+                            do k = 1, ubound(me%r_tensor(i)%val,dim=2)
+                                if (me%r_tensor(i)%val(j,k) /= you%r_tensor(i)%val(j,k))     then
+                                    diffs = .true.
+                                end if
+                            end do
+                        end do
+                    end do
+                else
+                    diffs = .true.
+                end if
+            end select
+        end if
 
-        END PROCEDURE tensor_check_for_diffs
-!********
-! Fields
-!********
-        MODULE PROCEDURE field_read
-        USE Misc, ONLY : interpret_string
-        IMPLICIT NONE
+    end procedure tensor_check_for_diffs
+    !********
+    ! fields
+    !********
+    module procedure field_read
+        use misc, only : interpret_string
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Subroutine performs the read for a field attribute
+        !! subroutine performs the read for a field attribute
         !!
-        INTEGER(i4k)              :: i, j, iostat, dim
-        LOGICAL                   :: end_of_file
-        CHARACTER(LEN=def_len)    :: line
-        CHARACTER(*), PARAMETER   :: real_char = 'R'
-        REAL(r8k),        DIMENSION(:), ALLOCATABLE :: reals
-        INTEGER(i4k),     DIMENSION(:), ALLOCATABLE :: ints
-        TYPE(char_dt),    DIMENSION(:), ALLOCATABLE :: chars
-        CHARACTER(LEN=1), DIMENSION(:), ALLOCATABLE :: datatype
+        integer(i4k)              :: i, j, iostat, dim
+        logical                   :: end_of_file
+        character(len=def_len)    :: line
+        character(*), parameter   :: real_char = 'r'
+        real(r8k),        dimension(:), allocatable :: reals
+        integer(i4k),     dimension(:), allocatable :: ints
+        type(char_dt),    dimension(:), allocatable :: chars
+        character(len=1), dimension(:), allocatable :: datatype
 
-        READ(unit,100) line
-        CALL interpret_string (line=line, datatype=[ 'C','I' ], ignore='FIELD ', separator=' ', &
-          &                    ints=ints, chars=chars)
-        me%dataname = TRIM(chars(1)%text); dim = ints(1)
-        IF (ALLOCATED(chars)) DEALLOCATE(chars)
+        read(unit,100) line
+        call interpret_string (line=line, datatype=[ 'c','i' ], ignore='field ', separator=' ', &
+        &                    ints=ints, chars=chars)
+        me%dataname = trim(chars(1)%text); dim = ints(1)
+        if (allocated(chars)) deallocate(chars)
 
-        ALLOCATE(me%array(1:dim)); end_of_file = .FALSE.; i = 0
+        allocate(me%array(1:dim)); end_of_file = .false.; i = 0
 
-        get_fields: DO
-            READ(unit,100,iostat=iostat) line
+        get_fields: do
+            read(unit,100,iostat=iostat) line
             end_of_file = (iostat < 0)
-            IF (end_of_file) THEN
-                EXIT get_fields
-            ELSE IF (TRIM(line) == '') THEN
-                CYCLE      !! Skip blank lines
-            ELSE
+            if (end_of_file) then
+                exit get_fields
+            else if (trim(line) == '') then
+                cycle      !! skip blank lines
+            else
                 i = i + 1
 
-                CALL interpret_string (line=line, datatype=[ 'C','I','I','C' ], separator=' ', chars=chars, ints=ints)
-                me%array(i)%name = TRIM(chars(1)%text); me%array(i)%numComponents = ints(1)
-                me%array(i)%numTuples = ints(2); me%array(i)%datatype = TRIM(chars(2)%text)
-                ALLOCATE(datatype(1:me%array(i)%numComponents),source=real_char)
-                ALLOCATE(me%array(i)%data(1:me%array(i)%numTuples,1:me%array(i)%numComponents),source=0.0_r8k)
+                call interpret_string (line=line, datatype=[ 'c','i','i','c' ], separator=' ', chars=chars, ints=ints)
+                me%array(i)%name = trim(chars(1)%text); me%array(i)%numcomponents = ints(1)
+                me%array(i)%numtuples = ints(2); me%array(i)%datatype = trim(chars(2)%text)
+                allocate(datatype(1:me%array(i)%numcomponents),source=real_char)
+                allocate(me%array(i)%data(1:me%array(i)%numtuples,1:me%array(i)%numcomponents),source=0.0_r8k)
 
-                DO j = 1, me%array(i)%numTuples
-                    READ(unit,100,iostat=iostat) line
-                    CALL interpret_string (line=line, datatype=datatype, separator=' ', reals=reals)
+                do j = 1, me%array(i)%numtuples
+                    read(unit,100,iostat=iostat) line
+                    call interpret_string (line=line, datatype=datatype, separator=' ', reals=reals)
                     me%array(i)%data(j,:) = reals(:)
-                END DO
-                IF (ALLOCATED(datatype)) DEALLOCATE(datatype)
+                end do
+                if (allocated(datatype)) deallocate(datatype)
 
-            END IF
-        END DO get_fields
+            end if
+        end do get_fields
 
-        IF (ALLOCATED(me%array)) THEN
-            me%nvals = SIZE(me%array, DIM=1)
-        END IF
+        if (allocated(me%array)) then
+        me%nvals = size(me%array, dim=1)
+        end if
 
-100     FORMAT((a))
-        END PROCEDURE field_read
+100     format((a))
+    end procedure field_read
 
-        MODULE PROCEDURE field_write
-        IMPLICIT NONE
+    module procedure field_write
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! Subroutine performs the write for a field attribute
+        !! subroutine performs the write for a field attribute
         !!
-        INTEGER(i4k) :: i, j
+        integer(i4k) :: i, j
 
-        WRITE(unit,100) me%dataname, SIZE(me%array,DIM=1)
-        DO i = 1, SIZE(me%array,DIM=1)
-            WRITE(unit,101) me%array(i)%name, me%array(i)%numComponents, me%array(i)%numTuples, me%array(i)%datatype
-            DO j = 1, me%array(i)%numTuples
-                WRITE(unit,102) me%array(i)%data(j,:)
-            END DO
-            WRITE(unit,103)
-        END DO
+        write(unit,100) me%dataname, size(me%array,dim=1)
+        do i = 1, size(me%array,dim=1)
+            write(unit,101) me%array(i)%name, me%array(i)%numcomponents, me%array(i)%numtuples, me%array(i)%datatype
+            do j = 1, me%array(i)%numtuples
+                write(unit,102) me%array(i)%data(j,:)
+            end do
+            write(unit,103)
+        end do
 
-100     FORMAT('FIELD ',(a),' ',(i0))
-101     FORMAT((a),' ',(i0),' ',(i0),' ',(a))
-102     FORMAT(*(es13.6,' '))
-103     FORMAT()
-        END PROCEDURE field_write
+100     format('field ',(a),' ',(i0))
+101     format((a),' ',(i0),' ',(i0),' ',(a))
+102     format(*(es13.6,' '))
+103     format()
+    end procedure field_write
 
-        MODULE PROCEDURE field_setup
-        IMPLICIT NONE
+    module procedure field_setup
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Subroutine performs the set-up for a field attribute
+        !! subroutine performs the set-up for a field attribute
         !!
         me%dataname = dataname
-        IF (PRESENT(datatype)) THEN
+        if (present(datatype)) then
             me%datatype = datatype
-        ELSE
+        else
             me%datatype = 'double'
-        END IF
+        end if
         me%array = field_arrays
-        me%nvals = SIZE(me%array,DIM=1)
+        me%nvals = size(me%array,dim=1)
 
-        END PROCEDURE field_setup
+    end procedure field_setup
 
-        MODULE PROCEDURE field_check_for_diffs
-        IMPLICIT NONE
+    module procedure field_check_for_diffs
+        implicit none
         !! author: Ian Porter
         !! date: 12/14/2017
         !!
-        !! Function checks for differences in a field attribute
+        !! function checks for differences in a field attribute
         !!
-        INTEGER(i4k) :: i, j, k
+        integer(i4k) :: i, j, k
 
-        diffs = .FALSE.
-        IF (.NOT. SAME_TYPE_AS(me,you)) THEN
-            diffs = .TRUE.
-        ELSE
-            SELECT TYPE (you)
-            CLASS IS (field)
-                IF      (me%dataname /= you%dataname) THEN
-                    diffs = .TRUE.
-                ELSE IF (me%nvals /= you%nvals)       THEN
-                    diffs = .TRUE.
-                ELSE
-                    DO i = 1, UBOUND(me%array,DIM=1)
-                        IF      (me%array(i)%name          /= you%array(i)%name         ) THEN
-                            diffs = .TRUE.
-                        ELSE IF (me%array(i)%numComponents /= you%array(i)%numComponents) THEN
-                            diffs = .TRUE.
-                        ELSE IF (me%array(i)%numTuples     /= you%array(i)%numTuples    ) THEN
-                            diffs = .TRUE.
-                        ELSE IF (me%array(i)%datatype      /= you%array(i)%datatype     ) THEN
-                            diffs = .TRUE.
-                        ELSE
-                            DO j = 1, UBOUND(me%array(i)%data,DIM=1)
-                                DO k = 1, UBOUND(me%array(i)%data,DIM=2)
-                                    IF (me%array(i)%data(j,k) /= me%array(i)%data(j,k)) THEN
-                                        diffs = .TRUE.
-                                    END IF
-                                END DO
-                            END DO
-                        END IF
-                    END DO
-                END IF
-            END SELECT
-        END IF
+        diffs = .false.
+        if (.not. same_type_as(me,you)) then
+            diffs = .true.
+        else
+            select type (you)
+            class is (field)
+                if      (me%dataname /= you%dataname) then
+                    diffs = .true.
+                else if (me%nvals /= you%nvals)       then
+                    diffs = .true.
+                else
+                    do i = 1, ubound(me%array,dim=1)
+                        if      (me%array(i)%name          /= you%array(i)%name         ) then
+                            diffs = .true.
+                        else if (me%array(i)%numcomponents /= you%array(i)%numcomponents) then
+                            diffs = .true.
+                        else if (me%array(i)%numtuples     /= you%array(i)%numtuples    ) then
+                            diffs = .true.
+                        else if (me%array(i)%datatype      /= you%array(i)%datatype     ) then
+                            diffs = .true.
+                        else
+                            do j = 1, ubound(me%array(i)%data,dim=1)
+                                do k = 1, ubound(me%array(i)%data,dim=2)
+                                    if (me%array(i)%data(j,k) /= me%array(i)%data(j,k)) then
+                                        diffs = .true.
+                                    end if
+                                end do
+                            end do
+                        end if
+                    end do
+                end if
+            end select
+        end if
 
-        END PROCEDURE field_check_for_diffs
+    end procedure field_check_for_diffs
 
-END SUBMODULE vtk_attributes_implementation
+end submodule vtk_attributes_procedures

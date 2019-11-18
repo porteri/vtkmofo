@@ -1,292 +1,292 @@
-SUBMODULE (Misc) Misc_implementation
-    USE Precision, ONLY : i4k, i8k, r8k
-    IMPLICIT NONE
+submodule (misc) misc_procedures
+    use precision, only : i4k, i8k, r8k
+    implicit none
 
-    CONTAINS
+contains
 
-        MODULE PROCEDURE interpret_string
-        IMPLICIT NONE
-        !! Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
-        INTEGER(i4k) :: i
-        CHARACTER(LEN=:), ALLOCATABLE :: string, sep, char
-        TYPE :: counter
-            INTEGER(i4k) :: t = 0, i = 0, r = 0, c = 0
-        END TYPE counter
-        TYPE (counter) :: cnt
+    module procedure interpret_string
+        implicit none
+        !! interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
+        integer(i4k) :: i
+        character(len=:), allocatable :: string, sep, char
+        type :: counter
+          integer(i4k) :: t = 0, i = 0, r = 0, c = 0
+        end type counter
+        type (counter) :: cnt
 
-        IF (PRESENT(ignore)) THEN
-            string = TRIM(ADJUSTL(line(INDEX(line,ignore)+LEN(ignore):)))
-        ELSE
-            string = TRIM(ADJUSTL(line))
-        END IF
-        IF (PRESENT(separator)) THEN
-            ALLOCATE(sep, source=separator)
-        ELSE
-            ALLOCATE(sep, source=' ')
-        END IF
-        IF (PRESENT(ints)) THEN
-            IF (ALLOCATED(ints)) DEALLOCATE(ints)
-            ALLOCATE(ints(1:SIZE(datatype)),source=0_i4k)
-        END IF
-        IF (PRESENT(reals)) THEN
-            IF (ALLOCATED(reals)) DEALLOCATE(reals)
-            ALLOCATE(reals(1:SIZE(datatype)),source=0.0_r8k)
-        END IF
-        IF (PRESENT(chars)) THEN
-            IF (ALLOCATED(chars)) DEALLOCATE(chars)
-            ALLOCATE(chars(1:SIZE(datatype)))
-        END IF
+        if (present(ignore)) then
+            string = trim(adjustl(line(index(line,ignore)+len(ignore):)))
+        else
+            string = trim(adjustl(line))
+        end if
+        if (present(separator)) then
+            allocate(sep, source=separator)
+        else
+            allocate(sep, source=' ')
+        end if
+        if (present(ints)) then
+            if (allocated(ints)) deallocate(ints)
+            allocate(ints(1:size(datatype)),source=0_i4k)
+        end if
+        if (present(reals)) then
+            if (allocated(reals)) deallocate(reals)
+            allocate(reals(1:size(datatype)),source=0.0_r8k)
+        end if
+        if (present(chars)) then
+            if (allocated(chars)) deallocate(chars)
+            allocate(chars(1:size(datatype)))
+        end if
 
-        DO i = 1, SIZE(datatype)
-            SELECT CASE (datatype(i))
-            CASE ('I', 'i')
-                !! Integer
+        do i = 1, size(datatype)
+            select case (datatype(i))
+            case ('i', 'I')
+                !! integer
                 cnt%i = cnt%i + 1
-                CALL get_string_value (string, sep, ints(cnt%i))
-            CASE ('R', 'r')
-                !! Real
+                call get_string_value (string, sep, ints(cnt%i))
+            case ('r', 'R')
+                !! real
                 cnt%r = cnt%r + 1
-                CALL get_string_value (string, sep, reals(cnt%r))
-            CASE ('C', 'c')
-                !! Character
+                call get_string_value (string, sep, reals(cnt%r))
+            case ('c', 'C')
+                !! character
                 cnt%c = cnt%c + 1
-                CALL get_string_value (string, sep, char)
-                ALLOCATE(chars(cnt%c)%text, source=char)
-            END SELECT
-            CALL reduce_string (string, sep)
+                call get_string_value (string, sep, char)
+                allocate(chars(cnt%c)%text, source=char)
+            end select
+            call reduce_string (string, sep)
             cnt%t = cnt%t + 1
-        END DO
+        end do
 
         line = string
 
-        END PROCEDURE interpret_string
+    end procedure interpret_string
 
-        MODULE PROCEDURE reduce_string
-        IMPLICIT NONE
+    module procedure reduce_string
+        implicit none
 
-        IF (INDEX(string,sep) == 0) THEN
+        if (index(string,sep) == 0) then
             string = ''
-        ELSE
-            string = ADJUSTL(string(INDEX(string,sep)+LEN(sep):))
-        END IF
+        else
+            string = adjustl(string(index(string,sep)+len(sep):))
+        end if
 
-        END PROCEDURE reduce_string
+    end procedure reduce_string
 
-        MODULE PROCEDURE get_string_char
-        IMPLICIT NONE
+    module procedure get_string_char
+        implicit none
 
-        IF (INDEX(string,sep) == 0) THEN
-            name = string(1:)                    !! Read to end of string
-        ELSE
-            name = string(1:INDEX(string,sep)-1) !! Read until sep is found
-        END IF
+        if (index(string,sep) == 0) then
+            name = string(1:)                    !! read to end of string
+        else
+            name = string(1:index(string,sep)-1) !! read until sep is found
+        end if
 
-        END PROCEDURE get_string_char
+    end procedure get_string_char
 
-        MODULE PROCEDURE get_string_int
-        IMPLICIT NONE
+    module procedure get_string_int
+        implicit none
 
-        CHARACTER(LEN=:), ALLOCATABLE :: text
+        character(len=:), allocatable :: text
 
-        IF (INDEX(string,sep) == 0) THEN
-            ALLOCATE(text, source=string(1:))                    !! Read to end of string
-        ELSE
-            ALLOCATE(text, source=string(1:INDEX(string,sep)-1)) !! Read until sep is found
-        END IF
-        READ(text,'(i8)') name                                   !! Store value
+        if (index(string,sep) == 0) then
+            allocate(text, source=string(1:))                    !! read to end of string
+        else
+            allocate(text, source=string(1:index(string,sep)-1)) !! read until sep is found
+        end if
+        read(text,'(i8)') name                                   !! store value
 
-        END PROCEDURE get_string_int
+    end procedure get_string_int
 
-        MODULE PROCEDURE get_string_real
-        IMPLICIT NONE
-        CHARACTER(LEN=:), ALLOCATABLE :: text
+    module procedure get_string_real
+        implicit none
+        character(len=:), allocatable :: text
 
-        IF (INDEX(string,sep) == 0) THEN
-            ALLOCATE(text, source=string(1:))                    !! Read to end of string
-        ELSE
-            ALLOCATE(text, source=string(1:INDEX(string,sep)-1)) !! Read until sep is found
-        END IF
-        READ(text,'(es13.6)') name                               !! Store value
+        if (index(string,sep) == 0) then
+            allocate(text, source=string(1:))                    !! read to end of string
+        else
+            allocate(text, source=string(1:index(string,sep)-1)) !! read until sep is found
+        end if
+        read(text,'(es13.6)') name                               !! store value
 
-        END PROCEDURE get_string_real
+    end procedure get_string_real
 
-        MODULE PROCEDURE convert_real32_to_string
-        IMPLICIT NONE
-        !! Converts a real to a character string
-        CHARACTER(LEN=20) :: tmp_string = '                    '
+    module procedure convert_real32_to_string
+        implicit none
+        !! converts a real to a character string
+        character(len=20) :: tmp_string = '                    '
 
-        WRITE(tmp_string,*) var
-        ALLOCATE(string,source=TRIM(ADJUSTL(tmp_string)))
+        write(tmp_string,*) var
+        allocate(string,source=trim(adjustl(tmp_string)))
 
-        END PROCEDURE convert_real32_to_string
+    end procedure convert_real32_to_string
 
-        MODULE PROCEDURE convert_real64_to_string
-        IMPLICIT NONE
-        !! Converts a real to a character string
-        CHARACTER(LEN=30) :: tmp_string = '                              '
+    module procedure convert_real64_to_string
+        implicit none
+        !! converts a real to a character string
+        character(len=30) :: tmp_string = '                              '
 
-        WRITE(tmp_string,*) var
-        ALLOCATE(string,source=TRIM(ADJUSTL(tmp_string)))
+        write(tmp_string,*) var
+        allocate(string,source=trim(adjustl(tmp_string)))
 
-        END PROCEDURE convert_real64_to_string
+    end procedure convert_real64_to_string
 
-        MODULE PROCEDURE convert_real64_array_to_string
-        IMPLICIT NONE
-        !! Converts a real to a character string
-        INTEGER(i4k) :: i
-        CHARACTER(LEN=:), ALLOCATABLE :: tmp_string
+    module procedure convert_real64_array_to_string
+        implicit none
+        !! converts a real to a character string
+        integer(i4k) :: i
+        character(len=:), allocatable :: tmp_string
 
-        DO i = 1, SIZE(var)
-            ALLOCATE(tmp_string, source=convert_real64_to_string(var(i)))
-            IF (.NOT. ALLOCATED(string)) THEN
-                ALLOCATE(string,source=tmp_string)
-            ELSE
+        do i = 1, size(var)
+            allocate(tmp_string, source=convert_real64_to_string(var(i)))
+            if (.not. allocated(string)) then
+                allocate(string,source=tmp_string)
+            else
                 string = string // " " // tmp_string
-            END IF
-            DEALLOCATE(tmp_string)
-        END DO
+            end if
+            deallocate(tmp_string)
+        end do
 
-        END PROCEDURE convert_real64_array_to_string
+    end procedure convert_real64_array_to_string
 
-        MODULE PROCEDURE convert_int32_to_string
-        IMPLICIT NONE
-        CHARACTER(LEN=20) :: tmp_string = '                    '
+    module procedure convert_int32_to_string
+        implicit none
+        character(len=20) :: tmp_string = '                    '
 
-        WRITE(tmp_string,*) var
-        ALLOCATE(string,source=TRIM(ADJUSTL(tmp_string)))
+        write(tmp_string,*) var
+        allocate(string,source=trim(adjustl(tmp_string)))
 
-        END PROCEDURE convert_int32_to_string
+    end procedure convert_int32_to_string
 
-        MODULE PROCEDURE convert_int64_to_string
-        IMPLICIT NONE
-        CHARACTER(LEN=30) :: tmp_string = '                              '
+    module procedure convert_int64_to_string
+        implicit none
+        character(len=30) :: tmp_string = '                              '
 
-        WRITE(tmp_string,*) var
-        ALLOCATE(string,source=TRIM(ADJUSTL(tmp_string)))
+        write(tmp_string,*) var
+        allocate(string,source=trim(adjustl(tmp_string)))
 
-        END PROCEDURE convert_int64_to_string
+    end procedure convert_int64_to_string
 
-        MODULE PROCEDURE convert_logical_to_string
-        IMPLICIT NONE
+    module procedure convert_logical_to_string
+        implicit none
 
-        IF (var) THEN
-            ALLOCATE(string,source='True')
-        ELSE
-            ALLOCATE(string,source='False')
-        END IF
+        if (var) then
+            allocate(string,source='true')
+        else
+            allocate(string,source='false')
+        end if
 
-        END PROCEDURE convert_logical_to_string
+    end procedure convert_logical_to_string
 
-        MODULE PROCEDURE to_uppercase
-        IMPLICIT NONE
+    module procedure to_uppercase
+        implicit none
         !! author: Ian Porter
         !! date: 01/23/2019
         !!
-        !! This function changes lowercase text in a string to uppercase text
+        !! this function changes lowercase text in a string to uppercase text
         !!
-        INTEGER(i4k) :: i, j
-        CHARACTER(LEN=26), PARAMETER    :: CAPL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        CHARACTER(LEN=26), PARAMETER    :: LOWL = 'abcdefghijklmnopqrstuvwxyz'
+        integer(i4k) :: i, j
+        character(len=26), parameter    :: capl = 'abcdefghijklmnopqrstuvwxyz'
+        character(len=26), parameter    :: lowl = 'abcdefghijklmnopqrstuvwxyz'
 
-        new_string = string(1:LEN_TRIM(string))
+        new_string = string(1:len_trim(string))
 
-        DO i = 1, LEN_TRIM(string)
-            j = INDEX(LOWL, string(i:i))
-            IF (j > 0) THEN
-                new_string(i:i) = CAPL(j:j)
-            ELSE
+        do i = 1, len_trim(string)
+            j = index(lowl, string(i:i))
+            if (j > 0) then
+                new_string(i:i) = capl(j:j)
+            else
                 new_string(i:i) = string(i:i)
-            END IF
-        END DO
+            end if
+        end do
 
-        END PROCEDURE to_uppercase
+    end procedure to_uppercase
 
-        MODULE PROCEDURE to_lowercase
-        IMPLICIT NONE
+    module procedure to_lowercase
+        implicit none
         !! author: Ian Porter
         !! date: 01/23/2019
         !!
-        !! This function changes uppercase text in a string to lowercase text
+        !! this function changes uppercase text in a string to lowercase text
         !!
-        INTEGER(i4k) :: i, j
-        CHARACTER(LEN=26), PARAMETER    :: CAPL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        CHARACTER(LEN=26), PARAMETER    :: LOWL = 'abcdefghijklmnopqrstuvwxyz'
+        integer(i4k) :: i, j
+        character(len=26), parameter    :: capl = 'abcdefghijklmnopqrstuvwxyz'
+        character(len=26), parameter    :: lowl = 'abcdefghijklmnopqrstuvwxyz'
 
-        new_string = string(1:LEN_TRIM(string))
+        new_string = string(1:len_trim(string))
 
-        DO i = 1, LEN_TRIM(string)
-            j = INDEX(CAPL, string(i:i))
-            IF (j > 0) THEN
-                new_string(i:i) = LOWL(j:j)
-            ELSE
+        do i = 1, len_trim(string)
+            j = index(capl, string(i:i))
+            if (j > 0) then
+                new_string(i:i) = lowl(j:j)
+            else
                 new_string(i:i) = string(i:i)
-            END IF
-        END DO
+            end if
+        end do
 
-        END PROCEDURE to_lowercase
+    end procedure to_lowercase
 
-        MODULE PROCEDURE TRIM_FROM_STRING
-        IMPLICIT NONE
+    module procedure trim_from_string
+        implicit none
         !! author: Ian Porter
         !! date: 11/06/2019
         !!
-        !! This function trims <item> from a string
+        !! this function trims <item> from a string
         !!
-        INTEGER(i4k) :: start_len  !! Length to the start of where to trim string from
-        INTEGER(i4k) :: string_len !! Length of the string
-        INTEGER(i4k) :: item_len   !! Length of the item to trim
-        LOGICAL :: search_by_case  !! Flag to determine whether consider case sensitivity in search
+        integer(i4k) :: start_len  !! length to the start of where to trim string from
+        integer(i4k) :: string_len !! length of the string
+        integer(i4k) :: item_len   !! length of the item to trim
+        logical :: search_by_case  !! flag to determine whether consider case sensitivity in search
 
-        IF (PRESENT(case_sensitive)) THEN
+        if (present(case_sensitive)) then
             search_by_case = case_sensitive
-        ELSE
+        else
             search_by_case = .true.
-        END IF
+        end if
 
-        IF (search_by_case) THEN
-            start_len = INDEX(string,item,back=.true.)
-        ELSE
-            start_len = INDEX(to_uppercase(string),to_uppercase(item),back=.true.)
-        END IF
+        if (search_by_case) then
+            start_len = index(string,item,back=.true.)
+        else
+            start_len = index(to_uppercase(string),to_uppercase(item),back=.true.)
+        end if
 
-        IF (start_len > 0) THEN
-            item_len = LEN(item)
-            string_len = LEN(string)
-            IF (string_len == item_len) THEN
+        if (start_len > 0) then
+            item_len = len(item)
+            string_len = len(string)
+            if (string_len == item_len) then
                 new_string = ''
-            ELSE
+            else
                 new_string = string(1:start_len - 1)
-                IF (LEN(new_string) + item_len < string_len) THEN
+                if (len(new_string) + item_len < string_len) then
                     new_string = new_string // string(start_len + item_len:)
-                END IF
-            END IF
-        ELSE
+                end if
+            end if
+        else
             new_string = string
-        END IF
+        end if
 
-        END PROCEDURE TRIM_FROM_STRING
+    end procedure trim_from_string
 
-        MODULE PROCEDURE sleep_for
-        IMPLICIT NONE
-        !! author: Zaak Beekman, ParaTools
+    module procedure sleep_for
+        implicit none
+        !! author: zaak beekman, paratools
         !! date: 8/8/2018
         !!
-        !! This performs a 'sleep' for a specified amount of time
+        !! this performs a 'sleep' for a specified amount of time
         !!
-        INTEGER(i4k), DIMENSION(8) :: time
-        INTEGER(i8k) :: ms_t1, ms_t2, msecs_big
+        integer(i4k), dimension(8) :: time
+        integer(i8k) :: ms_t1, ms_t2, msecs_big
 
-        CALL DATE_AND_TIME(values=time)
+        call date_and_time(values=time)
 
         ms_t1=(time(5)*3600+time(6)*60+time(7))*1000+time(8)
         msecs_big = msecs
 
-        DO !! spin until elapsed time is greater than msecs
-            CALL DATE_AND_TIME(values=time)
+        do !! spin until elapsed time is greater than msecs
+            call date_and_time(values=time)
             ms_t2=(time(5)*3600+time(6)*60+time(7))*1000+time(8)
-            IF ( ms_t2 - ms_t1 >= msecs_big ) EXIT
-        END DO
+            if ( ms_t2 - ms_t1 >= msecs_big ) exit
+        end do
 
-        END PROCEDURE
+    end procedure
 
-END SUBMODULE Misc_implementation
+end submodule misc_procedures

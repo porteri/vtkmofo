@@ -1,146 +1,146 @@
-MODULE VTK_serial_Grid
-    USE XML,               ONLY : xml_file_dt, xml_element_dt
-    USE vtk_datasets,      ONLY : dataset
-    USE VTK_piece_element, ONLY : piece_dt
-    USE VTK_element,       ONLY : VTK_element_dt
-    IMPLICIT NONE
+module vtk_serial_grid
+    use xml,               only : xml_file_dt, xml_element_dt
+    use vtk_datasets,      only : dataset
+    use vtk_piece_element, only : piece_dt
+    use vtk_element,       only : vtk_element_dt
+    implicit none
     !! author: Ian Porter
     !! date: 07/28/2019
     !!
-    !! This contains the DTs for the different serial geometry types
+    !! this contains the dts for the different serial geometry types
     !!
 
-    PRIVATE
-    PUBLIC :: VTK_dataset_dt
-    PUBLIC :: VTK_serial_RectilinearGrid_dt
-    PUBLIC :: VTK_serial_StructuredGrid_dt
-    PUBLIC :: VTK_serial_UnstructuredGrid_dt
-    PUBLIC :: VTK_serial_ImageData_dt
+    private
+    public :: vtk_dataset_dt
+    public :: vtk_serial_rectilineargrid_dt
+    public :: vtk_serial_structuredgrid_dt
+    public :: vtk_serial_unstructuredgrid_dt
+    public :: vtk_serial_imagedata_dt
 
-    TYPE, EXTENDS(VTK_element_dt), ABSTRACT :: VTK_dataset_dt
-        !! VTK dataset derived type
-        CHARACTER(LEN=:), ALLOCATABLE :: WholeExtent  !! String for the whole extent of the range
-        CHARACTER(LEN=:), ALLOCATABLE :: grid_type    !! Name of the grid type
-        CHARACTER(LEN=:), ALLOCATABLE :: extra_string !! Additional data needed to be written
-        TYPE(piece_dt),   ALLOCATABLE :: piece        !! Piece DT (Currently only supporting one piece)
-    CONTAINS
-        PROCEDURE(abs_set_grid), DEFERRED :: set_grid
-        PROCEDURE :: vtk_dataset_deallocate
-        PROCEDURE :: finalize
-    END TYPE VTK_dataset_dt
+    type, extends(vtk_element_dt), abstract :: vtk_dataset_dt
+        !! vtk dataset derived type
+        character(len=:), allocatable :: wholeextent  !! string for the whole extent of the range
+        character(len=:), allocatable :: grid_type    !! name of the grid type
+        character(len=:), allocatable :: extra_string !! additional data needed to be written
+        type(piece_dt),   allocatable :: piece        !! piece dt (currently only supporting one piece)
+    contains
+        procedure(abs_set_grid), deferred :: set_grid
+        procedure :: vtk_dataset_deallocate
+        procedure :: finalize
+    end type vtk_dataset_dt
 
-    TYPE, EXTENDS(VTK_dataset_dt) :: VTK_serial_ImageData_dt
-        !! Serial file ImageData Grid
-        PRIVATE
-    CONTAINS
-        PROCEDURE :: set_grid => ImageData_set_grid
-    END TYPE VTK_serial_ImageData_dt
+    type, extends(vtk_dataset_dt) :: vtk_serial_imagedata_dt
+        !! serial file imagedata grid
+        private
+    contains
+        procedure :: set_grid => imagedata_set_grid
+    end type vtk_serial_imagedata_dt
 
-    TYPE, EXTENDS(VTK_dataset_dt) :: VTK_serial_RectilinearGrid_dt
-        !! Serial file Rectilinear Grid
-        PRIVATE
-    CONTAINS
-        PROCEDURE :: set_grid => Rectilineargrid_set_grid
-    END TYPE VTK_serial_RectilinearGrid_dt
+    type, extends(vtk_dataset_dt) :: vtk_serial_rectilineargrid_dt
+        !! serial file rectilinear grid
+        private
+    contains
+        procedure :: set_grid => rectilineargrid_set_grid
+    end type vtk_serial_rectilineargrid_dt
 
-    TYPE, EXTENDS(VTK_dataset_dt) :: VTK_serial_StructuredGrid_dt
-        !! Serial file Structured Grid
-        PRIVATE
-    CONTAINS
-        PROCEDURE :: set_grid => Structuredgrid_set_grid
-    END TYPE VTK_serial_StructuredGrid_dt
+    type, extends(vtk_dataset_dt) :: vtk_serial_structuredgrid_dt
+        !! serial file structured grid
+        private
+    contains
+        procedure :: set_grid => structuredgrid_set_grid
+    end type vtk_serial_structuredgrid_dt
 
-    TYPE, EXTENDS(VTK_dataset_dt) :: VTK_serial_UnstructuredGrid_dt
-        !! Serial file Unstructured Grid
-        PRIVATE
-    CONTAINS
-        PROCEDURE :: set_grid => Unstructuredgrid_set_grid
-    END TYPE VTK_serial_UnstructuredGrid_dt
+    type, extends(vtk_dataset_dt) :: vtk_serial_unstructuredgrid_dt
+        !! serial file unstructured grid
+        private
+    contains
+        procedure :: set_grid => unstructuredgrid_set_grid
+    end type vtk_serial_unstructuredgrid_dt
 
-    INTERFACE
+    interface
 
-        MODULE SUBROUTINE abs_set_grid (me, geometry)
-        IMPLICIT NONE
-        !1 author: Ian Porter
-        !! date: 07/09/2019
-        !!
-        !! Initializes a piece dt with the geometry information
-        !!
-        CLASS(VTK_dataset_dt), INTENT(INOUT) :: me
-        CLASS(dataset),        INTENT(IN)    :: geometry
+        module subroutine abs_set_grid (me, geometry)
+            implicit none
+            !! author: Ian Porter
+            !! date: 07/09/2019
+            !!
+            !! initializes a piece dt with the geometry information
+            !!
+            class(vtk_dataset_dt), intent(inout) :: me
+            class(dataset),        intent(in)    :: geometry
 
-        END SUBROUTINE abs_set_grid
+        end subroutine abs_set_grid
 
-        MODULE SUBROUTINE finalize (me)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 07/28/2019
-        !!
-        !! Writes data inside of itself
-        !!
-        CLASS(VTK_dataset_dt), INTENT(INOUT) :: me
+        module subroutine finalize (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 07/28/2019
+            !!
+            !! writes data inside of itself
+            !!
+            class(vtk_dataset_dt), intent(inout) :: me
 
-        END SUBROUTINE finalize
+        end subroutine finalize
 
-        RECURSIVE MODULE SUBROUTINE vtk_dataset_deallocate (foo)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 07/28/2019
-        !!
-        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
-        !!
-        CLASS(VTK_dataset_dt), INTENT(INOUT) :: foo
+        recursive module subroutine vtk_dataset_deallocate (foo)
+            implicit none
+            !! author: Ian Porter
+            !! date: 07/28/2019
+            !!
+            !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+            !!
+            class(vtk_dataset_dt), intent(inout) :: foo
 
-        END SUBROUTINE vtk_dataset_deallocate
+        end subroutine vtk_dataset_deallocate
 
-        MODULE SUBROUTINE ImageData_set_grid (me, geometry)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 08/08/2019
-        !!
-        !! This writes the grid information for an image data grid
-        !!
-        CLASS(VTK_serial_ImageData_dt), INTENT(INOUT) :: me         !! Serial geometry DT
-        CLASS(dataset),                 INTENT(IN)    :: geometry   !! DT of geometry information
+        module subroutine imagedata_set_grid (me, geometry)
+            implicit none
+            !! author: Ian Porter
+            !! date: 08/08/2019
+            !!
+            !! this writes the grid information for an image data grid
+            !!
+            class(vtk_serial_imagedata_dt), intent(inout) :: me         !! serial geometry dt
+            class(dataset),                 intent(in)    :: geometry   !! dt of geometry information
 
-        END SUBROUTINE ImageData_set_grid
+        end subroutine imagedata_set_grid
 
-        MODULE SUBROUTINE Rectilineargrid_set_grid (me, geometry)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 07/28/2019
-        !!
-        !! This writes the grid information for a rectilinear grid
-        !!
-        CLASS(VTK_serial_RectilinearGrid_dt), INTENT(INOUT) :: me         !! Serial geometry DT
-        CLASS(dataset),                       INTENT(IN)    :: geometry   !! DT of geometry information
+        module subroutine rectilineargrid_set_grid (me, geometry)
+            implicit none
+            !! author: Ian Porter
+            !! date: 07/28/2019
+            !!
+            !! this writes the grid information for a rectilinear grid
+            !!
+            class(vtk_serial_rectilineargrid_dt), intent(inout) :: me         !! serial geometry dt
+            class(dataset),                       intent(in)    :: geometry   !! dt of geometry information
 
-        END SUBROUTINE Rectilineargrid_set_grid
+        end subroutine rectilineargrid_set_grid
 
-        MODULE SUBROUTINE Structuredgrid_set_grid (me, geometry)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 07/28/2019
-        !!
-        !! This writes the grid information for a structured grid
-        !!
-        CLASS(VTK_serial_StructuredGrid_dt), INTENT(INOUT) :: me         !! Serial geometry DT
-        CLASS(dataset),                      INTENT(IN)    :: geometry   !! DT of geometry information
+        module subroutine structuredgrid_set_grid (me, geometry)
+            implicit none
+            !! author: Ian Porter
+            !! date: 07/28/2019
+            !!
+            !! this writes the grid information for a structured grid
+            !!
+            class(vtk_serial_structuredgrid_dt), intent(inout) :: me         !! serial geometry dt
+            class(dataset),                      intent(in)    :: geometry   !! dt of geometry information
 
-        END SUBROUTINE Structuredgrid_set_grid
+        end subroutine structuredgrid_set_grid
 
-        MODULE SUBROUTINE Unstructuredgrid_set_grid (me, geometry)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 07/29/2019
-        !!
-        !! This writes the grid information for an unstructured grid
-        !!
-        CLASS(VTK_serial_UnstructuredGrid_dt), INTENT(INOUT) :: me         !! Serial geometry DT
-        CLASS(dataset),                        INTENT(IN)    :: geometry   !! DT of geometry information
+        module subroutine unstructuredgrid_set_grid (me, geometry)
+            implicit none
+            !! author: Ian Porter
+            !! date: 07/29/2019
+            !!
+            !! this writes the grid information for an unstructured grid
+            !!
+            class(vtk_serial_unstructuredgrid_dt), intent(inout) :: me         !! serial geometry dt
+            class(dataset),                        intent(in)    :: geometry   !! dt of geometry information
 
-        END SUBROUTINE Unstructuredgrid_set_grid
+        end subroutine unstructuredgrid_set_grid
 
-    END INTERFACE
+    end interface
 
-END MODULE VTK_serial_Grid
+end module vtk_serial_grid
