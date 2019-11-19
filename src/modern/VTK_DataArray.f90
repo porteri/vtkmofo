@@ -55,8 +55,8 @@ module vtk_dataarray_element
             character(len=*),    intent(in), optional :: name               !! name of the array
             integer(i4k),        intent(in), optional :: numberofcomponents !! the # of components per value in the array
             character(len=*),    intent(in), optional :: format             !! the means by whih the data is stored in the file
-            character(len=*),    intent(in), optional :: offset             !! if format='appended', this specifies the offset from the
-            !! beginning of the appended data
+            character(len=*),    intent(in), optional :: offset             !! if format='appended', this specifies the offset from
+                                                                            !! the beginning of the appended data
             real(r8k),           intent(in), optional :: range_min          !! min value in array of numbers
             real(r8k),           intent(in), optional :: range_max          !! max value in array of numbers
 

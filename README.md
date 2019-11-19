@@ -28,12 +28,12 @@ Format support:
 This code is built and tested with the following:
 
 Compilers: (may work for older ones as well)
- - [gfortran][gcc link] 7.4, 8.1, 8.2, 8.3, 9.0
- - [Intel][Intel link] 2018
+ - [gfortran][gcc link] 7.4, 8.1, 8.2, 8.3, 9.0, 10.0
+ - [Intel][Intel link] 2018.0.5, 2019
    - * Warning: Intel 2018 does not support derived type IO *
 
 Operating Systems:
- - Linnux (Tested on Ubuntu 16, 18)
+ - Linnux (Tested on Ubuntu 14, 16, 18 and lubuntu)
  - Windows (Tested on Windows 8, 10)
  - MacOS
 

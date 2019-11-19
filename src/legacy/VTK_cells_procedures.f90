@@ -1,5 +1,4 @@
 submodule (vtk_cells) vtk_cells_procedures
-    use precision, only : i4k
     implicit none
     !! author: Ian Porter
     !! date: 12/2/2017

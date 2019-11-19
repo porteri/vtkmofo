@@ -1,5 +1,4 @@
 submodule (misc) misc_procedures
-    use precision, only : i4k, i8k, r8k
     implicit none
 
 contains
