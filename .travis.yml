@@ -33,7 +33,7 @@ matrix:
             - gfortran-8
     - os: linux
       dist: bionic
-      env: GCC=9
+      env: GCC=8
       before_install:
         - curl -L https://github.com/Kitware/CMake/releases/download/v3.15.5/cmake-3.15.5-Linux-x86_64.tar.gz -o cmake-3.15.5-Linux-x86_64.tar.gz
         - tar xf cmake-3.15.5-Linux-x86_64.tar.gz
@@ -45,7 +45,7 @@ matrix:
           sources:
             - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
-            - gfortran-9
+            - gfortran-8
     - os: osx
       osx_image: xcode10
       env: GCC=8
