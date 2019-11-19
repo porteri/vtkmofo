@@ -24,13 +24,13 @@ function(add_VTKmofo_unit_test test_name)
 endfunction(add_VTKmofo_unit_test)
 
 foreach(test
-    attributes_unit
-    cells_unit
+    Attributes_unit
+    Cells_unit
     DataArray_unit
-    datasets_unit
-#    linked_list_unit
-    trim_from_string_unit
-    xml_unit
+    Datasets_unit
+#    Linked_list_unit
+    Trim_from_string_unit
+    XML_unit
     )
   add_VTKmofo_unit_test(${test})
   list(APPEND VTKmofo_unit_test_list ${test})

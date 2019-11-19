@@ -1,12 +1,12 @@
-SUBMODULE (vtk_cells) vtk_cells_implementation
-    USE Precision, ONLY : i4k
-    IMPLICIT NONE
+submodule (vtk_cells) vtk_cells_procedures
+    use precision, only : i4k
+    implicit none
     !! author: Ian Porter
     !! date: 12/2/2017
     !!
-    !! This module contains the types of cells used by VTK
+    !! this module contains the types of cells used by vtk
     !!
-    !! The following cells are available:
+    !! the following cells are available:
     !!  1) vertex
     !!  2) poly_vertex
     !!  3) line
@@ -27,339 +27,340 @@ SUBMODULE (vtk_cells) vtk_cells_implementation
     !! 18) quadratic_tetra
     !! 19) quadratic_hexahedron
     !!
-    CONTAINS
+contains
 
-        MODULE PROCEDURE abs_read
-        USE Misc, ONLY : interpret_string, def_len
-        !!
-        !! Subroutine performs the read for a cell
-        INTEGER(i4k)           :: i, iostat
-        LOGICAL                :: end_of_file, ierr
-        CHARACTER(LEN=def_len) :: line
-        INTEGER(i4k), DIMENSION(:), ALLOCATABLE :: ints, dummy, points
+    module procedure abs_read
+        use misc, only : interpret_string, def_len
+        implicit none
+        !! subroutine performs the read for a cell
+        integer(i4k)           :: i, iostat
+        logical                :: end_of_file, ierr
+        character(len=def_len) :: line
+        integer(i4k), dimension(:), allocatable :: ints, dummy, points
 
-        ALLOCATE(me%points(0)); i = 0; end_of_file = .FALSE.
+        allocate(me%points(0)); i = 0; end_of_file = .false.
 
-        READ(unit,100,iostat=iostat) line
+        read(unit,100,iostat=iostat) line
         end_of_file = (iostat < 0)
-        IF (end_of_file) THEN
-            RETURN
-        ELSE
-            i = 0! IF(ALLOCATED(points)) DEALLOCATE(points)
-            get_vals: DO
+        if (end_of_file) then
+            return
+        else
+            i = 0 ! if(allocated(points)) deallocate(points)
+            get_vals: do
                 i = i + 1
-                CALL interpret_string (line=line, datatype=[ 'I' ], separator=' ', ints=ints)
-                IF (i == 1) THEN
-                    CALL me%init(ints(1), ierr)
-                ELSE
-                    ALLOCATE(dummy(1:i-1))
+                call interpret_string (line=line, datatype=[ 'i' ], separator=' ', ints=ints)
+                if (i == 1) then
+                    call me%init(ints(1), ierr)
+                else
+                    allocate(dummy(1:i-1))
                     dummy(i-1) = ints(1)
-                    IF (i > 2) dummy(1:i-2) = points
-                    IF (ALLOCATED(points)) DEALLOCATE(points)
-                    CALL MOVE_ALLOC(dummy, points)
-                END IF
-                IF (line == '') EXIT get_vals
-            END DO get_vals
+                    if (i > 2) dummy(1:i-2) = points
+                    if (allocated(points)) deallocate(points)
+                    call move_alloc(dummy, points)
+                end if
+                if (line == '') exit get_vals
+            end do get_vals
             me%points = points
-        END IF
+        end if
 
-100     FORMAT((a))
-        END PROCEDURE abs_read
+100     format((a))
+    end procedure abs_read
 
-        MODULE PROCEDURE cell_legacy_write
-        !!
-        !! Writes the cell information to the .vtk file
-        INTEGER(i4k) :: i
+    module procedure cell_legacy_write
+        implicit none
+        !! writes the cell information to the .vtk file
+        integer(i4k) :: i
 
-        WRITE(unit,100) me%n_points, (me%points(i),i=1,me%n_points)
-100     FORMAT ((i0,' '),*(i0,' '))
-        END PROCEDURE cell_legacy_write
+        write(unit,100) me%n_points, (me%points(i),i=1,me%n_points)
+100     format((i0,' '),*(i0,' '))
+    end procedure cell_legacy_write
 
-        MODULE PROCEDURE abs_setup
-        !!
-        !! Sets up the cell information
-        LOGICAL :: ierr = .FALSE.
+    module procedure abs_setup
+        implicit none
+        !! sets up the cell information
+        logical :: ierr = .false.
 
-        CALL me%init(SIZE(points), ierr)     !! Initialize the cell
-        IF (ierr) ERROR STOP 'Error initializing cell. Bad # of points.'
+        call me%init(size(points), ierr)     !! initialize the cell
+        if (ierr) error stop 'error initializing cell. bad # of points.'
         me%points = points
 
-        END PROCEDURE abs_setup
+    end procedure abs_setup
 
-        MODULE PROCEDURE abs_init
-        !!
-        !! Initializes the cell with size and type information
+    module procedure abs_init
+        implicit none
+        !! initializes the cell with size and type information
 
         me%n_points = n
-        ierr        = .FALSE.
+        ierr        = .false.
 
-        END PROCEDURE abs_init
+    end procedure abs_init
 
-        MODULE PROCEDURE check_for_diffs
+    module procedure check_for_diffs
+        implicit none
         !! author: Ian Porter
         !! date: 01/05/2017
         !!
-        !! Function checks for differences in an cell
+        !! function checks for differences in an cell
         !!
-        INTEGER(i4k) :: i
+        integer(i4k) :: i
 
-        diffs = .FALSE.
-        IF       (.NOT. SAME_TYPE_AS(me,you))         THEN
-            diffs = .TRUE.
-        ELSE IF (me%n_points     /= you%n_points)     THEN
-            diffs = .TRUE.
-        ELSE IF (SIZE(me%points) /= SIZE(you%points)) THEN
-            diffs = .TRUE.
-        ELSE
-            DO i = 1, SIZE(me%points)
-                IF (me%points(i) /= you%points(i))    THEN
-                    diffs = .TRUE.
-                    EXIT
-                END IF
-            END DO
-        END IF
+        diffs = .false.
+        if       (.not. same_type_as(me,you))         then
+            diffs = .true.
+        else if (me%n_points     /= you%n_points)     then
+            diffs = .true.
+        else if (size(me%points) /= size(you%points)) then
+            diffs = .true.
+        else
+            do i = 1, size(me%points)
+                if (me%points(i) /= you%points(i))    then
+                    diffs = .true.
+                    exit
+                end if
+            end do
+        end if
 
-        END PROCEDURE check_for_diffs
+    end procedure check_for_diffs
 
-        MODULE PROCEDURE vertex_init
-        !!
-        !! Initializes a vertex cell
+    module procedure vertex_init
+        implicit none
+        !! initializes a vertex cell
 
         me%n_points = 1
         me%type     = 1
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE vertex_init
+    end procedure vertex_init
 
-        MODULE PROCEDURE poly_vertex_init
-        !!
-        !! Initializes a poly_vertex cell
+    module procedure poly_vertex_init
+        implicit none
+        !! initializes a poly_vertex cell
 
         me%n_points = n
         me%type     = 2
-        ierr        = .FALSE.
+        ierr        = .false.
 
-        END PROCEDURE poly_vertex_init
+    end procedure poly_vertex_init
 
-        MODULE PROCEDURE line_init
-        !!
-        !! Initializes a line cell
+    module procedure line_init
+        implicit none
+        !! initializes a line cell
 
         me%n_points = 2
         me%type     = 3
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE line_init
+    end procedure line_init
 
-        MODULE PROCEDURE poly_line_init
-        !!
-        !! Initializes a poly_line cell
+    module procedure poly_line_init
+        implicit none
+        !! initializes a poly_line cell
 
         me%n_points = n
         me%type     = 4
-        ierr        = .FALSE.
+        ierr        = .false.
 
-        END PROCEDURE poly_line_init
+    end procedure poly_line_init
 
-        MODULE PROCEDURE triangle_init
-        !!
-        !! Initializes a triangle cell
+    module procedure triangle_init
+        implicit none
+        !! initializes a triangle cell
 
         me%n_points = 3
         me%type     = 5
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE triangle_init
+    end procedure triangle_init
 
-        MODULE PROCEDURE triangle_strip_init
-        !!
-        !! Initializes a triangle_strip cell
+    module procedure triangle_strip_init
+        implicit none
+        !! initializes a triangle_strip cell
 
         me%n_points = n
         me%type     = 6
-        ierr        = .FALSE.
+        ierr        = .false.
 
-        END PROCEDURE triangle_strip_init
+    end procedure triangle_strip_init
 
-        MODULE PROCEDURE polygon_init
-        !!
-        !! Initializes a polygon cell
+    module procedure polygon_init
+        implicit none
+        !! initializes a polygon cell
 
         me%n_points = n
         me%type     = 7
-        ierr        = .FALSE.
+        ierr        = .false.
 
-        END PROCEDURE polygon_init
+    end procedure polygon_init
 
-        MODULE PROCEDURE pixel_init
-        !!
-        !! Initializes a pixel cell
+    module procedure pixel_init
+        implicit none
+        !! initializes a pixel cell
 
         me%n_points = 4
         me%type     = 8
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE pixel_init
+    end procedure pixel_init
 
-        MODULE PROCEDURE quad_init
-        !!
-        !! Initializes a quad cell
+    module procedure quad_init
+        implicit none
+        !! initializes a quad cell
 
         me%n_points = 4
         me%type     = 9
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE quad_init
+    end procedure quad_init
 
-        MODULE PROCEDURE tetra_init
-        !!
-        !! Initializes a tetra cell
+    module procedure tetra_init
+        implicit none
+        !! initializes a tetra cell
 
         me%n_points = 4
         me%type     = 10
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE tetra_init
+    end procedure tetra_init
 
-        MODULE PROCEDURE voxel_init
-        !!
-        !! Initializes a voxel cell
+    module procedure voxel_init
+        implicit none
+        !! initializes a voxel cell
 
         me%n_points = 8
         me%type     = 11
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE voxel_init
+    end procedure voxel_init
 
-        MODULE PROCEDURE hexahedron_init
-        !!
-        !! Initializes a hexahedron cell
+    module procedure hexahedron_init
+        implicit none
+        !! initializes a hexahedron cell
 
         me%n_points = 8
         me%type     = 12
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE hexahedron_init
+    end procedure hexahedron_init
 
-        MODULE PROCEDURE wedge_init
-        !!
-        !! Initializes a wedge cell
+    module procedure wedge_init
+        implicit none
+        !! initializes a wedge cell
 
         me%n_points = 6
         me%type     = 13
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE wedge_init
+    end procedure wedge_init
 
-        MODULE PROCEDURE pyramid_init
-        !!
-        !! Initializes a pyramid cell
+    module procedure pyramid_init
+        implicit none
+        !! initializes a pyramid cell
 
         me%n_points = 5
         me%type     = 14
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE pyramid_init
+    end procedure pyramid_init
 
-        MODULE PROCEDURE quadratic_edge_init
-        !!
-        !! Initializes a quadratic_edge cell
+    module procedure quadratic_edge_init
+        implicit none
+        !! initializes a quadratic_edge cell
 
         me%n_points = 3
         me%type     = 21
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE quadratic_edge_init
+    end procedure quadratic_edge_init
 
-        MODULE PROCEDURE quadratic_triangle_init
-        !!
-        !! Initializes a quadratic_triangle cell
+    module procedure quadratic_triangle_init
+        implicit none
+        !! initializes a quadratic_triangle cell
 
         me%n_points = 6
         me%type     = 22
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE quadratic_triangle_init
+    end procedure quadratic_triangle_init
 
-        MODULE PROCEDURE quadratic_quad_init
-        !!
-        !! Initializes a quadratic_quad cell
+    module procedure quadratic_quad_init
+        implicit none
+        !! initializes a quadratic_quad cell
 
         me%n_points = 8
         me%type     = 23
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE quadratic_quad_init
+    end procedure quadratic_quad_init
 
-        MODULE PROCEDURE quadratic_tetra_init
-        !!
-        !! Initializes a quadratic_tetra cell
+    module procedure quadratic_tetra_init
+        implicit none
+        !! initializes a quadratic_tetra cell
 
         me%n_points = 10
         me%type     = 24
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE quadratic_tetra_init
+    end procedure quadratic_tetra_init
 
-        MODULE PROCEDURE quadratic_hexahedron_init
-        !!
-        !! Initializes a quadratic_hexahedron cell
+    module procedure quadratic_hexahedron_init
+        implicit none
+        !! initializes a quadratic_hexahedron cell
 
         me%n_points = 20
         me%type     = 25
         ierr        = (n /= me%n_points)
 
-        END PROCEDURE quadratic_hexahedron_init
+    end procedure quadratic_hexahedron_init
 
-        MODULE PROCEDURE set_cell_type
-        !!
-        !! Subroutine allocates the cell based on the type (called during a read)
+    module procedure set_cell_type
+        implicit none
+        !! subroutine allocates the cell based on the type (called during a read)
 
-        IF (ALLOCATED(me)) DEALLOCATE(me)
+        if (allocated(me)) deallocate(me)
 
-        SELECT CASE (type)
-        CASE (1)
-            ALLOCATE(vertex::me)
-        CASE (2)
-            ALLOCATE(poly_vertex::me)
-        CASE (3)
-            ALLOCATE(line::me)
-        CASE (4)
-            ALLOCATE(poly_line::me)
-        CASE (5)
-            ALLOCATE(triangle::me)
-        CASE (6)
-            ALLOCATE(triangle_strip::me)
-        CASE (7)
-            ALLOCATE(polygon::me)
-        CASE (8)
-            ALLOCATE(pixel::me)
-        CASE (9)
-            ALLOCATE(quad::me)
-        CASE (10)
-            ALLOCATE(tetra::me)
-        CASE (11)
-            ALLOCATE(voxel::me)
-        CASE (12)
-            ALLOCATE(hexahedron::me)
-        CASE (13)
-            ALLOCATE(wedge::me)
-        CASE (14)
-            ALLOCATE(pyramid::me)
-        CASE (21)
-            ALLOCATE(quadratic_edge::me)
-        CASE (22)
-            ALLOCATE(quadratic_triangle::me)
-        CASE (23)
-            ALLOCATE(quadratic_quad::me)
-        CASE (24)
-            ALLOCATE(quadratic_tetra::me)
-        CASE (25)
-            ALLOCATE(quadratic_hexahedron::me)
-        CASE DEFAULT
-            ERROR STOP 'Bad value for type. type is unidentified. Execution terminated in Subroutine: set_cell_type'
-        END SELECT
+        select case (type)
+        case (1)
+            allocate(vertex::me)
+        case (2)
+            allocate(poly_vertex::me)
+        case (3)
+            allocate(line::me)
+        case (4)
+            allocate(poly_line::me)
+        case (5)
+            allocate(triangle::me)
+        case (6)
+            allocate(triangle_strip::me)
+        case (7)
+            allocate(polygon::me)
+        case (8)
+            allocate(pixel::me)
+        case (9)
+            allocate(quad::me)
+        case (10)
+            allocate(tetra::me)
+        case (11)
+            allocate(voxel::me)
+        case (12)
+            allocate(hexahedron::me)
+        case (13)
+            allocate(wedge::me)
+        case (14)
+            allocate(pyramid::me)
+        case (21)
+            allocate(quadratic_edge::me)
+        case (22)
+            allocate(quadratic_triangle::me)
+        case (23)
+            allocate(quadratic_quad::me)
+        case (24)
+            allocate(quadratic_tetra::me)
+        case (25)
+            allocate(quadratic_hexahedron::me)
+        case default
+            error stop 'bad value for type. type is unidentified. execution terminated in subroutine: set_cell_type'
+        end select
 
-        END PROCEDURE set_cell_type
+    end procedure set_cell_type
 
-END SUBMODULE vtk_cells_implementation
+end submodule vtk_cells_procedures

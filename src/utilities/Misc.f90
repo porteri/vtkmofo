@@ -1,170 +1,171 @@
-MODULE Misc
-    USE Precision, ONLY : i4k, i8k, r4k, r8k
-    IMPLICIT NONE
+module misc
+    use precision, only : i4k, i8k, r4k, r8k
+    implicit none
     !! author: Ian Porter
     !! date: 12/13/2017
     !!
-    !! This module contains miscellaneous routines used to read/write to the .vtk file
+    !! this module contains miscellaneous routines used to read/write to the .vtk file
     !!
-    PRIVATE
-    PUBLIC :: interpret_string, def_len, to_uppercase, to_lowercase, char_dt, sleep_for, convert_to_string, trim_from_string
+    private
+    public :: interpret_string, def_len, to_uppercase, to_lowercase, char_dt, sleep_for, convert_to_string, trim_from_string
 
-    INTERFACE get_string_value
-        PROCEDURE :: get_string_char
-        PROCEDURE :: get_string_int
-        PROCEDURE :: get_string_real
-    END INTERFACE
+    interface get_string_value
+        procedure :: get_string_char
+        procedure :: get_string_int
+        procedure :: get_string_real
+    end interface
 
-    INTERFACE convert_to_string
-        PROCEDURE :: convert_real32_to_string
-        PROCEDURE :: convert_real64_to_string
-        PROCEDURE :: convert_real64_array_to_string
-        PROCEDURE :: convert_int32_to_string
-        PROCEDURE :: convert_int64_to_string
-        PROCEDURE :: convert_logical_to_string
-    END INTERFACE convert_to_string
+    interface convert_to_string
+        procedure :: convert_real32_to_string
+        procedure :: convert_real64_to_string
+        procedure :: convert_real64_array_to_string
+        procedure :: convert_int32_to_string
+        procedure :: convert_int64_to_string
+        procedure :: convert_logical_to_string
+    end interface convert_to_string
 
-    INTEGER(i4k), PARAMETER :: def_len = 1024          !! Default character length for each line in file
+    integer(i4k), parameter :: def_len = 1024          !! default character length for each line in file
 
-    TYPE char_dt
-        !! Character string DT
-        CHARACTER(LEN=:), ALLOCATABLE :: text
-    END TYPE char_dt
+    type char_dt
+        !! character string dt
+        character(len=:), allocatable :: text
+    end type char_dt
 
-    INTERFACE
+    interface
 
-        MODULE SUBROUTINE interpret_string (line, datatype, ignore, separator, reals, ints, chars)
-        IMPLICIT NONE
-        !! Interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
-        CHARACTER(LEN=*), INTENT(INOUT) :: line
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: ignore, separator
-        CHARACTER(LEN=1), DIMENSION(:), INTENT(IN) :: datatype
-        INTEGER(i4k),     DIMENSION(:), ALLOCATABLE, OPTIONAL :: ints
-        REAL(r8k),        DIMENSION(:), ALLOCATABLE, OPTIONAL :: reals
-        TYPE(char_dt),    DIMENSION(:), ALLOCATABLE, OPTIONAL :: chars
+        module subroutine interpret_string (line, datatype, ignore, separator, reals, ints, chars)
+            implicit none
+            !! interprets a string (typically read from an input file) into a user-defined # of character and/or integer inputs
+            character(len=*), intent(inout) :: line
+            character(len=*), intent(in), optional :: ignore
+            character(len=*), intent(in), optional :: separator
+            character(len=1), dimension(:), intent(in) :: datatype
+            integer(i4k),     dimension(:), allocatable, optional :: ints
+            real(r8k),        dimension(:), allocatable, optional :: reals
+            type(char_dt),    dimension(:), allocatable, optional :: chars
 
-        END SUBROUTINE interpret_string
+        end subroutine interpret_string
 
-        MODULE SUBROUTINE reduce_string (string, sep)
-        IMPLICIT NONE
-        CHARACTER(LEN=:), ALLOCATABLE, INTENT(INOUT) :: string
-        CHARACTER(LEN=*), INTENT(IN)  :: sep
+        module subroutine reduce_string (string, sep)
+            implicit none
+            character(len=:), allocatable, intent(inout) :: string
+            character(len=*), intent(in)  :: sep
 
-        END SUBROUTINE reduce_string
+        end subroutine reduce_string
 
-        MODULE SUBROUTINE get_string_char (string, sep, name)
-        IMPLICIT NONE
-        CHARACTER(LEN=*), INTENT(IN)  :: string, sep
-        CHARACTER(LEN=:), ALLOCATABLE, INTENT(OUT) :: name
+        module subroutine get_string_char (string, sep, name)
+            implicit none
+            character(len=*), intent(in)  :: string, sep
+            character(len=:), allocatable, intent(out) :: name
 
-        END SUBROUTINE get_string_char
+        end subroutine get_string_char
 
-        MODULE SUBROUTINE get_string_int (string, sep, name)
-        IMPLICIT NONE
-        CHARACTER(LEN=*), INTENT(IN)  :: string, sep
-        INTEGER(i4k),     INTENT(OUT) :: name
+        module subroutine get_string_int (string, sep, name)
+            implicit none
+            character(len=*), intent(in)  :: string, sep
+            integer(i4k),     intent(out) :: name
 
-        END SUBROUTINE get_string_int
+        end subroutine get_string_int
 
-        MODULE SUBROUTINE get_string_real (string, sep, name)
-        IMPLICIT NONE
-        CHARACTER(LEN=*), INTENT(IN)  :: string, sep
-        REAL(r8k),        INTENT(OUT) :: name
+        module subroutine get_string_real (string, sep, name)
+            implicit none
+            character(len=*), intent(in)  :: string, sep
+            real(r8k),        intent(out) :: name
 
-        END SUBROUTINE get_string_real
+        end subroutine get_string_real
 
-        MODULE FUNCTION convert_real32_to_string (var) RESULT (string)
-        IMPLICIT NONE
-        !! Converts a real32 to a character string
-        REAL(r4k),        INTENT(IN)  :: var      !! Real variable
-        CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
-        END FUNCTION convert_real32_to_string
+        module function convert_real32_to_string (var) result (string)
+            implicit none
+            !! converts a real32 to a character string
+            real(r4k),        intent(in)  :: var      !! real variable
+            character(len=:), allocatable :: string   !! character string
+        end function convert_real32_to_string
 
-        MODULE FUNCTION convert_real64_to_string (var) RESULT (string)
-        IMPLICIT NONE
-        !! Converts a real64 to a character string
-        REAL(r8k),        INTENT(IN)  :: var      !! Real variable
-        CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
-        END FUNCTION convert_real64_to_string
+        module function convert_real64_to_string (var) result (string)
+            implicit none
+            !! converts a real64 to a character string
+            real(r8k),        intent(in)  :: var      !! real variable
+            character(len=:), allocatable :: string   !! character string
+        end function convert_real64_to_string
 
-        MODULE FUNCTION convert_real64_array_to_string (var) RESULT (string)
-        IMPLICIT NONE
-        !! Converts a real64 to a character string
-        REAL(r8k), DIMENSION(:), INTENT(IN) :: var      !! Real array
-        CHARACTER(LEN=:),       ALLOCATABLE :: string   !! Character string
-        END FUNCTION convert_real64_array_to_string
+        module function convert_real64_array_to_string (var) result (string)
+            implicit none
+            !! converts a real64 to a character string
+            real(r8k), dimension(:), intent(in) :: var      !! real array
+            character(len=:),       allocatable :: string   !! character string
+        end function convert_real64_array_to_string
 
-        MODULE FUNCTION convert_int32_to_string (var) RESULT (string)
-        IMPLICIT NONE
-        !! Converts an int32 to a character string
-        INTEGER(i4k),     INTENT(IN)  :: var      !! Integer variable
-        CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
-        END FUNCTION convert_int32_to_string
+        module function convert_int32_to_string (var) result (string)
+            implicit none
+            !! converts an int32 to a character string
+            integer(i4k),     intent(in)  :: var      !! integer variable
+            character(len=:), allocatable :: string   !! character string
+        end function convert_int32_to_string
 
-        MODULE FUNCTION convert_int64_to_string (var) RESULT (string)
-        IMPLICIT NONE
-        !! Converts an int64 to a character string
-        INTEGER(i8k),     INTENT(IN)  :: var      !! Integer variable
-        CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
-        END FUNCTION convert_int64_to_string
+        module function convert_int64_to_string (var) result (string)
+            implicit none
+            !! converts an int64 to a character string
+            integer(i8k),     intent(in)  :: var      !! integer variable
+            character(len=:), allocatable :: string   !! character string
+        end function convert_int64_to_string
 
-        MODULE FUNCTION convert_logical_to_string (var) RESULT (string)
-        IMPLICIT NONE
-        !! Converts a logical to a character string
-        LOGICAL,          INTENT(IN)  :: var      !! Logical variable
-        CHARACTER(LEN=:), ALLOCATABLE :: string   !! Character string
-        END FUNCTION convert_logical_to_string
+        module function convert_logical_to_string (var) result (string)
+            implicit none
+            !! converts a logical to a character string
+            logical,          intent(in)  :: var      !! logical variable
+            character(len=:), allocatable :: string   !! character string
+        end function convert_logical_to_string
 
-        PURE MODULE FUNCTION to_uppercase (string) RESULT (new_string)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 01/23/2019
-        !!
-        !! This function changes lowercase text in a string to uppercase text
-        !!
-        CHARACTER(LEN=*), INTENT(IN)  :: string
-        CHARACTER(LEN=:), ALLOCATABLE :: new_string
+        pure module function to_uppercase (string) result (new_string)
+            implicit none
+            !! author: Ian Porter
+            !! date: 01/23/2019
+            !!
+            !! this function changes lowercase text in a string to uppercase text
+            !!
+            character(len=*), intent(in)  :: string
+            character(len=:), allocatable :: new_string
 
-        END FUNCTION to_uppercase
+        end function to_uppercase
 
-        PURE MODULE FUNCTION to_lowercase (string) RESULT (new_string)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 01/23/2019
-        !!
-        !! This function changes uppercase text in a string to lowercase text
-        !!
-        CHARACTER(LEN=*), INTENT(IN)  :: string
-        CHARACTER(LEN=:), ALLOCATABLE :: new_string
+        pure module function to_lowercase (string) result (new_string)
+            implicit none
+            !! author: Ian Porter
+            !! date: 01/23/2019
+            !!
+            !! this function changes uppercase text in a string to lowercase text
+            !!
+            character(len=*), intent(in)  :: string
+            character(len=:), allocatable :: new_string
 
-        END FUNCTION to_lowercase
+        end function to_lowercase
 
-        MODULE SUBROUTINE sleep_for (msecs)
-        IMPLICIT NONE
-        !! author: Zaak Beekman, ParaTools
-        !! date: 8/8/2018
-        !!
-        !! This performs a 'sleep' for a specified amount of time
-        !!
-        INTEGER(i4k), INTENT(IN) :: msecs  !! # of milliseconds to sleep for
+        module subroutine sleep_for (msecs)
+            implicit none
+            !! author: zaak beekman, paratools
+            !! date: 8/8/2018
+            !!
+            !! this performs a 'sleep' for a specified amount of time
+            !!
+            integer(i4k), intent(in) :: msecs  !! # of milliseconds to sleep for
 
-        END SUBROUTINE
+        end subroutine
 
-        RECURSIVE MODULE FUNCTION trim_from_string (string, item, case_sensitive) RESULT (new_string)
-        IMPLICIT NONE
-        !! author: Ian Porter, GSE
-        !! date: 11/06/2019
-        !!
-        !! This function trims <item> from a string
-        !!
-        CHARACTER(LEN=*), INTENT(IN)  :: string     !! String to be converted
-        CHARACTER(LEN=*), INTENT(IN)  :: item       !! Item to be trimmed from string
-        LOGICAL,          INTENT(IN), OPTIONAL :: case_sensitive
-                                                    !! Flag for whether or not to search using case sensitivity (False by default)
-        CHARACTER(LEN=:), ALLOCATABLE :: new_string !! New string
+        recursive module function trim_from_string (string, item, case_sensitive) result (new_string)
+            implicit none
+            !! author: Ian Porter, gse
+            !! date: 11/06/2019
+            !!
+            !! this function trims <item> from a string
+            !!
+            character(len=*), intent(in)  :: string     !! string to be converted
+            character(len=*), intent(in)  :: item       !! item to be trimmed from string
+            logical,          intent(in), optional :: case_sensitive
+            !! flag for whether or not to search using case sensitivity (false by default)
+            character(len=:), allocatable :: new_string !! new string
 
-        END FUNCTION trim_from_string
+        end function trim_from_string
 
-    END INTERFACE
+    end interface
 
-END MODULE Misc
+end module misc

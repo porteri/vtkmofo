@@ -91,11 +91,11 @@ set(VTKmofo_mod_dir ${CMAKE_CURRENT_BINARY_DIR}/mod)
 #    put interfaces and submodules in separate libraries
 # Specify VTKmofo interfaces
 set(VTKmofo_interfaces
-  utilities/file_utility.f90
-#  utilities/linked_list.f90
+  utilities/File_utility.f90
+#  utilities/Linked_list.f90
   utilities/Misc.f90
   utilities/Precision.f90
-  utilities/xml.f90
+  utilities/XML.f90
   legacy/VTK_io.f90
   legacy/VTK_datasets.f90
   legacy/VTK_cells.f90
@@ -111,10 +111,10 @@ set(VTKmofo_interfaces
 
 # Specify VTKmofo implementations
 set(VTKmofo_procedures
-  utilities/file_utility_procedures.f90
-#  utilities/linked_list_procedures.f90
+  utilities/File_utility_procedures.f90
+#  utilities/Linked_list_procedures.f90
   utilities/Misc_procedures.f90
-  utilities/xml_procedures.f90
+  utilities/XML_procedures.f90
   legacy/VTK_attributes_procedures.f90
   legacy/VTK_cells_procedures.f90
   legacy/VTK_datasets_procedures.f90
@@ -155,7 +155,7 @@ endif()
 # Work around for GFortran bug
 if("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
   set_property( SOURCE
-    src/utilities/xml_procedures.f90
+    src/utilities/XML_procedures.f90
     src/modern/VTK_piece_element_procedures.f90
     src/legacy/VTK_cells_procedures.f90
     src/legacy/VTK_datasets_procedures.f90
@@ -214,7 +214,7 @@ endforeach()
 # Add unit tests and define the string that is used to signal success
 foreach(unit_test ${VTKmofo_unit_test_list})
   add_test(NAME "VTKmofo_${unit_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/${unit_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/unit)
-  set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Test passed")
+  set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Test Passed")
   set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY LABELS "VTKmofo" "unit-test")
 endforeach()
 

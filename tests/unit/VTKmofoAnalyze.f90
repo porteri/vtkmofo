@@ -1,128 +1,128 @@
-MODULE VTKmofoPassFail
-    USE ISO_FORTRAN_ENV, ONLY : i4k => INT32, r8k => REAL64
-    IMPLICIT NONE
+module vtkmofopassfail
+    use iso_fortran_env, only : i4k => int32, r8k => real64
+    implicit none
     !! author: Ian Porter
     !! date: 3/21/2015
     !!
-    !! This module is used to identity whether the unit test has passed or failed
+    !! this module is used to identity whether the unit test has passed or failed
     !!
-    PRIVATE
-    PUBLIC :: Analyze, testid, all_tests_pass
+    private
+    public :: analyze, testid, all_tests_pass
     !
-    INTEGER(i4k) :: testcnt   = 0                   !! Counter for the number of unit tests performed
-    INTEGER(i4k) :: testnum   = 0                   !! Test number for unit test being performed (number resets for 
-                                                    !! unit test on new subroutine/function)
-    INTEGER(i4k) :: utunit    = 40                  !! File unit # for writing output file for Unit Testing
-    INTEGER(i4k) :: nfailures = 0                   !! Counter of # of failed unit tests
-    REAL(r8k), PARAMETER :: delta_min = 1.0e-20_r8k !! Minimum value for dividing by if known = 0.0
-    LOGICAL :: TestingPassed = .TRUE.               !! Flag to indicate whether all unit tests passed or not
-    CHARACTER(LEN=20) :: testid                     !! Name of subroutine/function being tested
-                                                    !! (Defined by user as start of each set of unit tests)
-    CHARACTER(LEN=20) :: testid_prev                !! Name of previous subroutine/function tested. Used as a tracking tool only
+    integer(i4k) :: testcnt   = 0                   !! counter for the number of unit tests performed
+    integer(i4k) :: testnum   = 0                   !! test number for unit test being performed (number resets for
+    !! unit test on new subroutine/function)
+    integer(i4k) :: utunit    = 40                  !! file unit # for writing output file for unit testing
+    integer(i4k) :: nfailures = 0                   !! counter of # of failed unit tests
+    real(r8k), parameter :: delta_min = 1.0e-20_r8k !! minimum value for dividing by if known = 0.0
+    logical :: testingpassed = .true.               !! flag to indicate whether all unit tests passed or not
+    character(len=20) :: testid                     !! name of subroutine/function being tested
+    !! (defined by user as start of each set of unit tests)
+    character(len=20) :: testid_prev                !! name of previous subroutine/function tested. used as a tracking tool only
 
-    CONTAINS
+contains
 
-        ELEMENTAL IMPURE FUNCTION Analyze (known, calc, criteria) RESULT(test_passed)
-        IMPLICIT NONE
+    elemental impure function analyze (known, calc, criteria) result(test_passed)
+        implicit none
         !! author: Ian Porter
         !! date: 3/21/2015
         !!
-        !! This subroutine analyzes the results of the unit test
+        !! this subroutine analyzes the results of the unit test
         !!
-        REAL(r8k), INTENT(IN) :: known      !! Expected value
-        REAL(r8k), INTENT(IN) :: calc       !! Subroutine/function calculated value
-        REAL(r8k), INTENT(IN) :: criteria   !! Acceptance criteria (fractional difference between known and calc values,
+        real(r8k), intent(in) :: known      !! expected value
+        real(r8k), intent(in) :: calc       !! subroutine/function calculated value
+        real(r8k), intent(in) :: criteria   !! acceptance criteria (fractional difference between known and calc values,
                                             !! relative to known)
-        LOGICAL :: test_passed
+        logical :: test_passed
 
-        ! Count the # of unit tests performed for each subroutine/function
-        IF (testid /= testid_prev) THEN
-            !! A new subroutine/function is being tested
-            testnum = 1                 !! First unit test for this subroutine/function
+        ! count the # of unit tests performed for each subroutine/function
+        if (testid /= testid_prev) then
+            !! a new subroutine/function is being tested
+            testnum = 1                 !! first unit test for this subroutine/function
             testid_prev = testid
-        ELSE
-            !! The subroutine/function was tested in the previous iteration
+        else
+            !! the subroutine/function was tested in the previous iteration
             testnum = testnum + 1
-        END IF
-        testcnt = testcnt + 1           !! Count the total number of unit tests that have been performed
-        ! Check to see if the results of the unit test fall within the specified criteria
-        IF (known == 0.0_r8k) THEN
-            !! Criteria is defined as the fractional difference (i.e. criteria = 0.01 specifies 1% difference)
-            IF (((calc - known) / delta_min) <= criteria) THEN
-                !! The difference falls within the acceptance criteria
-                CALL TestPass (known, calc)
-                test_passed = .TRUE.
-            ELSE
-                !! The differences is greater than the acceptance criteria
-                CALL TestFail (known, calc)
-                test_passed = .FALSE.
-            END IF
-        ELSE
-            !! Criteria is defined as the fractional difference (i.e. criteria = 0.01 specifies 1% difference)
-            IF ((ABS(calc - known) / known) <= criteria) THEN
-                !! The difference falls within the acceptance criteria
-                CALL TestPass (known, calc)
-                test_passed = .TRUE.
-            ELSE
-                !! The differences is greater than the acceptance criteria
-                CALL TestFail (known, calc)
-                test_passed = .FALSE.
-            END IF
-        END IF
+        end if
+        testcnt = testcnt + 1           !! count the total number of unit tests that have been performed
+        ! check to see if the results of the unit test fall within the specified criteria
+        if (known == 0.0_r8k) then
+            !! criteria is defined as the fractional difference (i.e. criteria = 0.01 specifies 1% difference)
+            if (((calc - known) / delta_min) <= criteria) then
+                !! the difference falls within the acceptance criteria
+                call testpass (known, calc)
+                test_passed = .true.
+            else
+                !! the differences is greater than the acceptance criteria
+                call testfail (known, calc)
+                test_passed = .false.
+            end if
+        else
+            !! criteria is defined as the fractional difference (i.e. criteria = 0.01 specifies 1% difference)
+            if ((abs(calc - known) / known) <= criteria) then
+                !! the difference falls within the acceptance criteria
+                call testpass (known, calc)
+                test_passed = .true.
+            else
+                !! the differences is greater than the acceptance criteria
+                call testfail (known, calc)
+                test_passed = .false.
+            end if
+        end if
 
-        END FUNCTION Analyze
+    end function analyze
 
-        SUBROUTINE TestPass (known, calc)
-        IMPLICIT NONE
+    subroutine testpass (known, calc)
+        implicit none
         !! author: Ian Porter
         !! date: 3/21/2015
         !!
-        !! This subroutine indicates that a unit test has passed.
+        !! this subroutine indicates that a unit test has passed.
         !!
-        REAL(r8k), INTENT(IN) :: known  !! Known value that subroutine/function tested should calulate
-        REAL(r8k), INTENT(IN) :: calc   !! Calculated value from subroutine/function tested
+        real(r8k), intent(in) :: known  !! known value that subroutine/function tested should calulate
+        real(r8k), intent(in) :: calc   !! calculated value from subroutine/function tested
 
-        !! Write to the command window and unit testing output file
-        WRITE (*,100)      testnum, TestID, known, calc
-        WRITE (utunit,100) testnum, TestID, known, calc
-100     FORMAT (/,'Unit Test # ',i4,' PASSED for Subroutine/Function ',a20, &
-          &     /,'Expected = ',e14.7,' Calculated = ',e14.7)
+        !! write to the command window and unit testing output file
+        write(*,100)      testnum, testid, known, calc
+        write(utunit,100) testnum, testid, known, calc
+100     format(/,'unit test # ',i4,' passed for subroutine/function ',a20, &
+            &  /,'expected = ',e14.7,' calculated = ',e14.7)
 
-        END SUBROUTINE TestPass
+    end subroutine testpass
 
-        SUBROUTINE TestFail (known, calc)
-        IMPLICIT NONE
+    subroutine testfail (known, calc)
+        implicit none
         !! author: Ian Porter
         !! date: 3/21/2015
         !!
-        !! This subroutine indicates that a unit test has failed.
+        !! this subroutine indicates that a unit test has failed.
         !!
-        REAL(r8k), INTENT(IN) :: known  !! Known value that subroutine/function tested should calulate
-        REAL(r8k), INTENT(IN) :: calc   !! Calculated value from subroutine/function tested
+        real(r8k), intent(in) :: known  !! known value that subroutine/function tested should calulate
+        real(r8k), intent(in) :: calc   !! calculated value from subroutine/function tested
 
-        ! Write to the command window and unit testing output file
-        WRITE (*,100)      testnum, TestID, known, calc
-        WRITE (utunit,100) testnum, TestID, known, calc
-100     FORMAT (/,'Unit Test # ',i4,' FAILED on Subroutine/Function ',a20, &
-          &     /,'Expected = ',e14.7,' Calculated = ',e14.7)
+        ! write to the command window and unit testing output file
+        write(*,100)      testnum, testid, known, calc
+        write(utunit,100) testnum, testid, known, calc
+100     format(/,'unit test # ',i4,' failed on subroutine/function ',a20, &
+            &  /,'expected = ',e14.7,' calculated = ',e14.7)
 
-        nfailures = nfailures + 1    !! Keep track of the number of cases that have failed
-        TestingPassed = .FALSE.      !! Indicate that a unit test has failed
+        nfailures = nfailures + 1    !! keep track of the number of cases that have failed
+        testingpassed = .false.      !! indicate that a unit test has failed
 
-        END SUBROUTINE TestFail
+    end subroutine testfail
 
-        SUBROUTINE all_tests_pass ()
-        IMPLICIT NONE
+    subroutine all_tests_pass ()
+        implicit none
         !! author: Ian Porter
         !! date: 12/13/2017
         !!
-        !! This subroutine indicates that all unit tests have passed
-        !! Using ctest, the value "Test passed" is searched for to indicate passing.
+        !! this subroutine indicates that all unit tests have passed
+        !! using ctest, the value "test passed" is searched for to indicate passing.
         !!
-        CHARACTER(LEN=*), PARAMETER :: test_passed_message = 'Test passed'
+        character(len=*), parameter :: test_passed_message = 'Test Passed'
 
-        WRITE(*,*) test_passed_message
+        write(*,*) test_passed_message
 
-        END SUBROUTINE all_tests_pass
+    end subroutine all_tests_pass
 
-END MODULE VTKmofoPassFail
+end module vtkmofopassfail

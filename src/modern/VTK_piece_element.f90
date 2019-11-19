@@ -1,263 +1,288 @@
-MODULE VTK_piece_element
-    USE XML,            ONLY : xml_element_dt
-    USE vtk_datasets,   ONLY : dataset
-    USE vtk_attributes, ONLY : attribute, attributes
-    USE VTK_DataArray_element, ONLY : DataArray_dt
-    USE VTK_element,    ONLY : VTK_element_dt
-    IMPLICIT NONE
+module vtk_piece_element
+    use xml,            only : xml_element_dt
+    use vtk_datasets,   only : dataset
+    use vtk_attributes, only : attribute, attributes
+    use vtk_dataarray_element, only : dataarray_dt
+    use vtk_element,    only : vtk_element_dt
+    implicit none
     !! author: Ian Porter
     !! date: 06/07/2019
     !!
-    !! This is the basic file piece elements
+    !! this is the basic file piece elements
     !!
 
-    PRIVATE
-    PUBLIC :: Coordinates_dt, CellData_dt, PointData_dt, Piece_dt
+    private
+    public :: coordinates_dt, celldata_dt, pointdata_dt, piece_dt
 
-    TYPE, EXTENDS(xml_element_dt) :: Data_dt
-        !! PointData derived type
-        PRIVATE
-        CHARACTER(LEN=:), ALLOCATABLE :: Scalars
-        CHARACTER(LEN=:), ALLOCATABLE :: Vectors
-        CHARACTER(LEN=:), ALLOCATABLE :: Normals
-        CHARACTER(LEN=:), ALLOCATABLE :: Tensors
-        CHARACTER(LEN=:), ALLOCATABLE :: TCoords
-    CONTAINS
-        PROCEDURE, NON_OVERRIDABLE :: Data_setup
-        PROCEDURE, NON_OVERRIDABLE :: Data_initialize
-        GENERIC, PUBLIC :: initialize => Data_initialize
-        PROCEDURE, NON_OVERRIDABLE :: Data_add_attribute
-        PROCEDURE, NON_OVERRIDABLE :: Data_add_attributes
-        GENERIC, PUBLIC :: add_cell => Data_add_attribute
-        GENERIC, PUBLIC :: add_cell => Data_add_attributes
-        PROCEDURE :: Data_deallocate
-        PROCEDURE, PRIVATE :: Data_finalize
-        GENERIC, PUBLIC :: finalize => Data_finalize
-    END TYPE Data_dt
+    type, extends(xml_element_dt) :: data_dt
+        !! pointdata derived type
+        private
+        character(len=:), allocatable :: scalars
+        character(len=:), allocatable :: vectors
+        character(len=:), allocatable :: normals
+        character(len=:), allocatable :: tensors
+        character(len=:), allocatable :: tcoords
+    contains
+        procedure, non_overridable :: data_setup
+        procedure, non_overridable :: data_initialize
+        generic, public :: initialize => data_initialize
+        procedure, non_overridable :: data_add_attribute
+        procedure, non_overridable :: data_add_attributes
+        generic, public :: add_cell => data_add_attribute
+        generic, public :: add_cell => data_add_attributes
+        procedure :: data_deallocate
+        procedure, private :: data_finalize
+        generic, public :: finalize => data_finalize
+    end type data_dt
 
-    TYPE, EXTENDS(Data_dt) :: PointData_dt
-        !! PointData derived type
-    END TYPE PointData_dt
+    type, extends(data_dt) :: pointdata_dt
+        !! pointdata derived type
+    end type pointdata_dt
 
-    TYPE, EXTENDS(Data_dt) :: CellData_dt
-        !! CellData derived type
-    END TYPE CellData_dt
+    type, extends(data_dt) :: celldata_dt
+        !! celldata derived type
+    end type celldata_dt
 
-    TYPE, EXTENDS(xml_element_dt) :: Points_dt
-        !! Points derived type
-        PRIVATE
-        TYPE(DataArray_dt) :: DataArray
-    CONTAINS
-        PROCEDURE, NON_OVERRIDABLE :: Points_initialize
-        GENERIC, PUBLIC :: initialize => Points_initialize
-        PROCEDURE :: Points_deallocate
-    END TYPE Points_dt
+    type, extends(xml_element_dt) :: points_dt
+        !! points derived type
+        private
+        type(dataarray_dt) :: dataarray
+    contains
+        procedure, non_overridable :: points_initialize
+        generic, public :: initialize => points_initialize
+        procedure :: points_deallocate
+    end type points_dt
 
-    TYPE, EXTENDS(xml_element_dt) :: Cells_dt
-        !! Cells derived type
-        PRIVATE
-        TYPE(DataArray_dt) :: connectivity
-        TYPE(DataArray_dt) :: offsets
-        TYPE(DataArray_dt) :: types
-    CONTAINS
-        PROCEDURE, NON_OVERRIDABLE :: Cells_initialize
-        GENERIC, PUBLIC :: initialize => Cells_initialize
-        PROCEDURE :: Cells_deallocate
-    END TYPE Cells_dt
+    type, extends(xml_element_dt) :: cells_dt
+        !! cells derived type
+        private
+        type(dataarray_dt) :: connectivity
+        type(dataarray_dt) :: offsets
+        type(dataarray_dt) :: types
+    contains
+        procedure, non_overridable :: cells_initialize
+        generic, public :: initialize => cells_initialize
+        procedure :: cells_deallocate
+    end type cells_dt
 
-    TYPE, EXTENDS(xml_element_dt) :: Coordinates_dt
-        !! Coordinates derived type
-        PRIVATE
-        TYPE(DataArray_dt) :: DataArray_x
-        TYPE(DataArray_dt) :: DataArray_y
-        TYPE(DataArray_dt) :: DataArray_z
-    CONTAINS
-        PROCEDURE, NON_OVERRIDABLE :: Coordinates_initialize
-        GENERIC, PUBLIC :: initialize => Coordinates_initialize
-        PROCEDURE :: Coordinates_deallocate
-    END TYPE Coordinates_dt
+    type, extends(xml_element_dt) :: coordinates_dt
+        !! coordinates derived type
+        private
+        type(dataarray_dt) :: dataarray_x
+        type(dataarray_dt) :: dataarray_y
+        type(dataarray_dt) :: dataarray_z
+    contains
+        procedure, non_overridable :: coordinates_initialize
+        generic, public :: initialize => coordinates_initialize
+        procedure :: coordinates_deallocate
+    end type coordinates_dt
 
-    TYPE, EXTENDS(VTK_element_dt) :: Piece_dt
-        TYPE(PointData_dt),   ALLOCATABLE :: pointdata
-        TYPE(CellData_dt),    ALLOCATABLE :: celldata
-        TYPE(Coordinates_dt), ALLOCATABLE :: coordinates
-        TYPE(Points_dt),      ALLOCATABLE :: points
-        TYPE(Cells_dt),       ALLOCATABLE :: cells
-    CONTAINS
-!        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: initialize => piece_initialize
-        PROCEDURE, PRIVATE :: piece_set_grid
-        GENERIC, PUBLIC :: set => piece_set_grid
-        PROCEDURE, NON_OVERRIDABLE, PUBLIC :: piece_add_data
-        GENERIC, PUBLIC :: add_data => piece_add_data
-        PROCEDURE, PUBLIC :: piece_deallocate
-        PROCEDURE :: finalize => piece_finalize
-    END TYPE Piece_dt
-
-    INTERFACE
-
-        MODULE SUBROUTINE Data_setup (me)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
+    type, extends(vtk_element_dt) :: piece_dt
         !!
-        !! This writes the header for a Data_dt
-        !!
-        CLASS(Data_dt), INTENT(INOUT) :: me                     !! PointData DT
+        type(pointdata_dt),   allocatable :: pointdata
+        type(celldata_dt),    allocatable :: celldata
+        type(coordinates_dt), allocatable :: coordinates
+        type(points_dt),      allocatable :: points
+        type(cells_dt),       allocatable :: cells
+    contains
+        ! procedure, non_overridable, public :: initialize => piece_initialize
+        procedure, private :: piece_set_grid
+        generic, public :: set => piece_set_grid
+        procedure, non_overridable, public :: piece_add_data
+        generic, public :: add_data => piece_add_data
+        procedure, public :: piece_deallocate
+        procedure :: finalize => piece_finalize
+    end type piece_dt
 
-        END SUBROUTINE Data_setup
+    interface
 
-        MODULE SUBROUTINE Data_initialize (me, scalar)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! This initializes the data within a Data_dt
-        !!
-        CLASS(Data_dt),   INTENT(INOUT)        :: me            !! PointData DT
-        CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: Scalar        !! Name of scalar component
+        module subroutine data_setup (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! this writes the header for a data_dt
+            !!
+            class(data_dt), intent(inout) :: me                     !! data dt
 
-        END SUBROUTINE Data_initialize
+        end subroutine data_setup
 
-        RECURSIVE MODULE SUBROUTINE Data_add_attribute (me, cell)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! This adds data inside of a Data_dt
-        !!
-        CLASS(Data_dt),   INTENT(INOUT) :: me               !! Data DT
-        CLASS(attribute), INTENT(IN)    :: cell             !! Name of scalar component
+        module subroutine data_initialize (me, scalar)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! this initializes the data within a data_dt
+            !!
+            class(data_dt),   intent(inout)        :: me            !! data dt
+            character(len=*), intent(in), optional :: scalar        !! name of scalar component
 
-        END SUBROUTINE Data_add_attribute
+        end subroutine data_initialize
 
-        RECURSIVE MODULE SUBROUTINE Data_add_attributes (me, cell)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! This adds a set of data inside of a Data_dt the VTK_element_dt header into XML format
-        !!
-        CLASS(Data_dt),                 INTENT(INOUT) :: me     !! Data DT
-        TYPE(attributes), DIMENSION(:), INTENT(IN)    :: cell   !! Name of scalar component
+        recursive module subroutine data_add_attribute (me, cell)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! this adds data inside of a data_dt
+            !!
+            class(data_dt),   intent(inout) :: me               !! data dt
+            class(attribute), intent(in)    :: cell             !! name of scalar component
 
-        END SUBROUTINE Data_add_attributes
+        end subroutine data_add_attribute
 
-        MODULE SUBROUTINE Data_finalize (me)
-        IMPLICIT NONE
-        !! Finalize routine to write the proper data information
-        CLASS(Data_dt), INTENT(INOUT) :: me
+        recursive module subroutine data_add_attributes (me, cell)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! this adds a set of data inside of a data_dt the vtk_element_dt header into xml format
+            !!
+            class(data_dt),                 intent(inout) :: me     !! data dt
+            type(attributes), dimension(:), intent(in)    :: cell   !! name of scalar component
 
-        END SUBROUTINE Data_finalize
+        end subroutine data_add_attributes
 
-        RECURSIVE MODULE SUBROUTINE Data_deallocate (foo)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! Explicitly deallocate a Data_dt
-        !!
-        CLASS(Data_dt), INTENT(INOUT) :: foo                    !! Data DT
+        module subroutine data_finalize (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! finalize routine to write the proper data information
+            !!
+            class(data_dt), intent(inout) :: me
 
-        END SUBROUTINE Data_deallocate
+        end subroutine data_finalize
 
-        MODULE SUBROUTINE Points_initialize (me, geometry)
-        IMPLICIT NONE
-        !1 author: Ian Porter
-        !! date: 07/29/2019
-        !!
-        !! Initializes a Points DT with the geometry information
-        !!
-        CLASS(Points_dt), INTENT(INOUT) :: me
-        CLASS(dataset),   INTENT(IN)    :: geometry
+        recursive module subroutine data_deallocate (foo)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! explicitly deallocate a data_dt
+            !!
+            class(data_dt), intent(inout) :: foo                    !! data dt
 
-        END SUBROUTINE Points_initialize
+        end subroutine data_deallocate
 
-        RECURSIVE MODULE SUBROUTINE Points_deallocate (foo)
-        IMPLICIT NONE
-        !! Explicitly deallocate a points dt
-        CLASS(Points_dt), INTENT(INOUT) :: foo
+        module subroutine points_initialize (me, geometry)
+            implicit none
+            !! author: Ian Porter
+            !! date: 07/29/2019
+            !!
+            !! initializes a points dt with the geometry information
+            !!
+            class(points_dt), intent(inout) :: me
+            class(dataset),   intent(in)    :: geometry
 
-        END SUBROUTINE Points_deallocate
+        end subroutine points_initialize
 
-        MODULE SUBROUTINE Cells_initialize (me, geometry)
-        IMPLICIT NONE
-        !1 author: Ian Porter
-        !! date: 07/29/2019
-        !!
-        !! Initializes a Cells DT with the geometry information
-        !!
-        CLASS(Cells_dt), INTENT(INOUT) :: me
-        CLASS(dataset),  INTENT(IN)    :: geometry
+        recursive module subroutine points_deallocate (foo)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! explicitly deallocate a points dt
+            !!
+            class(points_dt), intent(inout) :: foo
 
-        END SUBROUTINE Cells_initialize
+        end subroutine points_deallocate
 
-        RECURSIVE MODULE SUBROUTINE Cells_deallocate (foo)
-        IMPLICIT NONE
-        !! Explicitly deallocate a cells dt
-        CLASS(Cells_dt), INTENT(INOUT) :: foo
+        module subroutine cells_initialize (me, geometry)
+            implicit none
+            !! author: Ian Porter
+            !! date: 07/29/2019
+            !!
+            !! initializes a cells dt with the geometry information
+            !!
+            class(cells_dt), intent(inout) :: me
+            class(dataset),  intent(in)    :: geometry
 
-        END SUBROUTINE Cells_deallocate
+        end subroutine cells_initialize
 
-        MODULE SUBROUTINE Coordinates_initialize (me, geometry)
-        IMPLICIT NONE
-        !1 author: Ian Porter
-        !! date: 07/09/2019
-        !!
-        !! Initializes a piece dt with the geometry information
-        !!
-        CLASS(Coordinates_dt), INTENT(INOUT) :: me
-        CLASS(dataset),        INTENT(IN)    :: geometry
+        recursive module subroutine cells_deallocate (foo)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! explicitly deallocate a cells dt
+            !!
+            class(cells_dt), intent(inout) :: foo
 
-        END SUBROUTINE Coordinates_initialize
+        end subroutine cells_deallocate
 
-        RECURSIVE MODULE SUBROUTINE Coordinates_deallocate (foo)
-        IMPLICIT NONE
-        !! Explicitly deallocate a piece dt
-        CLASS(Coordinates_dt), INTENT(INOUT) :: foo
+        module subroutine coordinates_initialize (me, geometry)
+            implicit none
+            !! author: Ian Porter
+            !! date: 07/09/2019
+            !!
+            !! initializes a piece dt with the geometry information
+            !!
+            class(coordinates_dt), intent(inout) :: me
+            class(dataset),        intent(in)    :: geometry
 
-        END SUBROUTINE Coordinates_deallocate
+        end subroutine coordinates_initialize
 
-        MODULE SUBROUTINE piece_set_grid (me, geometry)
-        IMPLICIT NONE
-        !1 author: Ian Porter
-        !! date: 07/09/2019
-        !!
-        !! Initializes a piece dt with the geometry information
-        !!
-        CLASS(Piece_dt), INTENT(INOUT) :: me
-        CLASS(dataset),  INTENT(IN)    :: geometry
+        recursive module subroutine coordinates_deallocate (foo)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! explicitly deallocate a piece dt
+            !!
+            class(coordinates_dt), intent(inout) :: foo
 
-        END SUBROUTINE piece_set_grid
+        end subroutine coordinates_deallocate
 
-        MODULE SUBROUTINE piece_add_data (me, celldata, pointdata, celldatasets, pointdatasets)
-        IMPLICIT NONE
-        !! author: Ian Porter
-        !! date: 05/07/2019
-        !!
-        !! This is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
-        !!
-        CLASS(Piece_dt),                INTENT(INOUT)        :: me
-        CLASS(attribute),               INTENT(IN), OPTIONAL :: celldata   !!
-        CLASS(attribute),               INTENT(IN), OPTIONAL :: pointdata  !!
-        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: celldatasets  !!
-        TYPE(attributes), DIMENSION(:), INTENT(IN), OPTIONAL :: pointdatasets !!
+        module subroutine piece_set_grid (me, geometry)
+            implicit none
+            !! author: Ian Porter
+            !! date: 07/09/2019
+            !!
+            !! initializes a piece dt with the geometry information
+            !!
+            class(piece_dt), intent(inout) :: me
+            class(dataset),  intent(in)    :: geometry
 
-        END SUBROUTINE piece_add_data
+        end subroutine piece_set_grid
 
-        MODULE SUBROUTINE piece_finalize (me)
-        IMPLICIT NONE
-        !! Finalize routine to write the proper piece information
-        CLASS(Piece_dt), INTENT(INOUT) :: me
+        module subroutine piece_add_data (me, celldata, pointdata, celldatasets, pointdatasets)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! this is a deferred routine for each grid type to implement its own routine to set grid dependent data / info
+            !!
+            class(piece_dt),                intent(inout)        :: me
+            class(attribute),               intent(in), optional :: celldata   !!
+            class(attribute),               intent(in), optional :: pointdata  !!
+            type(attributes), dimension(:), intent(in), optional :: celldatasets  !!
+            type(attributes), dimension(:), intent(in), optional :: pointdatasets !!
 
-        END SUBROUTINE piece_finalize
+        end subroutine piece_add_data
 
-        RECURSIVE MODULE SUBROUTINE piece_deallocate (foo)
-        IMPLICIT NONE
-        !! Explicitly deallocate a piece dt
-        CLASS(Piece_dt), INTENT(INOUT) :: foo
+        module subroutine piece_finalize (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! finalize routine to write the proper piece information
+            !!
+            class(piece_dt), intent(inout) :: me
 
-        END SUBROUTINE piece_deallocate
+        end subroutine piece_finalize
 
-    END INTERFACE
+        recursive module subroutine piece_deallocate (foo)
+            implicit none
+            !! author: Ian Porter
+            !! date: 06/07/2019
+            !!
+            !! explicitly deallocate a piece dt
+            !!
+            class(piece_dt), intent(inout) :: foo
 
-END MODULE VTK_piece_element
+        end subroutine piece_deallocate
+
+    end interface
+
+end module vtk_piece_element

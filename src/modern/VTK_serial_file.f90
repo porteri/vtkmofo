@@ -1,37 +1,41 @@
-MODULE VTK_Serial_file
-    USE XML,               ONLY : xml_file_dt
-    USE VTK_serial_grid,   ONLY : VTK_dataset_dt
-    IMPLICIT NONE
+module vtk_serial_file
+    use xml,             only : xml_file_dt
+    use vtk_serial_grid, only : vtk_dataset_dt
+    implicit none
     !! author: Ian Porter
     !! date: 05/06/2019
     !!
-    !! This is the basic file for a serial VTK file
+    !! this is the basic file for a serial vtk file
     !!
 
-    PRIVATE
-    PUBLIC :: serial_file, VTK_dataset_dt
+    private
+    public :: serial_file, vtk_dataset_dt
 
-    TYPE, EXTENDS(xml_file_dt) :: VTK_file_dt
-        !! VTK file type derived type
-        CLASS(VTK_dataset_dt), ALLOCATABLE :: VTK_dataset
-    CONTAINS
-        PROCEDURE, PRIVATE :: deallocate_VTK_file_dt
-        GENERIC, PUBLIC :: me_deallocate => deallocate_VTK_file_dt
-    END TYPE VTK_file_dt
+    type, extends(xml_file_dt) :: vtk_file_dt
+        !! vtk file type derived type
+        class(vtk_dataset_dt), allocatable :: vtk_dataset
+    contains
+        procedure, private :: deallocate_vtk_file_dt
+        generic, public :: me_deallocate => deallocate_vtk_file_dt
+    end type vtk_file_dt
 
-    TYPE(VTK_file_dt), ALLOCATABLE :: serial_file    !! Serial VTK file
-!   TYPE(VTK_file_dt), ALLOCATABLE :: parallel_file  !! Parallel VTK file
-                                                     !! Parallel file is a TODO for future work
+    type(vtk_file_dt), allocatable :: serial_file    !! serial vtk file
+    !   type(vtk_file_dt), allocatable :: parallel_file  !! parallel vtk file
+    !! parallel file is a todo for future work
 
-    INTERFACE
+    interface
 
-        RECURSIVE MODULE SUBROUTINE deallocate_VTK_file_dt (foo)
-        IMPLICIT NONE
-        !! gcc Work-around for deallocating a multi-dimension derived type w/ allocatable character strings
-        CLASS(VTK_file_dt), INTENT(INOUT) :: foo
+        recursive module subroutine deallocate_vtk_file_dt (foo)
+            implicit none
+            !! author: Ian Porter
+            !! date: 05/06/2019
+            !!
+            !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+            !!
+            class(vtk_file_dt), intent(inout) :: foo
 
-        END SUBROUTINE deallocate_VTK_file_dt
+        end subroutine deallocate_vtk_file_dt
 
-    END INTERFACE
+    end interface
 
-END MODULE VTK_Serial_file
+end module vtk_serial_file
