@@ -1,5 +1,4 @@
 submodule (vtk_datasets) vtk_datasets_procedures
-    use precision, only : i4k, r8k
     implicit none
     !! author: Ian Porter
     !! date: 12/1/2017

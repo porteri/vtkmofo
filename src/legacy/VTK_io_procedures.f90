@@ -1,5 +1,4 @@
 submodule (vtk_io) vtk_io_procedures
-    use precision, only : i4k
     implicit none
     !! author: Ian Porter
     !! date: 12/1/2017

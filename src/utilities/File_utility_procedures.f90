@@ -1,5 +1,5 @@
 submodule (file_utility) file_utility_procedures
-    use precision, only : i1k, i4k
+    use precision, only : i1k
     implicit none
     !! author: Ian Porter
     !! date: 04/04/2018

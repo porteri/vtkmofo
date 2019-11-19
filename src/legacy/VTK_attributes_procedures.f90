@@ -1,6 +1,5 @@
 submodule (vtk_attributes) vtk_attributes_procedures
-    use precision, only : i4k, r8k
-    use misc,      only : def_len, char_dt
+    use misc, only : def_len, char_dt
     implicit none
     !! author: Ian Porter
     !! date: 12/13/2017

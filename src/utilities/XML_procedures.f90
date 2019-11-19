@@ -1,5 +1,4 @@
 submodule (xml) xml_procedures
-    use precision, only : i4k
     implicit none
     !! author: Ian Porter
     !! date: 04/02/2019
