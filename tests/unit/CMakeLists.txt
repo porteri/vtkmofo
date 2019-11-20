@@ -6,7 +6,7 @@ add_library(VTKmofoPassFail OBJECT VTKmofoAnalyze.f90)
 target_include_directories(VTKmofoPassFail PUBLIC "${VTKmofo_mod_dir}")
 set_property(TARGET VTKmofoPassFail
   PROPERTY
-  FOLDER "VTKmofo-Unit-Tests")
+  FOLDER "tests/vtkmofo_unit_analyzer")
 
 function(add_VTKmofo_unit_test test_name)
   # Assumes source file is ${test_name}.f90
@@ -19,7 +19,7 @@ function(add_VTKmofo_unit_test test_name)
     PUBLIC vtkmofo)
   set_property(TARGET ${test_name}
     PROPERTY
-    FOLDER "VTKmofo-Unit-Tests")
+    FOLDER "tests/vtkmofo_unit_tests")
   source_group("VTKmofo\\UnitTests" FILES ${test_name}.f90 VTKmofoAnalyze.f90)
 endfunction(add_VTKmofo_unit_test)
 

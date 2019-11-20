@@ -2,14 +2,19 @@
 cmake_minimum_required(VERSION 3.13.4)
 
 option(VTKmofo_USE_OpenCoarrays
-  "Build VTKmofo with support for linking against OpenCoarray programs" OFF)
+  "Build vtkmofo with support for linking against OpenCoarray programs" OFF)
 
 # Project name
 project(vtkmofo LANGUAGES Fortran)
 
 # vtkmofo project version
-set (VTKMOFO_VERSION_MAJOR 1)
-set (VTKMOFO_VERSION_MINOR 100)
+set(VTKMOFO_VERSION_MAJOR 1)
+set(VTKMOFO_VERSION_MINOR 200)
+
+# Custom modules
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
+include(Platform_Compiler_Options) # Performs abstraction for OS and compiler options
+include(AddLibfunction)
 
 # Print project logo, version and tag line
 file(READ ${CMAKE_CURRENT_LIST_DIR}/cmake/VTKMOFO-logo.txt VTKMOFO_LOGO)
@@ -27,80 +32,51 @@ message(STATUS "${VTKMOFO_GREETING}")
 # defined projects like INSTALL.vcproj and ZERO_CHECK.vcproj
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# System options
-if ( "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
-  set(prefix "/")
-  set(infix ":")
-  set(Qf "Q")
-  set(Q "Q")
-  set(eq ":")
-  set(colon ":")
-  set(colon_ ":")
-  set(libs_static "/libs:static")
-  set(dgblibs "/dbglibs")
-else()
-  set(prefix "-")
-  set( infix " ")
-  set( Qf "f")
-  set( Q "")
-  set( eq "=")
-  set( colon "")
-  set( colon_ " ")
-  set( libs_static "")
-  set( dgblibs "")
-endif()
-
-# Compiler options
-if ("${CMAKE_Fortran_COMPILER_ID}" MATCHES "Intel")
-  set(intel_compiler true)
-  if ( "${CMAKE_SYSTEM_NAME}" MATCHES "Windows")
-    # Full debug, Fortran 2008 standard, free format (due to automatic build to .f file for testing), Check bounds
-    set(CMAKE_Fortran_FLAGS
-      "${prefix}nologo ${prefix}debug${infix}full ${prefix}MP ${prefix}Od ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
-       )
-  else()
-    # Full debug, Fortran 2008 standard, free format (due to automatic build to .f file for testing), Check bounds
-    set(CMAKE_Fortran_FLAGS
-      "${prefix}nologo ${prefix}debug${infix}full ${prefix}multiple-processes ${prefix}O0 ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
-       )
-  endif()
-elseif("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
-  set(gnu_compiler true)
-  # Fortran 2008 standard, free format (due to automatic build to .f file for testing)
-  set(CMAKE_Fortran_FLAGS "${prefix}std=f2008 ${prefix}fcheck=all ${prefix}Wall ${prefix}Wno-unused-dummy-argument ${prefix}ffree-form -fbacktrace")
-else()
-  message(WARNING
-    "\n"
-    "Attempting to build with untested Fortran compiler: ${CMAKE_Fortran_COMPILER_ID}. "
-    "Please report any failures through the vtkmofo Git issues\n\n"
-  )
-endif()
-
 if(VTKmofo_USE_OpenCoarrays)
   find_package(OpenCoarrays)
 endif()
 
 ##################################################
-# Begin VTKmofo specific targets and configuration
+# Begin vtkmofo specific targets and configuration
 ##################################################
 
-# Where to put VTKmofo module files
+# Where to put vtkmofo module files
 set(VTKmofo_mod_dir ${CMAKE_CURRENT_BINARY_DIR}/mod)
 
-# Avoid compilation cascades:
-#    put interfaces and submodules in separate libraries
-# Specify VTKmofo interfaces
-set(VTKmofo_interfaces
+# Utilities
+set(vtkmofo_utilities
   utilities/File_utility.f90
+  utilities/File_utility_procedures.f90
 #  utilities/Linked_list.f90
+#  utilities/Linked_list_procedures.f90
   utilities/Misc.f90
+  utilities/Misc_procedures.f90
   utilities/Precision.f90
   utilities/XML.f90
+  utilities/XML_procedures.f90
+  )
+
+# Legacy vtk files
+set(vtkmofo_legacy
   legacy/VTK_io.f90
   legacy/VTK_datasets.f90
   legacy/VTK_cells.f90
   legacy/VTK_attributes.f90
   legacy/VTK_vars.f90
+  legacy/VTK_attributes_procedures.f90
+  legacy/VTK_cells_procedures.f90
+  legacy/VTK_datasets_procedures.f90
+  legacy/VTK.f90
+  legacy/VTK_io_procedures.f90
+  )
+
+# Modern vtk serial format files
+set(vtkmofo_modern
+  modern/VTK_DataArray_procedures.f90
+  modern/VTK_element_procedures.f90
+  modern/VTK_piece_element_procedures.f90
+  modern/VTK_serial_file_procedures.f90
+  modern/VTK_serial_Grid_procedures.f90
   modern/VTK_DataArray.f90
   modern/VTK_element.f90
   modern/VTK_formats_types.f90
@@ -109,44 +85,36 @@ set(VTKmofo_interfaces
   modern/VTK_serial_Grid.f90
   )
 
-# Specify VTKmofo implementations
-set(VTKmofo_procedures
-  utilities/File_utility_procedures.f90
-#  utilities/Linked_list_procedures.f90
-  utilities/Misc_procedures.f90
-  utilities/XML_procedures.f90
-  legacy/VTK_attributes_procedures.f90
-  legacy/VTK_cells_procedures.f90
-  legacy/VTK_datasets_procedures.f90
-  legacy/VTK.f90
-  legacy/VTK_io_procedures.f90
-  modern/VTK_DataArray_procedures.f90
-  modern/VTK_element_procedures.f90
-  modern/VTK_piece_element_procedures.f90
-  modern/VTK_serial_file_procedures.f90
-  modern/VTK_serial_Grid_procedures.f90
-  )
-
-# Compile all the interfaces first
-foreach(item ${VTKmofo_interfaces})
-  list(APPEND VTKmofo_interface_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
+# Compile the utilities library first
+foreach(item ${vtkmofo_utilities})
+  list(APPEND vtkmofo_utilities_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
 endforeach()
-add_library(vtkmofo_interfaces OBJECT ${VTKmofo_interface_srcs})
+add_library(vtkmofo_utilities OBJECT ${vtkmofo_utilities_srcs})
 # Tell CMake where to put vtkmofo .mod files generated with libvtkmofo
-set_property(TARGET vtkmofo_interfaces
-  PROPERTY
-  Fortran_MODULE_DIRECTORY ${VTKmofo_mod_dir})
+set_property(TARGET vtkmofo_utilities
+  PROPERTY Fortran_MODULE_DIRECTORY ${VTKmofo_mod_dir})
+# Visual Studio Organization
+set_property(TARGET vtkmofo_utilities
+  PROPERTY FOLDER "source")
+set_target_properties(vtkmofo_utilities
+  PROPERTIES PROJECT_LABEL "utilities")
+# Link against OpenCoarrays (if needed)
 if(VTKmofo_USE_OpenCoarrays)
-  target_link_libraries(vtkmofo_interfaces
+  target_link_libraries(vtkmofo_utilities
     PRIVATE OpenCoarrays::caf_mpi_static)
 endif()
 
 # Add any object files from the interfaces to the main library build
-foreach(item ${VTKmofo_procedures})
-  list(APPEND VTKmofo_procedures_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
+foreach(item ${vtkmofo_legacy})
+  list(APPEND vtkmofo_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
 endforeach()
+foreach(item ${vtkmofo_modern})
+  list(APPEND vtkmofo_srcs "${CMAKE_CURRENT_SOURCE_DIR}/src/${item}")
+endforeach()
+
 add_library(vtkmofo
-  STATIC ${VTKmofo_procedures_srcs} $<TARGET_OBJECTS:vtkmofo_interfaces>)
+  STATIC ${vtkmofo_srcs} $<TARGET_OBJECTS:vtkmofo_utilities>)
+# Link against OpenCoarrays (if needed)
 if(VTKmofo_USE_OpenCoarrays)
   target_link_libraries(vtkmofo
     PRIVATE OpenCoarrays::caf_mpi_static)
@@ -165,7 +133,6 @@ if("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
     )
 endif()
 
-
 # Tell CMake where to put vtkmofo .mod files generated with libvtkmofo
 set_property(TARGET vtkmofo
   PROPERTY
@@ -181,7 +148,7 @@ target_include_directories(vtkmofo PUBLIC
 source_group("VTKmofoLib" FILES ${VTKmofo_sources})
 set_property(TARGET vtkmofo
   PROPERTY
-  FOLDER "VTKmofo")
+  FOLDER "source")
 install(TARGETS vtkmofo DESTINATION lib EXPORT vtkmofo-targets)
 # Breaking this code out into a function would be nice
 set(MOD_DIR_TO_INSTALL "${VTKmofo_mod_dir}")
@@ -193,8 +160,6 @@ install(
   CODE "file(INSTALL \${SUBMOD_FILES} DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${MOD_DESTINATION_DIR}\")"
   )
 install(EXPORT vtkmofo-targets DESTINATION lib/vtkmofo)
-
-
 
 ######################
 # Add test directories
@@ -215,16 +180,17 @@ endforeach()
 foreach(unit_test ${VTKmofo_unit_test_list})
   add_test(NAME "VTKmofo_${unit_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/unit/${unit_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/unit)
   set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Test Passed")
-  set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY LABELS "VTKmofo" "unit-test")
+  set_property(TEST "VTKmofo_${unit_test}_test" PROPERTY LABELS "vtkmofo" "unit-test")
 endforeach()
 
 # Add integration tests and define the string that is used to signal success
 foreach(integration_test ${VTKmofo_integration_test_list})
   add_test(NAME "VTKmofo_${integration_test}_test" COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/integration/${integration_test} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests/integration)
   set_property(TEST "VTKmofo_${integration_test}_test" PROPERTY PASS_REGULAR_EXPRESSION "Finished")
-  set_property(TEST "VTKmofo_${integration_test}_test" PROPERTY LABELS "VTKmofo" "integration-test")
+  set_property(TEST "VTKmofo_${integration_test}_test" PROPERTY LABELS "vtkmofo" "integration-test")
+  set_property(TEST "VTKmofo_${integration_test}_test" PROPERTY FOLDER "VTKMOFO_Integration_Tests")
 endforeach()
 
 add_custom_target(RUN_ALL_VTKmofo_TESTS
-  COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure -L "VTKmofo")
+  COMMAND ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --output-on-failure -L "vtkmofo")
 set_property(TARGET RUN_ALL_VTKmofo_TESTS PROPERTY FOLDER "All-Tests")

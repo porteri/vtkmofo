@@ -10,7 +10,7 @@ function(add_VTKmofo_integration_test test_name folder)
     PUBLIC vtkmofo)
   set_property(TARGET ${folder}_${test_name}
     PROPERTY
-    FOLDER "VTKmofo-Integration-Tests")
+    FOLDER "tests/vtkmofo_integration_tests")
   source_group("VTKmofo\\IntegrationTests" FILES ${test_name}.f90)
 endfunction(add_VTKmofo_integration_test)
 
