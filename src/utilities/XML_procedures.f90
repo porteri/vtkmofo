@@ -422,7 +422,8 @@ contains
 
         file_format_text = convert_format_to_string (file_format)
         !        allocate(me%access, source='sequential') !! ignore the user-defined access, even if present
-        allocate(me%access, source='stream') !! ignore the user-defined access, even if present
+        allocate(me%access, source='stream')  !! ignore the user-defined access, even if present
+        allocate(me%encoding, source='utf-8') !! ignore the user-defined encoding, even if present
 
         if (.not. allocated(prior_offset)) allocate(prior_offset,source='')
 

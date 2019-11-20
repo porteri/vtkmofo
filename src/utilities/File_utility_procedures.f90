@@ -49,6 +49,12 @@ contains
         else
             me%unit = 0
         end if
+        if (present(encoding)) then
+            if (allocated(me%encoding)) deallocate(me%encoding)
+            allocate(me%encoding, source=encoding)
+        else
+            if (.not. allocated(me%encoding)) allocate(me%encoding, source='default')
+        end if
 
     end procedure setup_file_information
 
@@ -120,7 +126,8 @@ contains
         end if
 
         if (.not. me%check_if_open(check='filename')) then
-            open (newunit=me%unit, file=me%filename, iostat=inputstat, status=me%open_status, form=me%form)
+            open (newunit=me%unit, file=me%filename, iostat=inputstat, status=me%open_status, form=me%form, &
+                & encoding=me%encoding)
             if (inputstat > 0) call me%file_read_error (inputstat)
         else
             !! file is already open. rewind to start from the beginning
