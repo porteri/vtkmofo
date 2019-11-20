@@ -14,7 +14,7 @@ set(VTKMOFO_VERSION_MINOR 200)
 # Custom modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 include(Platform_Compiler_Options) # Performs abstraction for OS and compiler options
-include(AddLibfunction)
+include(AddLibFunction)
 
 # Print project logo, version and tag line
 file(READ ${CMAKE_CURRENT_LIST_DIR}/cmake/VTKMOFO-logo.txt VTKMOFO_LOGO)
