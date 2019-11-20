@@ -365,7 +365,7 @@ contains
 
         !! replace that value with value
 
-        error stop 'error: replace_in_string in xml_procedures is not yet implemented.'
+        error stop 'Error: replace_in_string in xml_procedures is not yet implemented.'
 
     end procedure replace_in_string
 
@@ -399,7 +399,7 @@ contains
                 allocate(me%form, source='unformatted')  !! ignore the user-defined form, even if present
                 file_format = binary
             case default
-                error stop 'error: unknown value for form. terminated in xml_file_setup'
+                error stop 'Error: unknown value for form. terminated in xml_file_setup'
             end select
         else
             select case (file_format)
@@ -410,7 +410,7 @@ contains
                 allocate(me%form, source='unformatted')
                 file_format = binary
             case default
-                error stop 'error: unknown value for file_format. terminated in xml_file_setup'
+                error stop 'Error: unknown value for file_format. terminated in xml_file_setup'
             end select
         end if
 
@@ -628,7 +628,7 @@ contains
         case (append)
             allocate(string,source=format_append)
         case default
-            error stop 'error: undefined format in convert_format_to_string'
+            error stop 'Error: undefined format in convert_format_to_string'
         end select
 
     end procedure convert_format_to_string
@@ -646,7 +646,7 @@ contains
         case (format_append)
             format = append
         case default
-            error stop 'error: undefined string in convert_string_to_format'
+            error stop 'Error: undefined string in convert_string_to_format'
         end select
 
     end procedure convert_string_to_format

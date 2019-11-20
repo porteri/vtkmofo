@@ -121,14 +121,14 @@ contains
         type(char_dt), dimension(:), allocatable :: chars
 
         read(unit,100) line
-        call interpret_string (line=line, datatype=[ 'c','c','i' ], ignore='scalars ', separator=' ', &
+        call interpret_string (line=line, datatype=[ 'c','c','i' ], ignore='SCALARS ', separator=' ', &
             &                  ints=ints, chars=chars)
         me%numcomp = ints(1); me%dataname = trim(chars(1)%text); me%datatype = to_lowercase(trim(chars(2)%text))
         if (allocated(ints)) deallocate(ints)
         if (allocated(chars)) deallocate(chars)
 
         read(unit,100) line
-        call interpret_string (line=line, datatype=[ 'c' ], ignore='lookup_table ', separator=' ', chars=chars)
+        call interpret_string (line=line, datatype=[ 'c' ], ignore='LOOKUP_TABLE ', separator=' ', chars=chars)
         me%tablename = trim(chars(1)%text)
 
         select case (me%datatype)
@@ -203,11 +203,11 @@ contains
                 write(unit,103) me%ints(i)
             end do
         else
-            error stop 'neither real or integer arrays are allocated for scalar_write'
+            error stop 'Error: neither real or integer arrays are allocated for scalar_write'
         end if
 
-100     format('scalars ',(a),' ',(a),' ',(i1))
-101     format('lookup_table ',(a))
+100     format('SCALARS ',(a),' ',(a),' ',(i1))
+101     format('LOOKUP_TABLE ',(a))
 102     format(es13.6)
 103     format(i0)
 
@@ -434,7 +434,7 @@ contains
             allocate(me%r_vector, source=real2d)
             me%nvals = size(me%r_vector,dim=1)
         else
-            error stop 'error: must provide either int2d or real2d in vector_setup'
+            error stop 'Error: must provide either int2d or real2d in vector_setup'
         end if
 
     end procedure vector_setup
@@ -603,7 +603,7 @@ contains
             allocate(me%r_normal, source=real2d)
             me%nvals = size(me%r_normal,dim=1)
         else
-            error stop 'error: must provide either int2d or real2d in normal_setup'
+            error stop 'Error: must provide either int2d or real2d in normal_setup'
         end if
 
     end procedure normal_setup
@@ -782,7 +782,7 @@ contains
             allocate(me%r_texture, source=real2d)
             me%nvals = size(me%r_texture,dim=1)
         else
-            error stop 'error: must provide either int2d or real2d in texture_setup'
+            error stop 'Error: must provide either int2d or real2d in texture_setup'
         end if
 
     end procedure texture_setup
@@ -983,7 +983,7 @@ contains
                 me%nvals = size(me%r_tensor,dim=1)
             end if
         else
-            error stop 'error: must provide either int3d or real3d in tensor_setup'
+            error stop 'Error: must provide either int3d or real3d in tensor_setup'
         end if
 
     end procedure tensor_setup

@@ -39,7 +39,7 @@ contains
         class is (celldata_dt)
             allocate(my_name,source=celldata_name)
         class default
-            error stop 'error: undefined type in data_setup'
+            error stop 'Error: undefined type in data_setup'
         end select
 
         call me%setup(name=my_name, string=string)
@@ -119,7 +119,7 @@ contains
         !! initializes a piece dt with the geometry information
         !!
         integer(i4k) :: i
-        character(len=*), parameter :: points_name = 'points'
+        character(len=*), parameter :: points_name = 'POINTS'
 
         call me%setup(name=points_name)
 
@@ -141,7 +141,7 @@ contains
             call me%add(me%dataarray)
             call me%dataarray%me_deallocate()
         class default
-            error stop 'error: in points_initialize, the geometry is not defined.'
+            error stop 'Error: in points_initialize, the geometry is not defined.'
         end select
 
     end procedure points_initialize
@@ -169,7 +169,7 @@ contains
         !! initializes a piece dt with the geometry information
         !!
         integer(i4k) :: i, cnt
-        character(len=*), parameter :: my_name = 'cells'
+        character(len=*), parameter :: my_name = 'CELLS'
 
         call me%setup(name=my_name)
 
@@ -199,7 +199,7 @@ contains
             call me%add(me%types)
             call me%types%me_deallocate()
         class default
-            error stop 'error: in cells_initialize, the geometry is not yet defined.'
+            error stop 'Error: in cells_initialize, the geometry is not yet defined.'
         end select
 
     end procedure cells_initialize
@@ -254,7 +254,7 @@ contains
             call me%add(me%dataarray_y)
             call me%add(me%dataarray_z)
         class default
-            error stop 'error: in coordinates_initialize, the geometry is not yet defined.'
+            error stop 'Error: in coordinates_initialize, the geometry is not yet defined.'
         end select
 
     end procedure coordinates_initialize
@@ -326,7 +326,7 @@ contains
             call me%coordinates%initialize(geometry)
             call me%add(me%coordinates)
         class is (polygonal_data)
-            error stop 'error: polygonal_data is not yet implemented in piece_set_grid'
+            error stop 'Error: polygonal_data is not yet implemented in piece_set_grid'
         class is (unstruct_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
             call me%setup(name="piece",string="numberofpoints=" // '"' // trim(adjustl(n_points)) // '"' // &
@@ -338,7 +338,7 @@ contains
             call me%cells%initialize(geometry)
             call me%add(me%cells)
         class default
-            error stop 'error: unknown geometry type in piece_set_grid'
+            error stop 'Error: unknown geometry type in piece_set_grid'
         end select
 
     end procedure piece_set_grid

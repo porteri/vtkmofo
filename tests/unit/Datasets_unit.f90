@@ -1,6 +1,5 @@
 module vtk_datasets_unit_tests
     use precision, only : i4k, r8k
-    use vtk_vars,  only : ascii, binary
     use vtk_cells, only : polygon, voxel
     implicit none
     !! author: Ian Porter

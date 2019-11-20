@@ -16,7 +16,7 @@ module vtk_vars
     integer(i4k), parameter :: bit=0_i4k, unsigned_char=1_i4k, char=2_i4k, unsigned_short=3_i4k, short=4_i4k, &
         &                      unsigned_int=5_i4k, int=6_i4k, unsigned_long=7_i4k, long=8_i4k, float=9_i4k,   &
         &                      double=10_i4k                                        !! types of data
-    character(len=*), parameter   :: version       = '# vtk datafile version 3.0'   !! vtk datafile version
+    character(len=*), parameter   :: version       = '# vtk DataFile Version 3.0'   !! vtk datafile version
     character(len=*), parameter   :: default_title = 'version 3.0 vtk file'         !! title card
     character(len=*), parameter   :: vtk_extension = '.vtk'                         !! file extension
     character(len=*), parameter   :: default_fn    = 'out'                          !! default filename

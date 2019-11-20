@@ -20,9 +20,9 @@ module xml
 
     integer(i4k) :: file_format = ascii
 
-    character(len=*), parameter :: format_ascii  = 'ascii'
-    character(len=*), parameter :: format_binary = 'binary'
-    character(len=*), parameter :: format_append = 'appended'
+    character(len=*), parameter :: format_ascii  = 'ASCII'
+    character(len=*), parameter :: format_binary = 'BINARY'
+    character(len=*), parameter :: format_append = 'APPENDED'
     character(len=:), allocatable :: file_format_text
 
     type string_dt

@@ -87,7 +87,7 @@ contains
         class is (struct_pts)
             allocate(origin_string, source=convert_to_string(geometry%get_origin()))
             allocate(spacing_string, source=convert_to_string(geometry%get_spacing()))
-            allocate(me%extra_string, source='origin="' // origin_string // '", spacing="' // spacing_string // '"')
+            allocate(me%extra_string, source='ORIGIN="' // origin_string // '", SPACING="' // spacing_string // '"')
         class default
             error stop 'bad geometry type for imagedata. terminated in imagedata_set_grid'
         end select
@@ -111,8 +111,8 @@ contains
         character(len=:), allocatable :: range_string
         integer(i4k) :: i, j
         integer(i4k), dimension(2,3)  :: range
-        character(len=*), parameter :: file_extension = ".vtr"
-        character(len=*), parameter :: grid_type = "rectilineargrid"
+        character(len=*), parameter :: file_extension = '.vtr'
+        character(len=*), parameter :: grid_type = 'RECTILINEARGRID'
 
         call me%initialize(type=grid_type,file_extension=file_extension)
         range = geometry%get_range_cnt()
@@ -148,8 +148,8 @@ contains
         character(len=:), allocatable :: range_string
         integer(i4k) :: i, j
         integer(i4k), dimension(2,3)  :: range
-        character(len=*), parameter :: file_extension = ".vts"
-        character(len=*), parameter :: grid_type = "structuredgrid"
+        character(len=*), parameter :: file_extension = '.vts'
+        character(len=*), parameter :: grid_type = 'STRUCTUREDGRID'
 
         call me%initialize(type=grid_type,file_extension=file_extension)
         range = geometry%get_range_cnt()
@@ -181,8 +181,8 @@ contains
         !!
         !! this sets parameters specific to the dt
         !!
-        character(len=*), parameter :: file_extension = ".vtu"
-        character(len=*), parameter :: grid_type = "unstructuredgrid"
+        character(len=*), parameter :: file_extension = '.vtu'
+        character(len=*), parameter :: grid_type = 'UNSTRUCTUREDGRID'
 
         call me%initialize(type=grid_type,file_extension=file_extension)
 

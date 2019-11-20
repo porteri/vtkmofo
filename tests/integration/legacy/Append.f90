@@ -16,7 +16,7 @@
     integer(i4k)                :: t
     integer(i4k),     parameter :: n_points = 32, n_cells = 7, unit = 20, n_steps = 10
     character(len=*), parameter :: filename = 'legacy_append_unstruct_grid'
-    character(len=*), parameter :: title    = 'testing of appending to a vtk file'
+    character(len=*), parameter :: title    = 'Testing of appending to a VTK file'
     character(len=8)            :: t_char
     real(r8k), dimension(n_points,1:3) :: point_vals = 0.0_r8k
     real(r8k), dimension(3,n_points), parameter :: points = reshape ( &
@@ -94,7 +94,7 @@
     type(hexahedron)                         :: hexahedron_cell !! hexahedron cell type
     type(vtkcell_list), dimension(n_cells)   :: cell_list       !! full list of all cells
     character(len=15), dimension(*), parameter :: point_dataname = &
-        & [ 'temperature(k) ','stress (pa)    ' ]
+        & [ 'Temperature(K) ','Stress (Pa)    ' ]
 
     call voxel_cells(1)%setup ( [  0,  1,  4,  5,  8,  9, 12, 13 ] )
     call voxel_cells(2)%setup ( [  1,  2,  5,  6,  9, 10, 13, 14 ] )
@@ -121,8 +121,8 @@
         call vtk_legacy_write (i_shape, unit=unit, filename=filename, title=title, multiple_io=.true.)
         !! initialize the new file with just geometry information
         ! cell values
-        call cell_val_1%init (dataname='cellid', numcomp=1, int1d=cellid)
-        call cell_val_2%init (dataname='mattype', numcomp=1, int1d=mattype)
+        call cell_val_1%init (dataname='cellID', numcomp=1, int1d=cellid)
+        call cell_val_2%init (dataname='matType', numcomp=1, int1d=mattype)
         if (allocated(cell_vals_to_write)) deallocate(cell_vals_to_write)
         allocate(cell_vals_to_write(1))
         allocate(cell_vals_to_write(1)%attribute,source=cell_val_2)
@@ -132,9 +132,9 @@
         call vtk_legacy_write (celldatasets=cell_vals_to_write)
         !! append cell information
         ! point values
-        call point_val_1%init (dataname='temperature_(k)', numcomp=1, real1d=point_vals(:,1))
-        call point_val_2%init (dataname='stress_(pa)', numcomp=1, real1d=point_vals(:,2))
-        call point_val_3%init (dataname='displacement_(m)', numcomp=1, real1d=point_vals(:,3))
+        call point_val_1%init (dataname='Temperature_(K)', numcomp=1, real1d=point_vals(:,1))
+        call point_val_2%init (dataname='Stress_(Pa)', numcomp=1, real1d=point_vals(:,2))
+        call point_val_3%init (dataname='Displacement_(m)', numcomp=1, real1d=point_vals(:,3))
         if (allocated(point_vals_to_write)) deallocate(point_vals_to_write)
         allocate(point_vals_to_write(2))
         allocate(point_vals_to_write(1)%attribute,source=point_val_2)

@@ -76,7 +76,7 @@ contains
                 case (binary)
                     allocate(form, source='unformatted')
                 case default
-                    error stop 'error: file_format is incorrectly defined in vtk_legacy_full_write'
+                    error stop 'Error: file_format is incorrectly defined in vtk_legacy_full_write'
                 end select
                 allocate(file_format_text, source=convert_format_to_string(file_format))
                 open(unit=newunit, file=vtkfilename, iostat=inputstat, status='replace', form=form)
@@ -139,8 +139,8 @@ contains
         end if
 
 100     format(a)
-101     format('cell_data ',i0)
-102     format('point_data ',i0)
+101     format('CELL_DATA ',i0)
+102     format('POINT_DATA ',i0)
 
     end procedure vtk_legacy_full_write
 
@@ -191,8 +191,8 @@ contains
             call pointdata%write(newunit)                       !! write the point data values
         end if
 
-101     format('cell_data ',i0)
-102     format('point_data ',i0)
+101     format('CELL_DATA ',i0)
+102     format('POINT_DATA ',i0)
 
     end procedure vtk_legacy_append
 
@@ -240,7 +240,7 @@ contains
         line = ''
         if (vtk_version /= version) then
             !! if the file is not version 3.0, abort read
-            error stop 'error: vtkmofo only works with version 3.0'
+            error stop 'Error: vtkmofo only works with version 3.0'
         end if
 
         read(unit,100) title                               !! vtk title card
