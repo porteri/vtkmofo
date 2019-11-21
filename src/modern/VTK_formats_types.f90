@@ -10,15 +10,15 @@ module vtk_formats_types
     public
 
     !! data types
-    character(len=*), parameter :: type_int8    = 'int8'
-    character(len=*), parameter :: type_uint8   = 'uint8'
-    character(len=*), parameter :: type_int16   = 'int16'
-    character(len=*), parameter :: type_uint16  = 'uint16'
-    character(len=*), parameter :: type_int32   = 'int32'
-    character(len=*), parameter :: type_uint32  = 'uint32'
-    character(len=*), parameter :: type_int64   = 'int64'
-    character(len=*), parameter :: type_uint64  = 'uint64'
-    character(len=*), parameter :: type_float32 = 'float32'
-    character(len=*), parameter :: type_float64 = 'float64'
+    character(len=*), parameter :: type_int8    = 'Int8'
+    character(len=*), parameter :: type_uint8   = 'UInt8'
+    character(len=*), parameter :: type_int16   = 'Int16'
+    character(len=*), parameter :: type_uint16  = 'UInt16'
+    character(len=*), parameter :: type_int32   = 'Int32'
+    character(len=*), parameter :: type_uint32  = 'UInt32'
+    character(len=*), parameter :: type_int64   = 'Int64'
+    character(len=*), parameter :: type_uint64  = 'UInt64'
+    character(len=*), parameter :: type_float32 = 'Float32'
+    character(len=*), parameter :: type_float64 = 'Float64'
 
 end module vtk_formats_types

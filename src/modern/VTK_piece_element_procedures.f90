@@ -19,14 +19,14 @@ contains
         !!
         !! this writes the header for a data
         !!
-        character(len=*), parameter   :: pointdata_name = 'pointdata'
-        character(len=*), parameter   :: celldata_name  = 'celldata'
+        character(len=*), parameter   :: pointdata_name = 'PointData'
+        character(len=*), parameter   :: celldata_name  = 'CellData'
         character(len=:), allocatable :: string
         character(len=:), allocatable :: my_name
         character(len=:), allocatable :: scalar_string
 
         if (allocated(me%scalars)) then
-            allocate(scalar_string,source=' scalars="' // me%scalars // '"')
+            allocate(scalar_string,source=' Scalars="' // me%scalars // '"')
         else
             allocate(scalar_string,source='')
         end if
@@ -119,7 +119,7 @@ contains
         !! initializes a piece dt with the geometry information
         !!
         integer(i4k) :: i
-        character(len=*), parameter :: points_name = 'POINTS'
+        character(len=*), parameter :: points_name = 'Points'
 
         call me%setup(name=points_name)
 
@@ -169,7 +169,7 @@ contains
         !! initializes a piece dt with the geometry information
         !!
         integer(i4k) :: i, cnt
-        character(len=*), parameter :: my_name = 'CELLS'
+        character(len=*), parameter :: my_name = 'Cells'
 
         call me%setup(name=my_name)
 
@@ -230,7 +230,7 @@ contains
         !! initializes a piece dt with the geometry information
         !!
         real(r8k),   dimension(2,3) :: range
-        character(len=*), parameter :: coordinate_name = 'coordinates'
+        character(len=*), parameter :: coordinate_name = 'Coordinates'
 
         call me%setup(name=coordinate_name)
         !! todo: figure out why gfortran requires this
@@ -312,16 +312,16 @@ contains
 
         select type (geometry)
         class is (struct_pts)
-            call me%setup(name="piece",string="extent=" // '"' // range_string // '"')
+            call me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
         class is (struct_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
-            call me%setup(name="piece",string="extent=" // '"' // range_string // '"')
+            call me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
             allocate(me%points)
             call me%points%initialize(geometry)
             call me%add(me%points)
         class is (rectlnr_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
-            call me%setup(name="piece",string="extent=" // '"' // range_string // '"')
+            call me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
             allocate(me%coordinates)
             call me%coordinates%initialize(geometry)
             call me%add(me%coordinates)
@@ -329,8 +329,8 @@ contains
             error stop 'Error: polygonal_data is not yet implemented in piece_set_grid'
         class is (unstruct_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
-            call me%setup(name="piece",string="numberofpoints=" // '"' // trim(adjustl(n_points)) // '"' // &
-                &                             " numberofcells=" // '"' // trim(adjustl(n_cells)) // '"')
+            call me%setup(name="Piece",string="NumberOfPoints=" // '"' // trim(adjustl(n_points)) // '"' // &
+                &                             " NumberOfCells=" // '"' // trim(adjustl(n_cells)) // '"')
             allocate(me%points)
             call me%points%initialize(geometry)
             call me%add(me%points)

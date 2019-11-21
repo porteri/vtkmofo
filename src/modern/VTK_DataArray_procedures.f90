@@ -17,7 +17,7 @@ contains
         !!
         !! this writes the header for a dataarray
         !!
-        character(len=*), parameter   :: dataarray_name = 'dataarray'
+        character(len=*), parameter   :: dataarray_name = 'DataArray'
         character(len=:), allocatable :: string
         character(len=:), allocatable :: type_string
         character(len=:), allocatable :: name_string
@@ -33,12 +33,12 @@ contains
             allocate(type_string,source='')
         end if
         if (allocated(me%array_name)) then
-            allocate(name_string,source=' name="' // me%array_name // '"')
+            allocate(name_string,source=' Name="' // me%array_name // '"')
         else
             allocate(name_string,source='')
         end if
         if (allocated(me%numberofcomponents)) then
-            allocate(nofc_string,source=' numberofcomponents="' // me%numberofcomponents // '"')
+            allocate(nofc_string,source=' NumberOfComponents="' // me%numberofcomponents // '"')
         else
             allocate(nofc_string,source='')
         end if
