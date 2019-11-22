@@ -45,7 +45,7 @@ contains
                 call me%setup(points, cells)
             end if
         class default
-            error stop 'generic class not defined for vtkmofo class dataset'
+            error stop 'Error: generic class not defined for vtkmofo class dataset'
         end select
 
         me%datatype = to_lowercase(data_type)
@@ -89,7 +89,7 @@ contains
         implicit none
         !! function returns the min / max range of values in x,y,z coordinates
 
-        error stop 'generic get_range should not be called. will be moved to abstract.'
+        error stop 'Error: generic get_range should not be called. will be moved to abstract.'
 
     end procedure get_range
 
@@ -97,7 +97,7 @@ contains
         implicit none
         !! function returns the min / max range of values in x,y,z coordinates
 
-        error stop 'generic get_coord should not be called. will be moved to abstract.'
+        error stop 'Error: generic get_coord should not be called. will be moved to abstract.'
 
     end procedure get_coord
     ! *****************
@@ -114,19 +114,19 @@ contains
         type(char_dt), dimension(:), allocatable :: chars
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'c' ],         ignore='dataset ',    separator=' ', chars=chars)
+        call interpret_string (line=line, datatype=[ 'c' ],         ignore='DATASET ',    separator=' ', chars=chars)
         me%name = trim(chars(1)%text)
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'i','i','i' ], ignore='dimensions ', separator=' ', ints=ints)
+        call interpret_string (line=line, datatype=[ 'i','i','i' ], ignore='DIMENSIONS ', separator=' ', ints=ints)
         me%dimensions = ints(1:3)
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'r','r','r' ], ignore='origin ',     separator=' ', reals=reals)
+        call interpret_string (line=line, datatype=[ 'r','r','r' ], ignore='ORIGIN ',     separator=' ', reals=reals)
         me%origin = reals(1:3)
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'r','r','r' ], ignore='spacing ',    separator=' ', reals=reals)
+        call interpret_string (line=line, datatype=[ 'r','r','r' ], ignore='SPACING ',    separator=' ', reals=reals)
         me%spacing = reals(1:3)
 
 100     format((a))
@@ -141,10 +141,10 @@ contains
         write(unit,102) me%origin
         write(unit,103) me%spacing
 
-100     format('dataset ',(a))
-101     format('dimensions ',*(i0,' '))
-102     format('origin ',*(es13.6))
-103     format('spacing ',*(es13.6))
+100     format('DATASET ',(a))
+101     format('DIMENSIONS ',*(i0,' '))
+102     format('ORIGIN ',*(es13.6))
+103     format('SPACING ',*(es13.6))
 
     end procedure struct_pts_write
 
@@ -168,7 +168,7 @@ contains
         implicit none
         !! sets up the structured points dataset with information
 
-        me%name       = 'structured_points'
+        me%name       = 'STRUCTURED_POINTS'
         me%dimensions = dims
         me%origin     = origin
         me%spacing    = spacing
@@ -227,16 +227,16 @@ contains
         type(char_dt), dimension(:), allocatable :: chars
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'c' ],         ignore='dataset ',    separator=' ', chars=chars)
+        call interpret_string (line=line, datatype=[ 'c' ],         ignore='DATASET ',    separator=' ', chars=chars)
         me%name = trim(chars(1)%text)
         if (allocated(chars)) deallocate(chars)
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'i','i','i' ], ignore='dimensions ', separator=' ', ints=ints)
+        call interpret_string (line=line, datatype=[ 'i','i','i' ], ignore='DIMENSIONS ', separator=' ', ints=ints)
         me%dimensions = ints(1:3)
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'i','c' ],     ignore='points ',     separator=' ', ints=ints, chars=chars)
+        call interpret_string (line=line, datatype=[ 'i','c' ],     ignore='POINTS ',     separator=' ', ints=ints, chars=chars)
         me%n_points= ints(1); me%datatype = trim(chars(1)%text)
 
         allocate(me%points(1:dim,1:me%n_points)); end_of_file  = .false.
@@ -269,9 +269,9 @@ contains
             write(unit,103) me%points(1:3,i)
         end do
 
-100     format('dataset ',(a))
-101     format('dimensions ',*(i0,' '))
-102     format('points ',(i0),' ',(a))
+100     format('DATASET ',(a))
+101     format('DIMENSIONS ',*(i0,' '))
+102     format('POINTS ',(i0),' ',(a))
 103     format(*(es13.6))
 
     end procedure struct_grid_write
@@ -280,7 +280,7 @@ contains
         implicit none
         !! sets up the structured grid dataset with information
 
-        me%name       = 'structured_grid'
+        me%name       = 'STRUCTURED_GRID'
         me%dimensions = dims
         me%n_points   = size(points,dim=2)
         me%points     = points
@@ -332,7 +332,7 @@ contains
         !! function returns the min / max range of values in x,y,z coordinates
 
         if (i < lbound(me%points,dim=2) .or. i > ubound(me%points,dim=2)) then
-            error stop 'error: array bounds have been exceeded in struct_grid_get_range'
+            error stop 'Error: array bounds have been exceeded in struct_grid_get_range'
         end if
 
         coord = me%points(1:3,i)
@@ -360,15 +360,15 @@ contains
         real(r8k),         dimension(:), allocatable :: reals
         type(char_dt),     dimension(:), allocatable :: chars
         character(len=13), dimension(3), parameter   :: descr_coord = &
-        & [ 'x_coordinates', 'y_coordinates', 'z_coordinates' ]
+        & [ 'X_COORDINATES', 'Y_COORDINATES', 'Z_COORDINATES' ]
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'c' ],         ignore='dataset ',     separator=' ', chars=chars)
+        call interpret_string (line=line, datatype=[ 'c' ],         ignore='DATASET ',     separator=' ', chars=chars)
         me%name = trim(chars(1)%text)
         if (allocated(chars)) deallocate(chars)
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'i','i','i' ], ignore='dimensions ',  separator=' ', ints=ints)
+        call interpret_string (line=line, datatype=[ 'i','i','i' ], ignore='DIMENSIONS ',  separator=' ', ints=ints)
         me%dimensions = ints(1:3); allocate(me%x%coord(1:ints(1)), me%y%coord(1:ints(2)), me%z%coord(1:ints(3)))
 
         end_of_file = .false.; i = 0
@@ -427,11 +427,11 @@ contains
         write(unit,104) me%dimensions(3), me%z%datatype
         write(unit,110) me%z%coord
 
-100     format('dataset ',(a))
-101     format('dimensions ',*(i0,' '))
-102     format('x_coordinates ',i0,' ',(a))
-103     format('y_coordinates ',i0,' ',(a))
-104     format('z_coordinates ',i0,' ',(a))
+100     format('DATASET ',(a))
+101     format('DIMENSIONS ',*(i0,' '))
+102     format('X_COORDINATES ',i0,' ',(a))
+103     format('Y_COORDINATES ',i0,' ',(a))
+104     format('Z_COORDINATES ',i0,' ',(a))
 110     format(*(es13.6))
 
     end procedure rectlnr_grid_write
@@ -444,7 +444,7 @@ contains
             error stop 'bad inputs for rectlnr_grid_setup. dims is not equal to size of coords.'
         end if
 
-        me%name       = 'rectilinear_grid'
+        me%name       = 'RECTILINEAR_GRID'
         me%dimensions = dims
         me%x%datatype = datatype
         me%y%datatype = datatype
@@ -527,7 +527,7 @@ contains
         case (3)
             allocate(coord,source=me%z%coord)
         case default
-            error stop 'error: invalid dimension (dim) requested in rectlnr_grid_get_coord'
+            error stop 'Error: invalid dimension (dim) requested in rectlnr_grid_get_coord'
         end select
 
     end procedure rectlnr_grid_get_coord
@@ -549,12 +549,12 @@ contains
         type(char_dt), dimension(:), allocatable :: chars
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'c' ],         ignore='dataset ',     separator=' ', chars=chars)
+        call interpret_string (line=line, datatype=[ 'c' ],         ignore='DATASET ',     separator=' ', chars=chars)
         me%name = trim(chars(1)%text)
         if (allocated(chars)) deallocate(chars)
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'i','c' ],     ignore='points ',     separator=' ', ints=ints, chars=chars)
+        call interpret_string (line=line, datatype=[ 'i','c' ],     ignore='POINTS ',     separator=' ', ints=ints, chars=chars)
         me%n_points= ints(1); me%datatype = to_lowercase(trim(chars(1)%text))
         if (allocated(chars)) deallocate(chars)
 
@@ -591,15 +591,15 @@ contains
             if (allocated(chars)) deallocate(chars)
 
             select case (descr)
-            case ('vertices')
+            case ('VERTICES')
                 allocate(poly_vertex::me%vertices(1:n))
-            case ('lines')
+            case ('LINES')
                 allocate(poly_line::me%lines(1:n))
-            case ('polygons')
+            case ('POLYGONS')
                 allocate(polygon::me%polygons(1:n))
-            case ('triangle_strips')
+            case ('TRIANGLE_STRIPS')
                 allocate(triangle_strip::me%triangles(1:n))
-            case ('point_data', 'cell_data')
+            case ('POINT_DATA', 'CELL_DATA')
                 exit get_keywords !! no additional information was provided for polygonal_data
             case default
                 error stop 'bad value read for additional polygon information. terminated in polygonal_data_read'
@@ -630,16 +630,16 @@ contains
 
                     ! save values
                     select case (descr)
-                    case ('vertices')
+                    case ('VERTICES')
                         me%vertices(i)%n_points  = n_points
                         me%vertices(i)%points    = points
-                    case ('lines')
+                    case ('LINES')
                         me%lines(i)%n_points     = n_points
                         me%lines(i)%points       = points
-                    case ('polygons')
+                    case ('POLYGONS')
                         me%polygons(i)%n_points  = n_points
                         me%polygons(i)%points    = points
-                    case ('triangle_strips')
+                    case ('TRIANGLE_STRIPS')
                         me%triangles(i)%n_points = n_points
                         me%triangles(i)%points   = points
                     end select
@@ -719,13 +719,13 @@ contains
             end do
         end if
 
-100     format('dataset ',(a))
-101     format('points ',(i0),' ',(a))
+100     format('DATASET ',(a))
+101     format('POINTS ',(i0),' ',(a))
 102     format(*(es13.6))
-103     format('vertices ',(i0),' ',(i0))
-104     format('lines ',(i0),' ',(i0))
-105     format('polygons ',(i0),' ',(i0))
-106     format('triangle_strips ',(i0),' ',(i0))
+103     format('VERTICES ',(i0),' ',(i0))
+104     format('LINES ',(i0),' ',(i0))
+105     format('POLYGONS ',(i0),' ',(i0))
+106     format('TRIANGLE_STRIPS ',(i0),' ',(i0))
 
     end procedure polygonal_data_write
 
@@ -733,7 +733,7 @@ contains
         implicit none
         !! sets up the polygonal data dataset with information
 
-        me%name       = 'polydata'
+        me%name       = 'POLYDATA'
         me%n_points   = size(points,dim=2)
         me%points     = points
         me%firstcall  = .false.
@@ -771,12 +771,12 @@ contains
         type (temp_points), dimension(:), allocatable :: read_points
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'c' ],         ignore='dataset ',     separator=' ', chars=chars)
+        call interpret_string (line=line, datatype=[ 'c' ],         ignore='DATASET ',     separator=' ', chars=chars)
         me%name = trim(chars(1)%text)
         if (allocated(chars)) deallocate(chars)
 
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'i','c' ],     ignore='points ',     separator=' ', ints=ints, chars=chars)
+        call interpret_string (line=line, datatype=[ 'i','c' ],     ignore='POINTS ',     separator=' ', ints=ints, chars=chars)
         me%n_points= ints(1); me%datatype = to_lowercase(trim(chars(1)%text))
 
         allocate(me%points(1:3,1:me%n_points)); end_of_file = .false.
@@ -796,7 +796,7 @@ contains
 
         ! get the cell information
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'i','i' ], ignore='points ', separator=' ', ints=ints)
+        call interpret_string (line=line, datatype=[ 'i','i' ], ignore='POINTS ', separator=' ', ints=ints)
         me%n_cells = ints(1); me%size = ints(2); allocate(read_points(1:ints(1)))
         allocate(me%cell_list(1:me%n_cells))
 
@@ -811,7 +811,7 @@ contains
 
         ! get the cell type information
         read(unit,100,iostat=iostat) line
-        call interpret_string (line=line, datatype=[ 'i' ], ignore='cell_types ', separator=' ', ints=ints)
+        call interpret_string (line=line, datatype=[ 'i' ], ignore='CELL_TYPES ', separator=' ', ints=ints)
         me%n_cell_types = ints(1)
 
         end_of_file = .false.
@@ -856,11 +856,11 @@ contains
             write(unit,105) me%cell_list(i)%cell%type
         end do
 
-100     format('dataset ',(a))
-101     format('points ',(i0),' ',(a))
+100     format('DATASET ',(a))
+101     format('POINTS ',(i0),' ',(a))
 102     format(*(es13.6))
-103     format('cells ',(i0),' ',(i0))
-104     format('cell_types ',(i0))
+103     format('CELLS ',(i0),' ',(i0))
+104     format('CELL_TYPES ',(i0))
 105     format(' ',i0)
 
     end procedure unstruct_grid_write
@@ -870,7 +870,7 @@ contains
         !! sets up the unstructured grid dataset with information
         integer(i4k) :: i, size_cnt
 
-        me%name         = 'unstructured_grid'
+        me%name         = 'UNSTRUCTURED_GRID'
         me%n_points     = size(points, dim=2)
         me%n_cells      = size(cells,  dim=1)
         me%n_cell_types = size(cells,  dim=1)
@@ -891,7 +891,7 @@ contains
         !! sets up the unstructured grid dataset with information
         integer(i4k) :: i, size_cnt
 
-        me%name         = 'unstructured_grid'
+        me%name         = 'UNSTRUCTURED_GRID'
         me%n_points     = size(points,    dim=2)
         me%n_cells      = size(cell_list, dim=1)
         me%n_cell_types = size(cell_list, dim=1)
@@ -917,7 +917,7 @@ contains
         !! function returns the point (i)
 
         if (i < lbound(me%points,dim=2) .or. i > ubound(me%points,dim=2)) then
-            error stop 'error: array bounds have been exceeded in unstruct_grid_get_range'
+            error stop 'Error: array bounds have been exceeded in unstruct_grid_get_range'
         end if
 
         coord = me%points(1:3,i)
@@ -929,7 +929,7 @@ contains
         !! function returns the connectivity for cell (i)
 
         if (i < lbound(me%cell_list,dim=1) .or. i > ubound(me%cell_list,dim=1)) then
-            error stop 'error: array bounds have been exceeded in unstruct_grid_get_connectivity'
+            error stop 'Error: array bounds have been exceeded in unstruct_grid_get_connectivity'
         end if
 
         allocate(connectivity, source=me%cell_list(i)%cell%points)
@@ -942,7 +942,7 @@ contains
         !! the offset is just the # of points
 
         if (i < lbound(me%cell_list,dim=1) .or. i > ubound(me%cell_list,dim=1)) then
-            error stop 'error: array bounds have been exceeded in unstruct_grid_get_offset'
+            error stop 'Error: array bounds have been exceeded in unstruct_grid_get_offset'
         end if
 
         offset = me%cell_list(i)%cell%n_points
@@ -954,7 +954,7 @@ contains
         !! function returns the type for cell (i)
 
         if (i < lbound(me%cell_list,dim=1) .or. i > ubound(me%cell_list,dim=1)) then
-            error stop 'error: array bounds have been exceeded in unstruct_grid_get_type'
+            error stop 'Error: array bounds have been exceeded in unstruct_grid_get_type'
         end if
 
         type = me%cell_list(i)%cell%type

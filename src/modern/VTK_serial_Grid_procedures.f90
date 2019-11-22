@@ -21,7 +21,7 @@ contains
         if (allocated(me%piece)) then
             call me%piece%finalize()
             if (allocated(me%wholeextent)) then
-                call grid%setup(name=me%grid_type,string= "wholeextent=" // '"' // me%wholeextent // '"')
+                call grid%setup(name=me%grid_type,string= "WholeExtent=" // '"' // me%wholeextent // '"')
             else
                 call grid%setup(name=me%grid_type)
             end if
@@ -61,7 +61,7 @@ contains
         integer(i4k) :: i, j
         integer(i4k), dimension(2,3)  :: range
         character(len=*), parameter :: file_extension = ".vti"
-        character(len=*), parameter :: grid_type = "imagedata"
+        character(len=*), parameter :: grid_type = "ImageData"
 
         call me%initialize(type=grid_type,file_extension=file_extension)
 
@@ -87,9 +87,9 @@ contains
         class is (struct_pts)
             allocate(origin_string, source=convert_to_string(geometry%get_origin()))
             allocate(spacing_string, source=convert_to_string(geometry%get_spacing()))
-            allocate(me%extra_string, source='origin="' // origin_string // '", spacing="' // spacing_string // '"')
+            allocate(me%extra_string, source='Origin="' // origin_string // '", Spacing="' // spacing_string // '"')
         class default
-            error stop 'bad geometry type for imagedata. terminated in imagedata_set_grid'
+            error stop 'Error: bad geometry type for imagedata. terminated in imagedata_set_grid'
         end select
 
         !        error stop 'imagedata_set_grid is not yet implemented. need to set origin, spacing'
@@ -111,8 +111,8 @@ contains
         character(len=:), allocatable :: range_string
         integer(i4k) :: i, j
         integer(i4k), dimension(2,3)  :: range
-        character(len=*), parameter :: file_extension = ".vtr"
-        character(len=*), parameter :: grid_type = "rectilineargrid"
+        character(len=*), parameter :: file_extension = '.vtr'
+        character(len=*), parameter :: grid_type = 'RectilinearGrid'
 
         call me%initialize(type=grid_type,file_extension=file_extension)
         range = geometry%get_range_cnt()
@@ -148,8 +148,8 @@ contains
         character(len=:), allocatable :: range_string
         integer(i4k) :: i, j
         integer(i4k), dimension(2,3)  :: range
-        character(len=*), parameter :: file_extension = ".vts"
-        character(len=*), parameter :: grid_type = "structuredgrid"
+        character(len=*), parameter :: file_extension = '.vts'
+        character(len=*), parameter :: grid_type = 'StructuredGrid'
 
         call me%initialize(type=grid_type,file_extension=file_extension)
         range = geometry%get_range_cnt()
@@ -181,8 +181,8 @@ contains
         !!
         !! this sets parameters specific to the dt
         !!
-        character(len=*), parameter :: file_extension = ".vtu"
-        character(len=*), parameter :: grid_type = "unstructuredgrid"
+        character(len=*), parameter :: file_extension = '.vtu'
+        character(len=*), parameter :: grid_type = 'UnstructuredGrid'
 
         call me%initialize(type=grid_type,file_extension=file_extension)
 

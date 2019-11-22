@@ -17,6 +17,7 @@ module file_utility
         character(len=:), allocatable :: close_status
         character(len=:), allocatable :: form
         character(len=:), allocatable :: access
+        character(len=:), allocatable :: encoding
     contains
         procedure, public  :: setup_file_information
         generic,   public  :: setup => setup_file_information
@@ -34,7 +35,7 @@ module file_utility
 
     interface
 
-        module subroutine setup_file_information (me, filename, open_status, close_status, form, access, unit)
+        module subroutine setup_file_information (me, filename, open_status, close_status, form, access, unit, encoding)
             implicit none
             !! author: Ian Porter
             !! date: 04/16/2018
@@ -48,6 +49,7 @@ module file_utility
             character(len=*),           intent(in), optional :: form         !! file format(formatted or unformatted)
             character(len=*),           intent(in), optional :: access       !! file access type
             integer(i4k),               intent(in), optional :: unit         !! requested file unit #
+            character(len=*),           intent(in), optional :: encoding     !! file encoding type
 
         end subroutine setup_file_information
 

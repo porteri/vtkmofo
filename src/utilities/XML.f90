@@ -20,9 +20,9 @@ module xml
 
     integer(i4k) :: file_format = ascii
 
-    character(len=*), parameter :: format_ascii  = 'ascii'
-    character(len=*), parameter :: format_binary = 'binary'
-    character(len=*), parameter :: format_append = 'appended'
+    character(len=*), parameter :: format_ascii  = 'ASCII'
+    character(len=*), parameter :: format_binary = 'BINARY'
+    character(len=*), parameter :: format_append = 'APPENDED'
     character(len=:), allocatable :: file_format_text
 
     type string_dt
@@ -185,7 +185,7 @@ module xml
             character(len=*),      intent(in)    :: value
         end subroutine replace_in_string
 
-        module subroutine xml_file_setup (me, filename, open_status, close_status, form, access, unit)
+        module subroutine xml_file_setup (me, filename, open_status, close_status, form, access, unit, encoding)
             implicit none
             !! author: Ian Porter
             !! date: 05/02/2019
@@ -199,6 +199,7 @@ module xml
             character(len=*),   intent(in), optional :: form         !! file format(formatted or unformatted)
             character(len=*),   intent(in), optional :: access       !! file access type
             integer(i4k),       intent(in), optional :: unit         !! requested file unit #
+            character(len=*),   intent(in), optional :: encoding     !! file encoding type
         end subroutine xml_file_setup
 
         recursive module subroutine xml_begin (me)

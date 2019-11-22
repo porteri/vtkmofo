@@ -17,8 +17,8 @@ contains
         !! this writes the header for a vtk file
         !!
         !! example:
-        !! <vtkfile type=”imagedata” version=”0.1” byte_order=”littleendian”>
-        character(len=*), parameter   :: name = 'vtkfile'
+        !! <VTKFile type=”ImageData” version=”0.1” byte_order=”LittleEndian”>
+        character(len=*), parameter   :: name = 'VTKFile'
         character(len=:), allocatable :: string
         character(len=:), allocatable :: type_string
         character(len=*), parameter   :: version_string = ' version="' // def_version // '"'
@@ -31,9 +31,9 @@ contains
             error stop "error. can't create vtk file without a known type. terminated in vtk_element_setup"
         end if
         if (is_little_endian()) then
-            allocate(byte_order_string,source=' byte_order="littleendian"')
+            allocate(byte_order_string,source=' byte_order="LittleEndian"')
         else
-            allocate(byte_order_string,source=' byte_order="bigendian"')
+            allocate(byte_order_string,source=' byte_order="BigEndian"')
         end if
         if (allocated(me%compression)) then
             allocate(compression_string,source=' compression="' // me%compression // '"')
