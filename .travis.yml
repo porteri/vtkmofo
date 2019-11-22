@@ -51,7 +51,6 @@ matrix:
       env: GCC=8
       before_install:
         - brew install gcc@8
-        - brew upgrade cmake
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: osx
@@ -59,7 +58,6 @@ matrix:
       env: GCC=9
       before_install:
         - brew install gcc@9
-        - brew upgrade cmake
         - export FC=gfortran-${GCC}
         - cmake --version
     - os: osx
