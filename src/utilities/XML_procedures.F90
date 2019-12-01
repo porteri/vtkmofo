@@ -55,7 +55,11 @@ contains
 
         select case (file_format)
         case (ascii)
+#ifdef INTEL_COMPILER
+            write(unit,'(a)',advance='yes') prior_offset // '<' // me%name // me%additional_data // '>'
+#else
             write(unit,'(a)',advance='no') prior_offset // '<' // me%name // me%additional_data // '>' // new_line('a')
+#endif
         case (binary)
             write(unit) '<' // me%name // me%additional_data // '>' // new_line('a')
         end select
@@ -102,7 +106,7 @@ contains
             end do
 
             associate (my_entry => ubound(me%string,dim=1))
-                allocate(me%string(my_entry)%text,source= string // new_line('a'))
+                allocate(me%string(my_entry)%text,source=string // new_line('a'))
             end associate
         end select
 
@@ -300,7 +304,11 @@ contains
 
         select case (file_format)
         case (ascii)
+#ifdef INTEL_COMPILER
+            write(unit,'(a)',advance='yes') prior_offset // '</' // me%name // '>'
+#else
             write(unit,'(a)',advance='no') prior_offset // '</' // me%name // '>' // new_line('a')
+#endif
         case (binary)
             write(unit) '</' // me%name // '>' // new_line('a')
         end select
@@ -322,7 +330,11 @@ contains
             do i = 1, size(me%string)
                 select case (file_format)
                 case (ascii)
+#ifdef INTEL_COMPILER
+                    write(unit,'(a)',advance='yes') prior_offset // me%string(i)%text
+#else
                     write(unit,'(a)',advance='no') prior_offset // me%string(i)%text
+#endif
                 case (binary)
                     write(unit) me%string(i)%text
                 end select
@@ -430,6 +442,7 @@ contains
     end procedure xml_file_setup
 
     module procedure xml_begin
+        use iso_fortran_env, only : output_unit
         implicit none
         !! author: Ian Porter
         !! date: 05/03/2019
@@ -438,7 +451,7 @@ contains
         !!
 
         if (.not. allocated(me%filename)) then
-            write(0,*) 'warning: file name has not yet been set in xml_begin'
+            write(output_unit,*) 'warning: file name has not yet been set in xml_begin'
             call me%setup('dummy')
         end if
 
@@ -446,7 +459,11 @@ contains
 
         select case (file_format)
         case (ascii)
+#ifdef INTEL_COMPILER
+            write(unit,'(a)',advance='yes') version
+#else
             write(me%unit,'(a)',advance='no') version // new_line('a')
+#endif
         case (binary)
             write(me%unit) version // new_line('a')
         end select

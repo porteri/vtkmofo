@@ -9,6 +9,7 @@ include_guard(DIRECTORY) # Check to see if the file has previously been processe
 # Compiler options
 if (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
   # Intel platform specific settings
+  add_definitions(-DINTEL_COMPILER)
   if (WIN32) # Windows options
     set(prefix "/")
     set(infix ":")
@@ -33,10 +34,10 @@ if (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
 
   set(Intel_Fortran_FLAGS_Release "${prefix}check${colon_}none ${prefix}O3")
   set(Intel_Fortran_FLAGS_Debug "${prefix}check${colon_}all ${prefix}O0")
-  
+
 #  "${prefix}nologo ${prefix}debug${infix}full ${prefix}MP ${prefix}Od ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
 #  "${prefix}nologo ${prefix}debug${infix}full ${prefix}multiple-processes ${prefix}O0 ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
-  
+
   set(Intel_EXE_LINKER_FLAGS "${prefix}traceback ${prefix}stand${colon_}f15 ${prefix}${Q}coarray${colon_}distributed")
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   # GFortran build configs

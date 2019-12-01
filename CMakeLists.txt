@@ -53,7 +53,7 @@ set(vtkmofo_utilities
   utilities/Misc_procedures.f90
   utilities/Precision.f90
   utilities/XML.f90
-  utilities/XML_procedures.f90
+  utilities/XML_procedures.F90
   )
 
 # Legacy vtk files
