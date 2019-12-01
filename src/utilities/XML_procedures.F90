@@ -460,7 +460,7 @@ contains
         select case (file_format)
         case (ascii)
 #ifdef INTEL_COMPILER
-            write(unit,'(a)',advance='yes') version
+            write(me%unit,'(a)',advance='yes') version
 #else
             write(me%unit,'(a)',advance='no') version // new_line('a')
 #endif
