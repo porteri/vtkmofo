@@ -60,7 +60,7 @@ contains
                 write(unit,'(a)',advance='yes') prior_offset // '<' // me%name // '>'
             end if
 #else
-            if (allocated(me%additional_data)) then            
+            if (allocated(me%additional_data)) then
                 write(unit,'(a)',advance='no') prior_offset // '<' // me%name // me%additional_data // '>' // new_line('a')
             else
                 write(unit,'(a)',advance='no') prior_offset // '<' // me%name // '>' // new_line('a')
@@ -116,7 +116,7 @@ contains
             end do
 
             associate (my_entry => ubound(me%string,dim=1))
-                allocate(me%string(my_entry)%text,source=string)! // new_line('a'))
+                allocate(me%string(my_entry)%text,source=string)
             end associate
         end select
 
@@ -148,7 +148,7 @@ contains
             call move_alloc(tmp_string_dt, me%string)
 
             associate (my_entry => ubound(me%string,dim=1))
-                allocate(me%string(my_entry)%text,source=convert_to_string(var))! // new_line('a'))
+                allocate(me%string(my_entry)%text,source=convert_to_string(var))
             end associate
         end select
 
@@ -179,7 +179,7 @@ contains
         end do
 
         associate (my_entry => ubound(me%string,dim=1))
-            allocate(me%string(my_entry)%text,source= string)! // new_line('a'))
+            allocate(me%string(my_entry)%text,source= string)
         end associate
 
     end procedure element_add_int32
@@ -209,7 +209,7 @@ contains
         end do
 
         associate (my_entry => ubound(me%string,dim=1))
-            allocate(me%string(my_entry)%text,source= string)! // new_line('a'))
+            allocate(me%string(my_entry)%text,source= string)
         end associate
 
     end procedure element_add_int64
@@ -239,7 +239,7 @@ contains
         end do
 
         associate (my_entry => ubound(me%string,dim=1))
-            allocate(me%string(my_entry)%text,source= string)! // new_line('a'))
+            allocate(me%string(my_entry)%text,source= string)
         end associate
 
     end procedure element_add_logical
@@ -266,9 +266,9 @@ contains
 
         associate (my_entry => ubound(me%string,dim=1))
             if (add_quotes) then
-                allocate(me%string(my_entry)%text,source='"' // string // '"')! // new_line('a'))
+                allocate(me%string(my_entry)%text,source='"' // string // '"')
             else
-                allocate(me%string(my_entry)%text,source= string)! // new_line('a'))
+                allocate(me%string(my_entry)%text,source= string)
             end if
         end associate
 
