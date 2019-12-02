@@ -15,7 +15,7 @@ program serial_structured_grid_test
     type (scalar)               :: cell_data
     integer(i4k)                :: i, j, k, cnt = 1
     integer(i4k),     parameter :: n_x = 19, n_y = 1, n_z = 4, unit = 20
-    character(len=*), parameter :: filename = 'structured_grid'
+    character(len=*), parameter :: filename = 'serial_structured_grid'
     character(len=*), parameter :: title    = 'testing of cylindrical geometry'
     integer(i4k), dimension(3)  :: dims
     real(r8k), dimension(n_x), parameter :: x_vals = &
