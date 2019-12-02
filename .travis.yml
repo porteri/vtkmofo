@@ -5,9 +5,9 @@ matrix:
       dist: trusty
       env: GCC=7
       before_install:
-        - curl -L https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.tar.gz -o cmake-3.13.4-Linux-x86_64.tar.gz
-        - tar xf cmake-3.13.4-Linux-x86_64.tar.gz
-        - export PATH=${PWD}/cmake-3.13.4-Linux-x86_64/bin:${PATH}
+        - curl -L https://github.com/Kitware/CMake/releases/download/v3.14.7/cmake-3.14.7-Linux-x86_64.tar.gz -o cmake-3.14.7-Linux-x86_64.tar.gz
+        - tar xf cmake-3.14.7-Linux-x86_64.tar.gz
+        - export PATH=${PWD}/cmake-3.14.7-Linux-x86_64/bin:${PATH}
         - export FC=gfortran-${GCC}
         - cmake --version
       addons:
@@ -20,9 +20,9 @@ matrix:
       dist: xenial
       env: GCC=8
       before_install:
-        - curl -L https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.tar.gz -o cmake-3.13.4-Linux-x86_64.tar.gz
-        - tar xf cmake-3.13.4-Linux-x86_64.tar.gz
-        - export PATH=${PWD}/cmake-3.13.4-Linux-x86_64/bin:${PATH}
+        - curl -L https://github.com/Kitware/CMake/releases/download/v3.14.7/cmake-3.14.7-Linux-x86_64.tar.gz -o cmake-3.14.7-Linux-x86_64.tar.gz
+        - tar xf cmake-3.14.7-Linux-x86_64.tar.gz
+        - export PATH=${PWD}/cmake-3.14.7-Linux-x86_64/bin:${PATH}
         - export FC=gfortran-${GCC}
         - cmake --version
       addons:
@@ -35,9 +35,9 @@ matrix:
       dist: bionic
       env: GCC=9
       before_install:
-        - curl -L https://github.com/Kitware/CMake/releases/download/v3.15.5/cmake-3.15.5-Linux-x86_64.tar.gz -o cmake-3.15.5-Linux-x86_64.tar.gz
-        - tar xf cmake-3.15.5-Linux-x86_64.tar.gz
-        - export PATH=${PWD}/cmake-3.15.5-Linux-x86_64/bin:${PATH}
+        - curl -L https://github.com/Kitware/CMake/releases/download/v3.16.0/cmake-3.16.0-Linux-x86_64.tar.gz -o cmake-3.16.0-Linux-x86_64.tar.gz
+        - tar xf cmake-3.16.0-Linux-x86_64.tar.gz
+        - export PATH=${PWD}/cmake-3.16.0-Linux-x86_64/bin:${PATH}
         - export FC=gfortran-${GCC}
         - cmake --version
       addons:
