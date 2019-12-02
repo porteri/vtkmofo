@@ -21,9 +21,7 @@ contains
 
         allocate(me%name,source=name)
         if (present(string)) then
-            if (len_trim(string) == 0) then
-                allocate(me%additional_data,source='')
-            else
+            if (len_trim(string) > 0) then
                 if (string(1:1) == " ") then
                     !! don't add an extra space between the name and the string
                     allocate(me%additional_data, source=string)
@@ -55,9 +53,25 @@ contains
 
         select case (file_format)
         case (ascii)
-            write(unit,'(a)',advance='no') prior_offset // '<' // me%name // me%additional_data // '>' // new_line('a')
+#ifdef INTEL_COMPILER
+            if (allocated(me%additional_data)) then
+                write(unit,'(a)',advance='yes') prior_offset // '<' // me%name // me%additional_data // '>'
+            else
+                write(unit,'(a)',advance='yes') prior_offset // '<' // me%name // '>'
+            end if
+#else
+            if (allocated(me%additional_data)) then
+                write(unit,'(a)',advance='no') prior_offset // '<' // me%name // me%additional_data // '>' // new_line('a')
+            else
+                write(unit,'(a)',advance='no') prior_offset // '<' // me%name // '>' // new_line('a')
+            end if
+#endif
         case (binary)
-            write(unit) '<' // me%name // me%additional_data // '>' // new_line('a')
+            if (allocated(me%additional_data)) then
+                write(unit) '<' // me%name // me%additional_data // '>' // new_line('a')
+            else
+                write(unit) '<' // me%name // '>' // new_line('a')
+            end if
         end select
 
         allocate(tmp_offset,source=prior_offset // me%offset)   !! set the new offset length
@@ -102,7 +116,7 @@ contains
             end do
 
             associate (my_entry => ubound(me%string,dim=1))
-                allocate(me%string(my_entry)%text,source= string // new_line('a'))
+                allocate(me%string(my_entry)%text,source=string)
             end associate
         end select
 
@@ -134,7 +148,7 @@ contains
             call move_alloc(tmp_string_dt, me%string)
 
             associate (my_entry => ubound(me%string,dim=1))
-                allocate(me%string(my_entry)%text,source=convert_to_string(var) // new_line('a'))
+                allocate(me%string(my_entry)%text,source=convert_to_string(var))
             end associate
         end select
 
@@ -165,7 +179,7 @@ contains
         end do
 
         associate (my_entry => ubound(me%string,dim=1))
-            allocate(me%string(my_entry)%text,source= string // new_line('a'))
+            allocate(me%string(my_entry)%text,source= string)
         end associate
 
     end procedure element_add_int32
@@ -195,7 +209,7 @@ contains
         end do
 
         associate (my_entry => ubound(me%string,dim=1))
-            allocate(me%string(my_entry)%text,source= string // new_line('a'))
+            allocate(me%string(my_entry)%text,source= string)
         end associate
 
     end procedure element_add_int64
@@ -225,7 +239,7 @@ contains
         end do
 
         associate (my_entry => ubound(me%string,dim=1))
-            allocate(me%string(my_entry)%text,source= string // new_line('a'))
+            allocate(me%string(my_entry)%text,source= string)
         end associate
 
     end procedure element_add_logical
@@ -252,9 +266,9 @@ contains
 
         associate (my_entry => ubound(me%string,dim=1))
             if (add_quotes) then
-                allocate(me%string(my_entry)%text,source='"' // string // '"' // new_line('a'))
+                allocate(me%string(my_entry)%text,source='"' // string // '"')
             else
-                allocate(me%string(my_entry)%text,source= string // new_line('a'))
+                allocate(me%string(my_entry)%text,source= string)
             end if
         end associate
 
@@ -300,7 +314,11 @@ contains
 
         select case (file_format)
         case (ascii)
+#ifdef INTEL_COMPILER
+            write(unit,'(a)',advance='yes') prior_offset // '</' // me%name // '>'
+#else
             write(unit,'(a)',advance='no') prior_offset // '</' // me%name // '>' // new_line('a')
+#endif
         case (binary)
             write(unit) '</' // me%name // '>' // new_line('a')
         end select
@@ -316,13 +334,20 @@ contains
         !!
         integer(i4k) :: i, j
 
+        if (.not. allocated(prior_offset)) allocate(prior_offset,source='')  !! This should only happen if trying to write
+                                                                             !! an element without an xml file type
+
         call me%begin(unit)
 
         if (allocated(me%string)) then
             do i = 1, size(me%string)
                 select case (file_format)
                 case (ascii)
+#ifdef INTEL_COMPILER
+                    write(unit,'(a)',advance='yes') prior_offset // me%string(i)%text
+#else
                     write(unit,'(a)',advance='no') prior_offset // me%string(i)%text
+#endif
                 case (binary)
                     write(unit) me%string(i)%text
                 end select
@@ -430,6 +455,7 @@ contains
     end procedure xml_file_setup
 
     module procedure xml_begin
+        use iso_fortran_env, only : output_unit
         implicit none
         !! author: Ian Porter
         !! date: 05/03/2019
@@ -438,7 +464,7 @@ contains
         !!
 
         if (.not. allocated(me%filename)) then
-            write(0,*) 'warning: file name has not yet been set in xml_begin'
+            write(output_unit,*) 'warning: file name has not yet been set in xml_begin'
             call me%setup('dummy')
         end if
 
@@ -446,7 +472,11 @@ contains
 
         select case (file_format)
         case (ascii)
+#ifdef INTEL_COMPILER
+            write(me%unit,'(a)',advance='yes') version
+#else
             write(me%unit,'(a)',advance='no') version // new_line('a')
+#endif
         case (binary)
             write(me%unit) version // new_line('a')
         end select

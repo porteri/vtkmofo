@@ -35,7 +35,7 @@ program dataarray_test
 
     call foo%add(foo2)
 
-    open (newunit=unit,file="dataarray_test.xml",status="replace",form="formatted")
+    open (newunit=unit,file='dataarray_test.xml',status='replace',form='formatted')
     call foo%write(unit)
 
     call all_tests_pass()

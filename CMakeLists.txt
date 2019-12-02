@@ -1,15 +1,23 @@
 # CMAKE minimum version
-cmake_minimum_required(VERSION 3.13.4)
+cmake_minimum_required(VERSION 3.14.0)
+
+set(CMAKE_BUILD_TYPE_INIT Debug) # Default to a debug build type
 
 option(VTKmofo_USE_OpenCoarrays
   "Build vtkmofo with support for linking against OpenCoarray programs" OFF)
 
-# Project name
-project(vtkmofo LANGUAGES Fortran)
-
 # vtkmofo project version
 set(VTKMOFO_VERSION_MAJOR 1)
 set(VTKMOFO_VERSION_MINOR 200)
+
+# Project name
+project(vtkmofo VERSION "${VTKMOFO_VERSION_MAJOR}.${VTKMOFO_VERSION_MINOR}" LANGUAGES Fortran)
+
+# Set the type/configuration of build to perform
+set(ALLOWED_BUILD_TYPES "Debug" "Release")
+set(CMAKE_BUILD_TYPE "Debug"
+  CACHE STRING "Select which configuration to build.")
+set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${ALLOWED_BUILD_TYPES})
 
 # Custom modules
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
@@ -53,7 +61,7 @@ set(vtkmofo_utilities
   utilities/Misc_procedures.f90
   utilities/Precision.f90
   utilities/XML.f90
-  utilities/XML_procedures.f90
+  utilities/XML_procedures.F90
   )
 
 # Legacy vtk files
