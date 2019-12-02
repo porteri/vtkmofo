@@ -32,13 +32,13 @@ if (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
 	set(dbglibs "")
   endif()
 
-  set(Intel_Fortran_FLAGS_Release "${prefix}check${colon_}none ${prefix}O3")
-  set(Intel_Fortran_FLAGS_Debug "${prefix}check${colon_}all ${prefix}O0")
+  set(Intel_Fortran_FLAGS_Release "${prefix}check${colon_}none ${prefix}O3 ${prefix}fpp ${prefix}MP")
+  set(Intel_Fortran_FLAGS_Debug "${prefix}check${colon_}all ${prefix}Od ${prefix}fpp ${prefix}MP ${prefix}warn${colon_}all ${prefix}stand${colon_}f15 ${prefix}fpe${colon_}0")
 
-#  "${prefix}nologo ${prefix}debug${infix}full ${prefix}MP ${prefix}Od ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
+#  "${prefix}nologo ${prefix}debug${infix}full ${prefix}MP ${prefix}Od ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
 #  "${prefix}nologo ${prefix}debug${infix}full ${prefix}multiple-processes ${prefix}O0 ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
 
-  set(Intel_EXE_LINKER_FLAGS "${prefix}traceback ${prefix}stand${colon_}f15 ${prefix}${Q}coarray${colon_}distributed")
+  set(Intel_EXE_LINKER_FLAGS "${prefix}traceback ${prefix}stand${colon_}f15 ${prefix}${Q}coarray${colon_}distributed ${prefix}fpp")
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   # GFortran build configs
   set(GNU_Fortran_FLAGS_Release "-fbacktrace -std=f2018 -ffree-form -fcheck=all")
