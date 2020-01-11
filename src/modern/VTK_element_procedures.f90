@@ -10,6 +10,7 @@ contains
 
     module procedure vtk_element_setup
         use file_utility, only : is_little_endian
+        use VTK_vars,     only : parallel_container_file
         implicit none
         !! author: Ian Porter
         !! date: 05/06/2019
@@ -26,7 +27,11 @@ contains
         character(len=:), allocatable :: compression_string
 
         if (allocated(me%type)) then
-            allocate(type_string,source=' type="' // me%type // '"')
+            if (parallel_container_file) then
+                allocate(type_string,source=' type="P' // me%type // '"')
+            else
+                allocate(type_string,source=' type="' // me%type // '"')
+            end if
         else
             error stop "error. can't create vtk file without a known type. terminated in vtk_element_setup"
         end if

@@ -9,7 +9,7 @@ module vtk_vars
     !!
     private
     public :: vtkunit, version, default_title, default_fn, vtkfilename, vtktitle, fcnt, vtk_extension
-    public :: ascii, binary, file_format
+    public :: ascii, binary, file_format, parallel_container_file
     !! selected file type
     integer(i4k) :: vtkunit  = 20_i4k                                               !! default vtk unit #
     integer(i4k) :: fcnt     = 0_i4k                                                !! file counter for time-dependent output files
@@ -22,5 +22,6 @@ module vtk_vars
     character(len=*), parameter   :: default_fn    = 'out'                          !! default filename
     character(len=:), allocatable :: vtkfilename                                    !! supplied filename
     character(len=:), allocatable :: vtktitle                                       !! supplied title
+    logical :: parallel_container_file = .false.                                    !! flag for parallel file
 
 end module vtk_vars

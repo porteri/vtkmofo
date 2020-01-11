@@ -11,6 +11,7 @@ submodule (vtk_dataarray_element) vtk_dataarray_element_procedures
 contains
 
     module procedure dataarray_setup
+        use vtk_vars, only : parallel_container_file
         implicit none
         !! author: Ian Porter
         !! date: 06/06/2019
@@ -66,7 +67,11 @@ contains
         allocate(string, source=type_string // name_string // nofc_string // format_string // &
             &                   offset_string // range_min_string // range_max_string)
 
-        call me%setup(name=dataarray_name, string=string)
+        if (parallel_container_file) then
+            call me%setup(name='P' // dataarray_name, string=string)
+        else
+            call me%setup(name=dataarray_name, string=string)
+        end if
 
     end procedure dataarray_setup
 

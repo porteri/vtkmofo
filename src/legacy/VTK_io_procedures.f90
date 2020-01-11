@@ -313,6 +313,10 @@ contains
         integer(i4k) :: file_unit = 0
 
         ! clear out any pre-existing data
+        if (allocated(serial_file)) then
+            call serial_file%me_deallocate()
+            deallocate(serial_file)
+        end if
         if (allocated(vtkfilename))      deallocate(vtkfilename)
         if (allocated(form))             deallocate(form)
         if (allocated(file_format_text)) deallocate(file_format_text)
@@ -383,34 +387,36 @@ contains
         else
             call serial_file%setup(filename=vtkfilename // trim(serial_file%vtk_dataset%file_extension))
         end if
+        write(0,*) 'in vtk_serial_full_write'
         write(0,*) serial_file%filename
         write(0,*) serial_file%unit
         !! append data
-        call vtk_serial_append (celldata, pointdata, celldatasets, pointdatasets)
+        call vtk_XML_append (celldata, pointdata, celldatasets, pointdatasets)
+        write(0,*) 'after vtk_XML_append, before vtk_XML_finalize'
         !! finalize the write
         if (any([ present(celldatasets), present(celldata), present(pointdatasets), present(pointdata) ])) then
-            call vtk_serial_finalize (finished=.true.)          !! full legacy write w/ data. close file.
+            call vtk_XML_finalize (finished=.true.)          !! full legacy write w/ data. close file.
         else
-            call vtk_serial_finalize (finished=.false.)         !! no data was provided, only geometry info. do not close file.
+            call vtk_XML_finalize (finished=.false.)         !! no data was provided, only geometry info. do not close file.
         end if
-
+        write(0,*) 'after vtk_XML_finalize'
     end procedure vtk_serial_full_write
 
-    module procedure vtk_serial_append
+    module procedure vtk_XML_append
         use vtk_serial_file, only : serial_file
         implicit none
         !! author: Ian Porter
         !! date: 06/24/2019
         !!
-        !! this subroutine appends data to the legacy vtk output file
+        !! this subroutine appends data to the modern vtk output files
         !!
 
         if (.not. allocated(serial_file%vtk_dataset%piece)) allocate(serial_file%vtk_dataset%piece)
         call serial_file%vtk_dataset%piece%add_data(celldata, pointdata, celldatasets, pointdatasets)
 
-    end procedure vtk_serial_append
+    end procedure vtk_XML_append
 
-    module procedure vtk_serial_finalize
+    module procedure vtk_XML_finalize
         use vtk_serial_file, only : serial_file
         implicit none
         !! author: Ian Porter
@@ -425,10 +431,57 @@ contains
             call serial_file%add(serial_file%vtk_dataset)
             call serial_file%write()
             call serial_file%close_file()                    !! close the vtk file
-            call serial_file%me_deallocate()
-            if (allocated(serial_file)) deallocate(serial_file)
         end if
 
-    end procedure vtk_serial_finalize
+    end procedure vtk_XML_finalize
+
+    module procedure vtk_parallel_full_write
+        implicit none
+        !! author: Ian Porter
+        !! date: 01/06/2020
+        !!
+        !! this subroutine is a finalizer for the modern parallel vtk file write
+        !!
+        integer(i4k) :: file_unit = 0
+        character(len=10) :: my_image
+
+        write(my_image,'(i10)') image
+
+        call vtk_serial_write(geometry=geometry, celldata=celldata, pointdata=pointdata, celldatasets=celldatasets,   &
+            &                 pointdatasets=pointdatasets, filename=filename // '_image_' // trim(adjustl(my_image)), &
+            &                 multiple_io=multiple_io, format=format)
+
+    end procedure vtk_parallel_full_write
+
+    module procedure vtk_parallel_container_finalize
+        use vtk_serial_file, only : parallel_file, serial_file
+        use vtk_vars,        only : parallel_container_file
+        implicit none
+        !! author: Ian Porter
+        !! date: 01/06/2020
+        !!
+        !! this subroutine is a finalizer for the modern parallel vtk file write
+        !!
+write(0,*) 'in vtk_parallel_container_finalize'
+        allocate(parallel_file)
+write(0,*) 'serial filename: ',serial_file%filename
+        call parallel_file%setup('parallel_test.vts')
+        parallel_container_file = .true.
+write(0,*) 'in vtk_parallel_container_finalize'
+        allocate (parallel_file%vtk_dataset,source=serial_file%vtk_dataset)
+        call parallel_file%vtk_dataset%finalize()
+write(0,*) 'in vtk_parallel_container_finalize'
+        !! this should write everything inside of the piece
+        call parallel_file%add(serial_file%vtk_dataset)
+write(0,*) 'in vtk_parallel_container_finalize'
+        call parallel_file%write()
+write(0,*) 'in vtk_parallel_container_finalize'
+        call parallel_file%close_file()                    !! close the vtk file
+write(0,*) 'in vtk_parallel_container_finalize'
+        call parallel_file%me_deallocate()
+        if (allocated(parallel_file)) deallocate(parallel_file)
+        parallel_container_file = .false.
+write(0,*) 'in vtk_parallel_container_finalize'
+    end procedure vtk_parallel_container_finalize
 
 end submodule vtk_io_procedures

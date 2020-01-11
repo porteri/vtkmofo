@@ -94,7 +94,7 @@ contains
             if (.not. allocated(me%real32)) then
                 allocate(me%real32(0))
             end if
-            allocate(real32%val, source=var)
+            allocate(real32%val, source=data)
             allocate(tmp_real32_dt, source = [me%real32, real32])
             call move_alloc(tmp_real32_dt, me%real32)
 
@@ -107,11 +107,11 @@ contains
             tmp_string_dt(1:size(me%string)) = me%string
             call move_alloc(tmp_string_dt, me%string)
 
-            do i = 1, size(var)
+            do i = 1, size(data)
                 if (i == 1) then
-                    allocate(string, source=convert_to_string(var(i)))
+                    allocate(string, source=convert_to_string(data(i)))
                 else
-                    string = string // " " // convert_to_string(var(i))
+                    string = string // " " // convert_to_string(data(i))
                 end if
             end do
 
@@ -135,7 +135,7 @@ contains
             if (.not. allocated(me%real64)) then
                 allocate(me%real64(0))
             end if
-            allocate(real64%val, source=var)
+            allocate(real64%val, source=data)
             allocate(tmp_real64_dt, source = [me%real64, real64])
             call move_alloc(tmp_real64_dt, me%real64)
         case (ascii)
@@ -148,11 +148,29 @@ contains
             call move_alloc(tmp_string_dt, me%string)
 
             associate (my_entry => ubound(me%string,dim=1))
-                allocate(me%string(my_entry)%text,source=convert_to_string(var))
+                allocate(me%string(my_entry)%text,source=convert_to_string(data))
             end associate
         end select
 
     end procedure element_add_real64
+
+    module procedure element_add_real64_2d
+        use misc, only : convert_to_string
+        implicit none
+        !! this adds data inside of an xml element block
+        type(real64_dt) :: real64
+        type(real64_dt), dimension(:), allocatable :: tmp_real64_dt
+
+        if (.not. allocated(me%real64)) then
+            allocate(me%real64(0))
+            allocate(me%real64(0)%val_2d,source=data)
+        else
+            allocate(real64%val_2d, source=data)
+            allocate(tmp_real64_dt, source = [me%real64, real64])
+            call move_alloc(tmp_real64_dt, me%real64)
+        end if
+
+    end procedure element_add_real64_2d
 
     module procedure element_add_int32
         use misc, only : convert_to_string
@@ -170,11 +188,11 @@ contains
         tmp_string_dt(1:size(me%string)) = me%string
         call move_alloc(tmp_string_dt, me%string)
 
-        do i = 1, size(var)
+        do i = 1, size(data)
             if (i == 1) then
-                allocate(string, source=convert_to_string(var(i)))
+                allocate(string, source=convert_to_string(data(i)))
             else
-                string = string // " " // convert_to_string(var(i))
+                string = string // " " // convert_to_string(data(i))
             end if
         end do
 
@@ -200,11 +218,11 @@ contains
         tmp_string_dt(1:size(me%string)) = me%string
         call move_alloc(tmp_string_dt, me%string)
 
-        do i = 1, size(var)
+        do i = 1, size(data)
             if (i == 1) then
-                allocate(string, source=convert_to_string(var(i)))
+                allocate(string, source=convert_to_string(data(i)))
             else
-                string = string // " " // convert_to_string(var(i))
+                string = string // " " // convert_to_string(data(i))
             end if
         end do
 
@@ -230,11 +248,11 @@ contains
         tmp_string_dt(1:size(me%string)) = me%string
         call move_alloc(tmp_string_dt, me%string)
 
-        do i = 1, size(var)
+        do i = 1, size(data)
             if (i == 1) then
-                allocate(string, source=convert_to_string(var(i)))
+                allocate(string, source=convert_to_string(data(i)))
             else
-                string = string // " " // convert_to_string(var(i))
+                string = string // " " // convert_to_string(data(i))
             end if
         end do
 
@@ -363,7 +381,17 @@ contains
             do i = 1, size(me%real64)
                 associate (n_vals => size(me%real64(i)%val))
                     do j = 1, n_vals
-                        write(unit) me%real64(i)%val(j)
+                        select case (file_format)
+                        case (ascii)
+                            write(unit) me%real64(i)%val(j)
+#ifdef INTEL_COMPILER
+                            write(unit,'(a)',advance='yes') new_line('a')
+#else
+                            write(unit,'(a)',advance='no') new_line('a')
+#endif
+                        case (binary)
+                            write(unit) me%real64(i)%val(j)
+                        end select
                     end do
                 end associate
             end do
