@@ -34,11 +34,13 @@ module xml
     end type string_dt
 
     type real32_dt
-        real(r4k), dimension(:), allocatable :: val
+        real(r4k), dimension(:),   allocatable :: val
+        real(r4k), dimension(:,:), allocatable :: val_2d
     end type real32_dt
 
     type real64_dt
-        real(r8k), dimension(:), allocatable :: val
+        real(r8k), dimension(:),   allocatable :: val
+        real(r8k), dimension(:,:), allocatable :: val_2d
     end type real64_dt
 
     type xml_element_dt
@@ -59,6 +61,7 @@ module xml
         procedure, private :: element_add_element      !! write another element inside element block
         procedure, private :: element_add_real32       !! write real32 into a string inside of element block
         procedure, private :: element_add_real64       !! write real64 into a string inside of element block
+        procedure, private :: element_add_real64_2d    !! write real64 into a string inside of element block
         procedure, private :: element_add_int32        !! write ints32 into a string inside of element block
         procedure, private :: element_add_int64        !! write ints64 into a string inside of element block
         procedure, private :: element_add_logical      !! write logical into a string inside of element block
@@ -113,39 +116,46 @@ module xml
             integer(i4k),          intent(in) :: unit    !! file unit # to write to
         end subroutine element_begin
 
-        recursive module subroutine element_add_real32 (me, var)
+        recursive module subroutine element_add_real32 (me, data)
             implicit none
             !! this adds real double precision data inside of an xml element block
             class(xml_element_dt),   intent(inout) :: me    !! xml element derived type
-            real(r4k), dimension(:), intent(in)    :: var   !! data to write
+            real(r4k), dimension(:), intent(in)    :: data   !! data to write
         end subroutine element_add_real32
 
-        recursive module subroutine element_add_real64 (me, var)
+        recursive module subroutine element_add_real64 (me, data)
             implicit none
             !! this adds real double precision data inside of an xml element block
             class(xml_element_dt),   intent(inout) :: me    !! xml element derived type
-            real(r8k), dimension(:), intent(in)    :: var   !! data to write
+            real(r8k), dimension(:), intent(in)    :: data   !! data to write
         end subroutine element_add_real64
 
-        recursive module subroutine element_add_int32 (me, var)
+        recursive module subroutine element_add_real64_2d (me, data)
+            implicit none
+            !! this adds real double precision data inside of an xml element block
+            class(xml_element_dt),     intent(inout) :: me    !! xml element derived type
+            real(r8k), dimension(:,:), intent(in)    :: data   !! data to write
+        end subroutine element_add_real64_2d
+
+        recursive module subroutine element_add_int32 (me, data)
             implicit none
             !! this adds real double precision data inside of an xml element block
             class(xml_element_dt),      intent(inout) :: me    !! xml element derived type
-            integer(i4k), dimension(:), intent(in)    :: var   !! data to write
+            integer(i4k), dimension(:), intent(in)    :: data   !! data to write
         end subroutine element_add_int32
 
-        recursive module subroutine element_add_int64 (me, var)
+        recursive module subroutine element_add_int64 (me, data)
             implicit none
             !! this adds real double precision data inside of an xml element block
             class(xml_element_dt),      intent(inout) :: me    !! xml element derived type
-            integer(i8k), dimension(:), intent(in)    :: var   !! data to write
+            integer(i8k), dimension(:), intent(in)    :: data   !! data to write
         end subroutine element_add_int64
 
-        recursive module subroutine element_add_logical (me, var)
+        recursive module subroutine element_add_logical (me, data)
             implicit none
             !! this adds real double precision data inside of an xml element block
             class(xml_element_dt), intent(inout) :: me    !! xml element derived type
-            logical, dimension(:), intent(in)    :: var   !! data to write
+            logical, dimension(:), intent(in)    :: data   !! data to write
         end subroutine element_add_logical
 
         recursive module subroutine element_add_string (me, string, quotes)

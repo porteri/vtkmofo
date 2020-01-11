@@ -16,7 +16,6 @@ program serial_t_shape_test
     integer(i4k)                :: i, t
     integer(i4k),     parameter :: n_points = 24, n_cells = 5, unit = 20, n_steps = 10
     character(len=*), parameter :: filename = 'serial_unstruct_grid'
-    character(len=*), parameter :: title    = 'testing of t-shape unstructured grid geometry'
     character(len=8)            :: t_char
     real(r8k), dimension(n_cells, 1:n_params_to_write) :: cell_vals
     real(r8k), dimension(n_points,1:n_params_to_write) :: point_vals
@@ -97,7 +96,7 @@ program serial_t_shape_test
         end do
 
         call vtk_serial_write (t_shape, celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
-            &                  unit=unit, filename=filename, title=title, multiple_io=.true.)
+            &                  unit=unit, filename=filename, multiple_io=.true.)
     end do
 
     write(*,*) 'Finished'

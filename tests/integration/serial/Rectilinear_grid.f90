@@ -18,7 +18,6 @@ program serial_rectilinear_test
     real(r8k)                   :: j = 0.0_r8k
     real(r8k),        parameter :: temp_val = 555.0_r8k
     character(len=*), parameter :: filename = 'serial_rectlnr_grid'
-    character(len=*), parameter :: title    = 'testing of cube geometry'
     integer(i4k), dimension(3)  :: dims = [ n_x, n_y, n_z ]
     real(r8k), dimension(n_x), parameter :: x_coords = &
         & [ 0.1_r8k, 0.2_r8k, 0.3_r8k, 0.4_r8k, 0.5_r8k, 0.6_r8k, 0.7_r8k, 0.8_r8k, 0.9_r8k, 1.0_r8k, 1.1_r8k ]
@@ -51,12 +50,12 @@ program serial_rectilinear_test
     end do
 
     !! ascii file
-    call vtk_serial_write (cube, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)
+    call vtk_serial_write (cube, pointdatasets=vals_to_write, unit=unit, filename=filename)
     !! this tests a full 1-time write
     close(unit)
 
     !! binary file
-    call vtk_serial_write (cube, unit=unit, filename='serial_binary_rectlnr_grid_append_' // filename, title=title, format=binary)
+    call vtk_serial_write (cube, unit=unit, filename='serial_binary_rectlnr_grid_append_' // filename, format=binary)
 
     call vtk_serial_write (pointdata=vals_to_write(1)%attribute)
 
@@ -66,7 +65,7 @@ program serial_rectilinear_test
     close(unit)
 
     !! ascii file
-    call vtk_serial_write (cube, unit=unit, filename='serial_ascii_rectlnr_grid_append_' // filename, title=title, format=ascii)
+    call vtk_serial_write (cube, unit=unit, filename='serial_ascii_rectlnr_grid_append_' // filename, format=ascii)
 
     call vtk_serial_write (pointdata=vals_to_write(1)%attribute)
 

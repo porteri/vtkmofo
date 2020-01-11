@@ -122,6 +122,7 @@ contains
 
     module procedure points_initialize
         use vtk_datasets, only : struct_grid, unstruct_grid
+        use vtk_vars,     only : parallel_container_file
         use misc,         only : convert_to_string
         implicit none
         !! author: Ian Porter
@@ -132,7 +133,11 @@ contains
         integer(i4k) :: i
         character(len=*), parameter :: points_name = 'Points'
 
-        call me%setup(name=points_name)
+        if (parallel_container_file) then
+            call me%setup(name='P' // points_name)
+        else
+            call me%setup(name=points_name)
+        end if
 
         select type (geometry)
         class is (struct_grid)
@@ -173,6 +178,7 @@ contains
 
     module procedure cells_initialize
         use vtk_datasets, only : unstruct_grid
+        use vtk_vars,     only : parallel_container_file
         implicit none
         !! author: Ian Porter
         !! date: 07/09/2019
@@ -182,7 +188,11 @@ contains
         integer(i4k) :: i, cnt
         character(len=*), parameter :: my_name = 'Cells'
 
-        call me%setup(name=my_name)
+        if (parallel_container_file) then
+            call me%setup(name='P' // my_name)
+        else
+            call me%setup(name=my_name)
+        end if
 
         select type (geometry)
         class is (unstruct_grid)
