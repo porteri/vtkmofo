@@ -57,6 +57,11 @@ module xml
     contains
         procedure, public  :: setup => element_setup   !! set up element block
         procedure, private :: begin => element_begin   !! write open of element block
+        procedure, public  :: update_name              !! Updates the name
+        procedure, public  :: get_name                 !! Returns the "name" component
+        procedure, public  :: get_header => get_additional_data
+                                                       !! Returns the "additional data" component
+        procedure, public  :: clear_data               !! Clears data inside of the element
         procedure, private :: element_add_string       !! write raw data inside of element block
         procedure, private :: element_add_element      !! write another element inside element block
         procedure, private :: element_add_real32       !! write real32 into a string inside of element block
@@ -85,6 +90,7 @@ module xml
         type(xml_element_dt), dimension(:), allocatable, public :: element
     contains
         procedure :: setup_file_information => xml_file_setup
+        procedure :: update => xml_file_update
         procedure, private :: begin => xml_begin
         procedure, public  :: add   => xml_add
         procedure, private :: end   => xml_end
@@ -115,6 +121,33 @@ module xml
             class(xml_element_dt), intent(in) :: me      !! xml element derived type
             integer(i4k),          intent(in) :: unit    !! file unit # to write to
         end subroutine element_begin
+
+        module subroutine update_name (me, name)
+            implicit none
+            !! This updates the name
+            class(xml_element_dt), intent(inout) :: me    !! xml element derived type
+            character(len=*),      intent(in)    :: name  !! name of xml element
+        end subroutine update_name
+
+        module function get_name (me) result (name)
+            implicit none
+            !! This gets the name
+            class(xml_element_dt), intent(in) :: me    !! xml element derived type
+            character(len=:), allocatable     :: name  !!
+        end function get_name
+
+        module function get_additional_data (me) result (additional_data)
+            implicit none
+            !! This gets the additional_data
+            class(xml_element_dt), intent(in) :: me               !! xml element derived type
+            character, allocatable            :: additional_data  !!
+        end function get_additional_data
+
+        recursive module subroutine clear_data (me)
+            implicit none
+            !! This clears the data, leaving only header information
+            class(xml_element_dt), intent(inout) :: me !! xml element derived type
+        end subroutine clear_data
 
         recursive module subroutine element_add_real32 (me, data)
             implicit none
@@ -211,6 +244,17 @@ module xml
             integer(i4k),       intent(in), optional :: unit         !! requested file unit #
             character(len=*),   intent(in), optional :: encoding     !! file encoding type
         end subroutine xml_file_setup
+
+        module subroutine xml_file_update (me, filename)
+            implicit none
+            !! author: Ian Porter
+            !! date: 05/02/2019
+            !!
+            !! updates the file information
+            !!
+            class(xml_file_dt), intent(inout) :: me                  !! xml file dt
+            character(len=*),   intent(in), optional :: filename     !! file name
+        end subroutine xml_file_update
 
         recursive module subroutine xml_begin (me)
             implicit none

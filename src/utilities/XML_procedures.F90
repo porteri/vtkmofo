@@ -79,6 +79,45 @@ contains
 
     end procedure element_begin
 
+    module procedure update_name
+        implicit none
+        !! This updates the name
+
+        if (allocated(me%name)) deallocate(me%name)
+        me%name = name
+
+    end procedure update_name
+
+    module procedure get_name
+        implicit none
+
+        name = me%name
+
+    end procedure get_name
+
+    module procedure get_additional_data
+        implicit none
+
+        additional_data = me%additional_data
+
+    end procedure get_additional_data
+
+    module procedure clear_data
+        implicit none
+
+        integer(i4k) :: i
+
+        if (allocated(me%string)) deallocate(me%string)
+        if (allocated(me%real32)) deallocate(me%real32)
+        if (allocated(me%real64)) deallocate(me%real64)
+        if (allocated(me%element)) then
+            do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
+                call me%element(i)%clear_data()
+            end do
+        end if
+
+    end procedure clear_data
+
     module procedure element_add_real32
         use misc, only : convert_to_string
         implicit none
@@ -481,6 +520,16 @@ contains
         if (.not. allocated(prior_offset)) allocate(prior_offset,source='')
 
     end procedure xml_file_setup
+
+    module procedure xml_file_update
+        implicit none
+
+        if (present(filename)) then
+            if (allocated(me%filename)) deallocate(me%filename)
+            me%filename = filename
+        end if
+
+    end procedure xml_file_update
 
     module procedure xml_begin
         use iso_fortran_env, only : output_unit

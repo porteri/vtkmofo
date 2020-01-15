@@ -1,4 +1,4 @@
-module vtk_serial_grid
+module vtk_xml_grid
     use xml,               only : xml_file_dt, xml_element_dt
     use vtk_datasets,      only : dataset
     use vtk_piece_element, only : piece_dt
@@ -12,10 +12,10 @@ module vtk_serial_grid
 
     private
     public :: vtk_dataset_dt
-    public :: vtk_serial_rectilineargrid_dt
-    public :: vtk_serial_structuredgrid_dt
-    public :: vtk_serial_unstructuredgrid_dt
-    public :: vtk_serial_imagedata_dt
+    public :: vtk_xml_rectilineargrid_dt
+    public :: vtk_xml_structuredgrid_dt
+    public :: vtk_xml_unstructuredgrid_dt
+    public :: vtk_xml_imagedata_dt
 
     type, extends(vtk_element_dt), abstract :: vtk_dataset_dt
         !! vtk dataset derived type
@@ -25,37 +25,38 @@ module vtk_serial_grid
         type(piece_dt),   allocatable :: piece        !! piece dt (currently only supporting one piece)
     contains
         procedure(abs_set_grid), deferred :: set_grid
+        procedure :: parallel_fix !! Performs the steps needed to copy info to a parallel file
         procedure :: vtk_dataset_deallocate
         procedure :: finalize
     end type vtk_dataset_dt
 
-    type, extends(vtk_dataset_dt) :: vtk_serial_imagedata_dt
+    type, extends(vtk_dataset_dt) :: vtk_xml_imagedata_dt
         !! serial file imagedata grid
         private
     contains
         procedure :: set_grid => imagedata_set_grid
-    end type vtk_serial_imagedata_dt
+    end type vtk_xml_imagedata_dt
 
-    type, extends(vtk_dataset_dt) :: vtk_serial_rectilineargrid_dt
+    type, extends(vtk_dataset_dt) :: vtk_xml_rectilineargrid_dt
         !! serial file rectilinear grid
         private
     contains
         procedure :: set_grid => rectilineargrid_set_grid
-    end type vtk_serial_rectilineargrid_dt
+    end type vtk_xml_rectilineargrid_dt
 
-    type, extends(vtk_dataset_dt) :: vtk_serial_structuredgrid_dt
+    type, extends(vtk_dataset_dt) :: vtk_xml_structuredgrid_dt
         !! serial file structured grid
         private
     contains
         procedure :: set_grid => structuredgrid_set_grid
-    end type vtk_serial_structuredgrid_dt
+    end type vtk_xml_structuredgrid_dt
 
-    type, extends(vtk_dataset_dt) :: vtk_serial_unstructuredgrid_dt
+    type, extends(vtk_dataset_dt) :: vtk_xml_unstructuredgrid_dt
         !! serial file unstructured grid
         private
     contains
         procedure :: set_grid => unstructuredgrid_set_grid
-    end type vtk_serial_unstructuredgrid_dt
+    end type vtk_xml_unstructuredgrid_dt
 
     interface
 
@@ -70,6 +71,17 @@ module vtk_serial_grid
             class(dataset),        intent(in)    :: geometry
 
         end subroutine abs_set_grid
+
+        module subroutine parallel_fix (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 01/11/2020
+            !!
+            !! Performs an update to all of the filenames
+            !!
+            class(vtk_dataset_dt), intent(inout) :: me
+
+        end subroutine parallel_fix
 
         module subroutine finalize (me)
             implicit none
@@ -100,8 +112,8 @@ module vtk_serial_grid
             !!
             !! this writes the grid information for an image data grid
             !!
-            class(vtk_serial_imagedata_dt), intent(inout) :: me         !! serial geometry dt
-            class(dataset),                 intent(in)    :: geometry   !! dt of geometry information
+            class(vtk_xml_imagedata_dt), intent(inout) :: me         !! serial geometry dt
+            class(dataset),              intent(in)    :: geometry   !! dt of geometry information
 
         end subroutine imagedata_set_grid
 
@@ -112,8 +124,8 @@ module vtk_serial_grid
             !!
             !! this writes the grid information for a rectilinear grid
             !!
-            class(vtk_serial_rectilineargrid_dt), intent(inout) :: me         !! serial geometry dt
-            class(dataset),                       intent(in)    :: geometry   !! dt of geometry information
+            class(vtk_xml_rectilineargrid_dt), intent(inout) :: me         !! serial geometry dt
+            class(dataset),                    intent(in)    :: geometry   !! dt of geometry information
 
         end subroutine rectilineargrid_set_grid
 
@@ -124,8 +136,8 @@ module vtk_serial_grid
             !!
             !! this writes the grid information for a structured grid
             !!
-            class(vtk_serial_structuredgrid_dt), intent(inout) :: me         !! serial geometry dt
-            class(dataset),                      intent(in)    :: geometry   !! dt of geometry information
+            class(vtk_xml_structuredgrid_dt), intent(inout) :: me         !! serial geometry dt
+            class(dataset),                   intent(in)    :: geometry   !! dt of geometry information
 
         end subroutine structuredgrid_set_grid
 
@@ -136,11 +148,11 @@ module vtk_serial_grid
             !!
             !! this writes the grid information for an unstructured grid
             !!
-            class(vtk_serial_unstructuredgrid_dt), intent(inout) :: me         !! serial geometry dt
-            class(dataset),                        intent(in)    :: geometry   !! dt of geometry information
+            class(vtk_xml_unstructuredgrid_dt), intent(inout) :: me         !! serial geometry dt
+            class(dataset),                     intent(in)    :: geometry   !! dt of geometry information
 
         end subroutine unstructuredgrid_set_grid
 
     end interface
 
-end module vtk_serial_grid
+end module vtk_xml_grid
