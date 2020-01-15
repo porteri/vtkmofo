@@ -84,13 +84,13 @@ set(vtkmofo_modern
   modern/VTK_element_procedures.f90
   modern/VTK_piece_element_procedures.f90
   modern/VTK_XML_file_procedures.f90
-  modern/VTK_serial_Grid_procedures.f90
+  modern/VTK_XML_Grid_procedures.f90
   modern/VTK_DataArray.f90
   modern/VTK_element.f90
   modern/VTK_formats_types.f90
   modern/VTK_piece_element.f90
   modern/VTK_XML_file.f90
-  modern/VTK_serial_Grid.f90
+  modern/VTK_XML_Grid.f90
   )
 
 # Compile the utilities library first

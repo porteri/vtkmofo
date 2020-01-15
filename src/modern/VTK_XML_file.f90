@@ -1,6 +1,6 @@
 module vtk_serial_file
-    use xml,             only : xml_file_dt
-    use vtk_serial_grid, only : vtk_dataset_dt
+    use xml,          only : xml_file_dt
+    use vtk_XML_grid, only : vtk_dataset_dt
     implicit none
     !! author: Ian Porter
     !! date: 05/06/2019

@@ -364,6 +364,25 @@ contains
 
     end procedure piece_set_grid
 
+    module procedure parallel_fix
+        implicit none
+        !! author: Ian Porter
+        !! date: 01/11/2020
+        !!
+        !! Performs a parallel copy from a serial_file
+        !!
+write(0,*) 'in vtk_piece_element_procedures, parallel_fix'
+write(0,*) me%get_name()
+        call me%update_name('P' // me%get_name())
+write(0,*) me%get_name()
+        if (allocated(me%pointdata)) call me%pointdata%update_name('P' // me%pointdata%get_name())
+        if (allocated(me%celldata)) call me%celldata%update_name('P' // me%celldata%get_name())
+        if (allocated(me%coordinates)) call me%coordinates%update_name('P' // me%coordinates%get_name())
+        if (allocated(me%points)) call me%points%update_name('P' // me%points%get_name())
+        if (allocated(me%cells)) call me%cells%update_name('P' // me%cells%get_name())
+
+    end procedure parallel_fix
+
     module procedure piece_add_data
         implicit none
         !! author: Ian Porter
@@ -430,6 +449,7 @@ contains
         if (allocated(foo%coordinates)) call foo%coordinates%coordinates_deallocate()
         if (allocated(foo%points))      call foo%points%points_deallocate()
         if (allocated(foo%cells))       call foo%cells%cells_deallocate()
+        if (allocated(foo%source))      deallocate(foo%source)
 
         call foo%me_deallocate()
 

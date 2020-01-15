@@ -53,6 +53,7 @@ contains
     end procedure vtk_element_setup
 
     module procedure initialize
+        use vtk_vars, only : parallel_container_file
         implicit none
         !! author: Ian Porter
         !! date: 05/07/2019
@@ -62,7 +63,13 @@ contains
 
         if (present(type))           allocate(me%type,source=type)
         if (present(compression))    allocate(me%compression,source=compression)
-        if (present(file_extension)) allocate(me%file_extension,source=file_extension)
+        if (present(file_extension)) then
+            if (parallel_container_file) then
+                allocate(me%file_extension,source='p' // file_extension)
+            else
+                allocate(me%file_extension,source=file_extension)
+            end if
+        end if
 
         call me%vtk_element_setup()
 

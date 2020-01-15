@@ -257,7 +257,7 @@ contains
         case (binary)
             allocate(form, source='unformatted')
         case default
-            error stop 'unsupported file type. must be ascii or binary. terminated in vtk_legacy_read'
+            error stop 'Error: unsupported file type. must be ascii or binary. terminated in vtk_legacy_read'
         end select
 
         open(unit=unit, file=filename, iostat=inputstat, status='old', form=form)
@@ -299,8 +299,8 @@ contains
     module procedure vtk_serial_full_write
         use vtk_datasets,    only : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         use vtk_serial_file, only : serial_file
-        use vtk_serial_grid, only : vtk_serial_rectilineargrid_dt, vtk_serial_structuredgrid_dt, &
-            &                       vtk_serial_unstructuredgrid_dt, vtk_serial_imagedata_dt
+        use vtk_xml_grid,    only : vtk_xml_rectilineargrid_dt, vtk_xml_structuredgrid_dt, &
+            &                       vtk_xml_unstructuredgrid_dt, vtk_xml_imagedata_dt
         use vtk_vars,        only : vtk_extension
         use xml,             only : file_format, file_format_text, convert_format_to_string, ascii, format_ascii
         use misc,            only : trim_from_string
@@ -367,15 +367,15 @@ contains
 
         select type (geometry)
         class is (struct_pts)
-            allocate(vtk_serial_imagedata_dt::serial_file%vtk_dataset)
+            allocate(vtk_xml_imagedata_dt::serial_file%vtk_dataset)
         class is (struct_grid)
-            allocate(vtk_serial_structuredgrid_dt::serial_file%vtk_dataset)
+            allocate(vtk_xml_structuredgrid_dt::serial_file%vtk_dataset)
         class is (rectlnr_grid)
-            allocate(vtk_serial_rectilineargrid_dt::serial_file%vtk_dataset)
+            allocate(vtk_xml_rectilineargrid_dt::serial_file%vtk_dataset)
         class is (polygonal_data)
-            error stop 'procedure not yet implemented for: polygonal grid. termination in subroutine: vtk_serial_full_write'
+            error stop 'Error: procedure not yet implemented for: polygonal grid. termination in subroutine: vtk_serial_full_write'
         class is (unstruct_grid)
-            allocate(vtk_serial_unstructuredgrid_dt::serial_file%vtk_dataset)
+            allocate(vtk_xml_unstructuredgrid_dt::serial_file%vtk_dataset)
         class default
             error stop 'unsupported geometry type. termination in subroutine: vtk_serial_full_write'
         end select
@@ -383,9 +383,9 @@ contains
         call serial_file%vtk_dataset%set_grid(geometry)
 
         if (file_unit /= 0) then
-            call serial_file%setup(filename=vtkfilename // trim(serial_file%vtk_dataset%file_extension),unit=file_unit)
+            call serial_file%setup(filename=vtkfilename // '.' // trim(serial_file%vtk_dataset%file_extension),unit=file_unit)
         else
-            call serial_file%setup(filename=vtkfilename // trim(serial_file%vtk_dataset%file_extension))
+            call serial_file%setup(filename=vtkfilename // '.' //  trim(serial_file%vtk_dataset%file_extension))
         end if
         write(0,*) 'in vtk_serial_full_write'
         write(0,*) serial_file%filename
@@ -462,26 +462,31 @@ contains
         !!
         !! this subroutine is a finalizer for the modern parallel vtk file write
         !!
-write(0,*) 'in vtk_parallel_container_finalize'
+        character(len=:), allocatable :: filename
+
+        parallel_container_file = .true.                   !! Turn on the parallel flag
         allocate(parallel_file)
-write(0,*) 'serial filename: ',serial_file%filename
-        call parallel_file%setup('parallel_test.vts')
-        parallel_container_file = .true.
-write(0,*) 'in vtk_parallel_container_finalize'
-        allocate (parallel_file%vtk_dataset,source=serial_file%vtk_dataset)
-        call parallel_file%vtk_dataset%finalize()
-write(0,*) 'in vtk_parallel_container_finalize'
+write(0,*) 'before filename'
+        filename = adjustl(serial_file%filename(:index(serial_file%filename,'_image_')-1))
+write(0,*) 'before setup'
+        call parallel_file%setup(filename=filename // '.p' // trim(serial_file%vtk_dataset%file_extension))
+write(0,*) 'before assignment'
+        parallel_file%vtk_dataset = serial_file%vtk_dataset
+        call parallel_file%vtk_dataset%clear_data()             !! Clear actual stored data
+write(0,*) 'before parallel_fix'
+        call parallel_file%vtk_dataset%parallel_fix()
+write(0,*) parallel_file%vtk_dataset%piece%get_name()
         !! this should write everything inside of the piece
-        call parallel_file%add(serial_file%vtk_dataset)
-write(0,*) 'in vtk_parallel_container_finalize'
-        call parallel_file%write()
-write(0,*) 'in vtk_parallel_container_finalize'
-        call parallel_file%close_file()                    !! close the vtk file
-write(0,*) 'in vtk_parallel_container_finalize'
-        call parallel_file%me_deallocate()
-        if (allocated(parallel_file)) deallocate(parallel_file)
-        parallel_container_file = .false.
-write(0,*) 'in vtk_parallel_container_finalize'
+        call parallel_file%add(parallel_file%vtk_dataset)       !!
+write(0,*) parallel_file%vtk_dataset%piece%get_name()
+        call parallel_file%write()                              !! Write the parallel file
+
+        call parallel_file%close_file()                         !! Close the vtk file
+
+        call parallel_file%me_deallocate()                      !! Explicitly de-allocate data b/c of gfotran bug
+        if (allocated(parallel_file)) deallocate(parallel_file) !! Deallocate the parallel file
+        parallel_container_file = .false.                       !! Turn off the parallel flag
+
     end procedure vtk_parallel_container_finalize
 
 end submodule vtk_io_procedures

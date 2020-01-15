@@ -1,4 +1,4 @@
-submodule (vtk_serial_grid) vtk_serial_grid_procedures
+submodule (vtk_xml_grid) vtk_xml_grid_procedures
     use precision, only : i4k
     !! author: Ian Porter
     !! date: 05/06/2019
@@ -7,6 +7,21 @@ submodule (vtk_serial_grid) vtk_serial_grid_procedures
     !!
 
 contains
+
+    module procedure parallel_fix
+        implicit none
+        !! author: Ian Porter
+        !! date: 01/11/2020
+        !!
+        !! Performs a parallel copy from a serial_file
+        !!
+
+        call me%update_name('P' // me%get_name())
+        if (allocated(me%piece)) then
+            call me%piece%parallel_fix()
+        end if
+
+    end procedure parallel_fix
 
     module procedure finalize
         use xml, only : xml_element_dt
@@ -17,7 +32,7 @@ contains
         !! writes data inside of itself
         !!
         type(vtk_element_dt) :: grid
-
+write(0,*) 'in finalize'
         if (allocated(me%piece)) then
             call me%piece%finalize()
             if (allocated(me%wholeextent)) then
@@ -60,8 +75,8 @@ contains
         character(len=:), allocatable :: range_string, origin_string, spacing_string
         integer(i4k) :: i, j
         integer(i4k), dimension(2,3)  :: range
-        character(len=*), parameter :: file_extension = ".vti"
-        character(len=*), parameter :: grid_type = "ImageData"
+        character(len=*), parameter :: file_extension = 'vti'
+        character(len=*), parameter :: grid_type = 'ImageData'
 
         call me%initialize(type=grid_type,file_extension=file_extension)
 
@@ -111,7 +126,7 @@ contains
         character(len=:), allocatable :: range_string
         integer(i4k) :: i, j
         integer(i4k), dimension(2,3)  :: range
-        character(len=*), parameter :: file_extension = '.vtr'
+        character(len=*), parameter :: file_extension = 'vtr'
         character(len=*), parameter :: grid_type = 'RectilinearGrid'
 
         call me%initialize(type=grid_type,file_extension=file_extension)
@@ -148,7 +163,7 @@ contains
         character(len=:), allocatable :: range_string
         integer(i4k) :: i, j
         integer(i4k), dimension(2,3)  :: range
-        character(len=*), parameter :: file_extension = '.vts'
+        character(len=*), parameter :: file_extension = 'vts'
         character(len=*), parameter :: grid_type = 'StructuredGrid'
 
         call me%initialize(type=grid_type,file_extension=file_extension)
@@ -181,7 +196,7 @@ contains
         !!
         !! this sets parameters specific to the dt
         !!
-        character(len=*), parameter :: file_extension = '.vtu'
+        character(len=*), parameter :: file_extension = 'vtu'
         character(len=*), parameter :: grid_type = 'UnstructuredGrid'
 
         call me%initialize(type=grid_type,file_extension=file_extension)
@@ -194,4 +209,4 @@ contains
 
     end procedure unstructuredgrid_set_grid
 
-end submodule vtk_serial_grid_procedures
+end submodule vtk_xml_grid_procedures
