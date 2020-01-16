@@ -88,6 +88,21 @@ contains
 
     end procedure update_name
 
+    module procedure update_names
+        implicit none
+        !! This updates all of the names
+        integer :: i
+
+        if (allocated(me%name)) deallocate(me%name)
+        me%name = name
+        if (allocated(me%element)) then
+            do i = 1, size(me%element)
+                call me%element(i)%update_names('P' // me%element(i)%name)
+            end do
+        end if
+
+    end procedure update_names
+    
     module procedure get_name
         implicit none
 

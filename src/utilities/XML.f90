@@ -58,6 +58,7 @@ module xml
         procedure, public  :: setup => element_setup   !! set up element block
         procedure, private :: begin => element_begin   !! write open of element block
         procedure, public  :: update_name              !! Updates the name
+        procedure, public  :: update_names             !! Updates all of the names
         procedure, public  :: get_name                 !! Returns the "name" component
         procedure, public  :: get_header => get_additional_data
                                                        !! Returns the "additional data" component
@@ -129,6 +130,13 @@ module xml
             character(len=*),      intent(in)    :: name  !! name of xml element
         end subroutine update_name
 
+        recursive module subroutine update_names (me, name)
+            implicit none
+            !! This updates the name
+            class(xml_element_dt), intent(inout) :: me    !! xml element derived type
+            character(len=*),      intent(in)    :: name  !! name of xml element
+       end subroutine update_names
+    
         module function get_name (me) result (name)
             implicit none
             !! This gets the name
