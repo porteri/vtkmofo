@@ -456,6 +456,7 @@ contains
     module procedure vtk_parallel_container_finalize
         use vtk_serial_file, only : parallel_file, serial_file
         use vtk_vars,        only : parallel_container_file
+        use vtk_XML_grid,    only : vtk_dataset_dt
         implicit none
         !! author: Ian Porter
         !! date: 01/06/2020
@@ -463,6 +464,7 @@ contains
         !! this subroutine is a finalizer for the modern parallel vtk file write
         !!
         character(len=:), allocatable :: filename
+        class(vtk_dataset_dt), allocatable :: vtk_dataset
 
         parallel_container_file = .true.                   !! Turn on the parallel flag
         allocate(parallel_file)
@@ -471,14 +473,17 @@ write(0,*) 'before filename'
 write(0,*) 'before setup'
         call parallel_file%setup(filename=filename // '.p' // trim(serial_file%vtk_dataset%file_extension))
 write(0,*) 'before assignment'
-        parallel_file%vtk_dataset = serial_file%vtk_dataset
-        call parallel_file%vtk_dataset%clear_data()             !! Clear actual stored data
+        allocate(vtk_dataset, source=serial_file%vtk_dataset)
+
+        call vtk_dataset%clear_data()             !! Clear actual stored data
 write(0,*) 'before parallel_fix'
-        call parallel_file%vtk_dataset%parallel_fix()
-write(0,*) parallel_file%vtk_dataset%piece%get_name()
+
+        !call vtk_dataset%parallel_fix()        
+        call vtk_dataset%update_names('P' // vtk_dataset%get_name())
+
         !! this should write everything inside of the piece
-        call parallel_file%add(parallel_file%vtk_dataset)       !!
-write(0,*) parallel_file%vtk_dataset%piece%get_name()
+        call parallel_file%add(vtk_dataset)       !!
+
         call parallel_file%write()                              !! Write the parallel file
 
         call parallel_file%close_file()                         !! Close the vtk file
