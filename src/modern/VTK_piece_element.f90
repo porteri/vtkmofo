@@ -89,7 +89,6 @@ module vtk_piece_element
         ! procedure, non_overridable, public :: initialize => piece_initialize
         procedure, private :: piece_set_grid
         generic, public :: set => piece_set_grid
-        procedure, public :: parallel_fix
         procedure, non_overridable, public :: piece_add_data
         generic, public :: add_data => piece_add_data
         procedure, public :: piece_deallocate
@@ -247,17 +246,6 @@ module vtk_piece_element
             class(dataset),  intent(in)    :: geometry
 
         end subroutine piece_set_grid
-
-        module subroutine parallel_fix (me)
-            implicit none
-            !! author: Ian Porter
-            !! date: 01/12/2020
-            !!
-            !! Performs a fix to the names
-            !!
-            class(piece_dt), intent(inout) :: me
-
-        end subroutine parallel_fix
 
         module subroutine piece_add_data (me, celldata, pointdata, celldatasets, pointdatasets)
             implicit none

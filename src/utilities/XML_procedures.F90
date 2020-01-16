@@ -110,6 +110,15 @@ contains
 
     end procedure get_name
 
+    module procedure update_additional_data
+        implicit none
+        !! This updates the name
+
+        if (allocated(me%additional_data)) deallocate(me%additional_data)
+        me%additional_data = additional_data
+
+    end procedure update_additional_data
+
     module procedure get_additional_data
         implicit none
 
@@ -132,6 +141,20 @@ contains
         end if
 
     end procedure clear_data
+
+    module procedure clear_elements
+        implicit none
+
+        integer(i4k) :: i
+
+        if (allocated(me%element)) then
+            do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
+                call me%element(i)%deallocate()
+            end do
+            deallocate(me%element)
+        end if
+
+    end procedure clear_elements
 
     module procedure element_add_real32
         use misc, only : convert_to_string

@@ -364,25 +364,6 @@ contains
 
     end procedure piece_set_grid
 
-    module procedure parallel_fix
-        implicit none
-        !! author: Ian Porter
-        !! date: 01/11/2020
-        !!
-        !! Performs a parallel copy from a serial_file
-        !!
-write(0,*) 'in vtk_piece_element_procedures, parallel_fix'
-write(0,*) me%get_name()
-        call me%update_names('P' // me%get_name())
-write(0,*) me%get_name()
-        if (allocated(me%pointdata)) call me%pointdata%update_names('P' // me%pointdata%get_name())
-        if (allocated(me%celldata)) call me%celldata%update_names('P' // me%celldata%get_name())
-        if (allocated(me%coordinates)) call me%coordinates%update_names('P' // me%coordinates%get_name())
-        if (allocated(me%points)) call me%points%update_names('P' // me%points%get_name())
-        if (allocated(me%cells)) call me%cells%update_names('P' // me%cells%get_name())
-
-    end procedure parallel_fix
-
     module procedure piece_add_data
         implicit none
         !! author: Ian Porter

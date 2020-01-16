@@ -14,37 +14,115 @@ contains
         !! date: 01/11/2020
         !!
         !! Performs a parallel copy from a serial_file
+        !! by bringing the "piece" element up one level
         !!
+        character(len=:), allocatable :: my_grid_type
 
-        call me%update_name('P' // me%get_name())
+        call me%vtk_element_setup()
+        call me%clear_elements()
+        my_grid_type = 'P' // me%grid_type
+        deallocate(me%grid_type)
+        me%grid_type = my_grid_type
+
         if (allocated(me%piece)) then
-            call me%piece%parallel_fix()
+            if (allocated(me%piece%pointdata)) then
+                me%pointdata = me%piece%pointdata
+                call me%pointdata%update_names('P' // me%pointdata%get_name())
+                deallocate(me%piece%pointdata)
+            end if
+            if (allocated(me%piece%celldata)) then
+                me%celldata = me%piece%celldata
+                call me%celldata%update_names('P' // me%celldata%get_name())
+                deallocate(me%piece%celldata)
+            end if
+            if (allocated(me%piece%coordinates)) then
+                me%coordinates = me%piece%coordinates
+                call me%coordinates%update_names('P' // me%coordinates%get_name())
+                deallocate(me%piece%coordinates)
+            end if
+            if (allocated(me%piece%points)) then
+                me%points = me%piece%points
+                call me%points%update_names('P' // me%points%get_name())
+                deallocate(me%piece%points)
+            end if
+            if (allocated(me%piece%cells)) then
+                me%cells = me%piece%cells
+                call me%cells%update_names('P' // me%cells%get_name())
+                deallocate(me%piece%cells)
+            end if
+
+            if (present(pieces)) then
+                allocate(me%parallel_pieces(1:size(pieces)))
+                block
+                    integer :: i
+                    do i = 1, size(pieces)
+                        call me%parallel_pieces(i)%setup(name=me%piece%get_name(),string=pieces(i)%get_header() &
+                            &                                    // ' Source="' // pieces(i)%source // '"')
+                    end do
+                end block
+            end if
+
+            call me%piece%clear_data()
+            call me%piece%clear_elements()
+            deallocate(me%piece)
         end if
+
+        call me%finalize()
+        call me%clear_data()             !! Clear actual stored data
 
     end procedure parallel_fix
 
     module procedure finalize
         use xml, only : xml_element_dt
+        use vtk_vars, only : parallel_container_file
         implicit none
         !! author: Ian Porter
         !! date: 05/06/2019
         !!
         !! writes data inside of itself
         !!
+        integer :: i
         type(vtk_element_dt) :: grid
-write(0,*) 'in finalize'
-        if (allocated(me%piece)) then
-            call me%piece%finalize()
-            if (allocated(me%wholeextent)) then
+
+        if (allocated(me%wholeextent)) then
+            if (parallel_container_file) then
+                call grid%setup(name=me%grid_type,string= "WholeExtent=" // '"' // me%wholeextent // '" GhostLevel="0"')
+            else
                 call grid%setup(name=me%grid_type,string= "WholeExtent=" // '"' // me%wholeextent // '"')
+            end if
+        else
+            if (parallel_container_file) then
+                call grid%setup(name=me%grid_type,string= 'GhostLevel="0"')
             else
                 call grid%setup(name=me%grid_type)
             end if
-            if (allocated(me%extra_string)) call grid%add(me%extra_string, quotes=.false.)
-            call grid%add(me%piece)
-            call me%add(grid)
-            call grid%me_deallocate()
         end if
+        if (allocated(me%extra_string)) call grid%add(me%extra_string, quotes=.false.)
+
+        if (allocated(me%piece)) then
+            call me%piece%finalize()
+            call grid%add(me%piece)
+        else if (allocated(me%parallel_pieces)) then
+            do i = 1, size(me%parallel_pieces)
+                call me%parallel_pieces(i)%finalize()
+                call grid%add(me%parallel_pieces(i))
+            end do
+        endif
+        if (allocated(me%pointdata)) then
+            call me%pointdata%finalize()
+            call grid%add(me%pointdata)            
+        end if
+        if (allocated(me%celldata)) then
+            call me%celldata%finalize()
+            call grid%add(me%celldata)
+        end if
+        if (allocated(me%points)) then
+            !call me%points%finalize()
+            call grid%add(me%points)
+        end if
+
+        call me%add(grid)
+        call grid%me_deallocate()
 
     end procedure finalize
 
@@ -55,8 +133,14 @@ write(0,*) 'in finalize'
         !!
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         !!
+        integer :: i
 
         if (allocated(foo%piece)) call foo%piece%piece_deallocate()
+        if (allocated(foo%parallel_pieces)) then
+            do i = 1, size(foo%parallel_pieces)
+                call foo%parallel_pieces(i)%piece_deallocate()
+            end do
+        end if
 
         call foo%me_deallocate()
 
