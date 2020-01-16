@@ -17,12 +17,13 @@ module vtk_xml_grid
     public :: vtk_xml_unstructuredgrid_dt
     public :: vtk_xml_imagedata_dt
 
-    type, extends(vtk_element_dt), abstract :: vtk_dataset_dt
+    type, extends(piece_dt), abstract :: vtk_dataset_dt
         !! vtk dataset derived type
         character(len=:), allocatable :: wholeextent  !! string for the whole extent of the range
         character(len=:), allocatable :: grid_type    !! name of the grid type
         character(len=:), allocatable :: extra_string !! additional data needed to be written
         type(piece_dt),   allocatable :: piece        !! piece dt (currently only supporting one piece)
+        type(piece_dt), dimension(:), allocatable :: parallel_pieces !! piece dt for parallel files
     contains
         procedure(abs_set_grid), deferred :: set_grid
         procedure :: parallel_fix !! Performs the steps needed to copy info to a parallel file
@@ -72,7 +73,7 @@ module vtk_xml_grid
 
         end subroutine abs_set_grid
 
-        module subroutine parallel_fix (me)
+        module subroutine parallel_fix (me, pieces)
             implicit none
             !! author: Ian Porter
             !! date: 01/11/2020
@@ -80,6 +81,7 @@ module vtk_xml_grid
             !! Performs an update to all of the filenames
             !!
             class(vtk_dataset_dt), intent(inout) :: me
+            type(piece_dt), dimension(:), intent(in), optional :: pieces
 
         end subroutine parallel_fix
 

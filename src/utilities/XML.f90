@@ -60,9 +60,12 @@ module xml
         procedure, public  :: update_name              !! Updates the name
         procedure, public  :: update_names             !! Updates all of the names
         procedure, public  :: get_name                 !! Returns the "name" component
+        procedure, public  :: update_header => update_additional_data
+                                                       !! Updates the header
         procedure, public  :: get_header => get_additional_data
                                                        !! Returns the "additional data" component
         procedure, public  :: clear_data               !! Clears data inside of the element
+        procedure, public  :: clear_elements           !! Clears the elements inside of the element
         procedure, private :: element_add_string       !! write raw data inside of element block
         procedure, private :: element_add_element      !! write another element inside element block
         procedure, private :: element_add_real32       !! write real32 into a string inside of element block
@@ -144,11 +147,18 @@ module xml
             character(len=:), allocatable     :: name  !!
         end function get_name
 
+        module subroutine update_additional_data (me, additional_data)
+            implicit none
+            !! This updates the additional header
+            class(xml_element_dt), intent(inout) :: me    !! xml element derived type
+            character(len=*),      intent(in)    :: additional_data  !! name of xml element
+        end subroutine update_additional_data
+
         module function get_additional_data (me) result (additional_data)
             implicit none
             !! This gets the additional_data
             class(xml_element_dt), intent(in) :: me               !! xml element derived type
-            character, allocatable            :: additional_data  !!
+            character(len=:), allocatable     :: additional_data  !!
         end function get_additional_data
 
         recursive module subroutine clear_data (me)
@@ -156,6 +166,12 @@ module xml
             !! This clears the data, leaving only header information
             class(xml_element_dt), intent(inout) :: me !! xml element derived type
         end subroutine clear_data
+
+        recursive module subroutine clear_elements (me)
+            implicit none
+            !! This clears the child elements
+            class(xml_element_dt), intent(inout) :: me !! xml element derived type
+        end subroutine clear_elements
 
         recursive module subroutine element_add_real32 (me, data)
             implicit none

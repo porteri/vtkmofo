@@ -457,29 +457,45 @@ contains
         use vtk_serial_file, only : parallel_file, serial_file
         use vtk_vars,        only : parallel_container_file
         use vtk_XML_grid,    only : vtk_dataset_dt
+        use vtk_piece_element, only : piece_dt
         implicit none
         !! author: Ian Porter
         !! date: 01/06/2020
         !!
         !! this subroutine is a finalizer for the modern parallel vtk file write
         !!
+        integer :: i
+        character(len=10) :: my_image
         character(len=:), allocatable :: filename
         class(vtk_dataset_dt), allocatable :: vtk_dataset
+        type(piece_dt), dimension(:), allocatable :: pieces
 
         parallel_container_file = .true.                   !! Turn on the parallel flag
         allocate(parallel_file)
-write(0,*) 'before filename'
+
         filename = adjustl(serial_file%filename(:index(serial_file%filename,'_image_')-1))
-write(0,*) 'before setup'
+
         call parallel_file%setup(filename=filename // '.p' // trim(serial_file%vtk_dataset%file_extension))
-write(0,*) 'before assignment'
+
         allocate(vtk_dataset, source=serial_file%vtk_dataset)
+        
+        if (present(images)) then
+            allocate(pieces(1:size(images)))
+            do i = 1, size(pieces)
+                write(my_image,'(i10)') images(i)
+                call pieces(i)%setup(name=vtk_dataset%piece%get_name(),string=vtk_dataset%piece%get_header())
+                pieces(i)%source = filename // '_image_' // trim(adjustl(my_image)) // '.' // trim(vtk_dataset%file_extension)
+            end do
+        else
+            allocate(pieces(1:n_images))
+            do i = 1, size(pieces)
+                write(my_image,'(i10)') i
+                call pieces(i)%setup(name=vtk_dataset%piece%get_name(),string=vtk_dataset%piece%get_header())
+                pieces(i)%source = filename // '_image_' // trim(adjustl(my_image)) // '.' // trim(vtk_dataset%file_extension)
+            end do
+        end if
 
-        call vtk_dataset%clear_data()             !! Clear actual stored data
-write(0,*) 'before parallel_fix'
-
-        !call vtk_dataset%parallel_fix()        
-        call vtk_dataset%update_names('P' // vtk_dataset%get_name())
+        call vtk_dataset%parallel_fix(pieces)
 
         !! this should write everything inside of the piece
         call parallel_file%add(vtk_dataset)       !!
