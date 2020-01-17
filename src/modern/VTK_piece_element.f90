@@ -22,7 +22,7 @@ module vtk_piece_element
         character(len=:), allocatable :: normals
         character(len=:), allocatable :: tensors
         character(len=:), allocatable :: tcoords
-        type(dataarray_dt) :: dataarray
+        type(dataarray_dt), dimension(:), allocatable :: dataarray
     contains
         procedure, non_overridable :: data_setup
         procedure, non_overridable :: data_initialize
