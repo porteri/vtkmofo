@@ -31,6 +31,7 @@ module xml
     contains
         procedure, private :: gcc_bug_deallocate_string_dt
         generic, public    :: deallocate => gcc_bug_deallocate_string_dt
+!        final :: gcc_bug_deallocate_string_dt
     end type string_dt
 
     type real32_dt
@@ -139,7 +140,7 @@ module xml
             class(xml_element_dt), intent(inout) :: me    !! xml element derived type
             character(len=*),      intent(in)    :: name  !! name of xml element
        end subroutine update_names
-    
+
         module function get_name (me) result (name)
             implicit none
             !! This gets the name

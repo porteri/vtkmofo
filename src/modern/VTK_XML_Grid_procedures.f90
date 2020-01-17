@@ -19,61 +19,72 @@ contains
         character(len=:), allocatable :: my_grid_type
 
         call me%vtk_element_setup()
-        call me%clear_elements()
+!        call me%clear_elements()
         my_grid_type = 'P' // me%grid_type
         deallocate(me%grid_type)
         me%grid_type = my_grid_type
-
+write(0,*) 'parallel_fix 1'
         if (allocated(me%piece)) then
             if (allocated(me%piece%pointdata)) then
                 me%pointdata = me%piece%pointdata
-                call me%pointdata%update_names('P' // me%pointdata%get_name())
+                call me%pointdata%finalize()
+!                call me%pointdata%update_names('P' // me%pointdata%get_name())
+                call me%piece%pointdata%data_deallocate()
                 deallocate(me%piece%pointdata)
             end if
+write(0,*) 'parallel_fix 2'
             if (allocated(me%piece%celldata)) then
                 me%celldata = me%piece%celldata
                 call me%celldata%update_names('P' // me%celldata%get_name())
+                call me%piece%celldata%data_deallocate()
                 deallocate(me%piece%celldata)
             end if
             if (allocated(me%piece%coordinates)) then
                 me%coordinates = me%piece%coordinates
                 call me%coordinates%update_names('P' // me%coordinates%get_name())
+                call me%piece%coordinates%coordinates_deallocate()
                 deallocate(me%piece%coordinates)
             end if
             if (allocated(me%piece%points)) then
                 me%points = me%piece%points
                 call me%points%update_names('P' // me%points%get_name())
+                call me%piece%points%data_deallocate()
                 deallocate(me%piece%points)
             end if
             if (allocated(me%piece%cells)) then
                 me%cells = me%piece%cells
                 call me%cells%update_names('P' // me%cells%get_name())
+                call me%piece%cells%cells_deallocate()
                 deallocate(me%piece%cells)
             end if
-
             if (present(pieces)) then
                 allocate(me%parallel_pieces(1:size(pieces)))
                 block
                     integer :: i
                     do i = 1, size(pieces)
+                        write(0,*) 'in parallel_pieces(i)%setup. name: ',me%piece%get_name()
+                        write(0,*) 'in parallel_pieces(i)%setup. string: ',pieces(i)%get_header() &
+                            &                                    // ' Source="' // pieces(i)%source // '"'
                         call me%parallel_pieces(i)%setup(name=me%piece%get_name(),string=pieces(i)%get_header() &
                             &                                    // ' Source="' // pieces(i)%source // '"')
                     end do
                 end block
             end if
-
+write(0,*) 'parallel_fix 6'
             call me%piece%clear_data()
             call me%piece%clear_elements()
+            call me%piece%piece_deallocate()
             deallocate(me%piece)
         end if
-
+write(0,*) 'in parallel_fix. before finalize'
         call me%finalize()
+write(0,*) 'in parallel_fix. after finalize, before clear_data'
         call me%clear_data()             !! Clear actual stored data
-
+write(0,*) 'in parallel_fix. after clear_data'
     end procedure parallel_fix
 
     module procedure finalize
-        use xml, only : xml_element_dt
+        use xml,      only : xml_element_dt
         use vtk_vars, only : parallel_container_file
         implicit none
         !! author: Ian Porter
@@ -83,7 +94,7 @@ contains
         !!
         integer :: i
         type(vtk_element_dt) :: grid
-
+write(0,*) 'in vtk_xml_grid_procedures: finalize'
         if (allocated(me%wholeextent)) then
             if (parallel_container_file) then
                 call grid%setup(name=me%grid_type,string= "WholeExtent=" // '"' // me%wholeextent // '" GhostLevel="0"')
@@ -98,32 +109,47 @@ contains
             end if
         end if
         if (allocated(me%extra_string)) call grid%add(me%extra_string, quotes=.false.)
-
+write(0,*) 'before if allocated(me%piece)'
         if (allocated(me%piece)) then
             call me%piece%finalize()
             call grid%add(me%piece)
-        else if (allocated(me%parallel_pieces)) then
+        end if
+        if (allocated(me%parallel_pieces)) then
+write(0,*) '2'
             do i = 1, size(me%parallel_pieces)
                 call me%parallel_pieces(i)%finalize()
                 call grid%add(me%parallel_pieces(i))
             end do
         endif
+write(0,*) '3'
         if (allocated(me%pointdata)) then
+write(0,*) '3-1'
             call me%pointdata%finalize()
-            call grid%add(me%pointdata)            
+write(0,*) '3-1.5'
+            call me%pointdata%data_setup()
+write(0,*) '3-2'
+            call grid%add(me%pointdata)
+write(0,*) '3-3'
         end if
+write(0,*) '4'
         if (allocated(me%celldata)) then
+write(0,*) '4-1'
             call me%celldata%finalize()
+write(0,*) '4-2'
             call grid%add(me%celldata)
+write(0,*) '4-3'
         end if
+write(0,*) '5'
         if (allocated(me%points)) then
             !call me%points%finalize()
             call grid%add(me%points)
         end if
-
+write(0,*) '6'
         call me%add(grid)
+write(0,*) '7'
         call grid%me_deallocate()
 
+write(0,*) '8 - end of finalize'
     end procedure finalize
 
     module procedure vtk_dataset_deallocate
@@ -135,12 +161,18 @@ contains
         !!
         integer :: i
 
+        if (allocated(foo%wholeextent)) deallocate(foo%WholeExtent)
+        if (allocated(foo%grid_type)) deallocate(foo%grid_type)
+        if (allocated(foo%extra_string)) deallocate(foo%extra_string)
         if (allocated(foo%piece)) call foo%piece%piece_deallocate()
         if (allocated(foo%parallel_pieces)) then
             do i = 1, size(foo%parallel_pieces)
                 call foo%parallel_pieces(i)%piece_deallocate()
             end do
+            deallocate(foo%parallel_pieces)
         end if
+
+        call foo%piece_deallocate()
 
         call foo%me_deallocate()
 

@@ -22,6 +22,7 @@ module vtk_piece_element
         character(len=:), allocatable :: normals
         character(len=:), allocatable :: tensors
         character(len=:), allocatable :: tcoords
+        type(dataarray_dt) :: dataarray
     contains
         procedure, non_overridable :: data_setup
         procedure, non_overridable :: data_initialize
@@ -43,14 +44,11 @@ module vtk_piece_element
         !! celldata derived type
     end type celldata_dt
 
-    type, extends(xml_element_dt) :: points_dt
+    type, extends(data_dt) :: points_dt
         !! points derived type
-        private
-        type(dataarray_dt) :: dataarray
     contains
         procedure, non_overridable :: points_initialize
         generic, public :: initialize => points_initialize
-        procedure :: points_deallocate
     end type points_dt
 
     type, extends(xml_element_dt) :: cells_dt
@@ -177,17 +175,6 @@ module vtk_piece_element
             class(dataset),   intent(in)    :: geometry
 
         end subroutine points_initialize
-
-        recursive module subroutine points_deallocate (foo)
-            implicit none
-            !! author: Ian Porter
-            !! date: 06/07/2019
-            !!
-            !! explicitly deallocate a points dt
-            !!
-            class(points_dt), intent(inout) :: foo
-
-        end subroutine points_deallocate
 
         module subroutine cells_initialize (me, geometry)
             implicit none

@@ -102,11 +102,15 @@ contains
         end if
 
     end procedure update_names
-    
+
     module procedure get_name
         implicit none
 
-        name = me%name
+        if (allocated(me%name)) then
+            name = me%name
+        else
+            error stop 'error: get_name, me%name is not allocated'
+        end if
 
     end procedure get_name
 
@@ -122,7 +126,11 @@ contains
     module procedure get_additional_data
         implicit none
 
-        additional_data = me%additional_data
+        if (allocated(me%additional_data)) then
+            additional_data = me%additional_data
+        else
+            error stop 'error: get_additional_data, me%additional_data is not allocated'
+        end if
 
     end procedure get_additional_data
 
@@ -363,7 +371,7 @@ contains
             if (add_quotes) then
                 allocate(me%string(my_entry)%text,source='"' // string // '"')
             else
-                allocate(me%string(my_entry)%text,source= string)
+                allocate(me%string(my_entry)%text,source=string)
             end if
         end associate
 
@@ -382,6 +390,7 @@ contains
         !        end if
         !! this is a temporary work around
         if (.not. allocated(me%element)) then
+            write(0,*) 'element_add_element not allocated(me%element)'
             select type (element)
             class is (xml_element_dt)
                 call gcc_bug_workaround_allocate(me%element, element)
@@ -389,12 +398,16 @@ contains
         else
             select type (element)
             class is (xml_element_dt)
+              write(0,*) 'element_add_element 1'
                 call gcc_bug_workaround_allocate(tmp_element_dt, oldfoo=me%element)
+              write(0,*) 'element_add_element 2'
                 call gcc_bug_workaround_allocate(me%element, element, tmp_element_dt)
+              write(0,*) 'element_add_element 3'
             end select
         end if
+        write(0,*) 'element_add_element 4'
         call gcc_bug_workaround_deallocate (tmp_element_dt)
-
+        write(0,*) 'element_add_element 5'
     end procedure element_add_element
 
     module procedure element_end
@@ -615,16 +628,21 @@ contains
         !            call move_alloc(tmp_element_dt, me%element)
         !        end if
         !! this is a temporary work around
+        write(0,*) 'xml_add 0'
         if (.not. allocated(me%element)) then
             select type (element)
             class is (xml_element_dt)
                 call gcc_bug_workaround_allocate(me%element, element)
             end select
         else
+          write(0,*) 'xml_add 0.5'
             select type (element)
             class is (xml_element_dt)
+              write(0,*) 'xml_add 1'
                 call gcc_bug_workaround_allocate(tmp_element_dt, oldfoo=me%element)
+              write(0,*) 'xml_add 2'
                 call gcc_bug_workaround_allocate(me%element, element, tmp_element_dt)
+              write(0,*) 'xml_add 3'
             end select
         end if
 
@@ -668,16 +686,20 @@ contains
         !! gcc work-around for allocating a multi-dimension derived type w/ allocatable character strings
         !! when trying to increase the size of the foo array by 1
         integer(i4k) :: i
-
+write(0,*) 'entering gcc_bug_workaround_allocate'
         if (allocated(me)) call gcc_bug_workaround_deallocate(me)
         if (present(oldfoo)) then
+          write(0,*) 'oldfoo is present'
             if (present(addfoo)) then
                 allocate (me(size(oldfoo)+1))
             else
                 allocate (me(size(oldfoo)))
             end if
             do i = 1, size(oldfoo)
+                write(0,*) 'i: ',i
                 if (allocated(oldfoo(i)%name)) allocate(me(i)%name, source=oldfoo(i)%name)
+                write(0,*) 'oldfoo(i)%name: ',oldfoo(i)%name
+                write(0,*) 'oldfoo(i)%unit: ',oldfoo(i)%unit
                 me(i)%unit = oldfoo(i)%unit
                 if (allocated(oldfoo(i)%offset)) allocate(me(i)%offset, source=oldfoo(i)%offset)
                 if (allocated(oldfoo(i)%additional_data)) &
@@ -685,14 +707,22 @@ contains
                 if (allocated(oldfoo(i)%string)) allocate(me(i)%string, source=oldfoo(i)%string)
                 if (allocated(oldfoo(i)%real32)) allocate(me(i)%real32, source=oldfoo(i)%real32)
                 if (allocated(oldfoo(i)%real64)) allocate(me(i)%real64, source=oldfoo(i)%real64)
-                if (allocated(oldfoo(i)%element)) call gcc_bug_workaround_allocate(me(i)%element, oldfoo=oldfoo(i)%element)
+                if (allocated(oldfoo(i)%element)) then
+                  write(0,*) 'oldfoo(i)%element is allocated. calling gcc_bug_workaround_allocate'
+                  call gcc_bug_workaround_allocate(me(i)%element, oldfoo=oldfoo(i)%element)
+                  write(0,*) 'oldfoo(i)%element was allocated. finished calling gcc_bug_workaround_allocate'
+                end if
             end do
         else
             allocate(me(1))
         end if
         if (present(addfoo)) then
+          write(0,*) 'addfoo is present'
             i = ubound(me,dim=1)
+            write(0,*) 'i',i
+            write(0,*) 'addfoo%name: ',addfoo%name
             if (allocated(addfoo%name)) allocate(me(i)%name, source=addfoo%name)
+            write(0,*) 'addfoo%unit: ',addfoo%unit
             me(i)%unit = addfoo%unit
             if (allocated(addfoo%offset)) allocate(me(i)%offset, source=addfoo%offset)
             if (allocated(addfoo%additional_data)) &
@@ -700,9 +730,13 @@ contains
             if (allocated(addfoo%string)) allocate(me(i)%string, source=addfoo%string)
             if (allocated(addfoo%real32)) allocate(me(i)%real32, source=addfoo%real32)
             if (allocated(addfoo%real64)) allocate(me(i)%real64, source=addfoo%real64)
-            if (allocated(addfoo%element)) call gcc_bug_workaround_allocate(me(i)%element, oldfoo=addfoo%element)
+            if (allocated(addfoo%element)) then
+              write(0,*) 'addfoo(i)%element is allocated. calling gcc_bug_workaround_allocate'
+              call gcc_bug_workaround_allocate(me(i)%element, oldfoo=addfoo%element)
+              write(0,*) 'addfoo(i)%element was allocated. finished calling gcc_bug_workaround_allocate'
+            end if
         end if
-
+write(0,*) 'leaving gcc_bug_workaround_allocate'
     end procedure gcc_bug_workaround_allocate
 
     module procedure gcc_bug_workaround_deallocate_array

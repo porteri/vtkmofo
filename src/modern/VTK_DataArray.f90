@@ -27,7 +27,6 @@ module vtk_dataarray_element
         generic, public :: initialize => dataarray_initialize
         procedure :: element_add_element => dataarray_add_dataarray
         procedure :: dataarray_deallocate
-        generic, public :: me_deallocate => dataarray_deallocate
     end type dataarray_dt
 
     interface

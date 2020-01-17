@@ -469,16 +469,17 @@ contains
         character(len=:), allocatable :: filename
         class(vtk_dataset_dt), allocatable :: vtk_dataset
         type(piece_dt), dimension(:), allocatable :: pieces
-
+write(0,1)
+1 format(//////)
         parallel_container_file = .true.                   !! Turn on the parallel flag
         allocate(parallel_file)
-
+write(0,*) '1'
         filename = adjustl(serial_file%filename(:index(serial_file%filename,'_image_')-1))
 
         call parallel_file%setup(filename=filename // '.p' // trim(serial_file%vtk_dataset%file_extension))
-
+write(0,*) '2'
         allocate(vtk_dataset, source=serial_file%vtk_dataset)
-        
+write(0,*) '3'
         if (present(images)) then
             allocate(pieces(1:size(images)))
             do i = 1, size(pieces)
@@ -494,9 +495,9 @@ contains
                 pieces(i)%source = filename // '_image_' // trim(adjustl(my_image)) // '.' // trim(vtk_dataset%file_extension)
             end do
         end if
-
+write(0,*) '4'
         call vtk_dataset%parallel_fix(pieces)
-
+write(0,*) '5'
         !! this should write everything inside of the piece
         call parallel_file%add(vtk_dataset)       !!
 
