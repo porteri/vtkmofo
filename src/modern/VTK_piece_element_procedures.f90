@@ -77,7 +77,12 @@ contains
         !! author: Ian Porter
         !! date: 06/07/2019
 
-        call me%add(cell%convert_to_dataarray())
+        !call me%add(cell%convert_to_dataarray())
+        if (.not. allocated(me%dataarray)) then
+            me%dataarray = cell%convert_to_dataarray()
+        else
+            error stop 'need to implement data_add_attribute'
+        end if
 
     end procedure data_add_attribute
 
@@ -87,9 +92,17 @@ contains
         !! date: 06/07/2019
         integer(i4k) :: i
 
-        do i = 1, size(cell)
-            call me%add(cell(i)%attribute%convert_to_dataarray())
-        end do
+        if (.not. allocated(me%dataarray)) then
+            allocate(me%dataarray(1:size(cell)))
+            do i = 1, size(cell)
+                me%dataarray(i) = cell(i)%attribute%convert_to_dataarray()
+            end do
+!            do i = 1, size(cell)
+!                call me%add(cell(i)%attribute%convert_to_dataarray())
+!            end do
+        else
+            error stop 'need to implement data_add_attributes'
+        end if
 
     end procedure data_add_attributes
 
@@ -97,8 +110,14 @@ contains
         implicit none
         !! author: Ian Porter
         !! date: 06/07/2019
+        !!
+        integer :: i
 
-        !! idk if there's anything to do here
+        if (allocated(me%dataarray)) then
+            do i = 1, size(me%dataarray)
+                call me%add(me%dataarray(i))
+            end do
+        end if
 
     end procedure data_finalize
 
@@ -109,6 +128,7 @@ contains
         !!
         !! explicitly deallocate a data_dt
         !!
+        integer :: i
 
         if (allocated(foo%scalars)) deallocate(foo%scalars)
         if (allocated(foo%vectors)) deallocate(foo%vectors)
@@ -116,7 +136,12 @@ contains
         if (allocated(foo%tensors)) deallocate(foo%tensors)
         if (allocated(foo%tcoords)) deallocate(foo%tcoords)
 
-        call foo%dataarray%dataarray_deallocate()
+        if (allocated(foo%dataarray)) then
+            do i = lbound(foo%dataarray,dim=1),ubound(foo%dataarray,dim=1)
+                call foo%dataarray(i)%dataarray_deallocate()
+            end do
+            deallocate(foo%dataarray)
+        end if
 
         call foo%deallocate()
 
@@ -144,20 +169,24 @@ contains
         select type (geometry)
         class is (struct_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
-            call me%dataarray%initialize(type=type_float64,format=file_format_text,numberofcomponents=3)
+            allocate(me%dataarray(1))
+            call me%dataarray(1)%initialize(type=type_float64,format=file_format_text,numberofcomponents=3)
             do i = 1, geometry%n_points
-                call me%dataarray%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
+                call me%dataarray(1)%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
             end do
-            call me%add(me%dataarray)
-            call me%dataarray%dataarray_deallocate()
+            call me%add(me%dataarray(1))
+            call me%dataarray(1)%dataarray_deallocate()
+            deallocate(me%dataarray)
         class is (unstruct_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
-            call me%dataarray%initialize(type=type_float64,format=file_format_text,numberofcomponents=3)
+            allocate(me%dataarray(1))
+            call me%dataarray(1)%initialize(type=type_float64,format=file_format_text,numberofcomponents=3)
             do i = 1, geometry%n_points
-                call me%dataarray%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
+                call me%dataarray(1)%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
             end do
-            call me%add(me%dataarray)
-            call me%dataarray%dataarray_deallocate()
+            call me%add(me%dataarray(1))
+            call me%dataarray(1)%dataarray_deallocate()
+            deallocate(me%dataarray)
         class default
             error stop 'Error: in points_initialize, the geometry is not defined.'
         end select
