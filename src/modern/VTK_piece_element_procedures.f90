@@ -79,7 +79,7 @@ contains
 
         !call me%add(cell%convert_to_dataarray())
         if (.not. allocated(me%dataarray)) then
-            me%dataarray = cell%convert_to_dataarray()
+            allocate(me%dataarray(1), source = cell%convert_to_dataarray())
         else
             error stop 'need to implement data_add_attribute'
         end if
