@@ -116,6 +116,8 @@ contains
         if (allocated(foo%tensors)) deallocate(foo%tensors)
         if (allocated(foo%tcoords)) deallocate(foo%tcoords)
 
+        call foo%dataarray%dataarray_deallocate()
+
         call foo%deallocate()
 
     end procedure data_deallocate
@@ -147,7 +149,7 @@ contains
                 call me%dataarray%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
             end do
             call me%add(me%dataarray)
-            call me%dataarray%me_deallocate()
+            call me%dataarray%dataarray_deallocate()
         class is (unstruct_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
             call me%dataarray%initialize(type=type_float64,format=file_format_text,numberofcomponents=3)
@@ -155,26 +157,12 @@ contains
                 call me%dataarray%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
             end do
             call me%add(me%dataarray)
-            call me%dataarray%me_deallocate()
+            call me%dataarray%dataarray_deallocate()
         class default
             error stop 'Error: in points_initialize, the geometry is not defined.'
         end select
 
     end procedure points_initialize
-
-    module procedure points_deallocate
-        implicit none
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
-        !!
-
-        call foo%dataarray%me_deallocate()
-
-        call foo%deallocate()
-
-    end procedure points_deallocate
 
     module procedure cells_initialize
         use vtk_datasets, only : unstruct_grid
@@ -202,7 +190,7 @@ contains
                 call me%connectivity%add(geometry%get_connectivity(i)) !! new procedure under works to append an array of reals
             end do
             call me%add(me%connectivity)
-            call me%connectivity%me_deallocate()
+            call me%connectivity%dataarray_deallocate()
             !! set up cell offsets
             call me%offsets%initialize(name='offsets',type=type_float64,format=file_format_text)
             cnt = 0
@@ -211,14 +199,14 @@ contains
                 call me%offsets%add([cnt]) !! new procedure under works to append an array of reals
             end do
             call me%add(me%offsets)
-            call me%offsets%me_deallocate()
+            call me%offsets%dataarray_deallocate()
             !! set up cell types
             call me%types%initialize(name='types',type=type_float64,format=file_format_text)
             do i = 1, geometry%n_cells
                 call me%types%add([geometry%get_type(i)]) !! new procedure under works to append an array of reals
             end do
             call me%add(me%types)
-            call me%types%me_deallocate()
+            call me%types%dataarray_deallocate()
         class default
             error stop 'Error: in cells_initialize, the geometry is not yet defined.'
         end select
@@ -233,9 +221,9 @@ contains
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         !!
 
-        call foo%connectivity%me_deallocate()
-        call foo%offsets%me_deallocate()
-        call foo%types%me_deallocate()
+        call foo%connectivity%dataarray_deallocate()
+        call foo%offsets%dataarray_deallocate()
+        call foo%types%dataarray_deallocate()
 
         call foo%deallocate()
 
@@ -288,9 +276,9 @@ contains
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         !!
 
-        call foo%dataarray_x%me_deallocate()
-        call foo%dataarray_y%me_deallocate()
-        call foo%dataarray_z%me_deallocate()
+        call foo%dataarray_x%dataarray_deallocate()
+        call foo%dataarray_y%dataarray_deallocate()
+        call foo%dataarray_z%dataarray_deallocate()
 
         call foo%deallocate()
 
@@ -428,7 +416,7 @@ contains
         if (allocated(foo%pointdata))   call foo%pointdata%data_deallocate()
         if (allocated(foo%celldata))    call foo%celldata%data_deallocate()
         if (allocated(foo%coordinates)) call foo%coordinates%coordinates_deallocate()
-        if (allocated(foo%points))      call foo%points%points_deallocate()
+        if (allocated(foo%points))      call foo%points%data_deallocate()
         if (allocated(foo%cells))       call foo%cells%cells_deallocate()
         if (allocated(foo%source))      deallocate(foo%source)
 
