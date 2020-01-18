@@ -82,7 +82,7 @@ set(vtkmofo_legacy
 set(vtkmofo_modern
   modern/VTK_DataArray_procedures.f90
   modern/VTK_element_procedures.f90
-  modern/VTK_piece_element_procedures.f90
+  modern/VTK_piece_element_procedures.F90
   modern/VTK_XML_file_procedures.f90
   modern/VTK_XML_Grid_procedures.f90
   modern/VTK_DataArray.f90
