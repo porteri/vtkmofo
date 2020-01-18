@@ -619,14 +619,15 @@ contains
         !! this adds data inside of the file
         !!
         type(xml_element_dt), dimension(:), allocatable :: tmp_element_dt
-
+#ifdef INTEL_COMPILER
         !! this is how this routine should work (and does work w/ intel)
-        !        if (.not. allocated(me%element)) then
-        !            allocate(me%element(1),source=element)
-        !        else
-        !            allocate(tmp_element_dt,source=[ me%element(:), element ]) ! this segfaults at runtime
-        !            call move_alloc(tmp_element_dt, me%element)
-        !        end if
+        if (.not. allocated(me%element)) then
+            allocate(me%element(1),source=element)
+        else
+            allocate(tmp_element_dt,source=[ me%element(:), element ]) ! this segfaults at runtime for gfortran
+            call move_alloc(tmp_element_dt, me%element)
+        end if
+#else
         !! this is a temporary work around
         write(0,*) 'xml_add 0'
         if (.not. allocated(me%element)) then
@@ -635,7 +636,7 @@ contains
                 call gcc_bug_workaround_allocate(me%element, element)
             end select
         else
-          write(0,*) 'xml_add 0.5'
+            write(0,*) 'xml_add 0.5'
             select type (element)
             class is (xml_element_dt)
               write(0,*) 'xml_add 1'
@@ -647,7 +648,7 @@ contains
         end if
 
         call gcc_bug_workaround_deallocate (tmp_element_dt)
-
+#endif
     end procedure xml_add
 
     module procedure xml_end
