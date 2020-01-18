@@ -1,11 +1,11 @@
-program serial_structured_grid_test
+program parallel_structured_grid_test
     use precision,      only : i4k, r8k
     use vtk_datasets,   only : struct_grid
     use vtk_attributes, only : scalar, attribute, attributes
     use vtk,            only : vtk_parallel_write
     implicit none
     !! author: Ian Porter
-    !! date: 12/20/2017
+    !! date: 01/18/2020
     !!
     !! this is a test of a cylindrical geometry using a rectilinear grid
     !!
@@ -49,8 +49,8 @@ program serial_structured_grid_test
         &    5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3 ]
     real(r8k), dimension(1:3,n_x*n_y*n_z)    :: points
     real(r8k), dimension(n_x*n_y*n_z,1:n_params_to_write) :: vals
-    character(len=20), dimension(n_params_to_write), parameter :: dataname = &
-        & [ 'temperature_(k)     ' ]
+    character(len=*), dimension(n_params_to_write), parameter :: dataname = &
+        & [ 'temperature (Kelvin)     ' ]
 
     !! Fake simulation of multiple images
     WRITE(0,*) num_images()
@@ -91,4 +91,4 @@ program serial_structured_grid_test
 
     write(*,*) 'Finished'
 
-end program serial_structured_grid_test
+end program parallel_structured_grid_test
