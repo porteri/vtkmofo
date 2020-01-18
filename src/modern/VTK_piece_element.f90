@@ -22,7 +22,7 @@ module vtk_piece_element
         character(len=:), allocatable :: normals
         character(len=:), allocatable :: tensors
         character(len=:), allocatable :: tcoords
-        type(dataarray_dt), dimension(:), allocatable :: dataarray
+        type(dataarray_dt), dimension(:), allocatable, public :: dataarray
     contains
         procedure, non_overridable :: data_setup
         procedure, non_overridable :: data_initialize
@@ -77,10 +77,10 @@ module vtk_piece_element
 
     type, extends(vtk_element_dt) :: piece_dt
         !! piece derived type
+        type(points_dt),      allocatable :: points
         type(pointdata_dt),   allocatable :: pointdata
         type(celldata_dt),    allocatable :: celldata
         type(coordinates_dt), allocatable :: coordinates
-        type(points_dt),      allocatable :: points
         type(cells_dt),       allocatable :: cells
         character(len=:),     allocatable :: source
     contains

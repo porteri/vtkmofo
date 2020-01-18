@@ -73,16 +73,24 @@ contains
     end procedure data_initialize
 
     module procedure data_add_attribute
+        use vtk_dataarray_element, only : dataarray_dt
         implicit none
         !! author: Ian Porter
         !! date: 06/07/2019
+        !!
+        type(dataarray_dt), dimension(:), allocatable :: tmp_dataarray
 
         !call me%add(cell%convert_to_dataarray())
+#ifdef INTEL_COMPILER
         if (.not. allocated(me%dataarray)) then
-            allocate(me%dataarray(1), source = cell%convert_to_dataarray())
+            allocate(me%dataarray(1), source=cell%convert_to_dataarray())
         else
-            error stop 'need to implement data_add_attribute'
+            allocate(tmp_dataarray,source=[me%dataarray(:), cell%convert_to_dataarray()])
+            call move_alloc(tmp_dataarray, me%dataarray)
         end if
+#else
+        error stop 'need to implement data_add_attribute for gcc'
+#endif
 
     end procedure data_add_attribute
 
@@ -92,29 +100,29 @@ contains
         !! date: 06/07/2019
         integer(i4k) :: i
 
-        if (.not. allocated(me%dataarray)) then
-            allocate(me%dataarray(1:size(cell)))
-            do i = 1, size(cell)
-                me%dataarray(i) = cell(i)%attribute%convert_to_dataarray()
-            end do
-!            do i = 1, size(cell)
-!                call me%add(cell(i)%attribute%convert_to_dataarray())
-!            end do
-        else
-            error stop 'need to implement data_add_attributes'
-        end if
+        do i = 1, size(cell)
+            call me%add_cell(cell(i)%attribute)
+            !me%dataarray(i) = cell(i)%attribute%convert_to_dataarray()
+        end do
 
     end procedure data_add_attributes
 
     module procedure data_finalize
+        use vtk_vars, only : parallel_container_file
         implicit none
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
         integer :: i
 
+        if (parallel_container_file) then
+            call me%update_name('P' // me%get_name())
+        end if
         if (allocated(me%dataarray)) then
             do i = 1, size(me%dataarray)
+                if (parallel_container_file) then
+                    call me%dataarray(i)%update_name('P' // me%dataarray(i)%get_name())
+                end if
                 call me%add(me%dataarray(i))
             end do
         end if
@@ -174,9 +182,9 @@ contains
             do i = 1, geometry%n_points
                 call me%dataarray(1)%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
             end do
-            call me%add(me%dataarray(1))
-            call me%dataarray(1)%dataarray_deallocate()
-            deallocate(me%dataarray)
+!            call me%add(me%dataarray(1))
+!            call me%dataarray(1)%dataarray_deallocate()
+!            deallocate(me%dataarray)
         class is (unstruct_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
             allocate(me%dataarray(1))
@@ -184,9 +192,9 @@ contains
             do i = 1, geometry%n_points
                 call me%dataarray(1)%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
             end do
-            call me%add(me%dataarray(1))
-            call me%dataarray(1)%dataarray_deallocate()
-            deallocate(me%dataarray)
+!            call me%add(me%dataarray(1))
+!            call me%dataarray(1)%dataarray_deallocate()
+!            deallocate(me%dataarray)
         class default
             error stop 'Error: in points_initialize, the geometry is not defined.'
         end select
@@ -356,7 +364,7 @@ contains
             call me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
             allocate(me%points)
             call me%points%initialize(geometry)
-            call me%add(me%points)
+!            call me%add(me%points)
         class is (rectlnr_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
             call me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
@@ -371,7 +379,7 @@ contains
                 &                             " NumberOfCells=" // '"' // trim(adjustl(n_cells)) // '"')
             allocate(me%points)
             call me%points%initialize(geometry)
-            call me%add(me%points)
+!            call me%add(me%points)
             allocate(me%cells)
             call me%cells%initialize(geometry)
             call me%add(me%cells)
@@ -423,6 +431,10 @@ contains
         !! author: Ian Porter
         !! date: 06/07/2019
 
+        if (allocated(me%points)) then
+            call me%points%finalize()
+            call me%add(me%points)
+        end if
         if (allocated(me%pointdata)) then
             call me%pointdata%finalize()
             call me%add(me%pointdata)

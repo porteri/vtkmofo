@@ -25,29 +25,32 @@ contains
         me%grid_type = my_grid_type
 write(0,*) 'parallel_fix 1'
         if (allocated(me%piece)) then
+            call me%piece%clear_data()
+            call me%piece%clear_elements()
             if (allocated(me%piece%pointdata)) then
+                call me%piece%pointdata%clear_elements()
                 me%pointdata = me%piece%pointdata
-                call me%pointdata%finalize()
-!                call me%pointdata%update_names('P' // me%pointdata%get_name())
                 call me%piece%pointdata%data_deallocate()
                 deallocate(me%piece%pointdata)
             end if
 write(0,*) 'parallel_fix 2'
             if (allocated(me%piece%celldata)) then
+                call me%piece%celldata%clear_elements()
                 me%celldata = me%piece%celldata
-                call me%celldata%update_names('P' // me%celldata%get_name())
                 call me%piece%celldata%data_deallocate()
                 deallocate(me%piece%celldata)
             end if
             if (allocated(me%piece%coordinates)) then
+                call me%piece%coordinates%clear_elements()
                 me%coordinates = me%piece%coordinates
                 call me%coordinates%update_names('P' // me%coordinates%get_name())
                 call me%piece%coordinates%coordinates_deallocate()
                 deallocate(me%piece%coordinates)
             end if
             if (allocated(me%piece%points)) then
+                call me%piece%points%clear_elements()
                 me%points = me%piece%points
-                call me%points%update_names('P' // me%points%get_name())
+                !call me%points%update_names('P' // me%points%get_name())
                 call me%piece%points%data_deallocate()
                 deallocate(me%piece%points)
             end if
@@ -71,8 +74,6 @@ write(0,*) 'parallel_fix 2'
                 end block
             end if
 write(0,*) 'parallel_fix 6'
-            call me%piece%clear_data()
-            call me%piece%clear_elements()
             call me%piece%piece_deallocate()
             deallocate(me%piece)
         end if
@@ -125,8 +126,6 @@ write(0,*) '3'
         if (allocated(me%pointdata)) then
 write(0,*) '3-1'
             call me%pointdata%finalize()
-write(0,*) '3-1.5'
-            call me%pointdata%data_setup()
 write(0,*) '3-2'
             call grid%add(me%pointdata)
 write(0,*) '3-3'
@@ -141,8 +140,11 @@ write(0,*) '4-3'
         end if
 write(0,*) '5'
         if (allocated(me%points)) then
-            !call me%points%finalize()
+write(0,*) '5-1'
+            call me%points%finalize()
+write(0,*) '5-2'
             call grid%add(me%points)
+write(0,*) '5-3'            
         end if
 write(0,*) '6'
         call me%add(grid)
