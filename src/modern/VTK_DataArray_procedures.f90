@@ -28,15 +28,15 @@ contains
         character(len=:), allocatable :: range_min_string
         character(len=:), allocatable :: range_max_string
 
-        if (allocated(me%type)) then
-            allocate(type_string,source=' type="' // me%type // '"')
-        else
-            allocate(type_string,source='')
-        end if
         if (allocated(me%array_name)) then
             allocate(name_string,source=' Name="' // me%array_name // '"')
         else
             allocate(name_string,source='')
+        end if
+        if (allocated(me%type)) then
+            allocate(type_string,source=' type="' // me%type // '"')
+        else
+            allocate(type_string,source='')
         end if
         if (allocated(me%numberofcomponents)) then
             allocate(nofc_string,source=' NumberOfComponents="' // me%numberofcomponents // '"')
@@ -64,7 +64,7 @@ contains
             allocate(range_max_string,source='')
         end if
 
-        allocate(string, source=type_string // name_string // nofc_string // format_string // &
+        allocate(string, source=name_string // type_string // nofc_string // format_string // &
             &                   offset_string // range_min_string // range_max_string)
 
         if (parallel_container_file) then
