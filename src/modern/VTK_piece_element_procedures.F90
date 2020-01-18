@@ -108,7 +108,6 @@ contains
 
         do i = 1, size(cell)
             call me%add_cell(cell(i)%attribute)
-            !me%dataarray(i) = cell(i)%attribute%convert_to_dataarray()
         end do
 
     end procedure data_add_attributes
@@ -188,9 +187,6 @@ contains
             do i = 1, geometry%n_points
                 call me%dataarray(1)%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
             end do
-!            call me%add(me%dataarray(1))
-!            call me%dataarray(1)%dataarray_deallocate()
-!            deallocate(me%dataarray)
         class is (unstruct_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
             allocate(me%dataarray(1))
@@ -198,9 +194,6 @@ contains
             do i = 1, geometry%n_points
                 call me%dataarray(1)%add(geometry%get_point(i)) !! new procedure under works to append an array of reals
             end do
-!            call me%add(me%dataarray(1))
-!            call me%dataarray(1)%dataarray_deallocate()
-!            deallocate(me%dataarray)
         class default
             error stop 'Error: in points_initialize, the geometry is not defined.'
         end select
@@ -232,8 +225,6 @@ contains
             do i = 1, geometry%n_cells
                 call me%connectivity%add(geometry%get_connectivity(i)) !! new procedure under works to append an array of reals
             end do
-            call me%add(me%connectivity)
-            call me%connectivity%dataarray_deallocate()
             !! set up cell offsets
             call me%offsets%initialize(name='offsets',type=type_float64,format=file_format_text)
             cnt = 0
@@ -241,20 +232,56 @@ contains
                 cnt = cnt + geometry%get_offset(i)
                 call me%offsets%add([cnt]) !! new procedure under works to append an array of reals
             end do
-            call me%add(me%offsets)
-            call me%offsets%dataarray_deallocate()
             !! set up cell types
             call me%types%initialize(name='types',type=type_float64,format=file_format_text)
             do i = 1, geometry%n_cells
                 call me%types%add([geometry%get_type(i)]) !! new procedure under works to append an array of reals
             end do
-            call me%add(me%types)
-            call me%types%dataarray_deallocate()
         class default
             error stop 'Error: in cells_initialize, the geometry is not yet defined.'
         end select
 
     end procedure cells_initialize
+
+    module procedure cells_finalize
+        use vtk_vars, only : parallel_container_file
+        implicit none
+        !! author: Ian Porter
+        !! date: 01/18/2020
+        !!
+!        integer :: i
+
+        if (parallel_container_file) then
+            call me%update_name('P' // me%get_name())
+        end if
+!        if (allocated(me%connectivity)) then
+            if (parallel_container_file) then
+                call me%connectivity%update_name('P' // me%connectivity%get_name())
+            end if
+            call me%add(me%connectivity)
+!        end if
+!        if (allocated(me%offsets)) then
+            if (parallel_container_file) then
+                call me%offsets%update_name('P' // me%offsets%get_name())
+            end if
+            call me%add(me%offsets)
+!        end if
+!        if (allocated(me%types)) then
+            if (parallel_container_file) then
+                call me%types%update_name('P' // me%types%get_name())
+            end if
+            call me%add(me%types)
+!        end if
+!        if (allocated(me%dataarray)) then
+!            do i = 1, size(me%dataarray)
+!                if (parallel_container_file) then
+!                    call me%dataarray(i)%update_name('P' // me%dataarray(i)%get_name())
+!                end if
+!                call me%add(me%dataarray(i))
+!            end do
+!        end if
+
+    end procedure cells_finalize
 
     module procedure cells_deallocate
         implicit none
@@ -302,14 +329,51 @@ contains
             call me%dataarray_z%initialize(type=type_float64,format=file_format_text,range_min=range(1,3),range_max=range(2,3))
             call me%dataarray_z%add(geometry%get_coord(3))
 
-            call me%add(me%dataarray_x)
-            call me%add(me%dataarray_y)
-            call me%add(me%dataarray_z)
         class default
             error stop 'Error: in coordinates_initialize, the geometry is not yet defined.'
         end select
 
     end procedure coordinates_initialize
+
+    module procedure coordinates_finalize
+        use vtk_vars, only : parallel_container_file
+        implicit none
+        !! author: Ian Porter
+        !! date: 01/18/2020
+        !!
+!        integer :: i
+
+        if (parallel_container_file) then
+            call me%update_name('P' // me%get_name())
+        end if
+!        if (allocated(me%dataarray_x)) then
+            if (parallel_container_file) then
+                call me%dataarray_x%update_name('P' // me%dataarray_x%get_name())
+            end if
+            call me%add(me%dataarray_x)
+!        end if
+!        if (allocated(me%dataarray_y)) then
+            if (parallel_container_file) then
+                call me%dataarray_y%update_name('P' // me%dataarray_y%get_name())
+            end if
+            call me%add(me%dataarray_y)
+!        end if
+!        if (allocated(me%dataarray_z)) then
+            if (parallel_container_file) then
+                call me%dataarray_z%update_name('P' // me%dataarray_z%get_name())
+            end if
+            call me%add(me%dataarray_z)
+!        end if
+!        if (allocated(me%dataarray)) then
+!            do i = 1, size(me%dataarray)
+!                if (parallel_container_file) then
+!                    call me%dataarray(i)%update_name('P' // me%dataarray(i)%get_name())
+!                end if
+!                call me%add(me%dataarray(i))
+!            end do
+!        end if
+
+    end procedure coordinates_finalize
 
     module procedure coordinates_deallocate
         implicit none
@@ -370,13 +434,11 @@ contains
             call me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
             allocate(me%points)
             call me%points%initialize(geometry)
-!            call me%add(me%points)
         class is (rectlnr_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
             call me%setup(name="Piece",string="Extent=" // '"' // range_string // '"')
             allocate(me%coordinates)
             call me%coordinates%initialize(geometry)
-            call me%add(me%coordinates)
         class is (polygonal_data)
             error stop 'Error: polygonal_data is not yet implemented in piece_set_grid'
         class is (unstruct_grid)
@@ -385,10 +447,8 @@ contains
                 &                             " NumberOfCells=" // '"' // trim(adjustl(n_cells)) // '"')
             allocate(me%points)
             call me%points%initialize(geometry)
-!            call me%add(me%points)
             allocate(me%cells)
             call me%cells%initialize(geometry)
-            call me%add(me%cells)
         class default
             error stop 'Error: unknown geometry type in piece_set_grid'
         end select
@@ -440,6 +500,14 @@ contains
         if (allocated(me%points)) then
             call me%points%finalize()
             call me%add(me%points)
+        end if
+        if (allocated(me%coordinates)) then
+            call me%coordinates%finalize()
+            call me%add(me%coordinates)
+        end if
+        if (allocated(me%cells)) then
+            call me%cells%finalize()
+            call me%add(me%cells)
         end if
         if (allocated(me%pointdata)) then
             call me%pointdata%finalize()

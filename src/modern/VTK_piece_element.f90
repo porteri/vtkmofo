@@ -61,6 +61,8 @@ module vtk_piece_element
         procedure, non_overridable :: cells_initialize
         generic, public :: initialize => cells_initialize
         procedure :: cells_deallocate
+        procedure, private :: cells_finalize
+        generic, public :: finalize => cells_finalize
     end type cells_dt
 
     type, extends(xml_element_dt) :: coordinates_dt
@@ -73,15 +75,17 @@ module vtk_piece_element
         procedure, non_overridable :: coordinates_initialize
         generic, public :: initialize => coordinates_initialize
         procedure :: coordinates_deallocate
+        procedure, private :: coordinates_finalize
+        generic, public :: finalize => coordinates_finalize
     end type coordinates_dt
 
     type, extends(vtk_element_dt) :: piece_dt
         !! piece derived type
         type(points_dt),      allocatable :: points
-        type(pointdata_dt),   allocatable :: pointdata
-        type(celldata_dt),    allocatable :: celldata
         type(coordinates_dt), allocatable :: coordinates
         type(cells_dt),       allocatable :: cells
+        type(pointdata_dt),   allocatable :: pointdata
+        type(celldata_dt),    allocatable :: celldata
         character(len=:),     allocatable :: source
     contains
         ! procedure, non_overridable, public :: initialize => piece_initialize
@@ -188,6 +192,17 @@ module vtk_piece_element
 
         end subroutine cells_initialize
 
+        module subroutine cells_finalize (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 01/18/2020
+            !!
+            !! finalize routine to write the proper data information
+            !!
+            class(cells_dt), intent(inout) :: me
+
+        end subroutine cells_finalize
+
         recursive module subroutine cells_deallocate (foo)
             implicit none
             !! author: Ian Porter
@@ -210,6 +225,17 @@ module vtk_piece_element
             class(dataset),        intent(in)    :: geometry
 
         end subroutine coordinates_initialize
+
+        module subroutine coordinates_finalize (me)
+            implicit none
+            !! author: Ian Porter
+            !! date: 01/18/2020
+            !!
+            !! finalize routine to write the proper data information
+            !!
+            class(coordinates_dt), intent(inout) :: me
+
+        end subroutine coordinates_finalize
 
         recursive module subroutine coordinates_deallocate (foo)
             implicit none

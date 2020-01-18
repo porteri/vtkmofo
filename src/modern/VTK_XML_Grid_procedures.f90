@@ -122,6 +122,14 @@ write(0,*) '2'
                 call grid%add(me%parallel_pieces(i))
             end do
         endif
+write(0,*) '5'
+        if (allocated(me%points)) then
+write(0,*) '5-1'
+            call me%points%finalize()
+write(0,*) '5-2'
+            call grid%add(me%points)
+write(0,*) '5-3'            
+        end if
 write(0,*) '3'
         if (allocated(me%pointdata)) then
 write(0,*) '3-1'
@@ -137,14 +145,6 @@ write(0,*) '4-1'
 write(0,*) '4-2'
             call grid%add(me%celldata)
 write(0,*) '4-3'
-        end if
-write(0,*) '5'
-        if (allocated(me%points)) then
-write(0,*) '5-1'
-            call me%points%finalize()
-write(0,*) '5-2'
-            call grid%add(me%points)
-write(0,*) '5-3'            
         end if
 write(0,*) '6'
         call me%add(grid)
