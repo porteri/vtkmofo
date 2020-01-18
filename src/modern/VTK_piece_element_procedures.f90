@@ -89,7 +89,13 @@ contains
             call move_alloc(tmp_dataarray, me%dataarray)
         end if
 #else
-        error stop 'need to implement data_add_attribute for gcc'
+        if (.not. allocated(me%dataarray)) then
+            allocate(me%dataarray(1), source=cell%convert_to_dataarray())
+        else
+            allocate(tmp_dataarray,source=[me%dataarray(:), cell%convert_to_dataarray()])
+            call move_alloc(tmp_dataarray, me%dataarray)
+        end if
+!        error stop 'need to implement data_add_attribute for gcc'
 #endif
 
     end procedure data_add_attribute

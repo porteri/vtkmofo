@@ -126,6 +126,31 @@ contains
 
     end procedure dataarray_add_dataarray
 
+    module procedure dataarray_allocate
+        implicit none
+        !! this is an explicit allocation due to gcc bug
+        integer :: i
+
+        if (allocated(me)) then
+            do i = lbound(me,dim=1), ubound(me,dim=1)
+                call me(i)%dataarray_deallocate()
+            end do
+            deallocate(me)
+        end if
+        if (present(oldfoo)) then
+            if (present(addfoo)) then
+                allocate(me(size(oldfoo)+1))
+            else
+                allocate(me(size(oldfoo)))
+            end if
+            do i = 1, size(oldfoo)
+!                if (allocated(oldfoo%element)) then
+!                end if
+            end do
+        end if
+
+    end procedure dataarray_allocate
+
     module procedure dataarray_deallocate
         implicit none
         !! this explicitly deallocates a dataarray
