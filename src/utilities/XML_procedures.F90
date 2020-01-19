@@ -767,7 +767,7 @@ write(0,*) 'leaving gcc_bug_workaround_allocate'
                 call gcc_bug_deallocate_string_dt(me%string(i))
                 !if (allocated(me%string(i))) deallocate(me%string(i))
             end do
-            if (allocated(me%string)) deallocate(me%string)
+            deallocate(me%string)
         end if
         if (allocated(me%real32))     deallocate(me%real32)
         if (allocated(me%real64))     deallocate(me%real64)
@@ -775,7 +775,7 @@ write(0,*) 'leaving gcc_bug_workaround_allocate'
             do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
                 call gcc_bug_workaround_deallocate (me%element(i))
             end do
-            if (allocated(me%element)) deallocate(me%element)
+            deallocate(me%element)
         end if
 
     end procedure gcc_bug_workaround_deallocate_single

@@ -1,4 +1,5 @@
 submodule (vtk_io) vtk_io_procedures
+    use iso_fortran_env, only : output_unit
     implicit none
     !! author: Ian Porter
     !! date: 12/1/2017
@@ -387,19 +388,19 @@ contains
         else
             call serial_file%setup(filename=vtkfilename // '.' //  trim(serial_file%vtk_dataset%file_extension))
         end if
-        write(0,*) 'in vtk_serial_full_write'
-        write(0,*) serial_file%filename
-        write(0,*) serial_file%unit
+        write(output_unit,*) 'in vtk_serial_full_write'
+        write(output_unit,*) serial_file%filename
+        write(output_unit,*) serial_file%unit
         !! append data
         call vtk_XML_append (celldata, pointdata, celldatasets, pointdatasets)
-        write(0,*) 'after vtk_XML_append, before vtk_XML_finalize'
+        write(output_unit,*) 'after vtk_XML_append, before vtk_XML_finalize'
         !! finalize the write
         if (any([ present(celldatasets), present(celldata), present(pointdatasets), present(pointdata) ])) then
             call vtk_XML_finalize (finished=.true.)          !! full legacy write w/ data. close file.
         else
             call vtk_XML_finalize (finished=.false.)         !! no data was provided, only geometry info. do not close file.
         end if
-        write(0,*) 'after vtk_XML_finalize'
+        write(output_unit,*) 'after vtk_XML_finalize'
     end procedure vtk_serial_full_write
 
     module procedure vtk_XML_append
@@ -469,17 +470,17 @@ contains
         character(len=:), allocatable :: filename
         class(vtk_dataset_dt), allocatable :: vtk_dataset
         type(piece_dt), dimension(:), allocatable :: pieces
-write(0,1)
+write(output_unit,1)
 1 format(//////)
         parallel_container_file = .true.                   !! Turn on the parallel flag
         allocate(parallel_file)
-write(0,*) '1'
+write(output_unit,*) '1'
         filename = adjustl(serial_file%filename(:index(serial_file%filename,'_image_')-1))
 
         call parallel_file%setup(filename=filename // '.p' // trim(serial_file%vtk_dataset%file_extension))
-write(0,*) '2'
+write(output_unit,*) '2'
         allocate(vtk_dataset, source=serial_file%vtk_dataset)
-write(0,*) '3'
+write(output_unit,*) '3'
         if (present(images)) then
             allocate(pieces(1:size(images)))
             do i = 1, size(pieces)
@@ -495,20 +496,37 @@ write(0,*) '3'
                 pieces(i)%source = filename // '_image_' // trim(adjustl(my_image)) // '.' // trim(vtk_dataset%file_extension)
             end do
         end if
-write(0,*) '4'
+write(output_unit,*) '4'
         call vtk_dataset%parallel_fix(pieces)
-write(0,*) '5'
+write(output_unit,*) '5'
         !! this should write everything inside of the piece
         call parallel_file%add(vtk_dataset)       !!
-
+write(output_unit,*) '6'
         call parallel_file%write()                              !! Write the parallel file
-
+write(output_unit,*) '7'
         call parallel_file%close_file()                         !! Close the vtk file
-
+write(output_unit,*) '8'
         call parallel_file%me_deallocate()                      !! Explicitly de-allocate data b/c of gfotran bug
-        if (allocated(parallel_file)) deallocate(parallel_file) !! Deallocate the parallel file
+write(output_unit,*) '9'
+        deallocate(parallel_file) !! Deallocate the parallel file
+write(output_unit,*) '10'
+        if (allocated(vtk_dataset)) then
+write(output_unit,*) '10.5'
+            call vtk_dataset%vtk_dataset_deallocate()
+write(output_unit,*) '11'
+            deallocate(vtk_dataset)
+write(output_unit,*) '12'
+        end if
+        if (allocated(pieces)) then
+            do i = 1, size(pieces)
+write(output_unit,*) '13'
+                call pieces(i)%piece_deallocate()
+            end do
+write(output_unit,*) '14'
+            deallocate(pieces)
+        end if
         parallel_container_file = .false.                       !! Turn off the parallel flag
-
+write(output_unit,*) '9'
     end procedure vtk_parallel_container_finalize
 
 end submodule vtk_io_procedures
