@@ -521,22 +521,28 @@ contains
     end procedure piece_finalize
 
     module procedure piece_deallocate
+        use iso_fortran_env, only : output_unit
         implicit none
         !! author: Ian Porter
         !! date: 06/07/2019
         !!
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         !!
-
+write(output_unit,*) 'piece_deallocate 1'
         if (allocated(foo%pointdata))   call foo%pointdata%data_deallocate()
+write(output_unit,*) 'piece_deallocate 2'
         if (allocated(foo%celldata))    call foo%celldata%data_deallocate()
+write(output_unit,*) 'piece_deallocate 3'
         if (allocated(foo%coordinates)) call foo%coordinates%coordinates_deallocate()
+write(output_unit,*) 'piece_deallocate 4'
         if (allocated(foo%points))      call foo%points%data_deallocate()
+write(output_unit,*) 'piece_deallocate 5'
         if (allocated(foo%cells))       call foo%cells%cells_deallocate()
+write(output_unit,*) 'piece_deallocate 6'
         if (allocated(foo%source))      deallocate(foo%source)
-
+write(output_unit,*) 'piece_deallocate 7'
         call foo%me_deallocate()
-
+write(output_unit,*) 'piece_deallocate 8'
     end procedure piece_deallocate
 
 end submodule vtk_piece_element_procedures

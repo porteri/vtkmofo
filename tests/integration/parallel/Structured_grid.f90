@@ -9,12 +9,12 @@ program parallel_structured_grid_test
     !!
     !! this is a test of a cylindrical geometry using a rectilinear grid
     !!
-    integer(i4k), parameter     :: n_params_to_write = 1
+    integer(i4k), parameter     :: n_params_to_write = 2
     type (struct_grid)          :: cylinder
     type (attributes), dimension(n_params_to_write) :: point_data
     type (scalar)               :: cell_data
     integer(i4k)                :: i, j, k, z, cnt = 1
-    integer(i4k),     parameter :: n_x = 19, n_y = 1, n_z = 4, unit = 20
+    integer(i4k),     parameter :: n_x = 19, n_y = 1, n_z = 4
     character(len=*), parameter :: filename = 'parallel_structured_grid'
     integer(i4k), dimension(3)  :: dims
     real(r8k), dimension(n_x), parameter :: x_vals = &
@@ -47,10 +47,11 @@ program parallel_structured_grid_test
         &  [ 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, &
         &    5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3, &
         &    5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 3, 3 ]
-    real(r8k), dimension(1:3,n_x*n_y*n_z)    :: points
+    real(r8k), dimension(1:3,n_x*n_y*n_z) :: points
+    real(r8k), dimension(n_x*n_y*n_z)     :: pressure
     real(r8k), dimension(n_x*n_y*n_z,1:n_params_to_write) :: vals
-    character(len=*), dimension(n_params_to_write), parameter :: dataname = &
-        & [ 'temperature (Kelvin)     ' ]
+    character(len=20), dimension(n_params_to_write), parameter :: dataname = &
+        & [ 'temperature (Kelvin)', 'pressure (Pa)       ' ]
 
     !! Fake simulation of multiple images
     WRITE(0,*) num_images()
@@ -59,15 +60,15 @@ program parallel_structured_grid_test
         do k = 1, n_z
             do j = 1, n_y
                 do i = 1, n_x
-                    points(1,cnt) = x_vals(i)
-                    points(2,cnt) = y_vals(j)
-                    points(3,cnt) = z_vals(k)
+                    points(1:3,cnt) = [x_vals(i), y_vals(j), z_vals(k)]
+                    pressure(cnt) = real(cnt)
                     cnt = cnt + 1
                 end do
             end do
         end do
 
         vals(:,1) = temp(:)
+        vals(:,2) = pressure(:)
         dims = [ n_x, n_y, n_z ]
 
         call cylinder%init (dims=dims, points=points)
@@ -80,9 +81,9 @@ program parallel_structured_grid_test
         end do
 
         !! dummy "material" information
-        call cell_data%init ('material_id', numcomp=1, int1d=mat_id)
+        call cell_data%init ('material id', numcomp=1, int1d=mat_id)
 
-        call vtk_parallel_write (cylinder, image=this_image(), filename=filename, unit=unit, &
+        call vtk_parallel_write (cylinder, image=this_image(), filename=filename, &
             &                    pointdatasets=point_data, celldata=cell_data)
 
     end do

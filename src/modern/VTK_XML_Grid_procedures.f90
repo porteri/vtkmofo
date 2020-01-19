@@ -128,7 +128,7 @@ write(0,*) '5-1'
             call me%points%finalize()
 write(0,*) '5-2'
             call grid%add(me%points)
-write(0,*) '5-3'            
+write(0,*) '5-3'
         end if
 write(0,*) '3'
         if (allocated(me%pointdata)) then
@@ -155,6 +155,7 @@ write(0,*) '8 - end of finalize'
     end procedure finalize
 
     module procedure vtk_dataset_deallocate
+        use iso_fortran_env, only : output_unit
         implicit none
         !! author: Ian Porter
         !! date: 05/06/2019
@@ -163,21 +164,23 @@ write(0,*) '8 - end of finalize'
         !!
         integer :: i
 
-        if (allocated(foo%wholeextent)) deallocate(foo%WholeExtent)
-        if (allocated(foo%grid_type)) deallocate(foo%grid_type)
+        if (allocated(foo%wholeextent))  deallocate(foo%WholeExtent)
+        if (allocated(foo%grid_type))    deallocate(foo%grid_type)
         if (allocated(foo%extra_string)) deallocate(foo%extra_string)
-        if (allocated(foo%piece)) call foo%piece%piece_deallocate()
+        if (allocated(foo%piece)) then
+            call foo%piece%piece_deallocate()
+            deallocate(foo%piece)
+        end if
+write(output_unit,*) 'vtk_dataset_deallocate 5'
         if (allocated(foo%parallel_pieces)) then
-            do i = 1, size(foo%parallel_pieces)
+            do i = lbound(foo%parallel_pieces,dim=1), ubound(foo%parallel_pieces,dim=1)
                 call foo%parallel_pieces(i)%piece_deallocate()
             end do
             deallocate(foo%parallel_pieces)
         end if
-
+write(output_unit,*) 'vtk_dataset_deallocate 6'
         call foo%piece_deallocate()
-
-        call foo%me_deallocate()
-
+write(output_unit,*) 'vtk_dataset_deallocate 7'
     end procedure vtk_dataset_deallocate
 
     module procedure imagedata_set_grid

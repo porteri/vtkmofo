@@ -54,7 +54,8 @@ endif()
 
 # parallel modern tests
 foreach(test
-    Structured_grid)
+    Structured_grid
+    Unstructured_grid)
   add_VTKmofo_integration_test(${test} "parallel")
   list(APPEND VTKmofo_integration_test_list "parallel_${test}")
 endforeach()

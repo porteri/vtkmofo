@@ -90,6 +90,7 @@ contains
     end procedure finalize
 
     module procedure gcc_bug_workaround_deallocate_vtk_element_single
+        use iso_fortran_env, only : output_unit
         implicit none
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
 
@@ -102,9 +103,11 @@ contains
         if (allocated(foo%vtk_element)) then
             call foo%vtk_element%me_deallocate()
             call foo%vtk_element%deallocate()
+            deallocate(foo%vtk_element)
         end if
+        write(output_unit,*) 'gcc_bug_workaround_deallocate_vtk_element_single 8'
         call foo%deallocate()
-
+        write(output_unit,*) 'gcc_bug_workaround_deallocate_vtk_element_single 9'
     end procedure gcc_bug_workaround_deallocate_vtk_element_single
 
 end submodule vtk_element_procedures
