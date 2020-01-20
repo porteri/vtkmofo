@@ -9,7 +9,7 @@ submodule (vtk_serial_file) vtk_serial_file_procedures
 contains
 
     module procedure deallocate_vtk_file_dt
-        use xml, only : gcc_bug_workaround_deallocate
+        use xml, only : gcc_bug_workaround_deallocate_xml_file_dt
         implicit none
         !! author: Ian Porter
         !! date: 05/06/2019
@@ -20,7 +20,8 @@ contains
         if (allocated(foo%vtk_dataset)) call foo%vtk_dataset%vtk_dataset_deallocate()
 
 !        call gcc_bug_workaround_deallocate(foo)
-        call foo%deallocate() !! deallocate the xml data
+        call gcc_bug_workaround_deallocate_xml_file_dt(foo)
+!        call foo%deallocate() !! deallocate the xml data
 
     end procedure deallocate_vtk_file_dt
 

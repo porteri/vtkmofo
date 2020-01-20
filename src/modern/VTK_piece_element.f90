@@ -22,6 +22,12 @@ module vtk_piece_element
         character(len=:), allocatable :: normals
         character(len=:), allocatable :: tensors
         character(len=:), allocatable :: tcoords
+        type(dataarray_dt), allocatable :: connectivity
+        type(dataarray_dt), allocatable :: offsets
+        type(dataarray_dt), allocatable :: types
+        type(dataarray_dt), allocatable :: dataarray_x
+        type(dataarray_dt), allocatable :: dataarray_y
+        type(dataarray_dt), allocatable :: dataarray_z
         type(dataarray_dt), dimension(:), allocatable, public :: dataarray
     contains
         procedure, non_overridable :: data_setup
@@ -51,32 +57,18 @@ module vtk_piece_element
         generic, public :: initialize => points_initialize
     end type points_dt
 
-    type, extends(xml_element_dt) :: cells_dt
+    type, extends(data_dt) :: cells_dt
         !! cells derived type
-        private
-        type(dataarray_dt), allocatable :: connectivity
-        type(dataarray_dt), allocatable :: offsets
-        type(dataarray_dt), allocatable :: types
     contains
         procedure, non_overridable :: cells_initialize
         generic, public :: initialize => cells_initialize
-        procedure :: cells_deallocate
-        procedure, private :: cells_finalize
-        generic, public :: finalize => cells_finalize
     end type cells_dt
 
-    type, extends(xml_element_dt) :: coordinates_dt
+    type, extends(data_dt) :: coordinates_dt
         !! coordinates derived type
-        private
-        type(dataarray_dt) :: dataarray_x
-        type(dataarray_dt) :: dataarray_y
-        type(dataarray_dt) :: dataarray_z
     contains
         procedure, non_overridable :: coordinates_initialize
         generic, public :: initialize => coordinates_initialize
-        procedure :: coordinates_deallocate
-        procedure, private :: coordinates_finalize
-        generic, public :: finalize => coordinates_finalize
     end type coordinates_dt
 
     type, extends(vtk_element_dt) :: piece_dt
@@ -192,28 +184,6 @@ module vtk_piece_element
 
         end subroutine cells_initialize
 
-        module subroutine cells_finalize (me)
-            implicit none
-            !! author: Ian Porter
-            !! date: 01/18/2020
-            !!
-            !! finalize routine to write the proper data information
-            !!
-            class(cells_dt), intent(inout) :: me
-
-        end subroutine cells_finalize
-
-        recursive module subroutine cells_deallocate (foo)
-            implicit none
-            !! author: Ian Porter
-            !! date: 06/07/2019
-            !!
-            !! explicitly deallocate a cells dt
-            !!
-            class(cells_dt), intent(inout) :: foo
-
-        end subroutine cells_deallocate
-
         module subroutine coordinates_initialize (me, geometry)
             implicit none
             !! author: Ian Porter
@@ -225,28 +195,6 @@ module vtk_piece_element
             class(dataset),        intent(in)    :: geometry
 
         end subroutine coordinates_initialize
-
-        module subroutine coordinates_finalize (me)
-            implicit none
-            !! author: Ian Porter
-            !! date: 01/18/2020
-            !!
-            !! finalize routine to write the proper data information
-            !!
-            class(coordinates_dt), intent(inout) :: me
-
-        end subroutine coordinates_finalize
-
-        recursive module subroutine coordinates_deallocate (foo)
-            implicit none
-            !! author: Ian Porter
-            !! date: 06/07/2019
-            !!
-            !! explicitly deallocate a piece dt
-            !!
-            class(coordinates_dt), intent(inout) :: foo
-
-        end subroutine coordinates_deallocate
 
         module subroutine piece_set_grid (me, geometry)
             implicit none
