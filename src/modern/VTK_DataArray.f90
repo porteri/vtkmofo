@@ -25,7 +25,6 @@ module vtk_dataarray_element
         procedure, non_overridable :: dataarray_setup
         procedure, non_overridable :: dataarray_initialize
         generic, public :: initialize => dataarray_initialize
-        procedure :: element_add_element => dataarray_add_dataarray
 !        procedure :: dataarray_allocate
         procedure :: dataarray_deallocate
     end type dataarray_dt
@@ -61,14 +60,6 @@ module vtk_dataarray_element
             real(r8k),           intent(in), optional :: range_max          !! max value in array of numbers
 
         end subroutine dataarray_initialize
-
-        module subroutine dataarray_add_dataarray (me, element)
-            implicit none
-            !! this adds a dataarray inside of a xml dataarray block
-            class(dataarray_dt),   intent(inout) :: me       !! dataarray dt
-            class(xml_element_dt), intent(in)    :: element  !! inner xml element
-
-        end subroutine dataarray_add_dataarray
 
         recursive module subroutine dataarray_allocate (me, addfoo, oldfoo)
             implicit none
