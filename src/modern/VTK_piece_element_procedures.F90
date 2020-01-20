@@ -1,6 +1,6 @@
 submodule (vtk_piece_element) vtk_piece_element_procedures
     use precision, only : i4k, r8k
-    use vtk_formats_types, only : type_float64
+    use vtk_formats_types, only : type_float64, type_int32
     use xml, only : file_format_text, gcc_bug_workaround_deallocate
     use iso_fortran_env, only : output_unit
     implicit none
@@ -289,13 +289,13 @@ write(output_unit,*) 'cells_deallocate 5'
         class is (unstruct_grid)
             !! set up cell connectivity
             allocate(me%connectivity)
-            call me%connectivity%initialize(name='connectivity',type=type_float64,format=file_format_text)
+            call me%connectivity%initialize(name='connectivity',type=type_int32,format=file_format_text)
             do i = 1, geometry%n_cells
                 call me%connectivity%add(geometry%get_connectivity(i)) !! new procedure under works to append an array of reals
             end do
             !! set up cell offsets
             allocate(me%offsets)
-            call me%offsets%initialize(name='offsets',type=type_float64,format=file_format_text)
+            call me%offsets%initialize(name='offsets',type=type_int32,format=file_format_text)
             cnt = 0
             do i = 1, geometry%n_cells
                 cnt = cnt + geometry%get_offset(i)
@@ -303,7 +303,7 @@ write(output_unit,*) 'cells_deallocate 5'
             end do
             !! set up cell types
             allocate(me%types)
-            call me%types%initialize(name='types',type=type_float64,format=file_format_text)
+            call me%types%initialize(name='types',type=type_int32,format=file_format_text)
             do i = 1, geometry%n_cells
                 call me%types%add([geometry%get_type(i)]) !! new procedure under works to append an array of reals
             end do

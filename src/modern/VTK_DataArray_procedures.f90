@@ -123,6 +123,7 @@ contains
         implicit none
         !! this adds an element inside of an xml element block
         !type(xml_element_dt), dimension(:), allocatable :: tmp_element_dt
+        error stop 'should not be in dataarray_add_dataarray'
 
     end procedure dataarray_add_dataarray
 
