@@ -168,6 +168,9 @@ contains
                 call me%add(me%dataarray(i))
             end do
         end if
+        if (parallel_container_file) then
+            call me%clear_data()
+        end if
 
     end procedure data_finalize
 

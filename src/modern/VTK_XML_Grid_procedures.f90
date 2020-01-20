@@ -19,7 +19,7 @@ contains
         character(len=:), allocatable :: my_grid_type
 
         call me%vtk_element_setup()
-!        call me%clear_elements()
+        call me%clear_elements()
         my_grid_type = 'P' // me%grid_type
         deallocate(me%grid_type)
         me%grid_type = my_grid_type
