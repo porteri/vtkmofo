@@ -14,7 +14,7 @@ program parallel_t_shape_test
     type (unstruct_grid)        :: t_shape
     type (attributes), dimension(n_params_to_write) :: point_vals_to_write, cell_vals_to_write
     integer(i4k)                :: i, t
-    integer(i4k),     parameter :: n_points = 24, n_cells = 5, unit = 20, n_steps = 10
+    integer(i4k),     parameter :: n_points = 24, n_cells = 5, unit = 20, n_steps = 2
     character(len=*), parameter :: filename = 'parallel_unstruct_grid'
     character(len=8)            :: t_char
     real(r8k), dimension(n_cells, 1:n_params_to_write) :: cell_vals

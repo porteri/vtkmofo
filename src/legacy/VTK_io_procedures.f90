@@ -315,8 +315,11 @@ contains
 
         ! clear out any pre-existing data
         if (allocated(serial_file)) then
+            write(output_unit,*) 'serial_file is allocated. 2'
             call serial_file%me_deallocate()
+            write(output_unit,*) 'serial_file is allocated. 3'
             deallocate(serial_file)
+            write(output_unit,*) 'serial_file is allocated. 4'
         end if
         if (allocated(vtkfilename))      deallocate(vtkfilename)
         if (allocated(form))             deallocate(form)
@@ -512,21 +515,25 @@ write(output_unit,*) '9'
 write(output_unit,*) '10'
         if (allocated(vtk_dataset)) then
 write(output_unit,*) '10.5'
+            call vtk_dataset%clear_elements()
             call vtk_dataset%vtk_dataset_deallocate()
 write(output_unit,*) '11'
             deallocate(vtk_dataset)
 write(output_unit,*) '12'
         end if
         if (allocated(pieces)) then
-            do i = 1, size(pieces)
-write(output_unit,*) '13'
-                call pieces(i)%piece_deallocate()
-            end do
-write(output_unit,*) '14'
-            deallocate(pieces)
+            if (size(pieces) > 0) then
+                do i = lbound(pieces,dim=1), ubound(pieces,dim=1)
+    write(output_unit,*) '13'
+                    call pieces(i)%clear_elements()
+                    call pieces(i)%piece_deallocate()
+                end do
+    write(output_unit,*) '14'
+                deallocate(pieces)
+            end if
         end if
         parallel_container_file = .false.                       !! Turn off the parallel flag
-write(output_unit,*) '9'
+write(output_unit,*) 'literally the very end'
     end procedure vtk_parallel_container_finalize
 
 end submodule vtk_io_procedures

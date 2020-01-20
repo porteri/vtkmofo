@@ -43,7 +43,7 @@ write(0,*) 'parallel_fix 2'
             if (allocated(me%piece%coordinates)) then
                 call me%piece%coordinates%clear_elements()
                 me%coordinates = me%piece%coordinates
-                call me%coordinates%update_names('P' // me%coordinates%get_name())
+!                call me%coordinates%update_names('P' // me%coordinates%get_name())
                 call me%piece%coordinates%coordinates_deallocate()
                 deallocate(me%piece%coordinates)
             end if
@@ -55,8 +55,9 @@ write(0,*) 'parallel_fix 2'
                 deallocate(me%piece%points)
             end if
             if (allocated(me%piece%cells)) then
+                call me%piece%cells%clear_elements()
                 me%cells = me%piece%cells
-                call me%cells%update_names('P' // me%cells%get_name())
+!                call me%cells%update_names('P' // me%cells%get_name())
                 call me%piece%cells%cells_deallocate()
                 deallocate(me%piece%cells)
             end if
@@ -130,6 +131,16 @@ write(0,*) '5-2'
             call grid%add(me%points)
 write(0,*) '5-3'
         end if
+
+        if (allocated(me%cells)) then
+            call me%cells%finalize()
+            call grid%add(me%cells)
+        end if
+
+        if (allocated(me%coordinates)) then
+            call me%coordinates%finalize()
+            call grid%add(me%coordinates)
+        end if
 write(0,*) '3'
         if (allocated(me%pointdata)) then
 write(0,*) '3-1'
@@ -149,6 +160,7 @@ write(0,*) '4-3'
 write(0,*) '6'
         call me%add(grid)
 write(0,*) '7'
+        call grid%clear_elements()
         call grid%me_deallocate()
 
 write(0,*) '8 - end of finalize'

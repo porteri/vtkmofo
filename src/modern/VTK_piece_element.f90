@@ -54,9 +54,9 @@ module vtk_piece_element
     type, extends(xml_element_dt) :: cells_dt
         !! cells derived type
         private
-        type(dataarray_dt) :: connectivity
-        type(dataarray_dt) :: offsets
-        type(dataarray_dt) :: types
+        type(dataarray_dt), allocatable :: connectivity
+        type(dataarray_dt), allocatable :: offsets
+        type(dataarray_dt), allocatable :: types
     contains
         procedure, non_overridable :: cells_initialize
         generic, public :: initialize => cells_initialize

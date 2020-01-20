@@ -24,7 +24,7 @@ module vtk_serial_file
 
     interface
 
-        recursive module subroutine deallocate_vtk_file_dt (foo)
+        module subroutine deallocate_vtk_file_dt (foo)
             implicit none
             !! author: Ian Porter
             !! date: 05/06/2019

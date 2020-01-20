@@ -13,8 +13,8 @@ program parallel_structured_grid_test
     type (struct_grid)          :: cylinder
     type (attributes), dimension(n_params_to_write) :: point_data
     type (scalar)               :: cell_data
-    integer(i4k)                :: i, j, k, z, cnt = 1
-    integer(i4k),     parameter :: n_x = 19, n_y = 1, n_z = 4
+    integer(i4k)                :: i, j, k, z, t, cnt = 1
+    integer(i4k),     parameter :: n_x = 19, n_y = 1, n_z = 4, n_steps = 2
     character(len=*), parameter :: filename = 'parallel_structured_grid'
     integer(i4k), dimension(3)  :: dims
     real(r8k), dimension(n_x), parameter :: x_vals = &
@@ -55,40 +55,42 @@ program parallel_structured_grid_test
 
     !! Fake simulation of multiple images
     WRITE(0,*) num_images()
-    do z = 1, num_images()
-        cnt = 1
-        do k = 1, n_z
-            do j = 1, n_y
-                do i = 1, n_x
-                    points(1:3,cnt) = [x_vals(i), y_vals(j), z_vals(k)]
-                    pressure(cnt) = real(cnt)
-                    cnt = cnt + 1
+    do t = 1, n_steps
+        do z = 1, num_images()
+            cnt = 1
+            do k = 1, n_z
+                do j = 1, n_y
+                    do i = 1, n_x
+                        points(1:3,cnt) = [x_vals(i), y_vals(j), z_vals(k)]
+                        pressure(cnt) = real(cnt)
+                        cnt = cnt + 1
+                    end do
                 end do
             end do
+
+            vals(:,1) = temp(:)
+            vals(:,2) = pressure(:)
+            dims = [ n_x, n_y, n_z ]
+
+            call cylinder%init (dims=dims, points=points)
+
+            do i = 1, n_params_to_write
+                if (.not. allocated(point_data(i)%attribute))then
+                    allocate(scalar::point_data(i)%attribute)
+                end if
+                call point_data(i)%attribute%init (dataname(i), numcomp=1, real1d=vals(:,i))
+            end do
+
+            !! dummy "material" information
+            call cell_data%init ('material id', numcomp=1, int1d=mat_id)
+
+            call vtk_parallel_write (cylinder, image=this_image(), filename=filename, &
+                &                    pointdatasets=point_data, celldata=cell_data)
+
         end do
 
-        vals(:,1) = temp(:)
-        vals(:,2) = pressure(:)
-        dims = [ n_x, n_y, n_z ]
-
-        call cylinder%init (dims=dims, points=points)
-
-        do i = 1, n_params_to_write
-            if (.not. allocated(point_data(i)%attribute))then
-                allocate(scalar::point_data(i)%attribute)
-            end if
-            call point_data(i)%attribute%init (dataname(i), numcomp=1, real1d=vals(:,i))
-        end do
-
-        !! dummy "material" information
-        call cell_data%init ('material id', numcomp=1, int1d=mat_id)
-
-        call vtk_parallel_write (cylinder, image=this_image(), filename=filename, &
-            &                    pointdatasets=point_data, celldata=cell_data)
-
+        if (this_image() == 1) call vtk_parallel_write(num_images())  !! This is the finalizer
     end do
-
-    if (this_image() == 1) call vtk_parallel_write(num_images())  !! This is the finalizer
 
     write(*,*) 'Finished'
 

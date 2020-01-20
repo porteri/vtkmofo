@@ -87,6 +87,7 @@ module xml
         procedure, public  :: replace => replace_in_string !! replaces an identifier in the string
         procedure, private :: gcc_bug_workaround_deallocate_single
         generic, public    :: deallocate => gcc_bug_workaround_deallocate_single
+!        final :: gcc_bug_workaround_deallocate_single_final !! can't use this b/c it results in an ICE
     end type xml_element_dt
 
     type, extends(file_data_structure) :: xml_file_dt
@@ -342,6 +343,12 @@ module xml
             !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
             class(xml_element_dt), intent(inout) :: me
         end subroutine gcc_bug_workaround_deallocate_single
+
+        module subroutine gcc_bug_workaround_deallocate_single_final (me)
+            implicit none
+            !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+            type(xml_element_dt), intent(inout) :: me
+        end subroutine gcc_bug_workaround_deallocate_single_final
 
         recursive module subroutine gcc_bug_deallocate_string_dt (me)
             implicit none
