@@ -420,7 +420,7 @@ contains
         !        end if
         !! this is a temporary work around
         if (.not. allocated(me%element)) then
-            write(0,*) 'element_add_element not allocated(me%element)'
+            write(output_unit,*) 'element_add_element not allocated(me%element)'
             select type (element)
             class is (xml_element_dt)
                 call gcc_bug_workaround_allocate(me%element, element)
@@ -428,16 +428,16 @@ contains
         else
             select type (element)
             class is (xml_element_dt)
-              write(0,*) 'element_add_element 1'
+              write(output_unit,*) 'element_add_element 1'
                 call gcc_bug_workaround_allocate(tmp_element_dt, oldfoo=me%element)
-              write(0,*) 'element_add_element 2'
+              write(output_unit,*) 'element_add_element 2'
                 call gcc_bug_workaround_allocate(me%element, element, tmp_element_dt)
-              write(0,*) 'element_add_element 3'
+              write(output_unit,*) 'element_add_element 3'
             end select
         end if
-        write(0,*) 'element_add_element 4'
+        write(output_unit,*) 'element_add_element 4'
         call gcc_bug_workaround_deallocate (tmp_element_dt)
-        write(0,*) 'element_add_element 5'
+        write(output_unit,*) 'element_add_element 5'
     end procedure element_add_element
 
     module procedure element_end
@@ -491,17 +491,16 @@ write(output_unit,*) me%name
                 end select
             end do
         else if (allocated(me%int32)) then
-          error stop 'ok int32 found'
             do i = 1, size(me%int32)
                 if (allocated(me%int32(i)%val)) then
                     associate (n_vals => size(me%int32(i)%val))
-                        write(unit) (me%int32(i)%val(j),j=1,n_vals)
+                        write(unit,*) (me%int32(i)%val(j),j=1,n_vals)
                     end associate
                 end if
                 if (allocated(me%int32(i)%val_2d)) then
                     associate (n_vals_1 => size(me%int32(i)%val_2d,dim=1), n_vals_2 => size(me%int32(i)%val_2d,dim=2))
                         do k = 1, n_vals_2
-                            write(unit) (me%int32(i)%val_2d(j,k),j=1,n_vals_1)
+                            write(unit,*) (me%int32(i)%val_2d(j,k),j=1,n_vals_1)
                         end do
                     end associate
                 end if
@@ -557,7 +556,7 @@ write(output_unit,*) me%name
                 write(unit) new_line('a')
             end select
         else
-            write(output_unit,*) 'error: nothing is allocated in element_write'
+            !! Nothing to write
         end if
 
         if (allocated(me%element)) then
@@ -701,21 +700,21 @@ write(output_unit,*) me%name
         end if
 #else
         !! this is a temporary work around
-        write(0,*) 'xml_add 0'
+        write(output_unit,*) 'xml_add 0'
         if (.not. allocated(me%element)) then
             select type (element)
             class is (xml_element_dt)
                 call gcc_bug_workaround_allocate(me%element, element)
             end select
         else
-            write(0,*) 'xml_add 0.5'
+            write(output_unit,*) 'xml_add 0.5'
             select type (element)
             class is (xml_element_dt)
-              write(0,*) 'xml_add 1'
+              write(output_unit,*) 'xml_add 1'
                 call gcc_bug_workaround_allocate(tmp_element_dt, oldfoo=me%element)
-              write(0,*) 'xml_add 2'
+              write(output_unit,*) 'xml_add 2'
                 call gcc_bug_workaround_allocate(me%element, element, tmp_element_dt)
-              write(0,*) 'xml_add 3'
+              write(output_unit,*) 'xml_add 3'
             end select
         end if
 
@@ -759,57 +758,61 @@ write(output_unit,*) me%name
         !! gcc work-around for allocating a multi-dimension derived type w/ allocatable character strings
         !! when trying to increase the size of the foo array by 1
         integer(i4k) :: i
-write(0,*) 'entering gcc_bug_workaround_allocate'
+write(output_unit,*) 'entering gcc_bug_workaround_allocate'
         if (allocated(me)) call gcc_bug_workaround_deallocate(me)
         if (present(oldfoo)) then
-          write(0,*) 'oldfoo is present'
+          write(output_unit,*) 'oldfoo is present'
             if (present(addfoo)) then
                 allocate (me(size(oldfoo)+1))
             else
                 allocate (me(size(oldfoo)))
             end if
             do i = 1, size(oldfoo)
-                write(0,*) 'i: ',i
+                write(output_unit,*) 'i: ',i
                 if (allocated(oldfoo(i)%name)) allocate(me(i)%name, source=oldfoo(i)%name)
-                write(0,*) 'oldfoo(i)%name: ',oldfoo(i)%name
-                write(0,*) 'oldfoo(i)%unit: ',oldfoo(i)%unit
+                write(output_unit,*) 'oldfoo(i)%name: ',oldfoo(i)%name
+                write(output_unit,*) 'oldfoo(i)%unit: ',oldfoo(i)%unit
                 me(i)%unit = oldfoo(i)%unit
                 if (allocated(oldfoo(i)%offset)) allocate(me(i)%offset, source=oldfoo(i)%offset)
                 if (allocated(oldfoo(i)%additional_data)) &
                 &  allocate(me(i)%additional_data, source=oldfoo(i)%additional_data)
+                if (allocated(oldfoo(i)%int32))  allocate(me(i)%int32,  source=oldfoo(i)%int32)
+                if (allocated(oldfoo(i)%int64))  allocate(me(i)%int64,  source=oldfoo(i)%int64)
                 if (allocated(oldfoo(i)%string)) allocate(me(i)%string, source=oldfoo(i)%string)
                 if (allocated(oldfoo(i)%real32)) allocate(me(i)%real32, source=oldfoo(i)%real32)
                 if (allocated(oldfoo(i)%real64)) allocate(me(i)%real64, source=oldfoo(i)%real64)
                 if (allocated(oldfoo(i)%element)) then
-                  write(0,*) 'oldfoo(i)%element is allocated. calling gcc_bug_workaround_allocate'
+                  write(output_unit,*) 'oldfoo(i)%element is allocated. calling gcc_bug_workaround_allocate'
                   call gcc_bug_workaround_allocate(me(i)%element, oldfoo=oldfoo(i)%element)
-                  write(0,*) 'oldfoo(i)%element was allocated. finished calling gcc_bug_workaround_allocate'
+                  write(output_unit,*) 'oldfoo(i)%element was allocated. finished calling gcc_bug_workaround_allocate'
                 end if
             end do
         else
             allocate(me(1))
         end if
         if (present(addfoo)) then
-          write(0,*) 'addfoo is present'
+          write(output_unit,*) 'addfoo is present'
             i = ubound(me,dim=1)
-            write(0,*) 'i',i
-            write(0,*) 'addfoo%name: ',addfoo%name
+            write(output_unit,*) 'i',i
+            write(output_unit,*) 'addfoo%name: ',addfoo%name
             if (allocated(addfoo%name)) allocate(me(i)%name, source=addfoo%name)
-            write(0,*) 'addfoo%unit: ',addfoo%unit
+            write(output_unit,*) 'addfoo%unit: ',addfoo%unit
             me(i)%unit = addfoo%unit
             if (allocated(addfoo%offset)) allocate(me(i)%offset, source=addfoo%offset)
             if (allocated(addfoo%additional_data)) &
                 &  allocate(me(i)%additional_data, source=addfoo%additional_data)
+            if (allocated(addfoo%int32))  allocate(me(i)%int32,  source=addfoo%int32)
+            if (allocated(addfoo%int64))  allocate(me(i)%int64,  source=addfoo%int64)
             if (allocated(addfoo%string)) allocate(me(i)%string, source=addfoo%string)
             if (allocated(addfoo%real32)) allocate(me(i)%real32, source=addfoo%real32)
             if (allocated(addfoo%real64)) allocate(me(i)%real64, source=addfoo%real64)
             if (allocated(addfoo%element)) then
-              write(0,*) 'addfoo(i)%element is allocated. calling gcc_bug_workaround_allocate'
+              write(output_unit,*) 'addfoo(i)%element is allocated. calling gcc_bug_workaround_allocate'
               call gcc_bug_workaround_allocate(me(i)%element, oldfoo=addfoo%element)
-              write(0,*) 'addfoo(i)%element was allocated. finished calling gcc_bug_workaround_allocate'
+              write(output_unit,*) 'addfoo(i)%element was allocated. finished calling gcc_bug_workaround_allocate'
             end if
         end if
-write(0,*) 'leaving gcc_bug_workaround_allocate'
+write(output_unit,*) 'leaving gcc_bug_workaround_allocate'
     end procedure gcc_bug_workaround_allocate
 
     module procedure gcc_bug_workaround_deallocate_array
@@ -847,6 +850,8 @@ write(0,*) 'leaving gcc_bug_workaround_allocate'
             end if
             deallocate(me%string)
         end if
+        if (allocated(me%int32))      deallocate(me%int32)
+        if (allocated(me%int64))      deallocate(me%int64)
         if (allocated(me%real32))     deallocate(me%real32)
         if (allocated(me%real64))     deallocate(me%real64)
         if (allocated(me%element)) then

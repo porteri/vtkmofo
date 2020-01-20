@@ -142,7 +142,7 @@ module vtk_datasets
         end subroutine abs_write
 
         module subroutine init (me, datatype, dims, origin, spacing, points, cells, cell_list, &
-            &                     x_coords, y_coords, z_coords, vertices, lines, polygons, triangles)
+            &                   x_coords, y_coords, z_coords, vertices, lines, polygons, triangles)
             implicit none
             !! initializes the dataset
             class (dataset),                     intent(out)          :: me
@@ -150,7 +150,7 @@ module vtk_datasets
             class(vtkcell),      dimension(:),   intent(in), optional :: lines
             class(vtkcell),      dimension(:),   intent(in), optional :: polygons
             class(vtkcell),      dimension(:),   intent(in), optional :: triangles
-                class(vtkcell),      dimension(:),   intent(in), optional :: cells      !! dt of same cell types
+            class(vtkcell),      dimension(:),   intent(in), optional :: cells      !! dt of same cell types
             type(vtkcell_list),  dimension(:),   intent(in), optional :: cell_list  !! dt of different cell types
             character(len=*),                    intent(in), optional :: datatype   !! type of data (floating, integer, etc.)
             integer(i4k),        dimension(3),   intent(in), optional :: dims
