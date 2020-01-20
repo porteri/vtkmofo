@@ -13,6 +13,7 @@ module xml
     public :: xml_element_dt, xml_file_dt, gcc_bug_workaround_allocate, gcc_bug_workaround_deallocate
     public :: file_format, binary, ascii, convert_format_to_string, convert_string_to_format
     public :: format_ascii, format_binary, format_append, file_format_text
+    public :: gcc_bug_workaround_deallocate_xml_file_dt
 
     enum, bind(c)
         enumerator :: ascii, binary, append
@@ -34,6 +35,16 @@ module xml
 !        final :: gcc_bug_deallocate_string_dt
     end type string_dt
 
+    type int32_dt
+        integer(i4k), dimension(:),   allocatable :: val
+        integer(i4k), dimension(:,:), allocatable :: val_2d
+    end type int32_dt
+
+    type int64_dt
+        integer(i8k), dimension(:),   allocatable :: val
+        integer(i8k), dimension(:,:), allocatable :: val_2d
+    end type int64_dt
+
     type real32_dt
         real(r4k), dimension(:),   allocatable :: val
         real(r4k), dimension(:,:), allocatable :: val_2d
@@ -52,6 +63,8 @@ module xml
         character(len=:), allocatable :: offset       !! offset for data within xml block
         character(len=:), allocatable :: additional_data !! additional data to write in header
         type(string_dt),      dimension(:), allocatable :: string  !! string data set(s) within element
+        type(int32_dt),       dimension(:), allocatable :: int32   !! string of integer 32
+        type(int64_dt),       dimension(:), allocatable :: int64   !! string of integer 64
         type(real32_dt),      dimension(:), allocatable :: real32  !! string of real64
         type(real64_dt),      dimension(:), allocatable :: real64  !! string of real64
         type(xml_element_dt), dimension(:), allocatable :: element !! element data set(s) within element

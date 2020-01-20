@@ -147,6 +147,8 @@ contains
             end if
             deallocate(me%string)
         end if
+        if (allocated(me%int32))  deallocate(me%int32)
+        if (allocated(me%int64))  deallocate(me%int64)
         if (allocated(me%real32)) deallocate(me%real32)
         if (allocated(me%real64)) deallocate(me%real64)
         if (allocated(me%element)) then
@@ -180,7 +182,7 @@ contains
         !! this adds data inside of an xml element block
         integer(i4k) :: i
         type(real32_dt) :: real32
-        type(string_dt), dimension(:), allocatable :: tmp_string_dt
+        type(string_dt), dimension(:), allocatable :: tmp_string
         type(real32_dt), dimension(:), allocatable :: tmp_real32_dt
         character(len=:), allocatable :: string
 
@@ -198,9 +200,9 @@ contains
                 allocate(me%string(0))
             end if
 
-            allocate(tmp_string_dt(1:size(me%string)+1))
-            tmp_string_dt(1:size(me%string)) = me%string
-            call move_alloc(tmp_string_dt, me%string)
+            allocate(tmp_string(1:size(me%string)+1))
+            tmp_string(1:size(me%string)) = me%string
+            call move_alloc(tmp_string, me%string)
 
             do i = 1, size(data)
                 if (i == 1) then
@@ -222,30 +224,30 @@ contains
         implicit none
         !! this adds data inside of an xml element block
         type(real64_dt) :: real64
-        type(string_dt), dimension(:), allocatable :: tmp_string_dt
+        type(string_dt), dimension(:), allocatable :: tmp_string
         type(real64_dt), dimension(:), allocatable :: tmp_real64_dt
 
-        select case (file_format)
-        case (binary)
+!        select case (file_format)
+!        case (binary)
             if (.not. allocated(me%real64)) then
                 allocate(me%real64(0))
             end if
             allocate(real64%val, source=data)
             allocate(tmp_real64_dt, source = [me%real64, real64])
             call move_alloc(tmp_real64_dt, me%real64)
-        case (ascii)
-            if (.not. allocated(me%string)) then
-                allocate(me%string(0))
-            end if
-
-            allocate(tmp_string_dt(1:size(me%string)+1))
-            tmp_string_dt(1:size(me%string)) = me%string
-            call move_alloc(tmp_string_dt, me%string)
-
-            associate (my_entry => ubound(me%string,dim=1))
-                allocate(me%string(my_entry)%text,source=convert_to_string(data))
-            end associate
-        end select
+!        case (ascii)
+!            if (.not. allocated(me%string)) then
+!                allocate(me%string(0))
+!            end if
+!
+!            allocate(tmp_string(1:size(me%string)+1))
+!            tmp_string(1:size(me%string)) = me%string
+!            call move_alloc(tmp_string, me%string)
+!
+!            associate (my_entry => ubound(me%string,dim=1))
+!                allocate(me%string(my_entry)%text,source=convert_to_string(data))
+!            end associate
+!        end select
 
     end procedure element_add_real64
 
@@ -254,46 +256,55 @@ contains
         implicit none
         !! this adds data inside of an xml element block
         type(real64_dt) :: real64
-        type(real64_dt), dimension(:), allocatable :: tmp_real64_dt
+        type(real64_dt), dimension(:), allocatable :: tmp_real64
 
         if (.not. allocated(me%real64)) then
             allocate(me%real64(0))
             allocate(me%real64(0)%val_2d,source=data)
         else
             allocate(real64%val_2d, source=data)
-            allocate(tmp_real64_dt, source = [me%real64, real64])
-            call move_alloc(tmp_real64_dt, me%real64)
+            allocate(tmp_real64, source = [me%real64, real64])
+            call move_alloc(tmp_real64, me%real64)
         end if
 
     end procedure element_add_real64_2d
 
     module procedure element_add_int32
-        use misc, only : convert_to_string
+!        use misc, only : convert_to_string
         implicit none
         !! this adds data inside of an xml element block
         integer(i4k) :: i
-        type(string_dt), dimension(:), allocatable :: tmp_string_dt
-        character(len=:), allocatable :: string
+        type(int32_dt) :: int32
+        type(int32_dt), dimension(:), allocatable :: tmp_int32
+!        type(string_dt), dimension(:), allocatable :: tmp_string
+!        character(len=:), allocatable :: string
 
-        if (.not. allocated(me%string)) then
-            allocate(me%string(0))
+        if (.not. allocated(me%int32)) then
+            allocate(me%int32(0))
         end if
+        allocate(int32%val, source=data)
+        allocate(tmp_int32, source = [me%int32, int32])
+        call move_alloc(tmp_int32, me%int32)
 
-        allocate(tmp_string_dt(1:size(me%string)+1))
-        tmp_string_dt(1:size(me%string)) = me%string
-        call move_alloc(tmp_string_dt, me%string)
+!        if (.not. allocated(me%string)) then
+!            allocate(me%string(0))
+!        end if
 
-        do i = 1, size(data)
-            if (i == 1) then
-                allocate(string, source=convert_to_string(data(i)))
-            else
-                string = string // " " // convert_to_string(data(i))
-            end if
-        end do
+!        allocate(tmp_string(1:size(me%string)+1))
+!        tmp_string(1:size(me%string)) = me%string
+!        call move_alloc(tmp_string, me%string)
 
-        associate (my_entry => ubound(me%string,dim=1))
-            allocate(me%string(my_entry)%text,source= string)
-        end associate
+!        do i = 1, size(data)
+!            if (i == 1) then
+!                allocate(string, source=convert_to_string(data(i)))
+!            else
+!                string = string // " " // convert_to_string(data(i))
+!            end if
+!        end do
+
+!        associate (my_entry => ubound(me%string,dim=1))
+!            allocate(me%string(my_entry)%text,source= string)
+!        end associate
 
     end procedure element_add_int32
 
@@ -302,28 +313,37 @@ contains
         implicit none
         !! this adds data inside of an xml element block
         integer(i4k) :: i
-        type(string_dt), dimension(:), allocatable :: tmp_string_dt
-        character(len=:), allocatable :: string
+        type(int64_dt) :: int64
+        type(int64_dt), dimension(:), allocatable :: tmp_int64
+!        type(string_dt), dimension(:), allocatable :: tmp_string
+!        character(len=:), allocatable :: string
 
-        if (.not. allocated(me%string)) then
-            allocate(me%string(0))
+        if (.not. allocated(me%int64)) then
+            allocate(me%int64(0))
         end if
+        allocate(int64%val, source=data)
+        allocate(tmp_int64, source = [me%int64, int64])
+        call move_alloc(tmp_int64, me%int64)
 
-        allocate(tmp_string_dt(1:size(me%string)+1))
-        tmp_string_dt(1:size(me%string)) = me%string
-        call move_alloc(tmp_string_dt, me%string)
-
-        do i = 1, size(data)
-            if (i == 1) then
-                allocate(string, source=convert_to_string(data(i)))
-            else
-                string = string // " " // convert_to_string(data(i))
-            end if
-        end do
-
-        associate (my_entry => ubound(me%string,dim=1))
-            allocate(me%string(my_entry)%text,source= string)
-        end associate
+!        if (.not. allocated(me%string)) then
+!            allocate(me%string(0))
+!        end if
+!
+!        allocate(tmp_string(1:size(me%string)+1))
+!        tmp_string(1:size(me%string)) = me%string
+!        call move_alloc(tmp_string, me%string)
+!
+!        do i = 1, size(data)
+!            if (i == 1) then
+!                allocate(string, source=convert_to_string(data(i)))
+!            else
+!                string = string // " " // convert_to_string(data(i))
+!            end if
+!        end do
+!
+!        associate (my_entry => ubound(me%string,dim=1))
+!            allocate(me%string(my_entry)%text,source= string)
+!        end associate
 
     end procedure element_add_int64
 
@@ -332,16 +352,16 @@ contains
         implicit none
         !! this adds data inside of an xml element block
         integer(i4k) :: i
-        type(string_dt), dimension(:), allocatable :: tmp_string_dt
+        type(string_dt), dimension(:), allocatable :: tmp_string
         character(len=:), allocatable :: string
 
         if (.not. allocated(me%string)) then
             allocate(me%string(0))
         end if
 
-        allocate(tmp_string_dt(1:size(me%string)+1))
-        tmp_string_dt(1:size(me%string)) = me%string
-        call move_alloc(tmp_string_dt, me%string)
+        allocate(tmp_string(1:size(me%string)+1))
+        tmp_string(1:size(me%string)) = me%string
+        call move_alloc(tmp_string, me%string)
 
         do i = 1, size(data)
             if (i == 1) then
@@ -361,7 +381,7 @@ contains
         implicit none
         !! this adds data inside of an xml element block
         logical :: add_quotes
-        type(string_dt), dimension(:), allocatable :: tmp_string_dt
+        type(string_dt), dimension(:), allocatable :: tmp_string
 
         if (present(quotes)) then
             add_quotes = quotes
@@ -373,9 +393,9 @@ contains
             allocate(me%string(0))
         end if
 
-        allocate(tmp_string_dt(1:size(me%string)+1))
-        tmp_string_dt(1:size(me%string)) = me%string
-        call move_alloc(tmp_string_dt, me%string)
+        allocate(tmp_string(1:size(me%string)+1))
+        tmp_string(1:size(me%string)) = me%string
+        call move_alloc(tmp_string, me%string)
 
         associate (my_entry => ubound(me%string,dim=1))
             if (add_quotes) then
@@ -450,13 +470,13 @@ contains
         !!
         !! writes the element to the file
         !!
-        integer(i4k) :: i, j
+        integer(i4k) :: i, j, k
 
         if (.not. allocated(prior_offset)) allocate(prior_offset,source='')  !! This should only happen if trying to write
                                                                              !! an element without an xml file type
 
         call me%begin(unit)
-
+write(output_unit,*) me%name
         if (allocated(me%string)) then
             do i = 1, size(me%string)
                 select case (file_format)
@@ -470,32 +490,74 @@ contains
                     write(unit) me%string(i)%text
                 end select
             end do
+        else if (allocated(me%int32)) then
+          error stop 'ok int32 found'
+            do i = 1, size(me%int32)
+                if (allocated(me%int32(i)%val)) then
+                    associate (n_vals => size(me%int32(i)%val))
+                        write(unit) (me%int32(i)%val(j),j=1,n_vals)
+                    end associate
+                end if
+                if (allocated(me%int32(i)%val_2d)) then
+                    associate (n_vals_1 => size(me%int32(i)%val_2d,dim=1), n_vals_2 => size(me%int32(i)%val_2d,dim=2))
+                        do k = 1, n_vals_2
+                            write(unit) (me%int32(i)%val_2d(j,k),j=1,n_vals_1)
+                        end do
+                    end associate
+                end if
+            end do
+            select case (file_format)
+            case (binary)
+                write(unit) new_line('a')
+            end select
+        else if (allocated(me%int64)) then
+            do i = 1, size(me%int64)
+                if (allocated(me%int64(i)%val)) then
+                    associate (n_vals => size(me%int64(i)%val))
+                        write(unit) (me%int64(i)%val(j),j=1,n_vals)
+                    end associate
+                end if
+                if (allocated(me%int64(i)%val_2d)) then
+                    associate (n_vals_1 => size(me%int64(i)%val_2d,dim=1), n_vals_2 => size(me%int64(i)%val_2d,dim=2))
+                        do k = 1, n_vals_2
+                            write(unit) (me%int64(i)%val_2d(j,k),j=1,n_vals_1)
+                        end do
+                    end associate
+                end if
+            end do
+            select case (file_format)
+            case (binary)
+                write(unit) new_line('a')
+            end select
         else if (allocated(me%real32)) then
             do i = 1, size(me%real32)
                 associate (n_vals => size(me%real32(i)%val))
                     write(unit) (me%real32(i)%val(j),j=1,n_vals)
                 end associate
             end do
-            write(unit) new_line('a')
+            select case (file_format)
+            case (binary)
+                write(unit) new_line('a')
+            end select
         else if (allocated(me%real64)) then
             do i = 1, size(me%real64)
                 associate (n_vals => size(me%real64(i)%val))
-                    do j = 1, n_vals
+!                    do j = 1, n_vals
                         select case (file_format)
                         case (ascii)
-                            write(unit) me%real64(i)%val(j)
-#ifdef INTEL_COMPILER
-                            write(unit,'(a)',advance='yes') new_line('a')
-#else
-                            write(unit,'(a)',advance='no') new_line('a')
-#endif
+                            write(unit,*) (me%real64(i)%val(j),j=1,n_vals)
                         case (binary)
-                            write(unit) me%real64(i)%val(j)
+                            write(unit) (me%real64(i)%val(j),j=1,n_vals)
                         end select
-                    end do
+!                    end do
                 end associate
             end do
-            write(unit) new_line('a')
+            select case (file_format)
+            case (binary)
+                write(unit) new_line('a')
+            end select
+        else
+            write(output_unit,*) 'error: nothing is allocated in element_write'
         end if
 
         if (allocated(me%element)) then

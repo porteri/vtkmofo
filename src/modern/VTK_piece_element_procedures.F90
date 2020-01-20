@@ -124,6 +124,42 @@ contains
         if (parallel_container_file) then
             call me%update_name('P' // me%get_name())
         end if
+        if (allocated(me%connectivity)) then
+            if (parallel_container_file) then
+                call me%connectivity%update_name('P' // me%connectivity%get_name())
+            end if
+            call me%add(me%connectivity)
+        end if
+        if (allocated(me%offsets)) then
+            if (parallel_container_file) then
+                call me%offsets%update_name('P' // me%offsets%get_name())
+            end if
+            call me%add(me%offsets)
+        end if
+        if (allocated(me%types)) then
+            if (parallel_container_file) then
+                call me%types%update_name('P' // me%types%get_name())
+            end if
+            call me%add(me%types)
+        end if
+        if (allocated(me%dataarray_x)) then
+            if (parallel_container_file) then
+                call me%dataarray_x%update_name('P' // me%dataarray_x%get_name())
+            end if
+            call me%add(me%dataarray_x)
+        end if
+        if (allocated(me%dataarray_y)) then
+            if (parallel_container_file) then
+                call me%dataarray_y%update_name('P' // me%dataarray_y%get_name())
+            end if
+            call me%add(me%dataarray_y)
+        end if
+        if (allocated(me%dataarray_z)) then
+            if (parallel_container_file) then
+                call me%dataarray_z%update_name('P' // me%dataarray_z%get_name())
+            end if
+            call me%add(me%dataarray_z)
+        end if
         if (allocated(me%dataarray)) then
             do i = 1, size(me%dataarray)
                 if (parallel_container_file) then
@@ -150,6 +186,35 @@ contains
         if (allocated(foo%tensors)) deallocate(foo%tensors)
         if (allocated(foo%tcoords)) deallocate(foo%tcoords)
 
+write(output_unit,*) 'cells_deallocate 1'
+        if (allocated(foo%connectivity)) then
+            call foo%connectivity%dataarray_deallocate()
+            deallocate(foo%connectivity)
+        end if
+write(output_unit,*) 'cells_deallocate 2'
+        if (allocated(foo%offsets)) then
+            call foo%offsets%dataarray_deallocate()
+            deallocate(foo%offsets)
+        end if
+write(output_unit,*) 'cells_deallocate 3'
+        if (allocated(foo%types)) then
+            call foo%types%dataarray_deallocate()
+            deallocate(foo%types)
+        end if
+write(output_unit,*) 'cells_deallocate 4'
+        if (allocated(foo%dataarray_x)) then
+            call foo%dataarray_x%dataarray_deallocate()
+            deallocate(foo%dataarray_x)
+        end if
+        if (allocated(foo%dataarray_y)) then
+            call foo%dataarray_y%dataarray_deallocate()
+            deallocate(foo%dataarray_y)
+        end if
+        if (allocated(foo%dataarray_z)) then
+            call foo%dataarray_z%dataarray_deallocate()
+            deallocate(foo%dataarray_z)
+        end if
+write(output_unit,*) 'cells_deallocate 5'
         if (allocated(foo%dataarray)) then
             do i = lbound(foo%dataarray,dim=1),ubound(foo%dataarray,dim=1)
                 call foo%dataarray(i)%dataarray_deallocate()
@@ -248,74 +313,6 @@ contains
 
     end procedure cells_initialize
 
-    module procedure cells_finalize
-        use vtk_vars, only : parallel_container_file
-        implicit none
-        !! author: Ian Porter
-        !! date: 01/18/2020
-        !!
-!        integer :: i
-
-        if (parallel_container_file) then
-            call me%update_name('P' // me%get_name())
-        end if
-        if (allocated(me%connectivity)) then
-            if (parallel_container_file) then
-                call me%connectivity%update_name('P' // me%connectivity%get_name())
-            end if
-            call me%add(me%connectivity)
-        end if
-        if (allocated(me%offsets)) then
-            if (parallel_container_file) then
-                call me%offsets%update_name('P' // me%offsets%get_name())
-            end if
-            call me%add(me%offsets)
-        end if
-        if (allocated(me%types)) then
-            if (parallel_container_file) then
-                call me%types%update_name('P' // me%types%get_name())
-            end if
-            call me%add(me%types)
-        end if
-!        if (allocated(me%dataarray)) then
-!            do i = 1, size(me%dataarray)
-!                if (parallel_container_file) then
-!                    call me%dataarray(i)%update_name('P' // me%dataarray(i)%get_name())
-!                end if
-!                call me%add(me%dataarray(i))
-!            end do
-!        end if
-
-    end procedure cells_finalize
-
-    module procedure cells_deallocate
-        implicit none
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
-        !!
-write(output_unit,*) 'cells_deallocate 1'
-        if (allocated(foo%connectivity)) then
-            call foo%connectivity%dataarray_deallocate()
-            deallocate(foo%connectivity)
-        end if
-write(output_unit,*) 'cells_deallocate 2'
-        if (allocated(foo%offsets)) then
-            call foo%offsets%dataarray_deallocate()
-            deallocate(foo%offsets)
-        end if
-write(output_unit,*) 'cells_deallocate 3'
-        if (allocated(foo%types)) then
-            call foo%types%dataarray_deallocate()
-            deallocate(foo%types)
-        end if
-write(output_unit,*) 'cells_deallocate 4'
-        !call foo%deallocate()
-        call gcc_bug_workaround_deallocate(foo)
-write(output_unit,*) 'cells_deallocate 5'
-    end procedure cells_deallocate
-
     module procedure coordinates_initialize
         use vtk_datasets, only : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         use misc,         only : convert_to_string
@@ -339,10 +336,13 @@ write(output_unit,*) 'cells_deallocate 5'
         select type (geometry)
         class is (rectlnr_grid)
             !! for now, don't allow "pieces" but instead force the piece to be the whole extent
+            allocate(me%dataarray_x)
             call me%dataarray_x%initialize(type=type_float64,format=file_format_text,range_min=range(1,1),range_max=range(2,1))
             call me%dataarray_x%add(geometry%get_coord(1))
+            allocate(me%dataarray_y)
             call me%dataarray_y%initialize(type=type_float64,format=file_format_text,range_min=range(1,2),range_max=range(2,2))
             call me%dataarray_y%add(geometry%get_coord(2))
+            allocate(me%dataarray_z)
             call me%dataarray_z%initialize(type=type_float64,format=file_format_text,range_min=range(1,3),range_max=range(2,3))
             call me%dataarray_z%add(geometry%get_coord(3))
 
@@ -351,63 +351,6 @@ write(output_unit,*) 'cells_deallocate 5'
         end select
 
     end procedure coordinates_initialize
-
-    module procedure coordinates_finalize
-        use vtk_vars, only : parallel_container_file
-        implicit none
-        !! author: Ian Porter
-        !! date: 01/18/2020
-        !!
-!        integer :: i
-
-        if (parallel_container_file) then
-            call me%update_name('P' // me%get_name())
-        end if
-!        if (allocated(me%dataarray_x)) then
-            if (parallel_container_file) then
-                call me%dataarray_x%update_name('P' // me%dataarray_x%get_name())
-            end if
-            call me%add(me%dataarray_x)
-!        end if
-!        if (allocated(me%dataarray_y)) then
-            if (parallel_container_file) then
-                call me%dataarray_y%update_name('P' // me%dataarray_y%get_name())
-            end if
-            call me%add(me%dataarray_y)
-!        end if
-!        if (allocated(me%dataarray_z)) then
-            if (parallel_container_file) then
-                call me%dataarray_z%update_name('P' // me%dataarray_z%get_name())
-            end if
-            call me%add(me%dataarray_z)
-!        end if
-!        if (allocated(me%dataarray)) then
-!            do i = 1, size(me%dataarray)
-!                if (parallel_container_file) then
-!                    call me%dataarray(i)%update_name('P' // me%dataarray(i)%get_name())
-!                end if
-!                call me%add(me%dataarray(i))
-!            end do
-!        end if
-
-    end procedure coordinates_finalize
-
-    module procedure coordinates_deallocate
-        implicit none
-        !! author: Ian Porter
-        !! date: 06/07/2019
-        !!
-        !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
-        !!
-
-        call foo%dataarray_x%dataarray_deallocate()
-        call foo%dataarray_y%dataarray_deallocate()
-        call foo%dataarray_z%dataarray_deallocate()
-
-        !call foo%deallocate()
-        call gcc_bug_workaround_deallocate(foo)
-
-    end procedure coordinates_deallocate
 
     module procedure piece_set_grid
         use vtk_datasets, only : dataset, struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
@@ -550,11 +493,11 @@ write(output_unit,*) 'piece_deallocate 1'
 write(output_unit,*) 'piece_deallocate 2'
         if (allocated(foo%celldata))    call foo%celldata%data_deallocate()
 write(output_unit,*) 'piece_deallocate 3'
-        if (allocated(foo%coordinates)) call foo%coordinates%coordinates_deallocate()
+        if (allocated(foo%coordinates)) call foo%coordinates%data_deallocate()
 write(output_unit,*) 'piece_deallocate 4'
         if (allocated(foo%points))      call foo%points%data_deallocate()
 write(output_unit,*) 'piece_deallocate 5'
-        if (allocated(foo%cells))       call foo%cells%cells_deallocate()
+        if (allocated(foo%cells))       call foo%cells%data_deallocate()
 write(output_unit,*) 'piece_deallocate 6'
         if (allocated(foo%source))      deallocate(foo%source)
 write(output_unit,*) 'piece_deallocate 7'

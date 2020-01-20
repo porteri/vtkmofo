@@ -43,22 +43,19 @@ write(0,*) 'parallel_fix 2'
             if (allocated(me%piece%coordinates)) then
                 call me%piece%coordinates%clear_elements()
                 me%coordinates = me%piece%coordinates
-!                call me%coordinates%update_names('P' // me%coordinates%get_name())
-                call me%piece%coordinates%coordinates_deallocate()
+                call me%piece%coordinates%data_deallocate()
                 deallocate(me%piece%coordinates)
             end if
             if (allocated(me%piece%points)) then
                 call me%piece%points%clear_elements()
                 me%points = me%piece%points
-                !call me%points%update_names('P' // me%points%get_name())
                 call me%piece%points%data_deallocate()
                 deallocate(me%piece%points)
             end if
             if (allocated(me%piece%cells)) then
                 call me%piece%cells%clear_elements()
                 me%cells = me%piece%cells
-!                call me%cells%update_names('P' // me%cells%get_name())
-                call me%piece%cells%cells_deallocate()
+                call me%piece%cells%data_deallocate()
                 deallocate(me%piece%cells)
             end if
             if (present(pieces)) then
@@ -81,7 +78,7 @@ write(0,*) 'parallel_fix 6'
 write(0,*) 'in parallel_fix. before finalize'
         call me%finalize()
 write(0,*) 'in parallel_fix. after finalize, before clear_data'
-        call me%clear_data()             !! Clear actual stored data
+!        call me%clear_data()             !! Clear actual stored data
 write(0,*) 'in parallel_fix. after clear_data'
     end procedure parallel_fix
 
@@ -96,6 +93,7 @@ write(0,*) 'in parallel_fix. after clear_data'
         !!
         integer :: i
         type(vtk_element_dt) :: grid
+
 write(0,*) 'in vtk_xml_grid_procedures: finalize'
         if (allocated(me%wholeextent)) then
             if (parallel_container_file) then
@@ -239,8 +237,6 @@ write(output_unit,*) 'vtk_dataset_deallocate 7'
         class default
             error stop 'Error: bad geometry type for imagedata. terminated in imagedata_set_grid'
         end select
-
-        !        error stop 'imagedata_set_grid is not yet implemented. need to set origin, spacing'
 
         !! for now, don't allow "pieces" but instead force the piece to be the whole extent
         if (.not. allocated(me%piece)) allocate(me%piece)

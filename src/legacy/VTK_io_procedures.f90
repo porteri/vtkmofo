@@ -512,6 +512,10 @@ write(output_unit,*) '8'
         call parallel_file%me_deallocate()                      !! Explicitly de-allocate data b/c of gfotran bug
 write(output_unit,*) '9'
         deallocate(parallel_file) !! Deallocate the parallel file
+write(output_unit,*) '9.1'
+        call serial_file%me_deallocate()
+write(output_unit,*) '9.2'
+        deallocate(serial_file)
 write(output_unit,*) '10'
         if (allocated(vtk_dataset)) then
 write(output_unit,*) '10.5'
