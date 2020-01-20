@@ -1,7 +1,8 @@
 submodule (vtk_piece_element) vtk_piece_element_procedures
     use precision, only : i4k, r8k
     use vtk_formats_types, only : type_float64
-    use xml, only : file_format_text
+    use xml, only : file_format_text, gcc_bug_workaround_deallocate
+    use iso_fortran_env, only : output_unit
     implicit none
     !! author: Ian Porter
     !! date: 06/07/2019
@@ -156,7 +157,8 @@ contains
             deallocate(foo%dataarray)
         end if
 
-        call foo%deallocate()
+        !call foo%deallocate()
+        call gcc_bug_workaround_deallocate(foo)
 
     end procedure data_deallocate
 
@@ -221,11 +223,13 @@ contains
         select type (geometry)
         class is (unstruct_grid)
             !! set up cell connectivity
+            allocate(me%connectivity)
             call me%connectivity%initialize(name='connectivity',type=type_float64,format=file_format_text)
             do i = 1, geometry%n_cells
                 call me%connectivity%add(geometry%get_connectivity(i)) !! new procedure under works to append an array of reals
             end do
             !! set up cell offsets
+            allocate(me%offsets)
             call me%offsets%initialize(name='offsets',type=type_float64,format=file_format_text)
             cnt = 0
             do i = 1, geometry%n_cells
@@ -233,6 +237,7 @@ contains
                 call me%offsets%add([cnt]) !! new procedure under works to append an array of reals
             end do
             !! set up cell types
+            allocate(me%types)
             call me%types%initialize(name='types',type=type_float64,format=file_format_text)
             do i = 1, geometry%n_cells
                 call me%types%add([geometry%get_type(i)]) !! new procedure under works to append an array of reals
@@ -254,24 +259,24 @@ contains
         if (parallel_container_file) then
             call me%update_name('P' // me%get_name())
         end if
-!        if (allocated(me%connectivity)) then
+        if (allocated(me%connectivity)) then
             if (parallel_container_file) then
                 call me%connectivity%update_name('P' // me%connectivity%get_name())
             end if
             call me%add(me%connectivity)
-!        end if
-!        if (allocated(me%offsets)) then
+        end if
+        if (allocated(me%offsets)) then
             if (parallel_container_file) then
                 call me%offsets%update_name('P' // me%offsets%get_name())
             end if
             call me%add(me%offsets)
-!        end if
-!        if (allocated(me%types)) then
+        end if
+        if (allocated(me%types)) then
             if (parallel_container_file) then
                 call me%types%update_name('P' // me%types%get_name())
             end if
             call me%add(me%types)
-!        end if
+        end if
 !        if (allocated(me%dataarray)) then
 !            do i = 1, size(me%dataarray)
 !                if (parallel_container_file) then
@@ -290,13 +295,25 @@ contains
         !!
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         !!
-
-        call foo%connectivity%dataarray_deallocate()
-        call foo%offsets%dataarray_deallocate()
-        call foo%types%dataarray_deallocate()
-
-        call foo%deallocate()
-
+write(output_unit,*) 'cells_deallocate 1'
+        if (allocated(foo%connectivity)) then
+            call foo%connectivity%dataarray_deallocate()
+            deallocate(foo%connectivity)
+        end if
+write(output_unit,*) 'cells_deallocate 2'
+        if (allocated(foo%offsets)) then
+            call foo%offsets%dataarray_deallocate()
+            deallocate(foo%offsets)
+        end if
+write(output_unit,*) 'cells_deallocate 3'
+        if (allocated(foo%types)) then
+            call foo%types%dataarray_deallocate()
+            deallocate(foo%types)
+        end if
+write(output_unit,*) 'cells_deallocate 4'
+        !call foo%deallocate()
+        call gcc_bug_workaround_deallocate(foo)
+write(output_unit,*) 'cells_deallocate 5'
     end procedure cells_deallocate
 
     module procedure coordinates_initialize
@@ -387,7 +404,8 @@ contains
         call foo%dataarray_y%dataarray_deallocate()
         call foo%dataarray_z%dataarray_deallocate()
 
-        call foo%deallocate()
+        !call foo%deallocate()
+        call gcc_bug_workaround_deallocate(foo)
 
     end procedure coordinates_deallocate
 
@@ -521,7 +539,6 @@ contains
     end procedure piece_finalize
 
     module procedure piece_deallocate
-        use iso_fortran_env, only : output_unit
         implicit none
         !! author: Ian Porter
         !! date: 06/07/2019
@@ -541,7 +558,8 @@ write(output_unit,*) 'piece_deallocate 5'
 write(output_unit,*) 'piece_deallocate 6'
         if (allocated(foo%source))      deallocate(foo%source)
 write(output_unit,*) 'piece_deallocate 7'
-        call foo%me_deallocate()
+        !call foo%me_deallocate()
+        call gcc_bug_workaround_deallocate(foo)
 write(output_unit,*) 'piece_deallocate 8'
     end procedure piece_deallocate
 

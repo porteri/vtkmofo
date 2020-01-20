@@ -139,7 +139,14 @@ contains
 
         integer(i4k) :: i
 
-        if (allocated(me%string)) deallocate(me%string)
+        if (allocated(me%string)) then
+            if (size(me%string) > 0) then
+                do i = lbound(me%string,dim=1), ubound(me%string,dim=1)
+                    call gcc_bug_deallocate_string_dt(me%string(i))
+                end do
+            end if
+            deallocate(me%string)
+        end if
         if (allocated(me%real32)) deallocate(me%real32)
         if (allocated(me%real64)) deallocate(me%real64)
         if (allocated(me%element)) then
@@ -156,10 +163,13 @@ contains
         integer(i4k) :: i
 
         if (allocated(me%element)) then
-            do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
-                call me%element(i)%deallocate()
-            end do
-            deallocate(me%element)
+            if (size(me%element) > 0) then
+                do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
+                    call gcc_bug_workaround_deallocate(me%element(i))
+                    !call me%element(i)%deallocate()
+                end do
+                deallocate(me%element)
+          end if
         end if
 
     end procedure clear_elements
@@ -746,10 +756,12 @@ write(0,*) 'leaving gcc_bug_workaround_allocate'
         integer(i4k) :: i
 
         if (allocated(me)) then
-            do i = lbound(me,dim=1), ubound(me,dim=1)
-                call gcc_bug_workaround_deallocate(me(i))
-            end do
-            if (allocated(me)) deallocate(me)
+            if (size(me) > 0) then
+                do i = lbound(me,dim=1), ubound(me,dim=1)
+                    call gcc_bug_workaround_deallocate(me(i))
+                end do
+                deallocate(me)
+            end if
         end if
 
     end procedure gcc_bug_workaround_deallocate_array
@@ -759,22 +771,28 @@ write(0,*) 'leaving gcc_bug_workaround_allocate'
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         integer(i4k) :: i
 
-        if (allocated(me%name))            deallocate(me%name)
+        if (allocated(me%name)) then
+            write(output_unit,*) me%name
+            deallocate(me%name)
+        end if
         if (allocated(me%offset))          deallocate(me%offset)
         if (allocated(me%additional_data)) deallocate(me%additional_data)
         if (allocated(me%string)) then
-            do i = lbound(me%string,dim=1), ubound(me%string,dim=1)
-                call gcc_bug_deallocate_string_dt(me%string(i))
-                !if (allocated(me%string(i))) deallocate(me%string(i))
-            end do
+            if (size(me%string) > 0) then
+                do i = lbound(me%string,dim=1), ubound(me%string,dim=1)
+                    call gcc_bug_deallocate_string_dt(me%string(i))
+                end do
+            end if
             deallocate(me%string)
         end if
         if (allocated(me%real32))     deallocate(me%real32)
         if (allocated(me%real64))     deallocate(me%real64)
         if (allocated(me%element)) then
-            do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
-                call gcc_bug_workaround_deallocate (me%element(i))
-            end do
+            if (size(me%element) > 0) then
+                do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
+                    call gcc_bug_workaround_deallocate (me%element(i))
+                end do
+            end if
             deallocate(me%element)
         end if
 
