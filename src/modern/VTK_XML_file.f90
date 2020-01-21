@@ -9,7 +9,7 @@ module vtk_serial_file
     !!
 
     private
-    public :: serial_file, parallel_file, vtk_dataset_dt
+    public :: vtk_file_dt, serial_file, vtk_dataset_dt !parallel_file
 
     type, extends(xml_file_dt) :: vtk_file_dt
         !! vtk file type derived type
@@ -19,8 +19,8 @@ module vtk_serial_file
         generic, public :: me_deallocate => deallocate_vtk_file_dt
     end type vtk_file_dt
 
+!    type(vtk_file_dt), allocatable :: parallel_file  !! parallel vtk file
     type(vtk_file_dt), allocatable :: serial_file    !! serial vtk file
-    type(vtk_file_dt), allocatable :: parallel_file  !! parallel vtk file
 
     interface
 

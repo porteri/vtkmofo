@@ -458,7 +458,8 @@ contains
     end procedure vtk_parallel_full_write
 
     module procedure vtk_parallel_container_finalize
-        use vtk_serial_file,   only : parallel_file, serial_file
+        use vtk_serial_file,   only : serial_file
+        use vtk_parallel_file, only : parallel_file
         use vtk_vars,          only : parallel_container_file
         use vtk_piece_element, only : piece_dt
         implicit none

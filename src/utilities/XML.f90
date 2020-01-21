@@ -63,10 +63,10 @@ module xml
         character(len=:), allocatable :: offset       !! offset for data within xml block
         character(len=:), allocatable :: additional_data !! additional data to write in header
         type(string_dt),      dimension(:), allocatable :: string  !! string data set(s) within element
-        type(int32_dt),       dimension(:), allocatable :: int32   !! string of integer 32
-        type(int64_dt),       dimension(:), allocatable :: int64   !! string of integer 64
-        type(real32_dt),      dimension(:), allocatable :: real32  !! string of real64
-        type(real64_dt),      dimension(:), allocatable :: real64  !! string of real64
+        type(int32_dt),       dimension(:), allocatable :: int32   !! array of integer 32
+        type(int64_dt),       dimension(:), allocatable :: int64   !! array of integer 64
+        type(real32_dt),      dimension(:), allocatable :: real32  !! array of real32
+        type(real64_dt),      dimension(:), allocatable :: real64  !! array of real64
         type(xml_element_dt), dimension(:), allocatable :: element !! element data set(s) within element
     contains
         procedure, public  :: setup => element_setup   !! set up element block
@@ -182,7 +182,7 @@ module xml
             class(xml_element_dt), intent(inout) :: me !! xml element derived type
         end subroutine clear_data
 
-        recursive module subroutine clear_elements (me)
+        module subroutine clear_elements (me)
             implicit none
             !! This clears the child elements
             class(xml_element_dt), intent(inout) :: me !! xml element derived type
@@ -345,23 +345,23 @@ module xml
             type(xml_element_dt),               intent(in), optional       :: addfoo  !! new dt to add to array
         end subroutine gcc_bug_workaround_allocate
 
-        recursive module subroutine gcc_bug_workaround_deallocate_array (me)
+        module subroutine gcc_bug_workaround_deallocate_array (me)
+            implicit none
+            !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
+            class(xml_element_dt), dimension(:), intent(inout), allocatable :: me
+        end subroutine gcc_bug_workaround_deallocate_array
+
+        module subroutine gcc_bug_workaround_deallocate_array_type (me)
             implicit none
             !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
             type(xml_element_dt), dimension(:), intent(inout), allocatable :: me
-        end subroutine gcc_bug_workaround_deallocate_array
+        end subroutine gcc_bug_workaround_deallocate_array_type
 
         recursive module subroutine gcc_bug_workaround_deallocate_single (me)
             implicit none
             !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
             class(xml_element_dt), intent(inout) :: me
         end subroutine gcc_bug_workaround_deallocate_single
-
-        module subroutine gcc_bug_workaround_deallocate_single_final (me)
-            implicit none
-            !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
-            type(xml_element_dt), intent(inout) :: me
-        end subroutine gcc_bug_workaround_deallocate_single_final
 
         recursive module subroutine gcc_bug_deallocate_string_dt (me)
             implicit none

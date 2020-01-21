@@ -182,6 +182,7 @@ contains
         !! explicitly deallocate a data_dt
         !!
         integer :: i
+write(output_unit,*) 'start of data_deallocate. name: ',foo%get_name()
 
         if (allocated(foo%scalars)) deallocate(foo%scalars)
         if (allocated(foo%vectors)) deallocate(foo%vectors)
@@ -189,45 +190,56 @@ contains
         if (allocated(foo%tensors)) deallocate(foo%tensors)
         if (allocated(foo%tcoords)) deallocate(foo%tcoords)
 
-write(output_unit,*) 'cells_deallocate 1'
         if (allocated(foo%connectivity)) then
+write(output_unit,*) 'deallocating connectivity'
+            call foo%connectivity%clear_elements()
             call foo%connectivity%dataarray_deallocate()
             deallocate(foo%connectivity)
         end if
-write(output_unit,*) 'cells_deallocate 2'
         if (allocated(foo%offsets)) then
+write(output_unit,*) 'deallocating offsets'
+            call foo%offsets%clear_elements()
             call foo%offsets%dataarray_deallocate()
             deallocate(foo%offsets)
         end if
-write(output_unit,*) 'cells_deallocate 3'
         if (allocated(foo%types)) then
+write(output_unit,*) 'deallocating types'
+            call foo%types%clear_elements()
             call foo%types%dataarray_deallocate()
             deallocate(foo%types)
         end if
-write(output_unit,*) 'cells_deallocate 4'
         if (allocated(foo%dataarray_x)) then
+write(output_unit,*) 'deallocating dataarrary-x'
+            call foo%dataarray_x%clear_elements()
             call foo%dataarray_x%dataarray_deallocate()
             deallocate(foo%dataarray_x)
         end if
         if (allocated(foo%dataarray_y)) then
+write(output_unit,*) 'deallocating dataarrary-y'
+            call foo%dataarray_y%clear_elements()
             call foo%dataarray_y%dataarray_deallocate()
             deallocate(foo%dataarray_y)
         end if
         if (allocated(foo%dataarray_z)) then
+write(output_unit,*) 'deallocating dataarrary-z'
+            call foo%dataarray_z%clear_elements()
             call foo%dataarray_z%dataarray_deallocate()
             deallocate(foo%dataarray_z)
         end if
-write(output_unit,*) 'cells_deallocate 5'
         if (allocated(foo%dataarray)) then
+write(output_unit,*) 'deallocating array of dataarrarys'
             do i = lbound(foo%dataarray,dim=1),ubound(foo%dataarray,dim=1)
+write(output_unit,*) 'deallocating array of dataarrarys, i: ',i
+                call foo%dataarray(i)%clear_elements()
                 call foo%dataarray(i)%dataarray_deallocate()
             end do
-            deallocate(foo%dataarray)
+            if (allocated(foo%dataarray)) deallocate(foo%dataarray)
         end if
-
+write(output_unit,*) 'final deallocating step. before gcc_bug_workaround_deallocate'
+        call foo%clear_elements()
         !call foo%deallocate()
         call gcc_bug_workaround_deallocate(foo)
-
+write(output_unit,*) 'at end of data_deallocate'
     end procedure data_deallocate
 
     module procedure points_initialize
