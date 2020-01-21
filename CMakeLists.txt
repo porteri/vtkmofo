@@ -90,6 +90,7 @@ set(vtkmofo_modern
   modern/VTK_formats_types.f90
   modern/VTK_piece_element.f90
   modern/VTK_XML_file.f90
+  modern/VTK_parallel_file.f90
   modern/VTK_XML_Grid.f90
   )
 

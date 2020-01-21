@@ -25,7 +25,6 @@ module vtk_dataarray_element
         procedure, non_overridable :: dataarray_setup
         procedure, non_overridable :: dataarray_initialize
         generic, public :: initialize => dataarray_initialize
-!        procedure :: dataarray_allocate
         procedure :: dataarray_deallocate
     end type dataarray_dt
 
