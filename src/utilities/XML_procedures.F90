@@ -6,7 +6,7 @@ submodule (xml) xml_procedures
     !! this implements the simple xml format writer
     !!
     integer, parameter :: def_offset = 4          !! default # of leading spaces
-    character(len=:), allocatable :: prior_offset !! number of leading spaces for prior xml block
+    integer :: prior_offset = -1                  !! number of leading spaces for prior xml block
     character(len=*), parameter :: version = '<?xml version="1.0" encoding="utf-8"?>'
     type(xml_element_dt), dimension(:), allocatable, save :: gcc_bug_tmp_element_dt
 
@@ -38,36 +38,34 @@ contains
 
         do i = 0, my_offset
             if (i == 0) then
-                allocate(me%offset,source='')
+                me%offset = 0
             else
-                me%offset = me%offset // ' '
+                me%offset = me%offset + 1
             end if
         end do
-
-        if (.not. allocated(me%offset)) then
-            allocate(me%offset,source='')
-        end if
 
     end procedure element_setup
 
     module procedure element_begin
         implicit none
         !! this begins an xml element block
-        character(len=:), allocatable :: tmp_offset
+        character(len=:), allocatable :: fmt
+
+        fmt = get_offset_format(prior_offset)
 
         select case (file_format)
         case (ascii)
 #ifdef INTEL_COMPILER
             if (allocated(me%additional_data)) then
-                write(unit,'(a)',advance='yes') prior_offset // '<' // me%name // me%additional_data // '>'
+                write(unit,fmt,advance='yes') '<' // me%name // me%additional_data // '>'
             else
-                write(unit,'(a)',advance='yes') prior_offset // '<' // me%name // '>'
+                write(unit,fmt,advance='yes') '<' // me%name // '>'
             end if
 #else
             if (allocated(me%additional_data)) then
-                write(unit,'(a)',advance='no') prior_offset // '<' // me%name // me%additional_data // '>' // new_line('a')
+                write(unit,fmt,advance='no') '<' // me%name // me%additional_data // '>' // new_line('a')
             else
-                write(unit,'(a)',advance='no') prior_offset // '<' // me%name // '>' // new_line('a')
+                write(unit,fmt,advance='no') '<' // me%name // '>' // new_line('a')
             end if
 #endif
         case (binary)
@@ -78,8 +76,7 @@ contains
             end if
         end select
 
-        allocate(tmp_offset,source=prior_offset // me%offset)   !! set the new offset length
-        call move_alloc(tmp_offset,prior_offset)
+        prior_offset = prior_offset + me%offset   !! set the new offset length
 
     end procedure element_begin
 
@@ -410,19 +407,18 @@ write(output_unit,*) 'element_add_element 4'
     module procedure element_end
         implicit none
         !! this ends an xml element block
-        character(len=:), allocatable :: tmp_offset
+        character(len=:), allocatable :: fmt
 
-        associate (new_len => len(prior_offset) - len(me%offset))
-            allocate(tmp_offset,source=prior_offset(1:new_len))
-            call move_alloc(tmp_offset,prior_offset) !! reset the offset length
-        end associate
+        prior_offset = prior_offset - me%offset !! reset the offset length
+
+        fmt = get_offset_format(prior_offset)
 
         select case (file_format)
         case (ascii)
 #ifdef INTEL_COMPILER
-            write(unit,'(a)',advance='yes') prior_offset // '</' // me%name // '>'
+            write(unit,fmt,advance='yes') '</' // me%name // '>'
 #else
-            write(unit,'(a)',advance='no') prior_offset // '</' // me%name // '>' // new_line('a')
+            write(unit,fmt,advance='no') '</' // me%name // '>' // new_line('a')
 #endif
         case (binary)
             write(unit) '</' // me%name // '>' // new_line('a')
@@ -438,9 +434,11 @@ write(output_unit,*) 'element_add_element 4'
         !! writes the element to the file
         !!
         integer(i4k) :: i, j, k
+        character(len=:), allocatable :: fmt
 
-        if (.not. allocated(prior_offset)) allocate(prior_offset,source='')  !! This should only happen if trying to write
-                                                                             !! an element without an xml file type
+        if (prior_offset == -1) prior_offset = 0  !! This should only happen if trying to write
+                                                  !! an element without an xml file type
+        fmt = get_offset_format(prior_offset)
 
         call me%begin(unit)
 write(output_unit,*) me%name
@@ -449,9 +447,9 @@ write(output_unit,*) me%name
                 select case (file_format)
                 case (ascii)
 #ifdef INTEL_COMPILER
-                    write(unit,'(a)',advance='yes') prior_offset // me%string(i)%text
+                    write(unit,fmt,advance='yes') me%string(i)%text
 #else
-                    write(unit,'(a)',advance='no') prior_offset // me%string(i)%text
+                    write(unit,fmt,advance='no') me%string(i)%text
 #endif
                 case (binary)
                     write(unit) me%string(i)%text
@@ -600,7 +598,7 @@ write(output_unit,*) me%name
         allocate(me%access, source='stream')  !! ignore the user-defined access, even if present
         allocate(me%encoding, source='utf-8') !! ignore the user-defined encoding, even if present
 
-        if (.not. allocated(prior_offset)) allocate(prior_offset,source='')
+        if (prior_offset == -1) prior_offset = 0
 
     end procedure xml_file_setup
 
@@ -622,6 +620,9 @@ write(output_unit,*) me%name
         !!
         !! begins the writing of the xml file
         !!
+        character(len=:), allocatable :: fmt
+
+        fmt = get_offset_format(prior_offset)
 
         if (.not. allocated(me%filename)) then
             write(output_unit,*) 'warning: file name has not yet been set in xml_begin'
@@ -633,9 +634,9 @@ write(output_unit,*) me%name
         select case (file_format)
         case (ascii)
 #ifdef INTEL_COMPILER
-            write(me%unit,'(a)',advance='yes') version
+            write(me%unit,fmt,advance='yes') version
 #else
-            write(me%unit,'(a)',advance='no') version // new_line('a')
+            write(me%unit,fmt,advance='no') version // new_line('a')
 #endif
         case (binary)
             write(me%unit) version // new_line('a')
@@ -735,7 +736,7 @@ write(output_unit,*) 'i: ',i
 write(output_unit,*) 'oldfoo(i)%name: ',oldfoo(i)%name
 write(output_unit,*) 'oldfoo(i)%unit: ',oldfoo(i)%unit
                 me(i)%unit = oldfoo(i)%unit
-                if (allocated(oldfoo(i)%offset)) allocate(me(i)%offset, source=oldfoo(i)%offset)
+                me(i)%offset = oldfoo(i)%offset
                 if (allocated(oldfoo(i)%additional_data)) &
                     &  allocate(me(i)%additional_data, source=oldfoo(i)%additional_data)
                 if (allocated(oldfoo(i)%int32))  allocate(me(i)%int32,  source=oldfoo(i)%int32)
@@ -760,7 +761,7 @@ write(output_unit,*) 'addfoo%name: ',addfoo%name
             if (allocated(addfoo%name)) allocate(me(i)%name, source=addfoo%name)
 write(output_unit,*) 'addfoo%unit: ',addfoo%unit
             me(i)%unit = addfoo%unit
-            if (allocated(addfoo%offset)) allocate(me(i)%offset, source=addfoo%offset)
+            me(i)%offset = addfoo%offset
             if (allocated(addfoo%additional_data)) &
                 &  allocate(me(i)%additional_data, source=addfoo%additional_data)
             if (allocated(addfoo%int32))  allocate(me(i)%int32,  source=addfoo%int32)
@@ -819,10 +820,7 @@ write(output_unit,*) 'me%name: ',me%name
             deallocate(me%name)
         end if
         me%unit = output_unit
-        if (allocated(me%offset)) then
-write(output_unit,*) 'me%offset: ',me%offset
-             deallocate(me%offset)
-        end if
+        me%offset = 0
         if (allocated(me%additional_data)) then
 write(output_unit,*) 'me%additional_data: ',me%additional_data
             deallocate(me%additional_data)
@@ -913,5 +911,25 @@ write(output_unit,*) 'me%element is allocated. size: ',size(me%element)
         end select
 
     end procedure convert_string_to_format
+
+    function get_offset_format (offset) result (fmt)
+        implicit none
+        !! Ian Porter
+        !! Takes an integer string for offset spacing and converts it to a proper format statement
+        integer(i4k), intent(in) :: offset
+        character(len=:), allocatable :: fmt
+        character(len=20) :: string
+
+        select case (offset)
+        case (:-1)
+            error stop 'Error in get_offset_format. spacing is < 0'
+        case (0)
+            fmt = '(a)'
+        case (1:)
+            write(string,'("(",I0,"x,a)")') prior_offset+1
+            fmt = trim(adjustl(string))
+        end select
+
+    end function get_offset_format
 
 end submodule xml_procedures
