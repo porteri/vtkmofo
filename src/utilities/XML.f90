@@ -58,9 +58,9 @@ module xml
     type xml_element_dt
         !! xml derived type
         private
-        character(len=:), allocatable :: name         !! name of the xml block
-        integer(i4k) :: unit = output_unit            !! file unit #
-        character(len=:), allocatable :: offset       !! offset for data within xml block
+        character(len=:), allocatable :: name            !! name of the xml block
+        integer(i4k) :: unit = output_unit               !! file unit #
+        integer(i4k) :: offset = 0                       !! offset for data within xml block
         character(len=:), allocatable :: additional_data !! additional data to write in header
         type(string_dt),      dimension(:), allocatable :: string  !! string data set(s) within element
         type(int32_dt),       dimension(:), allocatable :: int32   !! array of integer 32
@@ -128,8 +128,8 @@ module xml
         module subroutine element_setup (me, name, string, offset)
             implicit none
             !! this sets up the information needed to define the xml element block
-            class(xml_element_dt), intent(inout) :: me     !! xml element derived type
-            character(len=*),      intent(in)    :: name   !! name of the xml block
+            class(xml_element_dt), intent(inout) :: me            !! xml element derived type
+            character(len=*),      intent(in)    :: name          !! name of the xml block
             character(len=*),      intent(in), optional :: string !! string of additional data to write
             integer(i4k),          intent(in), optional :: offset !! # of leading spaces inside xml block
         end subroutine element_setup
