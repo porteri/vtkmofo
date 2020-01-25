@@ -3,7 +3,7 @@ program parallel_t_shape_test
     use vtk_datasets,   only : unstruct_grid
     use vtk_attributes, only : scalar, attributes
     use vtk_cells,      only : voxel, hexahedron, vtkcell_list
-    use vtk,            only : vtk_parallel_write
+    use vtk,            only : vtk_parallel_write, vtk_parallel_summary_write
     implicit none
     !! author: Ian Porter
     !! date: 01/04/2018
@@ -97,7 +97,8 @@ program parallel_t_shape_test
 
         call vtk_parallel_write (t_shape, image=this_image(), celldatasets=cell_vals_to_write, pointdatasets=point_vals_to_write, &
             &                    unit=unit, filename=filename, multiple_io=.true.)
-        call vtk_parallel_write (this_image())
+
+        call vtk_parallel_summary_write (this_image())
     end do
 
     write(*,*) 'Finished'

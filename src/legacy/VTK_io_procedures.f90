@@ -471,17 +471,21 @@ contains
         integer :: i
         character(len=10) :: my_image
         character(len=:), allocatable :: filename
-        type(piece_dt), dimension(:), allocatable :: pieces
+        type(piece_dt), dimension(:), allocatable, save :: pieces
 write(output_unit,1)
 1 format(//////)
         parallel_container_file = .true.                   !! Turn on the parallel flag
-        allocate(parallel_file)
-write(output_unit,*) '1'
         filename = adjustl(serial_file%filename(:index(serial_file%filename,'_image_')-1))
-
-        call parallel_file%setup(filename=filename // '.p' // trim(serial_file%vtk_dataset%file_extension))
+        if (.not. allocated(parallel_file)) then
+            allocate(parallel_file)
+write(output_unit,*) '1'
+            call parallel_file%setup(filename=filename // '.p' // trim(serial_file%vtk_dataset%file_extension),unit=0)
 write(output_unit,*) '2'
-        allocate(parallel_file%vtk_dataset, source=serial_file%vtk_dataset)
+            allocate(parallel_file%vtk_dataset, source=serial_file%vtk_dataset)
+        else
+            ! Eventually put in a call to update the filename
+            parallel_file%unit = 0
+        end if
 write(output_unit,*) '3'
         if (present(images)) then
             allocate(pieces(1:size(images)))
@@ -493,14 +497,24 @@ write(output_unit,*) '3'
                     &              trim(parallel_file%vtk_dataset%file_extension)
             end do
         else
-            allocate(pieces(1:n_images))
-            do i = 1, size(pieces)
-                write(my_image,'(i10)') i
-                call pieces(i)%setup(name=parallel_file%vtk_dataset%piece%get_name(), &
-                    &                string=parallel_file%vtk_dataset%piece%get_header())
-                pieces(i)%source = filename // '_image_' // trim(adjustl(my_image)) // '.' // &
-                    &              trim(parallel_file%vtk_dataset%file_extension)
-            end do
+            if (.not. allocated(pieces)) then
+                allocate(pieces(1:n_images))
+                do i = 1, size(pieces)
+                    write(my_image,'(i10)') i
+                    call pieces(i)%setup(name=parallel_file%vtk_dataset%piece%get_name(), &
+                        &                string=parallel_file%vtk_dataset%piece%get_header())
+                    pieces(i)%source = filename // '_image_' // trim(adjustl(my_image)) // '.' // &
+                        &              trim(parallel_file%vtk_dataset%file_extension)
+                end do
+            else
+                do i = 1, size(pieces)
+                    write(my_image,'(i10)') i
+!                    call pieces(i)%update(name=parallel_file%vtk_dataset%piece%get_name(), &
+!                        &                 string=parallel_file%vtk_dataset%piece%get_header())
+                    pieces(i)%source = filename // '_image_' // trim(adjustl(my_image)) // '.' // &
+                        &              trim(parallel_file%vtk_dataset%file_extension)
+                end do
+            end if
         end if
 write(output_unit,*) '4'
         call parallel_file%vtk_dataset%parallel_fix(pieces)
@@ -512,14 +526,15 @@ write(output_unit,*) '6'
 write(output_unit,*) '7'
         call parallel_file%close_file()                         !! Close the vtk file
 write(output_unit,*) '8'
-        call parallel_file%me_deallocate()                      !! Explicitly de-allocate data b/c of gfotran bug
+!        call parallel_file%me_deallocate()                      !! Explicitly de-allocate data b/c of gfotran bug
 write(output_unit,*) '9'
-        deallocate(parallel_file)                               !! Deallocate the parallel file
+!        deallocate(parallel_file)                               !! Deallocate the parallel file
 write(output_unit,*) '9.1'
         !call serial_file%me_deallocate()
 write(output_unit,*) '9.2'
         !deallocate(serial_file)
 write(output_unit,*) '10'
+return
         if (allocated(pieces)) then
             if (size(pieces) > 0) then
                 do i = lbound(pieces,dim=1), ubound(pieces,dim=1)

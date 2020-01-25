@@ -102,11 +102,11 @@ contains
         !call foo%piece%deallocate_piece_dt()
         if (allocated(foo%vtk_element)) then
             call foo%vtk_element%me_deallocate()
-            call foo%vtk_element%deallocate()
+            !call foo%vtk_element%deallocate()
             deallocate(foo%vtk_element)
         end if
         write(output_unit,*) 'gcc_bug_workaround_deallocate_vtk_element_single 8'
-        call foo%deallocate()
+        !call foo%deallocate()
         write(output_unit,*) 'gcc_bug_workaround_deallocate_vtk_element_single 9'
     end procedure gcc_bug_workaround_deallocate_vtk_element_single
 

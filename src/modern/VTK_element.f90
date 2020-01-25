@@ -22,6 +22,7 @@ module vtk_element
         character(len=:), allocatable :: compression
         character(len=:), allocatable, public :: file_extension
         character(len=:), allocatable, public :: filename
+        character(len=:), allocatable, public :: base_filename
         type(vtk_element_dt), allocatable, public :: vtk_element !! currently handle only one piece
     contains
         procedure, non_overridable :: vtk_element_setup
