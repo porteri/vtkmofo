@@ -1,4 +1,5 @@
 submodule (vtk_io) vtk_io_procedures
+    use iso_fortran_env, only : output_unit
     implicit none
     !! author: Ian Porter
     !! date: 12/1/2017
@@ -257,7 +258,7 @@ contains
         case (binary)
             allocate(form, source='unformatted')
         case default
-            error stop 'unsupported file type. must be ascii or binary. terminated in vtk_legacy_read'
+            error stop 'Error: unsupported file type. must be ascii or binary. terminated in vtk_legacy_read'
         end select
 
         open(unit=unit, file=filename, iostat=inputstat, status='old', form=form)
@@ -299,8 +300,8 @@ contains
     module procedure vtk_serial_full_write
         use vtk_datasets,    only : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
         use vtk_serial_file, only : serial_file
-        use vtk_serial_grid, only : vtk_serial_rectilineargrid_dt, vtk_serial_structuredgrid_dt, &
-            &                       vtk_serial_unstructuredgrid_dt, vtk_serial_imagedata_dt
+        use vtk_xml_grid,    only : vtk_xml_rectilineargrid_dt, vtk_xml_structuredgrid_dt, &
+            &                       vtk_xml_unstructuredgrid_dt, vtk_xml_imagedata_dt
         use vtk_vars,        only : vtk_extension
         use xml,             only : file_format, file_format_text, convert_format_to_string, ascii, format_ascii
         use misc,            only : trim_from_string
@@ -313,6 +314,13 @@ contains
         integer(i4k) :: file_unit = 0
 
         ! clear out any pre-existing data
+        if (allocated(serial_file)) then
+            write(output_unit,*) 'serial_file is allocated. 2'
+            call serial_file%me_deallocate()
+            write(output_unit,*) 'serial_file is allocated. 3'
+            deallocate(serial_file)
+            write(output_unit,*) 'serial_file is allocated. 4'
+        end if
         if (allocated(vtkfilename))      deallocate(vtkfilename)
         if (allocated(form))             deallocate(form)
         if (allocated(file_format_text)) deallocate(file_format_text)
@@ -363,15 +371,15 @@ contains
 
         select type (geometry)
         class is (struct_pts)
-            allocate(vtk_serial_imagedata_dt::serial_file%vtk_dataset)
+            allocate(vtk_xml_imagedata_dt::serial_file%vtk_dataset)
         class is (struct_grid)
-            allocate(vtk_serial_structuredgrid_dt::serial_file%vtk_dataset)
+            allocate(vtk_xml_structuredgrid_dt::serial_file%vtk_dataset)
         class is (rectlnr_grid)
-            allocate(vtk_serial_rectilineargrid_dt::serial_file%vtk_dataset)
+            allocate(vtk_xml_rectilineargrid_dt::serial_file%vtk_dataset)
         class is (polygonal_data)
-            error stop 'procedure not yet implemented for: polygonal grid. termination in subroutine: vtk_serial_full_write'
+            error stop 'Error: procedure not yet implemented for: polygonal grid. termination in subroutine: vtk_serial_full_write'
         class is (unstruct_grid)
-            allocate(vtk_serial_unstructuredgrid_dt::serial_file%vtk_dataset)
+            allocate(vtk_xml_unstructuredgrid_dt::serial_file%vtk_dataset)
         class default
             error stop 'unsupported geometry type. termination in subroutine: vtk_serial_full_write'
         end select
@@ -379,38 +387,40 @@ contains
         call serial_file%vtk_dataset%set_grid(geometry)
 
         if (file_unit /= 0) then
-            call serial_file%setup(filename=vtkfilename // trim(serial_file%vtk_dataset%file_extension),unit=file_unit)
+            call serial_file%setup(filename=vtkfilename // '.' // trim(serial_file%vtk_dataset%file_extension),unit=file_unit)
         else
-            call serial_file%setup(filename=vtkfilename // trim(serial_file%vtk_dataset%file_extension))
+            call serial_file%setup(filename=vtkfilename // '.' //  trim(serial_file%vtk_dataset%file_extension))
         end if
-        write(0,*) serial_file%filename
-        write(0,*) serial_file%unit
+        write(output_unit,*) 'in vtk_serial_full_write'
+        write(output_unit,*) serial_file%filename
+        write(output_unit,*) serial_file%unit
         !! append data
-        call vtk_serial_append (celldata, pointdata, celldatasets, pointdatasets)
+        call vtk_XML_append (celldata, pointdata, celldatasets, pointdatasets)
+        write(output_unit,*) 'after vtk_XML_append, before vtk_XML_finalize'
         !! finalize the write
         if (any([ present(celldatasets), present(celldata), present(pointdatasets), present(pointdata) ])) then
-            call vtk_serial_finalize (finished=.true.)          !! full legacy write w/ data. close file.
+            call vtk_XML_finalize (finished=.true.)          !! full legacy write w/ data. close file.
         else
-            call vtk_serial_finalize (finished=.false.)         !! no data was provided, only geometry info. do not close file.
+            call vtk_XML_finalize (finished=.false.)         !! no data was provided, only geometry info. do not close file.
         end if
-
+        write(output_unit,*) 'after vtk_XML_finalize'
     end procedure vtk_serial_full_write
 
-    module procedure vtk_serial_append
+    module procedure vtk_XML_append
         use vtk_serial_file, only : serial_file
         implicit none
         !! author: Ian Porter
         !! date: 06/24/2019
         !!
-        !! this subroutine appends data to the legacy vtk output file
+        !! this subroutine appends data to the modern vtk output files
         !!
 
         if (.not. allocated(serial_file%vtk_dataset%piece)) allocate(serial_file%vtk_dataset%piece)
         call serial_file%vtk_dataset%piece%add_data(celldata, pointdata, celldatasets, pointdatasets)
 
-    end procedure vtk_serial_append
+    end procedure vtk_XML_append
 
-    module procedure vtk_serial_finalize
+    module procedure vtk_XML_finalize
         use vtk_serial_file, only : serial_file
         implicit none
         !! author: Ian Porter
@@ -425,10 +435,119 @@ contains
             call serial_file%add(serial_file%vtk_dataset)
             call serial_file%write()
             call serial_file%close_file()                    !! close the vtk file
-            call serial_file%me_deallocate()
-            if (allocated(serial_file)) deallocate(serial_file)
         end if
 
-    end procedure vtk_serial_finalize
+    end procedure vtk_XML_finalize
+
+    module procedure vtk_parallel_full_write
+        implicit none
+        !! author: Ian Porter
+        !! date: 01/06/2020
+        !!
+        !! this subroutine is a finalizer for the modern parallel vtk file write
+        !!
+        integer(i4k) :: file_unit = 0
+        character(len=10) :: my_image
+
+        write(my_image,'(i10)') image
+
+        call vtk_serial_write(geometry=geometry, celldata=celldata, pointdata=pointdata, celldatasets=celldatasets,   &
+            &                 pointdatasets=pointdatasets, filename=filename // '_image_' // trim(adjustl(my_image)), &
+            &                 multiple_io=multiple_io, format=format)
+
+    end procedure vtk_parallel_full_write
+
+    module procedure vtk_parallel_container_finalize
+        use vtk_serial_file,   only : serial_file
+        use vtk_parallel_file, only : parallel_file
+        use vtk_vars,          only : parallel_container_file
+        use vtk_piece_element, only : piece_dt
+        implicit none
+        !! author: Ian Porter
+        !! date: 01/06/2020
+        !!
+        !! this subroutine is a finalizer for the modern parallel vtk file write
+        !!
+        integer :: i
+        character(len=10) :: my_image
+        character(len=:), allocatable :: filename
+        type(piece_dt), dimension(:), allocatable, save :: pieces
+write(output_unit,1)
+1 format(//////)
+        parallel_container_file = .true.                   !! Turn on the parallel flag
+        filename = adjustl(serial_file%filename(:index(serial_file%filename,'_image_')-1))
+        if (.not. allocated(parallel_file)) then
+            allocate(parallel_file)
+write(output_unit,*) '1'
+            call parallel_file%setup(filename=filename // '.p' // trim(serial_file%vtk_dataset%file_extension),unit=0)
+write(output_unit,*) '2'
+            allocate(parallel_file%vtk_dataset, source=serial_file%vtk_dataset)
+        else
+            ! Eventually put in a call to update the filename
+            parallel_file%unit = 0
+        end if
+write(output_unit,*) '3'
+        if (present(images)) then
+            allocate(pieces(1:size(images)))
+            do i = 1, size(pieces)
+                write(my_image,'(i10)') images(i)
+                call pieces(i)%setup(name=parallel_file%vtk_dataset%piece%get_name(), &
+                    &                string=parallel_file%vtk_dataset%piece%get_header())
+                pieces(i)%source = filename // '_image_' // trim(adjustl(my_image)) // '.' // &
+                    &              trim(parallel_file%vtk_dataset%file_extension)
+            end do
+        else
+            if (.not. allocated(pieces)) then
+                allocate(pieces(1:n_images))
+                do i = 1, size(pieces)
+                    write(my_image,'(i10)') i
+                    call pieces(i)%setup(name=parallel_file%vtk_dataset%piece%get_name(), &
+                        &                string=parallel_file%vtk_dataset%piece%get_header())
+                    pieces(i)%source = filename // '_image_' // trim(adjustl(my_image)) // '.' // &
+                        &              trim(parallel_file%vtk_dataset%file_extension)
+                end do
+            else
+                do i = 1, size(pieces)
+                    write(my_image,'(i10)') i
+!                    call pieces(i)%update(name=parallel_file%vtk_dataset%piece%get_name(), &
+!                        &                 string=parallel_file%vtk_dataset%piece%get_header())
+                    pieces(i)%source = filename // '_image_' // trim(adjustl(my_image)) // '.' // &
+                        &              trim(parallel_file%vtk_dataset%file_extension)
+                end do
+            end if
+        end if
+write(output_unit,*) '4'
+        call parallel_file%vtk_dataset%parallel_fix(pieces)
+write(output_unit,*) '5'
+        !! this should write everything inside of the piece
+        call parallel_file%add(parallel_file%vtk_dataset)       !!
+write(output_unit,*) '6'
+        call parallel_file%write()                              !! Write the parallel file
+write(output_unit,*) '7'
+        call parallel_file%close_file()                         !! Close the vtk file
+write(output_unit,*) '8'
+!        call parallel_file%me_deallocate()                      !! Explicitly de-allocate data b/c of gfotran bug
+write(output_unit,*) '9'
+!        deallocate(parallel_file)                               !! Deallocate the parallel file
+write(output_unit,*) '9.1'
+        !call serial_file%me_deallocate()
+write(output_unit,*) '9.2'
+        !deallocate(serial_file)
+write(output_unit,*) '10'
+return
+        if (allocated(pieces)) then
+            if (size(pieces) > 0) then
+                do i = lbound(pieces,dim=1), ubound(pieces,dim=1)
+    write(output_unit,*) '13'
+                    call pieces(i)%clear_elements()
+                    call pieces(i)%piece_deallocate()
+                end do
+    write(output_unit,*) '14'
+                deallocate(pieces)
+            end if
+        end if
+        parallel_container_file = .false.                       !! Turn off the parallel flag
+write(output_unit,*) 'literally the very end'
+    end procedure vtk_parallel_container_finalize
 
 end submodule vtk_io_procedures

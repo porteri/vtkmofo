@@ -52,5 +52,13 @@ else()
     list(APPEND VTKmofo_integration_test_list "serial_DTIO_T_shape")
 endif()
 
+# parallel modern tests
+foreach(test
+    Structured_grid
+    Unstructured_grid)
+  add_VTKmofo_integration_test(${test} "parallel")
+  list(APPEND VTKmofo_integration_test_list "parallel_${test}")
+endforeach()
+
 # Export integration test list so that we don't have to keep track if it twice
 set(VTKmofo_integration_test_list "${VTKmofo_integration_test_list}" PARENT_SCOPE)

@@ -11,6 +11,7 @@ submodule (vtk_dataarray_element) vtk_dataarray_element_procedures
 contains
 
     module procedure dataarray_setup
+        use vtk_vars, only : parallel_container_file
         implicit none
         !! author: Ian Porter
         !! date: 06/06/2019
@@ -27,15 +28,15 @@ contains
         character(len=:), allocatable :: range_min_string
         character(len=:), allocatable :: range_max_string
 
-        if (allocated(me%type)) then
-            allocate(type_string,source=' type="' // me%type // '"')
-        else
-            allocate(type_string,source='')
-        end if
         if (allocated(me%array_name)) then
             allocate(name_string,source=' Name="' // me%array_name // '"')
         else
             allocate(name_string,source='')
+        end if
+        if (allocated(me%type)) then
+            allocate(type_string,source=' type="' // me%type // '"')
+        else
+            allocate(type_string,source='')
         end if
         if (allocated(me%numberofcomponents)) then
             allocate(nofc_string,source=' NumberOfComponents="' // me%numberofcomponents // '"')
@@ -63,10 +64,14 @@ contains
             allocate(range_max_string,source='')
         end if
 
-        allocate(string, source=type_string // name_string // nofc_string // format_string // &
+        allocate(string, source=name_string // type_string // nofc_string // format_string // &
             &                   offset_string // range_min_string // range_max_string)
 
-        call me%setup(name=dataarray_name, string=string)
+        if (parallel_container_file) then
+            call me%setup(name='P' // dataarray_name, string=string)
+        else
+            call me%setup(name=dataarray_name, string=string)
+        end if
 
     end procedure dataarray_setup
 
@@ -114,12 +119,30 @@ contains
 
     end procedure dataarray_initialize
 
-    module procedure dataarray_add_dataarray
+    module procedure dataarray_allocate
         implicit none
-        !! this adds an element inside of an xml element block
-        !type(xml_element_dt), dimension(:), allocatable :: tmp_element_dt
+        !! this is an explicit allocation due to gcc bug
+        integer :: i
 
-    end procedure dataarray_add_dataarray
+        if (allocated(me)) then
+            do i = lbound(me,dim=1), ubound(me,dim=1)
+                call me(i)%dataarray_deallocate()
+            end do
+            deallocate(me)
+        end if
+        if (present(oldfoo)) then
+            if (present(addfoo)) then
+                allocate(me(size(oldfoo)+1))
+            else
+                allocate(me(size(oldfoo)))
+            end if
+            do i = 1, size(oldfoo)
+!                if (allocated(oldfoo%element)) then
+!                end if
+            end do
+        end if
+
+    end procedure dataarray_allocate
 
     module procedure dataarray_deallocate
         implicit none
@@ -133,7 +156,7 @@ contains
         if (allocated(me%range_min))          deallocate(me%range_min)
         if (allocated(me%range_max))          deallocate(me%range_max)
 
-        call me%deallocate()
+        !call me%deallocate()
 
     end procedure dataarray_deallocate
 

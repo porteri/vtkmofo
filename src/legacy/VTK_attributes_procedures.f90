@@ -300,17 +300,14 @@ contains
         !!
         !! function converts an attribute to a dataarray
         !!
-        integer(i4k) :: i
 
         call array%initialize(name=trim(adjustl(me%dataname)), type=me%datatype)
 
-        do i = 1, me%nvals
-            if (allocated(me%ints)) then
-                call array%add([me%ints(i)])
-            else if (allocated(me%reals)) then
-                call array%add([me%reals(i)])
-            end if
-        end do
+        if (allocated(me%ints)) then
+            call array%add(me%ints)
+        else if (allocated(me%reals)) then
+            call array%add(me%reals)
+        end if
 
     end procedure scalar_convert_to_dataarray
 
@@ -483,9 +480,32 @@ contains
         end if
 
     end procedure vector_check_for_diffs
+
+    module procedure vector_convert_to_dataarray
+        implicit none
+        !! author: Ian Porter
+        !! date: 07/20/2019
+        !!
+        !! function converts a vector attribute to a dataarray
+        !!
+        integer(i4k) :: i
+
+        call array%initialize(name=trim(adjustl(me%dataname)), type=me%datatype, NumberOfComponents=3)
+
+        do i = 1, me%nvals
+            if (allocated(me%i_vector)) then
+                call array%add(me%i_vector(i,:))
+            else if (allocated(me%r_vector)) then
+                call array%add(me%r_vector(i,:))
+            end if
+        end do
+
+    end procedure vector_convert_to_dataarray
+
     !********
     ! normals
     !********
+
     module procedure normal_read
         use misc, only : interpret_string, to_lowercase
         implicit none
@@ -652,9 +672,26 @@ contains
         end if
 
     end procedure normal_check_for_diffs
-    !********
+
+    module procedure normal_convert_to_dataarray
+        implicit none
+        !! author: Ian Porter
+        !! date: 07/20/2019
+        !!
+        !! function converts a normal attribute to a dataarray
+        !!
+        integer(i4k) :: i
+
+        call array%initialize(name=trim(adjustl(me%dataname)), type=me%datatype)
+
+        error stop 'Error: normal_convert_to_dataarray is not yet implemented.'
+
+    end procedure normal_convert_to_dataarray
+
+    !**********
     ! textures
-    !********
+    !**********
+
     module procedure texture_read
         use misc, only : interpret_string, to_lowercase
         implicit none
@@ -831,9 +868,11 @@ contains
         end if
 
     end procedure texture_check_for_diffs
+
     !********
     ! tensors
     !********
+
     module procedure tensor_read
         use misc, only : interpret_string, to_lowercase
         implicit none
@@ -1036,9 +1075,26 @@ contains
         end if
 
     end procedure tensor_check_for_diffs
+
+    module procedure tensor_convert_to_dataarray
+        implicit none
+        !! author: Ian Porter
+        !! date: 07/20/2019
+        !!
+        !! function converts a tensor attribute to a dataarray
+        !!
+        integer(i4k) :: i
+
+        call array%initialize(name=trim(adjustl(me%dataname)), type=me%datatype)
+
+        error stop 'Error: tensor_convert_to_dataarray is not yet implemented.'
+
+    end procedure tensor_convert_to_dataarray
+
     !********
     ! fields
     !********
+
     module procedure field_read
         use misc, only : interpret_string
         implicit none

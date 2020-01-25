@@ -1,6 +1,6 @@
 module vtk_serial_file
-    use xml,             only : xml_file_dt
-    use vtk_serial_grid, only : vtk_dataset_dt
+    use xml,          only : xml_file_dt
+    use vtk_XML_grid, only : vtk_dataset_dt
     implicit none
     !! author: Ian Porter
     !! date: 05/06/2019
@@ -9,7 +9,7 @@ module vtk_serial_file
     !!
 
     private
-    public :: serial_file, vtk_dataset_dt
+    public :: vtk_file_dt, serial_file, vtk_dataset_dt !parallel_file
 
     type, extends(xml_file_dt) :: vtk_file_dt
         !! vtk file type derived type
@@ -19,13 +19,12 @@ module vtk_serial_file
         generic, public :: me_deallocate => deallocate_vtk_file_dt
     end type vtk_file_dt
 
+!    type(vtk_file_dt), allocatable :: parallel_file  !! parallel vtk file
     type(vtk_file_dt), allocatable :: serial_file    !! serial vtk file
-    !   type(vtk_file_dt), allocatable :: parallel_file  !! parallel vtk file
-    !! parallel file is a todo for future work
 
     interface
 
-        recursive module subroutine deallocate_vtk_file_dt (foo)
+        module subroutine deallocate_vtk_file_dt (foo)
             implicit none
             !! author: Ian Porter
             !! date: 05/06/2019

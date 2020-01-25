@@ -17,7 +17,6 @@ program serial_rectangular_prism_test
     real(r8k)                   :: j = 0.0_r8k
     real(r8k),        parameter :: temp_val = 555.0_r8k
     character(len=*), parameter :: filename = 'serial_struct_pts'
-    character(len=*), parameter :: title    = 'testing of rectangular_prism geometry'
     integer(i4k), dimension(3)  :: dims
     real(r8k), dimension(3), parameter :: origin  = &
         & [ 0.0_r8k, 0.0_r8k, 0.0_r8k ]
@@ -47,7 +46,7 @@ program serial_rectangular_prism_test
         call vals_to_write(i)%attribute%init (trim(dataname(i)), numcomp=1, real1d=vals(:,i))
     end do
 
-    call vtk_serial_write (rectangular_prism, pointdatasets=vals_to_write, unit=unit, filename=filename, title=title)
+    call vtk_serial_write (rectangular_prism, pointdatasets=vals_to_write, unit=unit, filename=filename)
 
     write(*,*) 'Finished'
 

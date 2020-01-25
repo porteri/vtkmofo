@@ -133,7 +133,7 @@ program serial_dtio_t_shape_test
     !!
     integer(i4k) :: unit
     type(foo) :: t_shape
-    character(len=*), parameter :: filename = 'serial_dtio_t_shape'
+    character(len=*), parameter :: filename = 'serial_dtio_t_shape.txt'
 
     open(newunit=unit, file=filename, status='replace', form='formatted')
     write(unit,'(dt)') t_shape

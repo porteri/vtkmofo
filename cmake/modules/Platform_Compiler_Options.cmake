@@ -46,8 +46,8 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   else()
     set(Fortran_standard "f2018")
   endif()
-  set(GNU_Fortran_FLAGS_Release "-fbacktrace -std=${Fortran_standard} -ffree-form -fcheck=all")
-  set(GNU_Fortran_FLAGS_Debug "-fbacktrace -std=${Fortran_standard} -ffree-form")
+  set(GNU_Fortran_FLAGS_Release "-fbacktrace -std=${Fortran_standard} -ffree-form -fcoarray=single")
+  set(GNU_Fortran_FLAGS_Debug "-fbacktrace -std=${Fortran_standard} -ffree-form -fcoarray=single -fcheck=all -fbounds-check")
 else()
   message(WARNING
     "\n"

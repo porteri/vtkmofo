@@ -10,6 +10,7 @@ contains
 
     module procedure vtk_element_setup
         use file_utility, only : is_little_endian
+        use VTK_vars,     only : parallel_container_file
         implicit none
         !! author: Ian Porter
         !! date: 05/06/2019
@@ -26,7 +27,11 @@ contains
         character(len=:), allocatable :: compression_string
 
         if (allocated(me%type)) then
-            allocate(type_string,source=' type="' // me%type // '"')
+            if (parallel_container_file) then
+                allocate(type_string,source=' type="P' // me%type // '"')
+            else
+                allocate(type_string,source=' type="' // me%type // '"')
+            end if
         else
             error stop "error. can't create vtk file without a known type. terminated in vtk_element_setup"
         end if
@@ -48,6 +53,7 @@ contains
     end procedure vtk_element_setup
 
     module procedure initialize
+        use vtk_vars, only : parallel_container_file
         implicit none
         !! author: Ian Porter
         !! date: 05/07/2019
@@ -57,7 +63,13 @@ contains
 
         if (present(type))           allocate(me%type,source=type)
         if (present(compression))    allocate(me%compression,source=compression)
-        if (present(file_extension)) allocate(me%file_extension,source=file_extension)
+        if (present(file_extension)) then
+            if (parallel_container_file) then
+                allocate(me%file_extension,source='p' // file_extension)
+            else
+                allocate(me%file_extension,source=file_extension)
+            end if
+        end if
 
         call me%vtk_element_setup()
 
@@ -78,6 +90,7 @@ contains
     end procedure finalize
 
     module procedure gcc_bug_workaround_deallocate_vtk_element_single
+        use iso_fortran_env, only : output_unit
         implicit none
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
 
@@ -89,10 +102,12 @@ contains
         !call foo%piece%deallocate_piece_dt()
         if (allocated(foo%vtk_element)) then
             call foo%vtk_element%me_deallocate()
-            call foo%vtk_element%deallocate()
+            !call foo%vtk_element%deallocate()
+            deallocate(foo%vtk_element)
         end if
-        call foo%deallocate()
-
+        write(output_unit,*) 'gcc_bug_workaround_deallocate_vtk_element_single 8'
+        !call foo%deallocate()
+        write(output_unit,*) 'gcc_bug_workaround_deallocate_vtk_element_single 9'
     end procedure gcc_bug_workaround_deallocate_vtk_element_single
 
 end submodule vtk_element_procedures

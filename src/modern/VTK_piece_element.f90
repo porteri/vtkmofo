@@ -22,6 +22,13 @@ module vtk_piece_element
         character(len=:), allocatable :: normals
         character(len=:), allocatable :: tensors
         character(len=:), allocatable :: tcoords
+        type(dataarray_dt), allocatable :: connectivity
+        type(dataarray_dt), allocatable :: offsets
+        type(dataarray_dt), allocatable :: types
+        type(dataarray_dt), allocatable :: dataarray_x
+        type(dataarray_dt), allocatable :: dataarray_y
+        type(dataarray_dt), allocatable :: dataarray_z
+        type(dataarray_dt), dimension(:), allocatable, public :: dataarray
     contains
         procedure, non_overridable :: data_setup
         procedure, non_overridable :: data_initialize
@@ -43,47 +50,35 @@ module vtk_piece_element
         !! celldata derived type
     end type celldata_dt
 
-    type, extends(xml_element_dt) :: points_dt
+    type, extends(data_dt) :: points_dt
         !! points derived type
-        private
-        type(dataarray_dt) :: dataarray
     contains
         procedure, non_overridable :: points_initialize
         generic, public :: initialize => points_initialize
-        procedure :: points_deallocate
     end type points_dt
 
-    type, extends(xml_element_dt) :: cells_dt
+    type, extends(data_dt) :: cells_dt
         !! cells derived type
-        private
-        type(dataarray_dt) :: connectivity
-        type(dataarray_dt) :: offsets
-        type(dataarray_dt) :: types
     contains
         procedure, non_overridable :: cells_initialize
         generic, public :: initialize => cells_initialize
-        procedure :: cells_deallocate
     end type cells_dt
 
-    type, extends(xml_element_dt) :: coordinates_dt
+    type, extends(data_dt) :: coordinates_dt
         !! coordinates derived type
-        private
-        type(dataarray_dt) :: dataarray_x
-        type(dataarray_dt) :: dataarray_y
-        type(dataarray_dt) :: dataarray_z
     contains
         procedure, non_overridable :: coordinates_initialize
         generic, public :: initialize => coordinates_initialize
-        procedure :: coordinates_deallocate
     end type coordinates_dt
 
     type, extends(vtk_element_dt) :: piece_dt
-        !!
+        !! piece derived type
+        type(points_dt),      allocatable :: points
+        type(coordinates_dt), allocatable :: coordinates
+        type(cells_dt),       allocatable :: cells
         type(pointdata_dt),   allocatable :: pointdata
         type(celldata_dt),    allocatable :: celldata
-        type(coordinates_dt), allocatable :: coordinates
-        type(points_dt),      allocatable :: points
-        type(cells_dt),       allocatable :: cells
+        character(len=:),     allocatable :: source
     contains
         ! procedure, non_overridable, public :: initialize => piece_initialize
         procedure, private :: piece_set_grid
@@ -177,17 +172,6 @@ module vtk_piece_element
 
         end subroutine points_initialize
 
-        recursive module subroutine points_deallocate (foo)
-            implicit none
-            !! author: Ian Porter
-            !! date: 06/07/2019
-            !!
-            !! explicitly deallocate a points dt
-            !!
-            class(points_dt), intent(inout) :: foo
-
-        end subroutine points_deallocate
-
         module subroutine cells_initialize (me, geometry)
             implicit none
             !! author: Ian Porter
@@ -200,17 +184,6 @@ module vtk_piece_element
 
         end subroutine cells_initialize
 
-        recursive module subroutine cells_deallocate (foo)
-            implicit none
-            !! author: Ian Porter
-            !! date: 06/07/2019
-            !!
-            !! explicitly deallocate a cells dt
-            !!
-            class(cells_dt), intent(inout) :: foo
-
-        end subroutine cells_deallocate
-
         module subroutine coordinates_initialize (me, geometry)
             implicit none
             !! author: Ian Porter
@@ -222,17 +195,6 @@ module vtk_piece_element
             class(dataset),        intent(in)    :: geometry
 
         end subroutine coordinates_initialize
-
-        recursive module subroutine coordinates_deallocate (foo)
-            implicit none
-            !! author: Ian Porter
-            !! date: 06/07/2019
-            !!
-            !! explicitly deallocate a piece dt
-            !!
-            class(coordinates_dt), intent(inout) :: foo
-
-        end subroutine coordinates_deallocate
 
         module subroutine piece_set_grid (me, geometry)
             implicit none

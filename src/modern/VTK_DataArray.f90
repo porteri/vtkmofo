@@ -25,9 +25,7 @@ module vtk_dataarray_element
         procedure, non_overridable :: dataarray_setup
         procedure, non_overridable :: dataarray_initialize
         generic, public :: initialize => dataarray_initialize
-        procedure :: element_add_element => dataarray_add_dataarray
         procedure :: dataarray_deallocate
-        generic, public :: me_deallocate => dataarray_deallocate
     end type dataarray_dt
 
     interface
@@ -62,13 +60,15 @@ module vtk_dataarray_element
 
         end subroutine dataarray_initialize
 
-        module subroutine dataarray_add_dataarray (me, element)
+        recursive module subroutine dataarray_allocate (me, addfoo, oldfoo)
             implicit none
-            !! this adds a dataarray inside of a xml dataarray block
-            class(dataarray_dt),   intent(inout) :: me       !! dataarray dt
-            class(xml_element_dt), intent(in)    :: element  !! inner xml element
+            !! gcc work-around for allocating a multi-dimension derived type w/ allocatable character strings
+            !! when trying to increase the size of the foo array by 1
+            type(dataarray_dt), dimension(:), intent(inout), allocatable :: me      !! dt to be resized to [oldfoo, addfoo]
+            type(dataarray_dt), dimension(:), intent(in), optional       :: oldfoo  !! old array of dts
+            type(dataarray_dt),               intent(in), optional       :: addfoo  !! new dt to add to array
 
-        end subroutine dataarray_add_dataarray
+        end subroutine dataarray_allocate
 
         recursive module subroutine dataarray_deallocate (me)
             implicit none

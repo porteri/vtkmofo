@@ -80,8 +80,8 @@ program xml_test
     call foo%add(foo2)
 
     call foo2%setup('xml_foo2','needed="still nothing new to report here"',5)
-    call foo2%add('more blah')
-    call foo2%add('more blah')
+    call foo2%add('even more blah')
+    call foo2%add('even more blah')
 
     call foo3%setup('xml_foo3')
     call foo3%add([ 4_i4k ])
