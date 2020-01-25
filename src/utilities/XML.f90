@@ -55,6 +55,11 @@ module xml
         real(r8k), dimension(:,:), allocatable :: val_2d
     end type real64_dt
 
+    type logical_dt
+        logical, dimension(:),   allocatable :: val
+        logical, dimension(:,:), allocatable :: val_2d
+    end type logical_dt
+
     type xml_element_dt
         !! xml derived type
         private
@@ -62,14 +67,17 @@ module xml
         integer(i4k) :: unit = output_unit               !! file unit #
         integer(i4k) :: offset = 0                       !! offset for data within xml block
         character(len=:), allocatable :: additional_data !! additional data to write in header
-        type(string_dt),      dimension(:), allocatable :: string  !! string data set(s) within element
+        !type(string_dt),      dimension(:), allocatable :: string  !! string data set(s) within element
+        character(len=:), allocatable :: string          !! character data (workaround due to gcc issues)
         type(int32_dt),       dimension(:), allocatable :: int32   !! array of integer 32
         type(int64_dt),       dimension(:), allocatable :: int64   !! array of integer 64
         type(real32_dt),      dimension(:), allocatable :: real32  !! array of real32
         type(real64_dt),      dimension(:), allocatable :: real64  !! array of real64
+        type(logical_dt),     dimension(:), allocatable :: boolean !! array of booleans
         type(xml_element_dt), dimension(:), allocatable :: element !! element data set(s) within element
     contains
         procedure, public  :: setup => element_setup   !! set up element block
+        procedure, public  :: update => element_update !! Update the name and header for an element block
         procedure, private :: begin => element_begin   !! write open of element block
         procedure, public  :: update_name              !! Updates the name
         procedure, public  :: update_names             !! Updates all of the names
@@ -97,9 +105,11 @@ module xml
         generic, public    :: add   => element_add_logical
         procedure, private :: end   => element_end     !! write closure of element block
         procedure, public  :: write => element_write   !! writes the element block
-        procedure, public  :: replace => replace_in_string !! replaces an identifier in the string
-        procedure, private :: gcc_bug_workaround_deallocate_single
-        generic, public    :: deallocate => gcc_bug_workaround_deallocate_single
+        procedure, private :: assign_xml_element
+        generic :: assignment(=) => assign_xml_element
+        !procedure, public  :: replace => replace_in_string !! replaces an identifier in the string
+        !procedure, private :: gcc_bug_workaround_deallocate_single
+        !generic, public    :: deallocate => gcc_bug_workaround_deallocate_single
 !        final :: gcc_bug_workaround_deallocate_single_final !! can't use this b/c it results in an ICE
     end type xml_element_dt
 
@@ -114,8 +124,8 @@ module xml
         procedure, public  :: add   => xml_add
         procedure, private :: end   => xml_end
         procedure, public  :: write => xml_write
-        procedure, private :: gcc_bug_workaround_deallocate_xml_file_dt
-        generic,   public  :: deallocate => gcc_bug_workaround_deallocate_xml_file_dt
+        !procedure, private :: gcc_bug_workaround_deallocate_xml_file_dt
+        !generic,   public  :: deallocate => gcc_bug_workaround_deallocate_xml_file_dt
     end type xml_file_dt
 
     interface gcc_bug_workaround_deallocate
@@ -133,6 +143,15 @@ module xml
             character(len=*),      intent(in), optional :: string !! string of additional data to write
             integer(i4k),          intent(in), optional :: offset !! # of leading spaces inside xml block
         end subroutine element_setup
+
+        module subroutine element_update (me, name, string, offset)
+            implicit none
+            !! this updates the information needed to define the xml element block
+            class(xml_element_dt), intent(inout) :: me            !! xml element derived type
+            character(len=*),      intent(in), optional :: name   !! name of the xml block
+            character(len=*),      intent(in), optional :: string !! string of additional data to write
+            integer(i4k),          intent(in), optional :: offset !! # of leading spaces inside xml block
+        end subroutine element_update
 
         module subroutine element_begin (me, unit)
             implicit none
@@ -266,6 +285,13 @@ module xml
             character(len=*),      intent(in)    :: tag
             character(len=*),      intent(in)    :: value
         end subroutine replace_in_string
+
+        recursive module subroutine assign_xml_element (me,you)
+            implicit none
+            !! replaces the existing value associated with tag with value
+            class(xml_element_dt), intent(inout) :: me
+            class(xml_element_dt), intent(in)    :: you
+        end subroutine assign_xml_element
 
         module subroutine xml_file_setup (me, filename, open_status, close_status, form, access, unit, encoding)
             implicit none

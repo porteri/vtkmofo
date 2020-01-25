@@ -156,7 +156,7 @@ contains
         if (allocated(me%range_min))          deallocate(me%range_min)
         if (allocated(me%range_max))          deallocate(me%range_max)
 
-        call me%deallocate()
+        !call me%deallocate()
 
     end procedure dataarray_deallocate
 

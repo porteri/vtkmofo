@@ -2,7 +2,7 @@ program parallel_structured_grid_test
     use precision,      only : i4k, r8k
     use vtk_datasets,   only : struct_grid
     use vtk_attributes, only : scalar, attribute, attributes
-    use vtk,            only : vtk_parallel_write
+    use vtk,            only : vtk_parallel_write, vtk_parallel_summary_write
     implicit none
     !! author: Ian Porter
     !! date: 01/18/2020
@@ -89,7 +89,7 @@ program parallel_structured_grid_test
 
         end do
 
-        if (this_image() == 1) call vtk_parallel_write(num_images())  !! This is the finalizer
+        if (this_image() == 1) call vtk_parallel_summary_write(num_images())  !! This is the finalizer
     end do
 
     write(*,*) 'Finished'

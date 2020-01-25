@@ -10,7 +10,7 @@ module vtk_io
     !! this module contains the output file to write to vtk format
     !!
     private
-    public :: vtk_legacy_write, vtk_serial_write, vtk_parallel_write
+    public :: vtk_legacy_write, vtk_serial_write, vtk_parallel_write, vtk_parallel_summary_write
 
     interface vtk_legacy_write
         procedure :: vtk_legacy_full_write
@@ -28,8 +28,11 @@ module vtk_io
         procedure :: vtk_parallel_full_write
         procedure :: vtk_XML_append
         procedure :: vtk_XML_finalize
-        procedure :: vtk_parallel_container_finalize
     end interface vtk_parallel_write
+
+    interface vtk_parallel_summary_write
+        procedure :: vtk_parallel_container_finalize
+    end interface
 
     interface
 

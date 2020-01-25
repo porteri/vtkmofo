@@ -15,9 +15,8 @@ contains
     module procedure element_setup
         implicit none
         !! this sets up the information needed to define the xml element block
-        integer(i4k) :: i, my_offset
 
-        call me%deallocate()
+        call destroy(me)
 
         allocate(me%name,source=name)
         if (present(string)) then
@@ -31,20 +30,40 @@ contains
             end if
         end if
 
-        my_offset = def_offset
         if (present(offset)) then
-            if (offset >= 0) my_offset = offset
+            me%offset = offset
+        else
+            me%offset = def_offset
         end if
 
-        do i = 0, my_offset
-            if (i == 0) then
-                me%offset = 0
-            else
-                me%offset = me%offset + 1
-            end if
-        end do
-
     end procedure element_setup
+
+    module procedure element_update
+        implicit none
+        !! this sets up the information needed to define the xml element block
+
+        if (present(name)) then
+            deallocate(me%name)
+            allocate(me%name,source=name)
+        end if
+        if (present(string)) then
+            if (allocated(me%additional_data)) deallocate(me%additional_data)
+            if (len_trim(string) > 0) then
+                if (string(1:1) == " ") then
+                    !! don't add an extra space between the name and the string
+                    allocate(me%additional_data, source=string)
+                else
+                    allocate(me%additional_data, source=" " // string)
+                end if
+            end if
+            if (.not. allocated(me%additional_data)) allocate(me%additional_data,source='')
+        end if
+
+        if (present(offset)) then
+            me%offset = offset
+        end if
+
+    end procedure element_update
 
     module procedure element_begin
         implicit none
@@ -140,18 +159,19 @@ contains
 
         integer(i4k) :: i
 
-        if (allocated(me%string)) then
-            if (size(me%string) > 0) then
-                do i = lbound(me%string,dim=1), ubound(me%string,dim=1)
-                    call gcc_bug_deallocate_string_dt(me%string(i))
-                end do
-            end if
+!        if (allocated(me%string)) then
+!            if (size(me%string) > 0) then
+!                do i = lbound(me%string,dim=1), ubound(me%string,dim=1)
+!                    call gcc_bug_deallocate_string_dt(me%string(i))
+!                end do
+!            end if
             if (allocated(me%string)) deallocate(me%string)
-        end if
+!        end if
         if (allocated(me%int32))  deallocate(me%int32)
         if (allocated(me%int64))  deallocate(me%int64)
         if (allocated(me%real32)) deallocate(me%real32)
         if (allocated(me%real64)) deallocate(me%real64)
+        if (allocated(me%boolean)) deallocate(me%boolean)
         if (allocated(me%element)) then
             do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
                 call me%element(i)%clear_data()
@@ -163,93 +183,48 @@ contains
     module procedure clear_elements
         implicit none
 
-        integer(i4k) :: i
+!        integer(i4k) :: i
 
-        if (allocated(me%element)) then
+!        if (allocated(me%element)) then
 write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
-            if (size(me%element) > 0) then
-                do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
-write(output_unit,*) 'in loop of clear_elements. i: ',i
-                    call gcc_bug_workaround_deallocate_single(me%element(i))
-                end do
-            end if
+!            if (size(me%element) > 0) then
+!                do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
+!write(output_unit,*) 'in loop of clear_elements. i: ',i
+!                    call gcc_bug_workaround_deallocate_single(me%element(i))
+!                end do
+!            end if
             if (allocated(me%element)) deallocate(me%element)
-        end if
+!        end if
 
     end procedure clear_elements
 
     module procedure element_add_real32
-        use misc, only : convert_to_string
         implicit none
         !! this adds data inside of an xml element block
-        integer(i4k) :: i
         type(real32_dt) :: real32
-        type(string_dt), dimension(:), allocatable :: tmp_string
         type(real32_dt), dimension(:), allocatable :: tmp_real32_dt
-        character(len=:), allocatable :: string
 
-        select case (file_format)
-        case (binary)
-            if (.not. allocated(me%real32)) then
-                allocate(me%real32(0))
-            end if
-            allocate(real32%val, source=data)
-            allocate(tmp_real32_dt, source = [me%real32, real32])
-            call move_alloc(tmp_real32_dt, me%real32)
-
-        case (ascii)
-            if (.not. allocated(me%string)) then
-                allocate(me%string(0))
-            end if
-
-            allocate(tmp_string(1:size(me%string)+1))
-            tmp_string(1:size(me%string)) = me%string
-            call move_alloc(tmp_string, me%string)
-
-            do i = 1, size(data)
-                if (i == 1) then
-                    allocate(string, source=convert_to_string(data(i)))
-                else
-                    string = string // " " // convert_to_string(data(i))
-                end if
-            end do
-
-            associate (my_entry => ubound(me%string,dim=1))
-                allocate(me%string(my_entry)%text,source=string)
-            end associate
-        end select
+        if (.not. allocated(me%real32)) then
+            allocate(me%real32(0))
+        end if
+        allocate(real32%val, source=data)
+        allocate(tmp_real32_dt, source = [me%real32, real32])
+        call move_alloc(tmp_real32_dt, me%real32)
 
     end procedure element_add_real32
 
     module procedure element_add_real64
-        use misc, only : convert_to_string
         implicit none
         !! this adds data inside of an xml element block
         type(real64_dt) :: real64
-        type(string_dt), dimension(:), allocatable :: tmp_string
         type(real64_dt), dimension(:), allocatable :: tmp_real64_dt
 
-!        select case (file_format)
-!        case (binary)
-            if (.not. allocated(me%real64)) then
-                allocate(me%real64(0))
-            end if
-            allocate(real64%val, source=data)
-            allocate(tmp_real64_dt, source = [me%real64, real64])
-            call move_alloc(tmp_real64_dt, me%real64)
-!        case (ascii)
-!            if (.not. allocated(me%string)) then
-!                allocate(me%string(0))
-!            end if
-!
-!            allocate(tmp_string(1:size(me%string)+1))
-!            tmp_string(1:size(me%string)) = me%string
-!            call move_alloc(tmp_string, me%string)
-!
-!            associate (my_entry => ubound(me%string,dim=1))
-!                allocate(me%string(my_entry)%text,source=convert_to_string(data))
-!            end associate
-!        end select
+        if (.not. allocated(me%real64)) then
+            allocate(me%real64(0))
+        end if
+        allocate(real64%val, source=data)
+        allocate(tmp_real64_dt, source = [me%real64, real64])
+        call move_alloc(tmp_real64_dt, me%real64)
 
     end procedure element_add_real64
 
@@ -272,7 +247,6 @@ write(output_unit,*) 'in loop of clear_elements. i: ',i
     end procedure element_add_real64_2d
 
     module procedure element_add_int32
-!        use misc, only : convert_to_string
         implicit none
         !! this adds data inside of an xml element block
         type(int32_dt) :: int32
@@ -304,32 +278,17 @@ write(output_unit,*) 'in loop of clear_elements. i: ',i
     end procedure element_add_int64
 
     module procedure element_add_logical
-        use misc, only : convert_to_string
         implicit none
         !! this adds data inside of an xml element block
-        integer(i4k) :: i
-        type(string_dt), dimension(:), allocatable :: tmp_string
-        character(len=:), allocatable :: string
+        type(logical_dt) :: boolean
+        type(logical_dt), dimension(:), allocatable :: tmp_boolean_dt
 
-        if (.not. allocated(me%string)) then
-            allocate(me%string(0))
+        if (.not. allocated(me%boolean)) then
+            allocate(me%boolean(0))
         end if
-
-        allocate(tmp_string(1:size(me%string)+1))
-        tmp_string(1:size(me%string)) = me%string
-        call move_alloc(tmp_string, me%string)
-
-        do i = 1, size(data)
-            if (i == 1) then
-                allocate(string, source=convert_to_string(data(i)))
-            else
-                string = string // " " // convert_to_string(data(i))
-            end if
-        end do
-
-        associate (my_entry => ubound(me%string,dim=1))
-            allocate(me%string(my_entry)%text,source= string)
-        end associate
+        allocate(boolean%val, source=data)
+        allocate(tmp_boolean_dt, source = [me%boolean, boolean])
+        call move_alloc(tmp_boolean_dt, me%boolean)
 
     end procedure element_add_logical
 
@@ -337,7 +296,8 @@ write(output_unit,*) 'in loop of clear_elements. i: ',i
         implicit none
         !! this adds data inside of an xml element block
         logical :: add_quotes
-        type(string_dt), dimension(:), allocatable :: tmp_string
+        character(len=:), allocatable :: tmp_string, new_line_string
+        !type(string_dt), dimension(:), allocatable :: tmp_string
 
         if (present(quotes)) then
             add_quotes = quotes
@@ -346,62 +306,64 @@ write(output_unit,*) 'in loop of clear_elements. i: ',i
         end if
 
         if (.not. allocated(me%string)) then
-            allocate(me%string(0))
+            !allocate(me%string(0))
+            allocate(me%string,source='')
+            new_line_string = ''
+        else
+            new_line_string = new_line('a')
         end if
 
-        allocate(tmp_string(1:size(me%string)+1))
-        tmp_string(1:size(me%string)) = me%string
-        call move_alloc(tmp_string, me%string)
+        !allocate(tmp_string(1:size(me%string)+1))
+        !tmp_string(1:size(me%string)) = me%string
+        !call move_alloc(tmp_string, me%string)
+        call move_alloc(me%string,tmp_string)
 
-        associate (my_entry => ubound(me%string,dim=1))
+        !associate (my_entry => ubound(me%string,dim=1))
             if (add_quotes) then
-                allocate(me%string(my_entry)%text,source='"' // string // '"')
+        !        allocate(me%string(my_entry)%text,source='"' // string // '"')
+                allocate(me%string,source=tmp_string // new_line_string // '"' // string // '"')
             else
-                allocate(me%string(my_entry)%text,source=string)
+        !        allocate(me%string(my_entry)%text,source=string)
+                allocate(me%string,source=tmp_string // new_line_string // string)
             end if
-        end associate
-
+        !end associate
+write(output_unit,*) 'me%string: ',me%string
     end procedure element_add_string
 
     module procedure element_add_element
         implicit none
         !! this adds an element inside of an xml element block
         integer :: i
-        type(xml_element_dt), dimension(:), allocatable :: tmp_element_dt
-        !! this is how this routine should work (and does work w/ intel)
-        !        if (.not. allocated(me%element)) then
-        !            allocate(me%element(1),source=element)
-        !        else
-        !            allocate(tmp_element_dt,source=[ me%element(:), element ]) ! this segfaults at runtime
-        !            call move_alloc(tmp_element_dt, me%element)
-        !        end if
-        !! this is a temporary work around
-        if (.not. allocated(me%element)) then
-            write(output_unit,*) 'element_add_element not allocated(me%element)'
-            select type (element)
-            class is (xml_element_dt)
-                call gcc_bug_workaround_allocate(me%element, element)
-            class default
-                error stop 'error in element_add_element. undefined class'
-            end select
+        type(xml_element_dt) :: tmp_element
+        type(xml_element_dt), dimension(:), allocatable :: tmp_element_array
+write(output_unit,*) 'entering element_add_element'
+        tmp_element = element
+write(output_unit,*) 'tmp_element name:   ',tmp_element%name
+write(output_unit,*) 'tmp_element string: ',tmp_element%string
+         if (allocated(me%element)) then
+             write(output_unit,*) 'me%element name:   ',me%name
+             write(output_unit,*) 'me%element string: ',me%string
+             allocate(tmp_element_array(lbound(me%element,dim=1):ubound(me%element,dim=1)))
+             do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
+                 tmp_element_array(i) = me%element(i)
+                 call destroy(me%element(i))
+             end do
+             if (allocated(me%element)) deallocate(me%element)
+             allocate(me%element(lbound(tmp_element_array,dim=1):ubound(tmp_element_array,dim=1)+1))
+             do i = 1, ubound(tmp_element_array,dim=1)
+                 me%element(i) = tmp_element_array(i)
+                 call destroy(tmp_element_array(i))
+             end do
+             if (allocated(tmp_element_array)) deallocate(tmp_element_array)
+             associate (i => size(me%element))
+                 me%element(i) = tmp_element
+             end associate
         else
-            select type (element)
-            class is (xml_element_dt)
-write(output_unit,*) 'element_add_element 1'
-                call gcc_bug_workaround_allocate(tmp_element_dt, oldfoo=me%element)
-write(output_unit,*) 'element_add_element 2'
-                call gcc_bug_workaround_allocate(me%element, element, tmp_element_dt)
-write(output_unit,*) 'element_add_element 3'
-            class default
-                error stop 'error in element_add_element. undefined class'
-            end select
+            allocate(me%element(1),source=tmp_element)
         end if
-write(output_unit,*) 'element_add_element 4'
-        if (allocated(tmp_element_dt)) then
-            call gcc_bug_workaround_deallocate_array_type(tmp_element_dt)
-    write(output_unit,*) 'element_add_element 5'
-            if (allocated(tmp_element_dt)) deallocate(tmp_element_dt)
-      end if
+
+        call destroy(tmp_element)
+
     end procedure element_add_element
 
     module procedure element_end
@@ -441,20 +403,23 @@ write(output_unit,*) 'element_add_element 4'
         fmt = get_offset_format(prior_offset)
 
         call me%begin(unit)
-write(output_unit,*) me%name
+write(output_unit,*) 'me%name: ',me%name
         if (allocated(me%string)) then
-            do i = 1, size(me%string)
+            !do i = 1, size(me%string)
                 select case (file_format)
                 case (ascii)
 #ifdef INTEL_COMPILER
-                    write(unit,fmt,advance='yes') me%string(i)%text
+                    !write(unit,fmt,advance='yes') me%string(i)%text
+                    write(unit,fmt,advance='yes') me%string
 #else
-                    write(unit,fmt,advance='no') me%string(i)%text
+                    !write(unit,fmt,advance='no') me%string(i)%text
+                    write(unit,fmt,advance='no') me%string
 #endif
                 case (binary)
-                    write(unit) me%string(i)%text
+                    !write(unit) me%string(i)%text
+                    write(unit) me%string
                 end select
-            end do
+            !end do
         else if (allocated(me%int32)) then
             do i = 1, size(me%int32)
                 if (allocated(me%int32(i)%val)) then
@@ -527,6 +492,29 @@ write(output_unit,*) me%name
         call me%end(unit)
 
     end procedure element_write
+
+    module procedure assign_xml_element
+        implicit none
+        integer :: i
+
+        if (allocated(you%name)) me%name = you%name
+        me%unit   = you%unit
+        me%offset = you%offset
+        if (allocated(you%additional_data)) me%additional_data = you%additional_data
+        if (allocated(you%string))  me%string = you%string
+        if (allocated(you%int32))   me%int32 = you%int32
+        if (allocated(you%int64))   me%int64 = you%int64
+        if (allocated(you%real32))  me%real32 = you%real32
+        if (allocated(you%real64))  me%real64 = you%real64
+        if (allocated(you%boolean)) me%boolean = you%boolean
+        if (allocated(you%element)) then
+            allocate(me%element(lbound(you%element,dim=1):ubound(you%element,dim=1)))
+            do i = lbound(you%element,dim=1),ubound(you%element,dim=1)
+                me%element(i) = you%element(i)
+            end do
+        end if
+
+    end procedure assign_xml_element
 
     module procedure replace_in_string
         implicit none
@@ -651,38 +639,53 @@ write(output_unit,*) me%name
         !!
         !! this adds data inside of the file
         !!
-        type(xml_element_dt), dimension(:), allocatable :: tmp_element_dt
-#ifdef INTEL_COMPILER
-        !! this is how this routine should work (and does work w/ intel)
-        if (.not. allocated(me%element)) then
-            allocate(me%element(1),source=element)
+        integer :: i
+        type(xml_element_dt) :: tmp_element
+        type(xml_element_dt), dimension(:), allocatable :: tmp_element_array
+
+write(output_unit,*) 'entering xml_add'
+        tmp_element = element
+        if (allocated(me%element)) then
+            allocate(tmp_element_array(1:size(me%element)))
+            do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
+                tmp_element_array(i) = me%element(i)
+                call free_me (me%element(i))
+            end do
+            if (allocated(me%element)) deallocate(me%element)
+            allocate(me%element(lbound(tmp_element_array,dim=1):ubound(tmp_element_array,dim=1)+1))
+            do i = lbound(tmp_element_array,dim=1), ubound(tmp_element_array,dim=1)
+                me%element(i) = tmp_element_array(i)
+                call free_me (tmp_element_array(i))
+            end do
+            if (allocated(tmp_element_array)) deallocate(tmp_element_array)
+            associate (i => size(me%element))
+                me%element(i) = tmp_element
+            end associate
         else
-            allocate(tmp_element_dt,source=[ me%element(:), element ]) ! this segfaults at runtime for gfortran
-            call move_alloc(tmp_element_dt, me%element)
-        end if
-#else
-        !! this is a temporary work around
-        write(output_unit,*) 'xml_add 0'
-        if (.not. allocated(me%element)) then
-            select type (element)
-            class is (xml_element_dt)
-                call gcc_bug_workaround_allocate(me%element, element)
-            end select
-        else
-            write(output_unit,*) 'xml_add 0.5'
-            select type (element)
-            class is (xml_element_dt)
-              write(output_unit,*) 'xml_add 1'
-                call gcc_bug_workaround_allocate(tmp_element_dt, oldfoo=me%element)
-              write(output_unit,*) 'xml_add 2'
-                call gcc_bug_workaround_allocate(me%element, element, tmp_element_dt)
-              write(output_unit,*) 'xml_add 3'
-            end select
+            allocate(me%element(1),source=tmp_element)
         end if
 
-        call gcc_bug_workaround_deallocate_array_type(tmp_element_dt)
-#endif
+        call free_me(tmp_element)
+
     end procedure xml_add
+
+    recursive subroutine free_me (me)
+        type(xml_element_dt), intent(inout) :: me
+        integer :: i
+
+        if (allocated(me%element)) then
+            do i = lbound(me%element,dim=1),ubound(me%element,dim=1)
+                call free_me(me%element(i))
+            end do
+            deallocate(me%element)
+        else
+write(output_unit,*) 'getting freed in free_me. me%name: ',me%name
+            if (allocated(me%name)) deallocate(me%name)
+            if (allocated(me%additional_data)) deallocate(me%additional_data)
+            if (allocated(me%string)) deallocate(me%string)
+        end if
+
+    end subroutine free_me
 
     module procedure xml_end
         implicit none
@@ -744,6 +747,7 @@ write(output_unit,*) 'oldfoo(i)%unit: ',oldfoo(i)%unit
                 if (allocated(oldfoo(i)%string)) allocate(me(i)%string, source=oldfoo(i)%string)
                 if (allocated(oldfoo(i)%real32)) allocate(me(i)%real32, source=oldfoo(i)%real32)
                 if (allocated(oldfoo(i)%real64)) allocate(me(i)%real64, source=oldfoo(i)%real64)
+                if (allocated(oldfoo(i)%boolean)) allocate(me(i)%boolean, source=oldfoo(i)%boolean)
                 if (allocated(oldfoo(i)%element)) then
 write(output_unit,*) 'oldfoo(i)%element is allocated. calling gcc_bug_workaround_allocate'
                     call gcc_bug_workaround_allocate(me(i)%element, oldfoo=oldfoo(i)%element)
@@ -769,6 +773,7 @@ write(output_unit,*) 'addfoo%unit: ',addfoo%unit
             if (allocated(addfoo%string)) allocate(me(i)%string, source=addfoo%string)
             if (allocated(addfoo%real32)) allocate(me(i)%real32, source=addfoo%real32)
             if (allocated(addfoo%real64)) allocate(me(i)%real64, source=addfoo%real64)
+            if (allocated(addfoo%boolean)) allocate(me(i)%boolean, source=addfoo%boolean)
             if (allocated(addfoo%element)) then
 write(output_unit,*) 'addfoo(i)%element is allocated. calling gcc_bug_workaround_allocate'
               call gcc_bug_workaround_allocate(me(i)%element, oldfoo=addfoo%element)
@@ -825,19 +830,20 @@ write(output_unit,*) 'me%name: ',me%name
 write(output_unit,*) 'me%additional_data: ',me%additional_data
             deallocate(me%additional_data)
         end if
-        if (allocated(me%string)) then
+!        if (allocated(me%string)) then
 write(output_unit,*) 'me%string is allocated '
-            if (size(me%string) > 0) then
-                do i = lbound(me%string,dim=1), ubound(me%string,dim=1)
-                    call gcc_bug_deallocate_string_dt(me%string(i))
-                end do
-            end if
+!            if (size(me%string) > 0) then
+!                do i = lbound(me%string,dim=1), ubound(me%string,dim=1)
+!                    call gcc_bug_deallocate_string_dt(me%string(i))
+!                end do
+!            end if
             if (allocated(me%string)) deallocate(me%string)
-        end if
+!        end if
         if (allocated(me%int32))      deallocate(me%int32)
         if (allocated(me%int64))      deallocate(me%int64)
         if (allocated(me%real32))     deallocate(me%real32)
         if (allocated(me%real64))     deallocate(me%real64)
+        if (allocated(me%boolean))    deallocate(me%boolean)
         if (allocated(me%element)) then
 write(output_unit,*) 'me%element is allocated. size: ',size(me%element)
             if (size(me%element) > 0) then
@@ -864,18 +870,43 @@ write(output_unit,*) 'me%element is allocated. size: ',size(me%element)
         integer :: i
 
         if (allocated(me%element)) then
-            do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
+            !do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
 !                associate (e => me%element(i))
 !                select type (me%element(i))
 !                class is (xml_element_dt)
-                    call me%element(i)%deallocate()
+            !        call me%element(i)%deallocate()
 !                end select
 !                end associate
-            end do
+            !end do
             deallocate(me%element)
         end if
 
     end procedure gcc_bug_workaround_deallocate_xml_file_dt
+
+    recursive subroutine destroy (me)
+        type(xml_element_dt), intent(out) :: me
+        integer :: i
+
+        if (allocated(me%name))            deallocate(me%name)
+        me%unit = output_unit
+        me%offset = 0
+        if (allocated(me%additional_data)) deallocate(me%additional_data)
+        if (allocated(me%string))          deallocate(me%string)
+        if (allocated(me%int32))           deallocate(me%int32)
+        if (allocated(me%int64))           deallocate(me%int64)
+        if (allocated(me%real32))          deallocate(me%real32)
+        if (allocated(me%real64))          deallocate(me%real64)
+        if (allocated(me%boolean))         deallocate(me%boolean)
+        if (allocated(me%element)) then
+            if (ubound(me%element,dim=1) > 0) then
+                do i = lbound(me%element,dim=1),ubound(me%element,dim=1)
+                    call destroy(me%element(i))
+                end do
+            end if
+            deallocate(me%element)
+        end if
+
+    end subroutine destroy
 
     module procedure convert_format_to_string
         implicit none

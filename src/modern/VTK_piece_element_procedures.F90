@@ -128,6 +128,7 @@ contains
             if (parallel_container_file) then
                 call me%connectivity%update_name('P' // me%connectivity%get_name())
             end if
+            call me%connectivity%initialize()
             call me%add(me%connectivity)
         end if
         if (allocated(me%offsets)) then
@@ -162,6 +163,7 @@ contains
         end if
         if (allocated(me%dataarray)) then
             do i = 1, size(me%dataarray)
+                call me%dataarray(i)%initialize()
                 if (parallel_container_file) then
                     call me%dataarray(i)%update_name('P' // me%dataarray(i)%get_name())
                 end if
