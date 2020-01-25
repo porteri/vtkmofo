@@ -23,9 +23,9 @@ contains
             if (len_trim(string) > 0) then
                 if (string(1:1) == " ") then
                     !! don't add an extra space between the name and the string
-                    allocate(me%additional_data, source=string)
+                    allocate(me%header, source=string)
                 else
-                    allocate(me%additional_data, source=" " // string)
+                    allocate(me%header, source=" " // string)
                 end if
             end if
         end if
@@ -47,16 +47,16 @@ contains
             allocate(me%name,source=name)
         end if
         if (present(string)) then
-            if (allocated(me%additional_data)) deallocate(me%additional_data)
+            if (allocated(me%header)) deallocate(me%header)
             if (len_trim(string) > 0) then
                 if (string(1:1) == " ") then
                     !! don't add an extra space between the name and the string
-                    allocate(me%additional_data, source=string)
+                    allocate(me%header, source=string)
                 else
-                    allocate(me%additional_data, source=" " // string)
+                    allocate(me%header, source=" " // string)
                 end if
             end if
-            if (.not. allocated(me%additional_data)) allocate(me%additional_data,source='')
+            if (.not. allocated(me%header)) allocate(me%header,source='')
         end if
 
         if (present(offset)) then
@@ -75,21 +75,21 @@ contains
         select case (file_format)
         case (ascii)
 #ifdef INTEL_COMPILER
-            if (allocated(me%additional_data)) then
-                write(unit,fmt,advance='yes') '<' // me%name // me%additional_data // '>'
+            if (allocated(me%header)) then
+                write(unit,fmt,advance='yes') '<' // me%name // me%header // '>'
             else
                 write(unit,fmt,advance='yes') '<' // me%name // '>'
             end if
 #else
-            if (allocated(me%additional_data)) then
-                write(unit,fmt,advance='no') '<' // me%name // me%additional_data // '>' // new_line('a')
+            if (allocated(me%header)) then
+                write(unit,fmt,advance='no') '<' // me%name // me%header // '>' // new_line('a')
             else
                 write(unit,fmt,advance='no') '<' // me%name // '>' // new_line('a')
             end if
 #endif
         case (binary)
-            if (allocated(me%additional_data)) then
-                write(unit) '<' // me%name // me%additional_data // '>' // new_line('a')
+            if (allocated(me%header)) then
+                write(unit) '<' // me%name // me%header // '>' // new_line('a')
             else
                 write(unit) '<' // me%name // '>' // new_line('a')
             end if
@@ -138,40 +138,29 @@ contains
         implicit none
         !! This updates the name
 
-        if (allocated(me%additional_data)) deallocate(me%additional_data)
-        me%additional_data = additional_data
+        if (allocated(me%header)) deallocate(me%header)
+        me%header = additional_data
 
     end procedure update_additional_data
 
     module procedure get_additional_data
         implicit none
 
-        if (allocated(me%additional_data)) then
-            additional_data = me%additional_data
+        if (allocated(me%header)) then
+            additional_data = me%header
         else
-            error stop 'error: get_additional_data, me%additional_data is not allocated'
+            error stop 'error: get_additional_data, me%header is not allocated'
         end if
 
     end procedure get_additional_data
 
     module procedure clear_data
         implicit none
+        !! Clears data
 
         integer(i4k) :: i
 
-!        if (allocated(me%string)) then
-!            if (size(me%string) > 0) then
-!                do i = lbound(me%string,dim=1), ubound(me%string,dim=1)
-!                    call gcc_bug_deallocate_string_dt(me%string(i))
-!                end do
-!            end if
-            if (allocated(me%string)) deallocate(me%string)
-!        end if
-        if (allocated(me%int32))  deallocate(me%int32)
-        if (allocated(me%int64))  deallocate(me%int64)
-        if (allocated(me%real32)) deallocate(me%real32)
-        if (allocated(me%real64)) deallocate(me%real64)
-        if (allocated(me%boolean)) deallocate(me%boolean)
+        if (allocated(me%data)) deallocate(me%data)
         if (allocated(me%element)) then
             do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
                 call me%element(i)%clear_data()
@@ -182,19 +171,21 @@ contains
 
     module procedure clear_elements
         implicit none
+        !! Clears any children elements
 
-!        integer(i4k) :: i
+        integer(i4k) :: i
 
-!        if (allocated(me%element)) then
+        if (allocated(me%element)) then
 write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
-!            if (size(me%element) > 0) then
-!                do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
+            if (size(me%element) > 0) then
+                do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
 !write(output_unit,*) 'in loop of clear_elements. i: ',i
+                    call free_me(me%element(i))
 !                    call gcc_bug_workaround_deallocate_single(me%element(i))
-!                end do
-!            end if
+                end do
+            end if
             if (allocated(me%element)) deallocate(me%element)
-!        end if
+        end if
 
     end procedure clear_elements
 
@@ -204,12 +195,15 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
         type(real32_dt) :: real32
         type(real32_dt), dimension(:), allocatable :: tmp_real32_dt
 
-        if (.not. allocated(me%real32)) then
-            allocate(me%real32(0))
+        if (.not. allocated(me%data)) then
+            allocate(real32_dt::me%data)
         end if
-        allocate(real32%val, source=data)
-        allocate(tmp_real32_dt, source = [me%real32, real32])
-        call move_alloc(tmp_real32_dt, me%real32)
+        select type (d => me%data)
+        class is (real32_dt)
+            allocate(real32%val, source=data)
+            allocate(tmp_real32_dt, source = [me%data, real32])
+            call move_alloc(tmp_real32_dt, me%data)
+        end select
 
     end procedure element_add_real32
 
@@ -219,12 +213,12 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
         type(real64_dt) :: real64
         type(real64_dt), dimension(:), allocatable :: tmp_real64_dt
 
-        if (.not. allocated(me%real64)) then
-            allocate(me%real64(0))
+        if (.not. allocated(me%data)) then
+            allocate(real64_dt::me%data)
         end if
         allocate(real64%val, source=data)
-        allocate(tmp_real64_dt, source = [me%real64, real64])
-        call move_alloc(tmp_real64_dt, me%real64)
+        allocate(tmp_real64_dt, source = [me%data, real64])
+        call move_alloc(tmp_real64_dt, me%data)
 
     end procedure element_add_real64
 
@@ -235,13 +229,13 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
         type(real64_dt) :: real64
         type(real64_dt), dimension(:), allocatable :: tmp_real64
 
-        if (.not. allocated(me%real64)) then
-            allocate(me%real64(0))
-            allocate(me%real64(0)%val_2d,source=data)
+        if (.not. allocated(me%data)) then
+            allocate(real64_dt::me%data(1))
+            allocate(me%data(1)%val_2d,source=data)
         else
             allocate(real64%val_2d, source=data)
-            allocate(tmp_real64, source = [me%real64, real64])
-            call move_alloc(tmp_real64, me%real64)
+            allocate(tmp_real64, source = [me%data, real64])
+            call move_alloc(tmp_real64, me%data)
         end if
 
     end procedure element_add_real64_2d
@@ -252,12 +246,12 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
         type(int32_dt) :: int32
         type(int32_dt), dimension(:), allocatable :: tmp_int32
 
-        if (.not. allocated(me%int32)) then
-            allocate(me%int32(0))
+        if (.not. allocated(me%data)) then
+            allocate(int32_dt::me%data)
         end if
-        allocate(int32%val, source=data)
-        allocate(tmp_int32, source = [me%int32, int32])
-        call move_alloc(tmp_int32, me%int32)
+        allocate(int32%val_2d(1:size(data),1), source=[data])
+        allocate(tmp_int32, source = [me%data, int32])
+        call move_alloc(tmp_int32, me%data)
 
     end procedure element_add_int32
 
@@ -268,12 +262,12 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
         type(int64_dt) :: int64
         type(int64_dt), dimension(:), allocatable :: tmp_int64
 
-        if (.not. allocated(me%int64)) then
-            allocate(me%int64(0))
+        if (.not. allocated(me%data)) then
+            allocate(me%data)
         end if
         allocate(int64%val, source=data)
-        allocate(tmp_int64, source = [me%int64, int64])
-        call move_alloc(tmp_int64, me%int64)
+        allocate(tmp_int64, source = [me%data, int64])
+        call move_alloc(tmp_int64, me%data)
 
     end procedure element_add_int64
 
@@ -283,12 +277,12 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
         type(logical_dt) :: boolean
         type(logical_dt), dimension(:), allocatable :: tmp_boolean_dt
 
-        if (.not. allocated(me%boolean)) then
-            allocate(me%boolean(0))
+        if (.not. allocated(me%data)) then
+            allocate(me%data)
         end if
         allocate(boolean%val, source=data)
-        allocate(tmp_boolean_dt, source = [me%boolean, boolean])
-        call move_alloc(tmp_boolean_dt, me%boolean)
+        allocate(tmp_boolean_dt, source = [me%data, boolean])
+        call move_alloc(tmp_boolean_dt, me%data)
 
     end procedure element_add_logical
 
@@ -305,29 +299,26 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
             add_quotes = .true.  !! by default, add quotation marks around a string
         end if
 
-        if (.not. allocated(me%string)) then
-            !allocate(me%string(0))
-            allocate(me%string,source='')
-            new_line_string = ''
-        else
-            new_line_string = new_line('a')
-        end if
-
-        !allocate(tmp_string(1:size(me%string)+1))
-        !tmp_string(1:size(me%string)) = me%string
-        !call move_alloc(tmp_string, me%string)
-        call move_alloc(me%string,tmp_string)
-
-        !associate (my_entry => ubound(me%string,dim=1))
-            if (add_quotes) then
-        !        allocate(me%string(my_entry)%text,source='"' // string // '"')
-                allocate(me%string,source=tmp_string // new_line_string // '"' // string // '"')
+        select type (d => me%data)
+        class is (string_dt)
+            if (.not. allocated(me%data)) then
+                allocate(string_dt::me%data)
+                me%data%val = ''
+                new_line_string = ''
             else
-        !        allocate(me%string(my_entry)%text,source=string)
-                allocate(me%string,source=tmp_string // new_line_string // string)
+                new_line_string = new_line('a')
             end if
-        !end associate
-write(output_unit,*) 'me%string: ',me%string
+
+            call move_alloc(d%data,tmp_string)
+
+            if (add_quotes) then
+                allocate(d%val,source=tmp_string%val // new_line_string // '"' // string // '"')
+            else
+                allocate(d%val,source=tmp_string%val // new_line_string // string)
+            end if
+        end select
+
+write(output_unit,*) 'me%data: ',me%data
     end procedure element_add_string
 
     module procedure element_add_element
@@ -403,83 +394,57 @@ write(output_unit,*) 'tmp_element string: ',tmp_element%string
         fmt = get_offset_format(prior_offset)
 
         call me%begin(unit)
+
+        if (allocated(me%data)) then
 write(output_unit,*) 'me%name: ',me%name
-        if (allocated(me%string)) then
-            !do i = 1, size(me%string)
+        select type (d => me%data)
+        class is (string_dt)
+            if (allocated(d%val)) then
                 select case (file_format)
                 case (ascii)
 #ifdef INTEL_COMPILER
-                    !write(unit,fmt,advance='yes') me%string(i)%text
-                    write(unit,fmt,advance='yes') me%string
+                    write(unit,fmt,advance='yes') d%val
 #else
-                    !write(unit,fmt,advance='no') me%string(i)%text
-                    write(unit,fmt,advance='no') me%string
+                    write(unit,fmt,advance='no') d%val
 #endif
                 case (binary)
-                    !write(unit) me%string(i)%text
                     write(unit) me%string
                 end select
-            !end do
-        else if (allocated(me%int32)) then
-            do i = 1, size(me%int32)
-                if (allocated(me%int32(i)%val)) then
-                    associate (n_vals => size(me%int32(i)%val))
-                        write(unit,*) (me%int32(i)%val(j),j=1,n_vals)
-                    end associate
-                end if
-                if (allocated(me%int32(i)%val_2d)) then
-                    associate (n_vals_1 => size(me%int32(i)%val_2d,dim=1), n_vals_2 => size(me%int32(i)%val_2d,dim=2))
-                        do k = 1, n_vals_2
-                            write(unit,*) (me%int32(i)%val_2d(j,k),j=1,n_vals_1)
-                        end do
-                    end associate
-                end if
+            end if
+        class is (int32_dt)
+            do i = 1, size(p%val_2d,dim=2)
+                write(unit,*) d%val_2d(:,i)
             end do
             if (file_format == binary) then
                 write(unit) new_line('a')
             end if
-        else if (allocated(me%int64)) then
-            do i = 1, size(me%int64)
-                if (allocated(me%int64(i)%val)) then
-                    associate (n_vals => size(me%int64(i)%val))
-                        write(unit) (me%int64(i)%val(j),j=1,n_vals)
-                    end associate
-                end if
-                if (allocated(me%int64(i)%val_2d)) then
-                    associate (n_vals_1 => size(me%int64(i)%val_2d,dim=1), n_vals_2 => size(me%int64(i)%val_2d,dim=2))
-                        do k = 1, n_vals_2
-                            write(unit) (me%int64(i)%val_2d(j,k),j=1,n_vals_1)
-                        end do
-                    end associate
-                end if
+        class is (int64)
+            do i = 1, size(p%val_2d,dim=2)
+                write(unit,*) d%val_2d(:,i)
             end do
             if (file_format == binary) then
                 write(unit) new_line('a')
             end if
-        else if (allocated(me%real32)) then
-            do i = 1, size(me%real32)
-                associate (n_vals => size(me%real32(i)%val))
-                    write(unit) (me%real32(i)%val(j),j=1,n_vals)
-                end associate
+        class is (real32_dt)
+            do i = 1, size(p%val_2d,dim=2)
+                write(unit,*) d%val_2d(:,i)
             end do
             if (file_format == binary) then
                 write(unit) new_line('a')
             end if
-        else if (allocated(me%real64)) then
-            do i = 1, size(me%real64)
-                associate (n_vals => size(me%real64(i)%val))
-                    select case (file_format)
-                    case (ascii)
-                        write(unit,*) (me%real64(i)%val(j),j=1,n_vals)
-                    case (binary)
-                        write(unit) (me%real64(i)%val(j),j=1,n_vals)
-                    end select
-                end associate
+        class is (real64_dt)
+            do i = 1, size(p%val_2d,dim=2)
+                select case (file_format)
+                case (ascii)
+                    write(unit,*) me%real64(i)%val_2d(:,i)
+                case (binary)
+                    write(unit) me%real64(i)%val_2d(:,i)
+                end select
             end do
             if (file_format == binary) then
                 write(unit) new_line('a')
             end if
-        else
+        end select
             !! Nothing to write
         end if
 
@@ -500,13 +465,8 @@ write(output_unit,*) 'me%name: ',me%name
         if (allocated(you%name)) me%name = you%name
         me%unit   = you%unit
         me%offset = you%offset
-        if (allocated(you%additional_data)) me%additional_data = you%additional_data
-        if (allocated(you%string))  me%string = you%string
-        if (allocated(you%int32))   me%int32 = you%int32
-        if (allocated(you%int64))   me%int64 = you%int64
-        if (allocated(you%real32))  me%real32 = you%real32
-        if (allocated(you%real64))  me%real64 = you%real64
-        if (allocated(you%boolean)) me%boolean = you%boolean
+        if (allocated(you%header)) me%header = you%header
+        if (allocated(you%data))  me%data = you%data
         if (allocated(you%element)) then
             allocate(me%element(lbound(you%element,dim=1):ubound(you%element,dim=1)))
             do i = lbound(you%element,dim=1),ubound(you%element,dim=1)
@@ -681,8 +641,8 @@ write(output_unit,*) 'entering xml_add'
         else
 write(output_unit,*) 'getting freed in free_me. me%name: ',me%name
             if (allocated(me%name)) deallocate(me%name)
-            if (allocated(me%additional_data)) deallocate(me%additional_data)
-            if (allocated(me%string)) deallocate(me%string)
+            if (allocated(me%header)) deallocate(me%header)
+            if (allocated(me%data)) deallocate(me%data)
         end if
 
     end subroutine free_me
@@ -740,14 +700,9 @@ write(output_unit,*) 'oldfoo(i)%name: ',oldfoo(i)%name
 write(output_unit,*) 'oldfoo(i)%unit: ',oldfoo(i)%unit
                 me(i)%unit = oldfoo(i)%unit
                 me(i)%offset = oldfoo(i)%offset
-                if (allocated(oldfoo(i)%additional_data)) &
-                    &  allocate(me(i)%additional_data, source=oldfoo(i)%additional_data)
-                if (allocated(oldfoo(i)%int32))  allocate(me(i)%int32,  source=oldfoo(i)%int32)
-                if (allocated(oldfoo(i)%int64))  allocate(me(i)%int64,  source=oldfoo(i)%int64)
-                if (allocated(oldfoo(i)%string)) allocate(me(i)%string, source=oldfoo(i)%string)
-                if (allocated(oldfoo(i)%real32)) allocate(me(i)%real32, source=oldfoo(i)%real32)
-                if (allocated(oldfoo(i)%real64)) allocate(me(i)%real64, source=oldfoo(i)%real64)
-                if (allocated(oldfoo(i)%boolean)) allocate(me(i)%boolean, source=oldfoo(i)%boolean)
+                if (allocated(oldfoo(i)%header)) &
+                    &  allocate(me(i)%header, source=oldfoo(i)%header)
+                if (allocated(oldfoo(i)%data))  allocate(me(i)%data,  source=oldfoo(i)%data)
                 if (allocated(oldfoo(i)%element)) then
 write(output_unit,*) 'oldfoo(i)%element is allocated. calling gcc_bug_workaround_allocate'
                     call gcc_bug_workaround_allocate(me(i)%element, oldfoo=oldfoo(i)%element)
@@ -766,14 +721,9 @@ write(output_unit,*) 'addfoo%name: ',addfoo%name
 write(output_unit,*) 'addfoo%unit: ',addfoo%unit
             me(i)%unit = addfoo%unit
             me(i)%offset = addfoo%offset
-            if (allocated(addfoo%additional_data)) &
-                &  allocate(me(i)%additional_data, source=addfoo%additional_data)
-            if (allocated(addfoo%int32))  allocate(me(i)%int32,  source=addfoo%int32)
-            if (allocated(addfoo%int64))  allocate(me(i)%int64,  source=addfoo%int64)
-            if (allocated(addfoo%string)) allocate(me(i)%string, source=addfoo%string)
-            if (allocated(addfoo%real32)) allocate(me(i)%real32, source=addfoo%real32)
-            if (allocated(addfoo%real64)) allocate(me(i)%real64, source=addfoo%real64)
-            if (allocated(addfoo%boolean)) allocate(me(i)%boolean, source=addfoo%boolean)
+            if (allocated(addfoo%header)) &
+                &  allocate(me(i)%header, source=addfoo%header)
+            if (allocated(addfoo%data))  allocate(me(i)%data,  source=addfoo%data)
             if (allocated(addfoo%element)) then
 write(output_unit,*) 'addfoo(i)%element is allocated. calling gcc_bug_workaround_allocate'
               call gcc_bug_workaround_allocate(me(i)%element, oldfoo=addfoo%element)
@@ -826,24 +776,11 @@ write(output_unit,*) 'me%name: ',me%name
         end if
         me%unit = output_unit
         me%offset = 0
-        if (allocated(me%additional_data)) then
-write(output_unit,*) 'me%additional_data: ',me%additional_data
-            deallocate(me%additional_data)
+        if (allocated(me%header)) then
+write(output_unit,*) 'me%header: ',me%header
+            deallocate(me%header)
         end if
-!        if (allocated(me%string)) then
-write(output_unit,*) 'me%string is allocated '
-!            if (size(me%string) > 0) then
-!                do i = lbound(me%string,dim=1), ubound(me%string,dim=1)
-!                    call gcc_bug_deallocate_string_dt(me%string(i))
-!                end do
-!            end if
-            if (allocated(me%string)) deallocate(me%string)
-!        end if
-        if (allocated(me%int32))      deallocate(me%int32)
-        if (allocated(me%int64))      deallocate(me%int64)
-        if (allocated(me%real32))     deallocate(me%real32)
-        if (allocated(me%real64))     deallocate(me%real64)
-        if (allocated(me%boolean))    deallocate(me%boolean)
+        if (allocated(me%data))       deallocate(me%data)
         if (allocated(me%element)) then
 write(output_unit,*) 'me%element is allocated. size: ',size(me%element)
             if (size(me%element) > 0) then
@@ -890,13 +827,8 @@ write(output_unit,*) 'me%element is allocated. size: ',size(me%element)
         if (allocated(me%name))            deallocate(me%name)
         me%unit = output_unit
         me%offset = 0
-        if (allocated(me%additional_data)) deallocate(me%additional_data)
-        if (allocated(me%string))          deallocate(me%string)
-        if (allocated(me%int32))           deallocate(me%int32)
-        if (allocated(me%int64))           deallocate(me%int64)
-        if (allocated(me%real32))          deallocate(me%real32)
-        if (allocated(me%real64))          deallocate(me%real64)
-        if (allocated(me%boolean))         deallocate(me%boolean)
+        if (allocated(me%header)) deallocate(me%header)
+        if (allocated(me%data))          deallocate(me%data)
         if (allocated(me%element)) then
             if (ubound(me%element,dim=1) > 0) then
                 do i = lbound(me%element,dim=1),ubound(me%element,dim=1)

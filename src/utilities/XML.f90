@@ -26,37 +26,41 @@ module xml
     character(len=*), parameter :: format_append = 'APPENDED'
     character(len=:), allocatable :: file_format_text
 
-    type string_dt
+    type, abstract :: xml_data
+        !! Placeholder for types of XML data that is possible (int, real, logical, string)
+    end type xml_data
+
+    type, extends(xml_data) :: string_dt
         !! String derived type to allow handling of various sized strings
-        character(len=:), allocatable :: text
+        character(len=:), allocatable :: val
     contains
         procedure, private :: gcc_bug_deallocate_string_dt
         generic, public    :: deallocate => gcc_bug_deallocate_string_dt
 !        final :: gcc_bug_deallocate_string_dt
     end type string_dt
 
-    type int32_dt
-        integer(i4k), dimension(:),   allocatable :: val
+    type, extends(xml_data) :: int32_dt
+!        integer(i4k), dimension(:),   allocatable :: val
         integer(i4k), dimension(:,:), allocatable :: val_2d
     end type int32_dt
 
-    type int64_dt
-        integer(i8k), dimension(:),   allocatable :: val
+    type, extends(xml_data) :: int64_dt
+!        integer(i8k), dimension(:),   allocatable :: val
         integer(i8k), dimension(:,:), allocatable :: val_2d
     end type int64_dt
 
-    type real32_dt
-        real(r4k), dimension(:),   allocatable :: val
+    type, extends(xml_data) :: real32_dt
+!        real(r4k), dimension(:),   allocatable :: val
         real(r4k), dimension(:,:), allocatable :: val_2d
     end type real32_dt
 
-    type real64_dt
-        real(r8k), dimension(:),   allocatable :: val
+    type, extends(xml_data) :: real64_dt
+!        real(r8k), dimension(:),   allocatable :: val
         real(r8k), dimension(:,:), allocatable :: val_2d
     end type real64_dt
 
-    type logical_dt
-        logical, dimension(:),   allocatable :: val
+    type, extends(xml_data) :: logical_dt
+!        logical, dimension(:),   allocatable :: val
         logical, dimension(:,:), allocatable :: val_2d
     end type logical_dt
 
@@ -66,14 +70,8 @@ module xml
         character(len=:), allocatable :: name            !! name of the xml block
         integer(i4k) :: unit = output_unit               !! file unit #
         integer(i4k) :: offset = 0                       !! offset for data within xml block
-        character(len=:), allocatable :: additional_data !! additional data to write in header
-        !type(string_dt),      dimension(:), allocatable :: string  !! string data set(s) within element
-        character(len=:), allocatable :: string          !! character data (workaround due to gcc issues)
-        type(int32_dt),       dimension(:), allocatable :: int32   !! array of integer 32
-        type(int64_dt),       dimension(:), allocatable :: int64   !! array of integer 64
-        type(real32_dt),      dimension(:), allocatable :: real32  !! array of real32
-        type(real64_dt),      dimension(:), allocatable :: real64  !! array of real64
-        type(logical_dt),     dimension(:), allocatable :: boolean !! array of booleans
+        character(len=:), allocatable :: header          !! additional data to write in header
+        class(xml_data), dimension(:), allocatable :: data
         type(xml_element_dt), dimension(:), allocatable :: element !! element data set(s) within element
     contains
         procedure, public  :: setup => element_setup   !! set up element block
