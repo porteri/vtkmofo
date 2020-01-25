@@ -58,8 +58,8 @@ matrix:
       osx_image: xcode10
       env: GCC=9
       before_install:
-        - brew update
         - brew unlink python@2
+        - brew update
         - brew upgrade gcc
         - export FC=gfortran-${GCC}
         - cmake --version
@@ -67,9 +67,9 @@ matrix:
       osx_image: xcode11
       env: GCC=9
       before_install:
+        - brew unlink python@2
         - brew update
         - brew upgrade gcc
-        - brew unlink python@2
         - brew upgrade cmake
         - export FC=gfortran-${GCC}
         - cmake --version
