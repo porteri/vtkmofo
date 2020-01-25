@@ -58,6 +58,7 @@ module vtk_attributes
         procedure :: write => vector_write
         procedure :: setup => vector_setup
         procedure, private :: check_for_diffs => vector_check_for_diffs
+        procedure :: convert_to_dataarray => vector_convert_to_dataarray
     end type vector
 
     type, extends(attribute) :: normal
@@ -69,6 +70,7 @@ module vtk_attributes
         procedure :: write => normal_write
         procedure :: setup => normal_setup
         procedure, private :: check_for_diffs => normal_check_for_diffs
+        procedure :: convert_to_dataarray => normal_convert_to_dataarray
     end type normal
 
     type, extends(attribute) :: texture
@@ -101,6 +103,7 @@ module vtk_attributes
         procedure :: write => tensor_write
         procedure :: setup => tensor_setup
         procedure, private :: check_for_diffs => tensor_check_for_diffs
+        procedure :: convert_to_dataarray => tensor_convert_to_dataarray
     end type tensor
 
     type :: field_data_array
@@ -153,7 +156,7 @@ module vtk_attributes
         end subroutine abs_write
 
         module subroutine initialize (me, dataname, datatype, numcomp, tablename, int1d, int2d, int3d, &
-            &                           real1d, real2d, real3d, field_arrays)
+            &                         real1d, real2d, real3d, field_arrays)
             implicit none
             !! author: Ian Porter
             !! date: 12/13/2017
@@ -259,7 +262,7 @@ module vtk_attributes
             !! author: Ian Porter
             !! date: 07/20/2019
             !!
-            !! function converts an attribute to a dataarray
+            !! function converts a scalar attribute to a dataarray
             !!
             class(scalar), intent(in) :: me
             type(dataarray_dt)        :: array
@@ -319,6 +322,18 @@ module vtk_attributes
             logical                      :: diffs
 
         end function vector_check_for_diffs
+
+        module function vector_convert_to_dataarray (me) result (array)
+            implicit none
+            !! author: Ian Porter
+            !! date: 01/05/2020
+            !!
+            !! function converts a vector attribute to a dataarray
+            !!
+            class(vector), intent(in) :: me
+            type(dataarray_dt)        :: array
+
+        end function vector_convert_to_dataarray
         !********
         ! normals
         !********
@@ -373,6 +388,18 @@ module vtk_attributes
             logical                      :: diffs
 
         end function normal_check_for_diffs
+
+        module function normal_convert_to_dataarray (me) result (array)
+            implicit none
+            !! author: Ian Porter
+            !! date: 01/05/2020
+            !!
+            !! function converts a normal attribute to a dataarray
+            !!
+            class(normal), intent(in) :: me
+            type(dataarray_dt)        :: array
+
+        end function normal_convert_to_dataarray
         !********
         ! textures
         !********
@@ -481,6 +508,18 @@ module vtk_attributes
             logical                      :: diffs
 
         end function tensor_check_for_diffs
+
+        module function tensor_convert_to_dataarray (me) result (array)
+            implicit none
+            !! author: Ian Porter
+            !! date: 01/05/2020
+            !!
+            !! function converts a tensor attribute to a dataarray
+            !!
+            class(tensor), intent(in) :: me
+            type(dataarray_dt)        :: array
+
+        end function tensor_convert_to_dataarray
         !********
         ! fields
         !********

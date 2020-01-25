@@ -23,15 +23,20 @@ contains
         character(len=*), parameter   :: celldata_name  = 'CellData'
         character(len=:), allocatable :: string
         character(len=:), allocatable :: my_name
-        character(len=:), allocatable :: scalar_string
 
         if (allocated(me%scalars)) then
-            allocate(scalar_string,source=' Scalars="' // me%scalars // '"')
+            allocate(string,source=' Scalars="' // me%scalars // '"')
+        else if (allocated(me%vectors)) then
+            allocate(string,source=' Vectors="' // me%vectors // '"')
+        else if (allocated(me%normals)) then
+            allocate(string,source=' Normals="' // me%vectors // '"')
+        else if (allocated(me%tensors)) then
+            allocate(string,source=' Tensors="' // me%vectors // '"')
+        else if (allocated(me%tcoords)) then
+            allocate(string,source=' TCoords="' // me%vectors // '"')
         else
-            allocate(scalar_string,source='')
+            allocate(string,source='')
         end if
-
-        allocate(string, source=scalar_string)
 
         select type (me)
         class is (pointdata_dt)
@@ -39,7 +44,7 @@ contains
         class is (celldata_dt)
             allocate(my_name,source=celldata_name)
         class default
-            error stop 'Error: undefined type in data_setup'
+            error stop 'Error: undefined type in submodule: vtk_piece_element_procedures, procedure: data_setup'
         end select
 
         call me%setup(name=my_name, string=string)
@@ -55,7 +60,13 @@ contains
         !! this converts the vtk_element_dt header into xml format
         !!
 
-        if (present(scalar)) allocate(me%scalars,source=scalar)
+        if (present(scalar)) then
+            allocate(me%scalars,source=scalar)
+!        else if (present(vector)) then
+!            allocate(me%vectors,source=vector)
+!        else
+!            error stop 'finish setting this up'
+        end if
 
         call me%data_setup()
 
