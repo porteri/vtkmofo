@@ -202,8 +202,8 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
                 allocate(d(1)%val,source=data)
             else
                 allocate(tmp_data%val, source=data)
-                allocate(tmp_data_array, source = [d, tmp_data])
-                call move_alloc(tmp_data_array, me%data)
+                call move_alloc(tmp_data_array,me%data)
+                allocate(me%data,source=[tmp_data_array, tmp_data])
             end if
         end select
 
@@ -222,8 +222,8 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
                 allocate(d(1)%val,source=data)
             else
                 allocate(tmp_data%val, source=data)
-                allocate(tmp_data_array, source = [d, tmp_data])
-                call move_alloc(tmp_data_array, me%data)
+                call move_alloc(tmp_data_array,me%data)
+                allocate(me%data,source=[tmp_data_array, tmp_data])
             end if
         end select
 
@@ -243,8 +243,8 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
                 allocate(d(1)%val_2d,source=data)
             else
                 allocate(tmp_data%val_2d, source=data)
-                allocate(tmp_data_array, source = [d, tmp_data])
-                call move_alloc(tmp_data_array, me%data)
+                call move_alloc(tmp_data_array,me%data)
+                allocate(me%data,source=[tmp_data_array, tmp_data])
             end if
         end select
 
@@ -263,8 +263,8 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
                 allocate(d(1)%val,source=data)
             else
                 allocate(tmp_data%val, source=data)
-                allocate(tmp_data_array, source = [d, tmp_data])
-                call move_alloc(tmp_data_array, me%data)
+                call move_alloc(tmp_data_array,me%data)
+                allocate(me%data,source=[tmp_data_array, tmp_data])
             end if
         end select
 
@@ -284,8 +284,8 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
                 allocate(d(1)%val,source=data)
             else
                 allocate(tmp_data%val, source=data)
-                allocate(tmp_data_array, source = [d, tmp_data])
-                call move_alloc(tmp_data_array, me%data)
+                call move_alloc(tmp_data_array,me%data)
+                allocate(me%data,source=[tmp_data_array, tmp_data])
             end if
         end select
 
@@ -294,8 +294,8 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
     module procedure element_add_logical
         implicit none
         !! this adds data inside of an xml element block
-        type(logical_dt) :: boolean
-        type(logical_dt), dimension(:), allocatable :: tmp_boolean_dt
+        type(logical_dt) :: tmp_data
+        type(logical_dt), dimension(:), allocatable :: tmp_data_array
 
         select type (d => me%data)
         class is (logical_dt)
@@ -303,9 +303,9 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
                 allocate(logical_dt::me%data(1))
                 allocate(d(1)%val,source=data)
             else
-                allocate(boolean%val, source=data)
-                allocate(tmp_boolean_dt, source = [d, boolean])
-                call move_alloc(tmp_boolean_dt, me%data)
+                allocate(tmp_data%val, source=data)
+                call move_alloc(tmp_data_array,me%data)
+                allocate(me%data,source=[tmp_data_array, tmp_data])
             end if
         end select
 
@@ -338,8 +338,10 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
                 allocate(d(1)%val,source=new_string)
             else
                 allocate(tmp_data%val, source=new_string)
-                allocate(tmp_data_array, source = [d, tmp_data])
-                call move_alloc(tmp_data_array, me%data)
+                call move_alloc(tmp_data_array,me%data)
+                allocate(me%data,source=[tmp_data_array, tmp_data])
+                !allocate(tmp_data_array, source = [me%data, tmp_data])
+!                call move_alloc(tmp_data_array, me%data)
             end if
         end select
 
