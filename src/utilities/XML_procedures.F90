@@ -16,7 +16,7 @@ contains
         implicit none
         !! this sets up the information needed to define the xml element block
 
-        call destroy(me)
+        call free_me(me)
 
         allocate(me%name,source=name)
         if (present(string)) then
@@ -192,6 +192,14 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
     module procedure element_add_real32
         implicit none
         !! this adds data inside of an xml element block
+
+        call me%add([data])
+
+    end procedure element_add_real32
+
+    module procedure element_add_real32_1d
+        implicit none
+        !! this adds data inside of an xml element block
         type(real32_dt) :: tmp_data
         type(real32_dt), dimension(:), allocatable :: tmp_data_array
 
@@ -207,9 +215,37 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
             end if
         end select
 
-    end procedure element_add_real32
+    end procedure element_add_real32_1d
+
+    module procedure element_add_real32_2d
+        implicit none
+        !! this adds data inside of an xml element block
+        type(real32_dt) :: tmp_data
+        type(real32_dt), dimension(:), allocatable :: tmp_data_array
+
+        select type (d => me%data)
+        class is (real32_dt)
+            if (.not. allocated(me%data)) then
+                allocate(real32_dt::me%data(1))
+                allocate(d(1)%val_2d,source=data)
+            else
+                allocate(tmp_data%val_2d, source=data)
+                call move_alloc(tmp_data_array,me%data)
+                allocate(me%data,source=[tmp_data_array, tmp_data])
+            end if
+        end select
+
+    end procedure element_add_real32_2d
 
     module procedure element_add_real64
+        implicit none
+        !! this adds data inside of an xml element block
+
+        call me%add([data])
+
+    end procedure element_add_real64
+
+    module procedure element_add_real64_1d
         implicit none
         !! this adds data inside of an xml element block
         type(real64_dt) :: tmp_data
@@ -227,7 +263,7 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
             end if
         end select
 
-    end procedure element_add_real64
+    end procedure element_add_real64_1d
 
     module procedure element_add_real64_2d
         use misc, only : convert_to_string
@@ -353,33 +389,35 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
         integer :: i
         type(xml_element_dt) :: tmp_element
         type(xml_element_dt), dimension(:), allocatable :: tmp_element_array
-write(output_unit,*) 'entering element_add_element'
+write(output_unit,*) 'entering element_add_element.'
+write(output_unit,*) ' my name:  ',me%name
         tmp_element = element
-write(output_unit,*) 'tmp_element name:   ',tmp_element%name
+write(output_unit,*) 'Adding in: ',tmp_element%name
 
-         if (allocated(me%element)) then
-             write(output_unit,*) 'me%element name:   ',me%name
-             allocate(tmp_element_array(lbound(me%element,dim=1):ubound(me%element,dim=1)))
-             do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
-                 tmp_element_array(i) = me%element(i)
-                 call destroy(me%element(i))
-             end do
-             if (allocated(me%element)) deallocate(me%element)
-             allocate(me%element(lbound(tmp_element_array,dim=1):ubound(tmp_element_array,dim=1)+1))
-             do i = 1, ubound(tmp_element_array,dim=1)
-                 me%element(i) = tmp_element_array(i)
-                 call destroy(tmp_element_array(i))
-             end do
-             if (allocated(tmp_element_array)) deallocate(tmp_element_array)
-             associate (i => size(me%element))
-                 me%element(i) = tmp_element
-             end associate
+        if (allocated(me%element)) then
+            allocate(tmp_element_array(lbound(me%element,dim=1):ubound(me%element,dim=1)))
+            do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
+                tmp_element_array(i) = me%element(i)
+                call free_me(me%element(i))
+            end do
+            if (allocated(me%element)) deallocate(me%element)
+            allocate(me%element(lbound(tmp_element_array,dim=1):ubound(tmp_element_array,dim=1)+1))
+            do i = 1, ubound(tmp_element_array,dim=1)
+                me%element(i) = tmp_element_array(i)
+            end do
+            do i = lbound(tmp_element_array,dim=1),ubound(tmp_element_array,dim=1)
+                call free_me(tmp_element_array(i))
+            end do
+            if (allocated(tmp_element_array)) deallocate(tmp_element_array)
+            associate (i => size(me%element))
+                me%element(i) = tmp_element
+            end associate
         else
             allocate(me%element(1),source=tmp_element)
         end if
 
-        call destroy(tmp_element)
-
+        call free_me(tmp_element)
+write(output_unit,*) 'leaving element_add_element'
     end procedure element_add_element
 
     module procedure element_end
@@ -709,53 +747,11 @@ write(output_unit,*) 'me%name: ',me%name
         !!
         !! this adds data inside of the file
         !!
-        integer :: i
-        type(xml_element_dt) :: tmp_element
-        type(xml_element_dt), dimension(:), allocatable :: tmp_element_array
 
 write(output_unit,*) 'entering xml_add'
-        tmp_element = element
-        if (allocated(me%element)) then
-            allocate(tmp_element_array(1:size(me%element)))
-            do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
-                tmp_element_array(i) = me%element(i)
-                call free_me (me%element(i))
-            end do
-            if (allocated(me%element)) deallocate(me%element)
-            allocate(me%element(lbound(tmp_element_array,dim=1):ubound(tmp_element_array,dim=1)+1))
-            do i = lbound(tmp_element_array,dim=1), ubound(tmp_element_array,dim=1)
-                me%element(i) = tmp_element_array(i)
-                call free_me (tmp_element_array(i))
-            end do
-            if (allocated(tmp_element_array)) deallocate(tmp_element_array)
-            associate (i => size(me%element))
-                me%element(i) = tmp_element
-            end associate
-        else
-            allocate(me%element(1),source=tmp_element)
-        end if
-
-        call free_me(tmp_element)
-
+        allocate(me%element,source=element)
+write(output_unit,*) 'leaving  xml_add'
     end procedure xml_add
-
-    recursive subroutine free_me (me)
-        type(xml_element_dt), intent(inout) :: me
-        integer :: i
-
-        if (allocated(me%element)) then
-            do i = lbound(me%element,dim=1),ubound(me%element,dim=1)
-                call free_me(me%element(i))
-            end do
-            deallocate(me%element)
-        else
-write(output_unit,*) 'getting freed in free_me. me%name: ',me%name
-            if (allocated(me%name)) deallocate(me%name)
-            if (allocated(me%header)) deallocate(me%header)
-            if (allocated(me%data)) deallocate(me%data)
-        end if
-
-    end subroutine free_me
 
     module procedure xml_end
         implicit none
@@ -780,9 +776,7 @@ write(output_unit,*) 'getting freed in free_me. me%name: ',me%name
 
         call me%begin()
 
-        do i = 1, size(me%element)
-            call me%element(i)%write(me%unit)
-        end do
+        call me%element%write(me%unit)
 
         call me%end()
 
@@ -880,25 +874,27 @@ write(output_unit,*) 'leaving gcc_bug_workaround_allocate'
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         integer(i4k) :: i
 
-        if (allocated(me%name)) then
-write(output_unit,*) 'me%name: ',me%name
-            deallocate(me%name)
-        end if
-        me%unit = output_unit
-        me%offset = 0
-        if (allocated(me%header)) then
-write(output_unit,*) 'me%header: ',me%header
-            deallocate(me%header)
-        end if
-        if (allocated(me%data))       deallocate(me%data)
         if (allocated(me%element)) then
-write(output_unit,*) 'me%element is allocated. size: ',size(me%element)
             if (size(me%element) > 0) then
+write(output_unit,*) 'me%element is allocated. size: ',size(me%element),' name: ',me%name
                 do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
-                    call gcc_bug_workaround_deallocate_single (me%element(i))
+                    !call gcc_bug_workaround_deallocate_single (me%element(i))
+                    call free_me(me%element(i))
                 end do
             end if
             if (allocated(me%element)) deallocate(me%element)
+        else
+            if (allocated(me%name)) then
+write(output_unit,*) 'me%name: ',me%name
+                deallocate(me%name)
+            end if
+            me%unit = output_unit
+            me%offset = 0
+            if (allocated(me%header)) then
+write(output_unit,*) 'me%header: ',me%header
+                deallocate(me%header)
+            end if
+            if (allocated(me%data))       deallocate(me%data)
         end if
 
     end procedure gcc_bug_workaround_deallocate_single
@@ -914,17 +910,9 @@ write(output_unit,*) 'me%element is allocated. size: ',size(me%element)
     module procedure gcc_bug_workaround_deallocate_xml_file_dt
         implicit none
         !! gcc work-around to de-allocate the string derived type
-!        integer :: i
 
         if (allocated(me%element)) then
-            !do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
-!                associate (e => me%element(i))
-!                select type (me%element(i))
-!                class is (xml_element_dt)
-            !        call me%element(i)%deallocate()
-!                end select
-!                end associate
-            !end do
+            call free_me(me%element)
             deallocate(me%element)
         end if
 
@@ -938,7 +926,7 @@ write(output_unit,*) 'me%element is allocated. size: ',size(me%element)
         me%unit = output_unit
         me%offset = 0
         if (allocated(me%header)) deallocate(me%header)
-        if (allocated(me%data))          deallocate(me%data)
+        if (allocated(me%data))   deallocate(me%data)
         if (allocated(me%element)) then
             if (ubound(me%element,dim=1) > 0) then
                 do i = lbound(me%element,dim=1),ubound(me%element,dim=1)
@@ -949,6 +937,30 @@ write(output_unit,*) 'me%element is allocated. size: ',size(me%element)
         end if
 
     end subroutine destroy
+
+    recursive subroutine free_me (me)
+        type(xml_element_dt), intent(inout) :: me
+        integer :: i
+
+        if (allocated(me%element)) then
+            do i = lbound(me%element,dim=1),ubound(me%element,dim=1)
+                call free_me(me%element(i))
+            end do
+            deallocate(me%element)
+        else
+write(output_unit,*) 'getting freed in free_me. me%data: '
+            if (allocated(me%data)) deallocate(me%data)
+write(output_unit,*) 'getting freed in free_me. me%name: ',me%name
+            if (allocated(me%name)) deallocate(me%name)
+write(output_unit,*) 'getting freed in free_me. me%header: ',me%header
+            if (allocated(me%header)) deallocate(me%header)
+
+            me%unit = output_unit
+            me%offset = 0
+
+        end if
+
+    end subroutine free_me
 
     module procedure convert_format_to_string
         implicit none

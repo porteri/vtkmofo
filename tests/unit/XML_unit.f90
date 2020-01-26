@@ -2,6 +2,7 @@ program xml_test
     use vtkmofopassfail, only : all_tests_pass
     use xml,             only : xml_element_dt, xml_file_dt
     use precision,       only : i4k, i8k, r4k, r8k
+    use iso_fortran_env, only : output_unit
     implicit none
     !! author: Ian Porter
     !! date: 05/02/2019
@@ -39,32 +40,34 @@ program xml_test
     !!       8.0000000000000000 8.0000000000000000
     !!       true false
     !!   </xml_foo3>
+    !!   <xml_foo2 needed="still nothing new to report here">
+    !!     "more blah"
+    !!     "more blah"
+    !!     <xml_foo3>
+    !!         4
+    !!         8 8
+    !!         4.0000000000000000
+    !!         8.0000000000000000 8.0000000000000000
+    !!         true false
+    !!     </xml_foo3>
+    !!   </xml_foo2>
+    !!   <xml_foo2 needed="still nothing new to report here">
+    !!     "more blah"
+    !!     "more blah"
+    !!     <xml_foo3>
+    !!         4
+    !!         8 8
+    !!         4.0000000000000000
+    !!         8.0000000000000000 8.0000000000000000
+    !!         true false
+    !!     </xml_foo3>
+    !!   </xml_foo2>
     !!</xml_foo>
-    !!<xml_foo2 needed="still nothing new to report here">
-    !!     "more blah"
-    !!     "more blah"
-    !!     <xml_foo3>
-    !!         4
-    !!         8 8
-    !!         4.0000000000000000
-    !!         8.0000000000000000 8.0000000000000000
-    !!         true false
-    !!     </xml_foo3>
-    !!</xml_foo2>
-    !!<xml_foo2 needed="still nothing new to report here">
-    !!     "more blah"
-    !!     "more blah"
-    !!     <xml_foo3>
-    !!         4
-    !!         8 8
-    !!         4.0000000000000000
-    !!         8.0000000000000000 8.0000000000000000
-    !!         true false
-    !!     </xml_foo3>
-    !!</xml_foo2>
     !!
     !!
-    type(xml_element_dt) :: foo, foo1, foo2, foo3
+    real(r8k), dimension(2,2), parameter :: foo5_2darray = &
+        & reshape([0.5_r8k, 0.5_r8k, 0.5_r8k, 0.5_r8k],[2,2])
+    type(xml_element_dt) :: foo, foo1, foo2, foo3, foo4, foo5
     type(xml_file_dt) :: xml_file
 
     call foo%setup('xml_foo','',offset=3)
@@ -74,7 +77,7 @@ program xml_test
     call foo1%add('blah')
     call foo1%add('blah')
     call foo%add(foo1)
-    call foo2%setup('xml_foo2','needed="nothing new to report here"')
+    call foo2%setup('xml_foo2','needed="nothing new to report here"',2)
     call foo2%add('more blah')
     call foo2%add('more blah')
     call foo%add(foo2)
@@ -90,17 +93,26 @@ program xml_test
     call foo3%add([ 8.0_r8k, 8.0_r8k ])
     call foo3%add([ .true., .false. ])
 
+    call foo4%setup('xml_foo4')
+    call foo%add(1.5_r4k)
+
+    call foo5%setup('xml_foo5')
+    call foo5%add(foo5_2darray)
+
+    call foo4%add(foo5)
+    call foo3%add(foo4)
+write(output_unit,*) 'before foo2%add(foo3)'
     call foo2%add(foo3)
+write(output_unit,*) 'before foo%add(foo2)'
     call foo%add(foo2)
     call foo%add(foo3)
-
+write(output_unit,*) 'before xml_file%setup'
     call xml_file%setup(filename='xml_test.xml')
+write(output_unit,*) 'before xml_file%add(foo)'
     call xml_file%add(foo)
-    call xml_file%add(foo2)
-    call xml_file%add(foo2)
-
+write(output_unit,*) 'before xml_file%write'
     call xml_file%write()
-
+write(output_unit,*) 'after xml_file%write'
     call all_tests_pass()
 
 end program xml_test

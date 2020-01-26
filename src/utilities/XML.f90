@@ -89,7 +89,10 @@ module xml
         procedure, private :: element_add_string       !! write raw data inside of element block
         procedure, private :: element_add_element      !! write another element inside element block
         procedure, private :: element_add_real32       !! write real32 into a string inside of element block
+        procedure, private :: element_add_real32_1d    !! write real32 into a string inside of element block
+        procedure, private :: element_add_real32_2d    !! write real32 into a string inside of element block
         procedure, private :: element_add_real64       !! write real64 into a string inside of element block
+        procedure, private :: element_add_real64_1d    !! write real64 into a string inside of element block
         procedure, private :: element_add_real64_2d    !! write real64 into a string inside of element block
         procedure, private :: element_add_int32        !! write ints32 into a string inside of element block
         procedure, private :: element_add_int64        !! write ints64 into a string inside of element block
@@ -97,7 +100,11 @@ module xml
         generic, public    :: add   => element_add_string
         generic, public    :: add   => element_add_element
         generic, public    :: add   => element_add_real64
+        generic, public    :: add   => element_add_real64_1d
+        generic, public    :: add   => element_add_real64_2d
         generic, public    :: add   => element_add_real32
+        generic, public    :: add   => element_add_real32_1d
+        generic, public    :: add   => element_add_real32_2d
         generic, public    :: add   => element_add_int64
         generic, public    :: add   => element_add_int32
         generic, public    :: add   => element_add_logical
@@ -114,7 +121,7 @@ module xml
     type, extends(file_data_structure) :: xml_file_dt
         !! full xml file dt
         private
-        type(xml_element_dt), dimension(:), allocatable, public :: element
+        type(xml_element_dt), allocatable, public :: element
     contains
         procedure :: setup_file_information => xml_file_setup
         procedure :: update => xml_file_update
@@ -209,21 +216,42 @@ module xml
             implicit none
             !! this adds real double precision data inside of an xml element block
             class(xml_element_dt),   intent(inout) :: me    !! xml element derived type
-            real(r4k), dimension(:), intent(in)    :: data   !! data to write
+            real(r4k),               intent(in)    :: data  !! data to write
         end subroutine element_add_real32
+
+        recursive module subroutine element_add_real32_1d (me, data)
+            implicit none
+            !! this adds real double precision data inside of an xml element block
+            class(xml_element_dt),   intent(inout) :: me    !! xml element derived type
+            real(r4k), dimension(:), intent(in)    :: data  !! data to write
+        end subroutine element_add_real32_1d
+
+        recursive module subroutine element_add_real32_2d (me, data)
+            implicit none
+            !! this adds real double precision data inside of an xml element block
+            class(xml_element_dt),     intent(inout) :: me    !! xml element derived type
+            real(r4k), dimension(:,:), intent(in)    :: data  !! data to write
+        end subroutine element_add_real32_2d
 
         recursive module subroutine element_add_real64 (me, data)
             implicit none
             !! this adds real double precision data inside of an xml element block
             class(xml_element_dt),   intent(inout) :: me    !! xml element derived type
-            real(r8k), dimension(:), intent(in)    :: data   !! data to write
+            real(r8k),               intent(in)    :: data  !! data to write
         end subroutine element_add_real64
+
+        recursive module subroutine element_add_real64_1d (me, data)
+            implicit none
+            !! this adds real double precision data inside of an xml element block
+            class(xml_element_dt),   intent(inout) :: me    !! xml element derived type
+            real(r8k), dimension(:), intent(in)    :: data  !! data to write
+        end subroutine element_add_real64_1d
 
         recursive module subroutine element_add_real64_2d (me, data)
             implicit none
             !! this adds real double precision data inside of an xml element block
             class(xml_element_dt),     intent(inout) :: me    !! xml element derived type
-            real(r8k), dimension(:,:), intent(in)    :: data   !! data to write
+            real(r8k), dimension(:,:), intent(in)    :: data  !! data to write
         end subroutine element_add_real64_2d
 
         recursive module subroutine element_add_int32 (me, data)
