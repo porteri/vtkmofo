@@ -192,17 +192,19 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
     module procedure element_add_real32
         implicit none
         !! this adds data inside of an xml element block
-        type(real32_dt) :: real32
-        type(real32_dt), dimension(:), allocatable :: tmp_real32_dt
+        type(real32_dt) :: tmp_data
+        type(real32_dt), dimension(:), allocatable :: tmp_data_array
 
-        if (.not. allocated(me%data)) then
-            allocate(real32_dt::me%data)
-        end if
         select type (d => me%data)
         class is (real32_dt)
-            allocate(real32%val, source=data)
-            allocate(tmp_real32_dt, source = [me%data, real32])
-            call move_alloc(tmp_real32_dt, me%data)
+            if (.not. allocated(me%data)) then
+                allocate(real32_dt::me%data(1))
+                allocate(d(1)%val,source=data)
+            else
+                allocate(tmp_data%val, source=data)
+                allocate(tmp_data_array, source = [d, tmp_data])
+                call move_alloc(tmp_data_array, me%data)
+            end if
         end select
 
     end procedure element_add_real32
@@ -210,15 +212,20 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
     module procedure element_add_real64
         implicit none
         !! this adds data inside of an xml element block
-        type(real64_dt) :: real64
-        type(real64_dt), dimension(:), allocatable :: tmp_real64_dt
+        type(real64_dt) :: tmp_data
+        type(real64_dt), dimension(:), allocatable :: tmp_data_array
 
-        if (.not. allocated(me%data)) then
-            allocate(real64_dt::me%data)
-        end if
-        allocate(real64%val, source=data)
-        allocate(tmp_real64_dt, source = [me%data, real64])
-        call move_alloc(tmp_real64_dt, me%data)
+        select type (d => me%data)
+        class is (real64_dt)
+            if (.not. allocated(me%data)) then
+                allocate(real64_dt::me%data(1))
+                allocate(d(1)%val,source=data)
+            else
+                allocate(tmp_data%val, source=data)
+                allocate(tmp_data_array, source = [d, tmp_data])
+                call move_alloc(tmp_data_array, me%data)
+            end if
+        end select
 
     end procedure element_add_real64
 
@@ -226,32 +233,40 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
         use misc, only : convert_to_string
         implicit none
         !! this adds data inside of an xml element block
-        type(real64_dt) :: real64
-        type(real64_dt), dimension(:), allocatable :: tmp_real64
+        type(real64_dt) :: tmp_data
+        type(real64_dt), dimension(:), allocatable :: tmp_data_array
 
-        if (.not. allocated(me%data)) then
-            allocate(real64_dt::me%data(1))
-            allocate(me%data(1)%val_2d,source=data)
-        else
-            allocate(real64%val_2d, source=data)
-            allocate(tmp_real64, source = [me%data, real64])
-            call move_alloc(tmp_real64, me%data)
-        end if
+        select type (d => me%data)
+        class is (real64_dt)
+            if (.not. allocated(me%data)) then
+                allocate(real64_dt::me%data(1))
+                allocate(d(1)%val_2d,source=data)
+            else
+                allocate(tmp_data%val_2d, source=data)
+                allocate(tmp_data_array, source = [d, tmp_data])
+                call move_alloc(tmp_data_array, me%data)
+            end if
+        end select
 
     end procedure element_add_real64_2d
 
     module procedure element_add_int32
         implicit none
         !! this adds data inside of an xml element block
-        type(int32_dt) :: int32
-        type(int32_dt), dimension(:), allocatable :: tmp_int32
+        type(int32_dt) :: tmp_data
+        type(int32_dt), dimension(:), allocatable :: tmp_data_array
 
-        if (.not. allocated(me%data)) then
-            allocate(int32_dt::me%data)
-        end if
-        allocate(int32%val_2d(1:size(data),1), source=[data])
-        allocate(tmp_int32, source = [me%data, int32])
-        call move_alloc(tmp_int32, me%data)
+        select type (d => me%data)
+        class is (int32_dt)
+            if (.not. allocated(me%data)) then
+                allocate(int32_dt::me%data(1))
+                allocate(d(1)%val,source=data)
+            else
+                allocate(tmp_data%val, source=data)
+                allocate(tmp_data_array, source = [d, tmp_data])
+                call move_alloc(tmp_data_array, me%data)
+            end if
+        end select
 
     end procedure element_add_int32
 
@@ -259,15 +274,20 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
         use misc, only : convert_to_string
         implicit none
         !! this adds data inside of an xml element block
-        type(int64_dt) :: int64
-        type(int64_dt), dimension(:), allocatable :: tmp_int64
+        type(int64_dt) :: tmp_data
+        type(int64_dt), dimension(:), allocatable :: tmp_data_array
 
-        if (.not. allocated(me%data)) then
-            allocate(me%data)
-        end if
-        allocate(int64%val, source=data)
-        allocate(tmp_int64, source = [me%data, int64])
-        call move_alloc(tmp_int64, me%data)
+        select type (d => me%data)
+        class is (int64_dt)
+            if (.not. allocated(me%data)) then
+                allocate(int64_dt::me%data(1))
+                allocate(d(1)%val,source=data)
+            else
+                allocate(tmp_data%val, source=data)
+                allocate(tmp_data_array, source = [d, tmp_data])
+                call move_alloc(tmp_data_array, me%data)
+            end if
+        end select
 
     end procedure element_add_int64
 
@@ -277,12 +297,17 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
         type(logical_dt) :: boolean
         type(logical_dt), dimension(:), allocatable :: tmp_boolean_dt
 
-        if (.not. allocated(me%data)) then
-            allocate(me%data)
-        end if
-        allocate(boolean%val, source=data)
-        allocate(tmp_boolean_dt, source = [me%data, boolean])
-        call move_alloc(tmp_boolean_dt, me%data)
+        select type (d => me%data)
+        class is (logical_dt)
+            if (.not. allocated(me%data)) then
+                allocate(logical_dt::me%data(1))
+                allocate(d(1)%val,source=data)
+            else
+                allocate(boolean%val, source=data)
+                allocate(tmp_boolean_dt, source = [d, boolean])
+                call move_alloc(tmp_boolean_dt, me%data)
+            end if
+        end select
 
     end procedure element_add_logical
 
@@ -290,8 +315,9 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
         implicit none
         !! this adds data inside of an xml element block
         logical :: add_quotes
-        character(len=:), allocatable :: tmp_string, new_line_string
-        !type(string_dt), dimension(:), allocatable :: tmp_string
+        character(len=:), allocatable :: new_string
+        type(string_dt) :: tmp_data
+        type(string_dt), dimension(:), allocatable :: tmp_data_array
 
         if (present(quotes)) then
             add_quotes = quotes
@@ -299,26 +325,24 @@ write(output_unit,*) 'start of clear_elements. size: ',size(me%element)
             add_quotes = .true.  !! by default, add quotation marks around a string
         end if
 
+        if (add_quotes) then
+            allocate(new_string,source='"' // data // '"')
+        else
+            allocate(new_string,source=data)
+        end if
+
         select type (d => me%data)
         class is (string_dt)
             if (.not. allocated(me%data)) then
-                allocate(string_dt::me%data)
-                me%data%val = ''
-                new_line_string = ''
+                allocate(string_dt::me%data(1))
+                allocate(d(1)%val,source=new_string)
             else
-                new_line_string = new_line('a')
-            end if
-
-            call move_alloc(d%data,tmp_string)
-
-            if (add_quotes) then
-                allocate(d%val,source=tmp_string%val // new_line_string // '"' // string // '"')
-            else
-                allocate(d%val,source=tmp_string%val // new_line_string // string)
+                allocate(tmp_data%val, source=new_string)
+                allocate(tmp_data_array, source = [d, tmp_data])
+                call move_alloc(tmp_data_array, me%data)
             end if
         end select
 
-write(output_unit,*) 'me%data: ',me%data
     end procedure element_add_string
 
     module procedure element_add_element
@@ -330,10 +354,9 @@ write(output_unit,*) 'me%data: ',me%data
 write(output_unit,*) 'entering element_add_element'
         tmp_element = element
 write(output_unit,*) 'tmp_element name:   ',tmp_element%name
-write(output_unit,*) 'tmp_element string: ',tmp_element%string
+
          if (allocated(me%element)) then
              write(output_unit,*) 'me%element name:   ',me%name
-             write(output_unit,*) 'me%element string: ',me%string
              allocate(tmp_element_array(lbound(me%element,dim=1):ubound(me%element,dim=1)))
              do i = lbound(me%element,dim=1), ubound(me%element,dim=1)
                  tmp_element_array(i) = me%element(i)
@@ -386,7 +409,7 @@ write(output_unit,*) 'tmp_element string: ',tmp_element%string
         !!
         !! writes the element to the file
         !!
-        integer(i4k) :: i, j, k
+        integer(i4k) :: i, j!, k
         character(len=:), allocatable :: fmt
 
         if (prior_offset == -1) prior_offset = 0  !! This should only happen if trying to write
@@ -397,54 +420,139 @@ write(output_unit,*) 'tmp_element string: ',tmp_element%string
 
         if (allocated(me%data)) then
 write(output_unit,*) 'me%name: ',me%name
-        select type (d => me%data)
-        class is (string_dt)
-            if (allocated(d%val)) then
-                select case (file_format)
-                case (ascii)
+            select type (d => me%data)
+            class is (string_dt)
+                do i = 1, size(d)
+                    if (allocated(d(i)%val)) then
+                        select case (file_format)
+                        case (ascii)
 #ifdef INTEL_COMPILER
-                    write(unit,fmt,advance='yes') d%val
+                            write(unit,fmt,advance='yes') d(i)%val
 #else
-                    write(unit,fmt,advance='no') d%val
+                            write(unit,fmt,advance='no') d(i)%val
 #endif
-                case (binary)
-                    write(unit) me%string
-                end select
-            end if
-        class is (int32_dt)
-            do i = 1, size(p%val_2d,dim=2)
-                write(unit,*) d%val_2d(:,i)
-            end do
-            if (file_format == binary) then
-                write(unit) new_line('a')
-            end if
-        class is (int64)
-            do i = 1, size(p%val_2d,dim=2)
-                write(unit,*) d%val_2d(:,i)
-            end do
-            if (file_format == binary) then
-                write(unit) new_line('a')
-            end if
-        class is (real32_dt)
-            do i = 1, size(p%val_2d,dim=2)
-                write(unit,*) d%val_2d(:,i)
-            end do
-            if (file_format == binary) then
-                write(unit) new_line('a')
-            end if
-        class is (real64_dt)
-            do i = 1, size(p%val_2d,dim=2)
-                select case (file_format)
-                case (ascii)
-                    write(unit,*) me%real64(i)%val_2d(:,i)
-                case (binary)
-                    write(unit) me%real64(i)%val_2d(:,i)
-                end select
-            end do
-            if (file_format == binary) then
-                write(unit) new_line('a')
-            end if
-        end select
+                        case (binary)
+                            write(unit) d(i)%val
+                        end select
+                    end if
+                end do
+            class is (int32_dt)
+                do i = 1, size(d)
+                    if (allocated(d(i)%val)) then
+                        select case (file_format)
+                        case (ascii)
+                            write(unit,*) d(i)%val(:)
+                        case (binary)
+                            write(unit,*) d(i)%val(:)
+                        end select
+                    else if (allocated(d(i)%val_2d)) then
+                        do j = 1, size(d(i)%val_2d,dim=2)
+                            select case (file_format)
+                            case (ascii)
+                                write(unit,*) d(i)%val_2d(:,j)
+                            case (binary)
+                                write(unit) d(i)%val_2d(:,j)
+                            end select
+                        end do
+                    end if
+                    if (file_format == binary) then
+                        write(unit) new_line('a')
+                    end if
+                end do
+            class is (int64_dt)
+                do i = 1, size(d)
+                    if (allocated(d(i)%val)) then
+                        select case (file_format)
+                        case (ascii)
+                            write(unit,*) d(i)%val(:)
+                        case (binary)
+                            write(unit,*) d(i)%val(:)
+                        end select
+                    else if (allocated(d(i)%val_2d)) then
+                        do j = 1, size(d(i)%val_2d,dim=2)
+                            select case (file_format)
+                            case (ascii)
+                                write(unit,*) d(i)%val_2d(:,j)
+                            case (binary)
+                                write(unit) d(i)%val_2d(:,j)
+                            end select
+                        end do
+                    end if
+                    if (file_format == binary) then
+                        write(unit) new_line('a')
+                    end if
+                end do
+            class is (real32_dt)
+                do i = 1, size(d)
+                    if (allocated(d(i)%val)) then
+                        select case (file_format)
+                        case (ascii)
+                            write(unit,*) d(i)%val(:)
+                        case (binary)
+                            write(unit,*) d(i)%val(:)
+                        end select
+                    else if (allocated(d(i)%val_2d)) then
+                        do j = 1, size(d(i)%val_2d,dim=2)
+                            select case (file_format)
+                            case (ascii)
+                                write(unit,*) d(i)%val_2d(:,j)
+                            case (binary)
+                                write(unit) d(i)%val_2d(:,j)
+                            end select
+                        end do
+                    end if
+                    if (file_format == binary) then
+                        write(unit) new_line('a')
+                    end if
+                end do
+            class is (real64_dt)
+                do i = 1, size(d)
+                    if (allocated(d(i)%val)) then
+                        select case (file_format)
+                        case (ascii)
+                            write(unit,*) d(i)%val(:)
+                        case (binary)
+                            write(unit,*) d(i)%val(:)
+                        end select
+                    else if (allocated(d(i)%val_2d)) then
+                        do j = 1, size(d(i)%val_2d,dim=2)
+                            select case (file_format)
+                            case (ascii)
+                                write(unit,*) d(i)%val_2d(:,j)
+                            case (binary)
+                                write(unit) d(i)%val_2d(:,j)
+                            end select
+                        end do
+                    end if
+                    if (file_format == binary) then
+                        write(unit) new_line('a')
+                    end if
+                end do
+            class is (logical_dt)
+                do i = 1, size(d)
+                    if (allocated(d(i)%val)) then
+                        select case (file_format)
+                        case (ascii)
+                            write(unit,*) d(i)%val(:)
+                        case (binary)
+                            write(unit,*) d(i)%val(:)
+                        end select
+                    else if (allocated(d(i)%val_2d)) then
+                        do j = 1, size(d(i)%val_2d,dim=2)
+                            select case (file_format)
+                            case (ascii)
+                                write(unit,*) d(i)%val_2d(:,j)
+                            case (binary)
+                                write(unit) d(i)%val_2d(:,j)
+                            end select
+                        end do
+                    end if
+                    if (file_format == binary) then
+                        write(unit) new_line('a')
+                    end if
+                end do
+            end select
+        else
             !! Nothing to write
         end if
 
@@ -797,14 +905,14 @@ write(output_unit,*) 'me%element is allocated. size: ',size(me%element)
         implicit none
         !! gcc work-around to de-allocate the string derived type
 
-        if (allocated(me%text)) deallocate(me%text)
+        if (allocated(me%val)) deallocate(me%val)
 
     end procedure gcc_bug_deallocate_string_dt
 
     module procedure gcc_bug_workaround_deallocate_xml_file_dt
         implicit none
         !! gcc work-around to de-allocate the string derived type
-        integer :: i
+!        integer :: i
 
         if (allocated(me%element)) then
             !do i = lbound(me%element,dim=1), ubound(me%element,dim=1)

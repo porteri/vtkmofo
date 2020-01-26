@@ -40,27 +40,27 @@ module xml
     end type string_dt
 
     type, extends(xml_data) :: int32_dt
-!        integer(i4k), dimension(:),   allocatable :: val
+        integer(i4k), dimension(:),   allocatable :: val
         integer(i4k), dimension(:,:), allocatable :: val_2d
     end type int32_dt
 
     type, extends(xml_data) :: int64_dt
-!        integer(i8k), dimension(:),   allocatable :: val
+        integer(i8k), dimension(:),   allocatable :: val
         integer(i8k), dimension(:,:), allocatable :: val_2d
     end type int64_dt
 
     type, extends(xml_data) :: real32_dt
-!        real(r4k), dimension(:),   allocatable :: val
+        real(r4k), dimension(:),   allocatable :: val
         real(r4k), dimension(:,:), allocatable :: val_2d
     end type real32_dt
 
     type, extends(xml_data) :: real64_dt
-!        real(r8k), dimension(:),   allocatable :: val
+        real(r8k), dimension(:),   allocatable :: val
         real(r8k), dimension(:,:), allocatable :: val_2d
     end type real64_dt
 
     type, extends(xml_data) :: logical_dt
-!        logical, dimension(:),   allocatable :: val
+        logical, dimension(:),   allocatable :: val
         logical, dimension(:,:), allocatable :: val_2d
     end type logical_dt
 
@@ -247,11 +247,11 @@ module xml
             logical, dimension(:), intent(in)    :: data   !! data to write
         end subroutine element_add_logical
 
-        recursive module subroutine element_add_string (me, string, quotes)
+        recursive module subroutine element_add_string (me, data, quotes)
             implicit none
             !! this adds data inside of an xml element block
             class(xml_element_dt), intent(inout) :: me      !! xml element derived type
-            character(len=*),      intent(in)    :: string  !! string of data to write
+            character(len=*),      intent(in)    :: data    !! string of data to write
             logical, optional,     intent(in)    :: quotes  !! flag to turn quotation marks around string on/off
         end subroutine element_add_string
 

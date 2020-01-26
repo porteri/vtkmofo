@@ -32,8 +32,14 @@ if (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
     set(dbglibs "")
   endif()
 
+  if (CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 18.0)
+    set(Fortran_standard "f15")
+  else()
+    set(Fortran_standard "f18")
+  endif()
+
   set(Intel_Fortran_FLAGS_Release "${prefix}check${colon_}none ${prefix}O3 ${prefix}fpp ${prefix}MP")
-  set(Intel_Fortran_FLAGS_Debug "${prefix}check${colon_}all ${prefix}Od ${prefix}fpp ${prefix}MP ${prefix}warn${colon_}all ${prefix}stand${colon_}f15 ${prefix}fpe${colon_}0")
+  set(Intel_Fortran_FLAGS_Debug "${prefix}check${colon_}all ${prefix}Od ${prefix}fpp ${prefix}MP ${prefix}warn${colon_}all ${prefix}fpe${colon_}0 ${prefix}stand${colon_}{Fortran_standard}")
 
 #  "${prefix}nologo ${prefix}debug${infix}full ${prefix}MP ${prefix}Od ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
 #  "${prefix}nologo ${prefix}debug${infix}full ${prefix}multiple-processes ${prefix}O0 ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
