@@ -173,6 +173,19 @@ write(0,*) '8 - end of finalize'
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         !!
         integer :: i
+        class(vtk_dataset_dt), allocatable :: new_dataset
+        select type (foo)
+        class is (vtk_xml_imagedata_dt)
+            allocate(vtk_xml_imagedata_dt::new_dataset)
+        class is (vtk_xml_rectilineargrid_dt)
+            allocate(vtk_xml_rectilineargrid_dt::new_dataset)
+        class is (vtk_xml_structuredgrid_dt)
+            allocate(vtk_xml_structuredgrid_dt::new_dataset)
+        class is (vtk_xml_unstructuredgrid_dt)
+            allocate(vtk_xml_unstructuredgrid_dt::new_dataset)
+        end select
+        foo = new_dataset
+        return
 
         if (allocated(foo%wholeextent))  deallocate(foo%WholeExtent)
         if (allocated(foo%grid_type))    deallocate(foo%grid_type)

@@ -186,6 +186,17 @@ contains
         integer :: i
 write(output_unit,*) 'start of data_deallocate. name: ',foo%get_name()
 
+
+if (allocated(foo%dataarray)) then
+write(output_unit,*) 'deallocating array of dataarrarys'
+    do i = lbound(foo%dataarray,dim=1),ubound(foo%dataarray,dim=1)
+write(output_unit,*) 'deallocating array of dataarrarys, i: ',i
+        call foo%dataarray(i)%clear_elements()
+        call foo%dataarray(i)%dataarray_deallocate()
+    end do
+    if (allocated(foo%dataarray)) deallocate(foo%dataarray)
+else
+
         if (allocated(foo%scalars)) deallocate(foo%scalars)
         if (allocated(foo%vectors)) deallocate(foo%vectors)
         if (allocated(foo%normals)) deallocate(foo%normals)
@@ -228,15 +239,7 @@ write(output_unit,*) 'deallocating dataarrary-z'
             call foo%dataarray_z%dataarray_deallocate()
             deallocate(foo%dataarray_z)
         end if
-        if (allocated(foo%dataarray)) then
-write(output_unit,*) 'deallocating array of dataarrarys'
-            do i = lbound(foo%dataarray,dim=1),ubound(foo%dataarray,dim=1)
-write(output_unit,*) 'deallocating array of dataarrarys, i: ',i
-                call foo%dataarray(i)%clear_elements()
-                call foo%dataarray(i)%dataarray_deallocate()
-            end do
-            if (allocated(foo%dataarray)) deallocate(foo%dataarray)
-        end if
+end if
 write(output_unit,*) 'final deallocating step. before gcc_bug_workaround_deallocate'
         call foo%clear_elements()
         !call foo%deallocate()
@@ -474,24 +477,29 @@ write(output_unit,*) 'at end of data_deallocate'
         implicit none
         !! author: Ian Porter
         !! date: 06/07/2019
-
+write(output_unit,fmt='(/,(a),/)') 'in piece_finalize'
         if (allocated(me%points)) then
+write(output_unit,*) 'adding points to piece'
             call me%points%finalize()
             call me%add(me%points)
         end if
         if (allocated(me%coordinates)) then
+write(output_unit,*) 'adding coordinates to piece'
             call me%coordinates%finalize()
             call me%add(me%coordinates)
         end if
         if (allocated(me%cells)) then
+write(output_unit,*) 'adding cells to piece'
             call me%cells%finalize()
             call me%add(me%cells)
         end if
         if (allocated(me%pointdata)) then
+write(output_unit,*) 'adding pointdata to piece'
             call me%pointdata%finalize()
             call me%add(me%pointdata)
         end if
         if (allocated(me%celldata)) then
+write(output_unit,*) 'adding celldata to piece'
             call me%celldata%finalize()
             call me%add(me%celldata)
         end if
@@ -505,20 +513,39 @@ write(output_unit,*) 'at end of data_deallocate'
         !!
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         !!
+        type(piece_dt) :: new_piece
+        foo = new_piece
+        return
 write(output_unit,*) 'piece_deallocate 1'
-        if (allocated(foo%pointdata))   call foo%pointdata%data_deallocate()
+        if (allocated(foo%pointdata)) then
+            call foo%pointdata%data_deallocate()
+            deallocate(foo%pointdata)
+        end if
 write(output_unit,*) 'piece_deallocate 2'
-        if (allocated(foo%celldata))    call foo%celldata%data_deallocate()
+        if (allocated(foo%celldata)) then
+            call foo%celldata%data_deallocate()
+            deallocate(foo%celldata)
+        end if
 write(output_unit,*) 'piece_deallocate 3'
-        if (allocated(foo%coordinates)) call foo%coordinates%data_deallocate()
+        if (allocated(foo%coordinates)) then
+            call foo%coordinates%data_deallocate()
+            deallocate(foo%coordinates)
+        end if
 write(output_unit,*) 'piece_deallocate 4'
-        if (allocated(foo%points))      call foo%points%data_deallocate()
+        if (allocated(foo%points)) then
+            call foo%points%data_deallocate()
+            deallocate(foo%points)
+        end if
 write(output_unit,*) 'piece_deallocate 5'
-        if (allocated(foo%cells))       call foo%cells%data_deallocate()
+        if (allocated(foo%cells)) then
+            call foo%cells%data_deallocate()
+            deallocate(foo%cells)
+        end if
 write(output_unit,*) 'piece_deallocate 6'
         if (allocated(foo%source))      deallocate(foo%source)
 write(output_unit,*) 'piece_deallocate 7'
         !call foo%me_deallocate()
+        !call free_me(foo)
         call gcc_bug_workaround_deallocate(foo)
 write(output_unit,*) 'piece_deallocate 8'
     end procedure piece_deallocate

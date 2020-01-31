@@ -16,8 +16,17 @@ contains
         !!
         !! gcc work-around for deallocating a multi-dimension derived type w/ allocatable character strings
         !!
+        !type(vtk_file_dt) :: new_file
+
+        !select type (foo)
+        !class is (vtk_file_dt)
+        !    foo = new_file
+        !end select
+        !foo = serial_file_clean
+        !return
 
         if (allocated(foo%vtk_dataset)) call foo%vtk_dataset%vtk_dataset_deallocate()
+        deallocate(foo%vtk_dataset)
 
 !        call gcc_bug_workaround_deallocate(foo)
         call gcc_bug_workaround_deallocate_xml_file_dt(foo)

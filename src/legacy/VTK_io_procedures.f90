@@ -299,7 +299,7 @@ contains
 
     module procedure vtk_serial_full_write
         use vtk_datasets,    only : struct_pts, struct_grid, rectlnr_grid, polygonal_data, unstruct_grid
-        use vtk_serial_file, only : serial_file
+        use vtk_serial_file, only : serial_file, serial_file_clean
         use vtk_xml_grid,    only : vtk_xml_rectilineargrid_dt, vtk_xml_structuredgrid_dt, &
             &                       vtk_xml_unstructuredgrid_dt, vtk_xml_imagedata_dt
         use vtk_vars,        only : vtk_extension
@@ -317,9 +317,10 @@ contains
         if (allocated(serial_file)) then
             write(output_unit,*) 'serial_file is allocated. 2'
             call serial_file%me_deallocate()
-            write(output_unit,*) 'serial_file is allocated. 3'
+            !write(output_unit,*) 'serial_file is allocated. 3'
             deallocate(serial_file)
-            write(output_unit,*) 'serial_file is allocated. 4'
+            serial_file = serial_file_clean
+            !write(output_unit,*) 'serial_file is allocated. 4'
         end if
         if (allocated(vtkfilename))      deallocate(vtkfilename)
         if (allocated(form))             deallocate(form)

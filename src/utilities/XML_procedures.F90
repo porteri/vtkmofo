@@ -950,9 +950,9 @@ write(output_unit,*) 'me%header: ',me%header
         else
 write(output_unit,*) 'getting freed in free_me. me%data: '
             if (allocated(me%data)) deallocate(me%data)
-write(output_unit,*) 'getting freed in free_me. me%name: ',me%name
+!write(output_unit,*) 'getting freed in free_me. me%name: ',me%name
             if (allocated(me%name)) deallocate(me%name)
-write(output_unit,*) 'getting freed in free_me. me%header: ',me%header
+!write(output_unit,*) 'getting freed in free_me. me%header: ',me%header
             if (allocated(me%header)) deallocate(me%header)
 
             me%unit = output_unit
