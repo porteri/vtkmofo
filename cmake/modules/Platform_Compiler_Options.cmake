@@ -20,6 +20,9 @@ if (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
     set(colon_ ":")
     set(libs_static "/libs:static")
     set(dbglibs "/dbglibs")
+    set(mp "/MP")
+    set(optimization_0 "/Od")
+    set(fpe_0 "/fpe:0")
   else() # *nix options
     set(prefix "-")
     set(infix " ")
@@ -30,6 +33,9 @@ if (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
     set(colon_ " ")
     set(libs_static "")
     set(dbglibs "")
+    set(mp "-multiple-processes")
+    set(optimization_0 "")
+    set(fpe0 "-fpe0")
   endif()
 
   if (CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 18.0)
@@ -38,13 +44,13 @@ if (CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
     set(Fortran_standard "f18")
   endif()
 
-  set(Intel_Fortran_FLAGS_Release "${prefix}check${colon_}none ${prefix}O3 ${prefix}fpp ${prefix}MP")
-  set(Intel_Fortran_FLAGS_Debug "${prefix}check${colon_}all ${prefix}Od ${prefix}fpp ${prefix}MP ${prefix}warn${colon_}all ${prefix}fpe${colon_}0 ${prefix}stand${colon_}{Fortran_standard}")
+  set(Intel_Fortran_FLAGS_Release "${prefix}check${colon_}none ${prefix}O3 ${prefix}fpp ${mp}")
+  set(Intel_Fortran_FLAGS_Debug "${prefix}check${colon_}all ${optimization_0} ${prefix}fpp ${mp} ${prefix}warn${colon_}all ${fpe} ${prefix}stand${colon_}${Fortran_standard}")
 
 #  "${prefix}nologo ${prefix}debug${infix}full ${prefix}MP ${prefix}Od ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
 #  "${prefix}nologo ${prefix}debug${infix}full ${prefix}multiple-processes ${prefix}O0 ${prefix}standard-semantics ${prefix}warn${infix}errors ${prefix}stand${infix}f15 ${prefix}debug-parameters${infix}all ${prefix}warn${infix}declarations ${prefix}warn${infix}unused ${prefix}warn${infix}interfaces ${prefix}${Qf}trapuv ${prefix}${Q}init${eq}snan ${prefix}${Q}init${eq}arrays ${prefix}fpe${colon}0 ${prefix}traceback ${prefix}check${colon_}bounds ${prefix}check${colon_}stack ${libs_static} ${prefix}threads ${dbglibs} ${prefix}free"
 
-  set(Intel_EXE_LINKER_FLAGS "${prefix}traceback ${prefix}stand${colon_}f15 ${prefix}${Q}coarray${colon_}distributed ${prefix}fpp")
+set(Intel_EXE_LINKER_FLAGS "${prefix}traceback ${prefix}stand${colon_}{Fortran_standard} ${prefix}${Q}coarray${colon_}distributed ${prefix}fpp")
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
   # GFortran build configs
   if (CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 8)
