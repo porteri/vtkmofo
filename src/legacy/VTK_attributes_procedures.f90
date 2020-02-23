@@ -300,17 +300,14 @@ contains
         !!
         !! function converts an attribute to a dataarray
         !!
-        integer(i4k) :: i
 
         call array%initialize(name=trim(adjustl(me%dataname)), type=me%datatype)
 
-        do i = 1, me%nvals
-            if (allocated(me%ints)) then
-                call array%add([me%ints(i)])
-            else if (allocated(me%reals)) then
-                call array%add([me%reals(i)])
-            end if
-        end do
+        if (allocated(me%ints)) then
+            call array%add(me%ints)
+        else if (allocated(me%reals)) then
+            call array%add(me%reals)
+        end if
 
     end procedure scalar_convert_to_dataarray
 
